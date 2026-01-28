@@ -142,3 +142,6 @@ www.cyberdudebivash.com
 All rights reserved.
 
 This repository represents the official CYBERDUDEBIVASH® enterprise platform.
+
+<img width="997" height="987" alt="image" src="https://github.com/user-attachments/assets/12332f7e-e57b-4fdf-ad3c-24b6b2433ed3" />
+
