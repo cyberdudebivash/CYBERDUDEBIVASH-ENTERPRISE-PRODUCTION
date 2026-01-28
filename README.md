@@ -65,47 +65,6 @@ CYBERDUDEBIVASH-ENTERPRISE-PRODUCTION/
 └── README.md                 # This file
 ```
 
----
-
-## 🚀 Quick Start
-
-### Static Website (No Build Required)
-
-The corporate website is ready to deploy immediately:
-
-```bash
-# Option 1: Serve with Python
-python3 -m http.server 8000
-
-# Option 2: Serve with Node.js
-npx http-server -p 8000
-
-# Option 3: Deploy to GitHub Pages, Netlify, Cloudflare Pages
-# Just upload the root directory
-```
-
-Visit: `http://localhost:8000`
-
-### React Client Portal
-
-```bash
-# Navigate to React portal
-cd react-portal
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-
-# Build for production
-npm run build
-```
-
-The production build will be in `react-portal/build/` directory.
-
----
-
 ## 🎨 Brand Identity
 
 **Colors (from official logo):**
@@ -140,37 +99,6 @@ git push -u origin main
 
 # 3. Enable GitHub Pages in repo settings
 # Site will be live at: https://cyberdudebivash.github.io/cyberdudebivash-enterprise/
-```
-
-#### Cloudflare Pages
-```bash
-# 1. Connect GitHub repo to Cloudflare Pages
-# 2. Set build command: (leave empty)
-# 3. Set output directory: /
-# Deploy automatically on push
-```
-
-#### Netlify
-```bash
-# Drag and drop the entire folder to Netlify
-# Or connect GitHub repo
-# Custom domain: www.cyberdudebivash.com
-```
-
-### React Portal Deployment
-
-```bash
-cd react-portal
-npm run build
-
-# The build/ folder can be:
-# 1. Uploaded to same hosting as main site (in /react-portal/ path)
-# 2. Deployed separately on Vercel/Netlify
-# 3. Served from CDN
-```
-
----
-
 ## ✨ Features
 
 ### Corporate Website
@@ -231,65 +159,6 @@ All links to CYBERDUDEBIVASH platforms are integrated:
 
 This is proprietary software for **CYBERDUDEBIVASH®** enterprise use.
 
----
 
-## 🔥 Production Checklist
-
-Before deploying to www.cyberdudebivash.com:
-
-- [x] All HTML pages complete and functional
-- [x] CSS fully implemented with brand colors
-- [x] JavaScript working (matrix animation, forms, navigation)
-- [x] React portal fully functional
-- [x] Logo integrated across all pages
-- [x] All external links verified
-- [x] Mobile responsive
-- [x] Contact form validation
-- [x] SEO meta tags
-- [x] Favicon set
-- [ ] Update email form backend (use Formspree, EmailJS, or custom API)
-- [ ] Add Google Analytics (optional)
-- [ ] Configure custom domain DNS
-- [ ] Set up SSL certificate
-- [ ] Test on all major browsers
-
----
-
-## 🛠️ Customization
-
-### Update Logo
-Replace `assets/images/logo.jpg` with your updated logo.
-
-### Update Colors
-Edit CSS variables in `assets/css/style.css`:
-```css
-:root {
-    --primary-cyan: #00FFFF;
-    --primary-orange: #FF8C42;
-    /* ... etc */
-}
-```
-
-### Add Pages
-1. Create new HTML file
-2. Copy header/footer from existing page
-3. Add link to navigation in all pages
-
-### Customize React Portal
-Edit files in `react-portal/src/pages/` to modify portal functionality.
-
----
-
-## 🚀 Next Steps
-
-1. **Deploy static site** to hosting provider
-2. **Build React portal** and deploy to same or separate hosting
-3. **Configure contact form** backend
-4. **Set up custom domain** (www.cyberdudebivash.com)
-5. **Add analytics** (optional)
-6. **Test thoroughly** on production
-
----
-
-**Built with ❤️ by CYBERDUDEBIVASH®**  
+**Built by CYBERDUDEBIVASH®**  
 **Global Cybersecurity Authority**
