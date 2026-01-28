@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enterprise Cybersecurity Services by CYBERDUDEBIVASH - Penetration Testing, Threat Intelligence, Security Consulting, Training & More">
+    <title>Enterprise Services | CYBERDUDEBIVASH®</title>
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+    <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand">
+                <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
+                <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link active">Services</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="research.html" class="nav-link">Research</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="./react-portal/build/index.html" class="nav-link btn-portal">Client Portal</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title gradient-text">Enterprise Security Services</h1>
+            <p class="page-subtitle">Comprehensive cybersecurity solutions for mission-critical environments</p>
+        </div>
+    </section>
+
+    <!-- Core Services -->
+    <section class="services-section">
+        <div class="container">
+            <h2 class="section-title">Core Service Offerings</h2>
+            
+            <!-- Offensive Security -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">⚔️</div>
+                    <h3>Offensive Security & Penetration Testing</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        Comprehensive security assessments using real-world attack techniques to identify vulnerabilities before malicious actors do. Our certified ethical hackers simulate advanced persistent threats to validate your security controls.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>External Testing</h4>
+                            <ul>
+                                <li>Network perimeter assessment</li>
+                                <li>Web application penetration testing</li>
+                                <li>API security testing</li>
+                                <li>Cloud infrastructure testing (AWS, Azure, GCP)</li>
+                                <li>Mobile application security assessment</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Internal Testing</h4>
+                            <ul>
+                                <li>Active Directory security assessment</li>
+                                <li>Internal network segmentation testing</li>
+                                <li>Privilege escalation testing</li>
+                                <li>Lateral movement simulation</li>
+                                <li>Physical security assessment</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Advanced Testing</h4>
+                            <ul>
+                                <li>Red Team exercises</li>
+                                <li>Purple Team collaborative assessments</li>
+                                <li>Assumed breach scenarios</li>
+                                <li>Zero-day research and exploitation</li>
+                                <li>Custom exploit development</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> Executive summary, technical report with proof-of-concepts, remediation roadmap, and retest validation
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threat Intelligence -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">🔍</div>
+                    <h3>Threat Intelligence & Hunting</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        Proactive threat intelligence gathering, analysis, and hunting to identify advanced threats targeting your organization. We provide actionable intelligence that enhances your security posture and informs strategic decisions.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>Strategic Intelligence</h4>
+                            <ul>
+                                <li>Industry-specific threat landscape analysis</li>
+                                <li>APT group tracking and attribution</li>
+                                <li>Geopolitical threat assessment</li>
+                                <li>Executive threat briefings</li>
+                                <li>Competitor intelligence analysis</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Tactical Intelligence</h4>
+                            <ul>
+                                <li>IOC detection and enrichment</li>
+                                <li>Malware analysis and reverse engineering</li>
+                                <li>Threat actor TTP documentation</li>
+                                <li>MITRE ATT&CK mapping</li>
+                                <li>Custom YARA rule development</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Threat Hunting</h4>
+                            <ul>
+                                <li>Hypothesis-driven hunting</li>
+                                <li>Behavioral analytics</li>
+                                <li>Anomaly detection</li>
+                                <li>Dark web monitoring</li>
+                                <li>Brand protection and leak detection</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> Weekly threat reports, IOC feeds, hunting playbooks, and quarterly strategic briefings
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incident Response -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">🚨</div>
+                    <h3>Incident Response & Forensics</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        24/7 incident response services with rapid containment, forensic analysis, and recovery support. Our team of certified forensic analysts responds within hours to minimize business impact and preserve evidence for legal proceedings.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>Response Services</h4>
+                            <ul>
+                                <li>24/7/365 emergency hotline</li>
+                                <li>On-site and remote response</li>
+                                <li>Rapid containment and eradication</li>
+                                <li>Root cause analysis</li>
+                                <li>Business continuity support</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Digital Forensics</h4>
+                            <ul>
+                                <li>Disk and memory forensics</li>
+                                <li>Network traffic analysis</li>
+                                <li>Malware forensic analysis</li>
+                                <li>Email and cloud forensics</li>
+                                <li>Mobile device forensics</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Post-Incident</h4>
+                            <ul>
+                                <li>Lessons learned workshops</li>
+                                <li>Incident timeline reconstruction</li>
+                                <li>Legal and regulatory support</li>
+                                <li>Insurance claim documentation</li>
+                                <li>Recovery and hardening recommendations</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> Forensic report, incident timeline, chain of custody documentation, and recovery plan
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Consulting -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">🏛️</div>
+                    <h3>Security Architecture & Consulting</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        Strategic security consulting to design, implement, and optimize enterprise security architectures. We align security programs with business objectives while ensuring compliance and risk management.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>Architecture Design</h4>
+                            <ul>
+                                <li>Zero-trust architecture design</li>
+                                <li>Security reference architectures</li>
+                                <li>Cloud security architecture</li>
+                                <li>Network segmentation design</li>
+                                <li>Identity and access management</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Program Development</h4>
+                            <ul>
+                                <li>Security strategy and roadmap</li>
+                                <li>Risk assessment and management</li>
+                                <li>Security policy development</li>
+                                <li>Metrics and KPI definition</li>
+                                <li>Security awareness programs</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Compliance & Governance</h4>
+                            <ul>
+                                <li>ISO 27001/27002 implementation</li>
+                                <li>NIST framework alignment</li>
+                                <li>GDPR/CCPA compliance</li>
+                                <li>PCI-DSS assessment</li>
+                                <li>SOC 2 preparation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> Architecture blueprints, security roadmap, policy documents, and implementation guidelines
+                    </div>
+                </div>
+            </div>
+
+            <!-- Managed Security -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">🛡️</div>
+                    <h3>Managed Security Services (SOC)</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        Fully-managed Security Operations Center providing 24/7 monitoring, detection, and response capabilities. Our AI-enhanced SOC combines human expertise with advanced automation to protect your organization around the clock.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>SOC Operations</h4>
+                            <ul>
+                                <li>24/7/365 security monitoring</li>
+                                <li>SIEM management and tuning</li>
+                                <li>Alert triage and investigation</li>
+                                <li>Threat detection engineering</li>
+                                <li>Incident escalation and coordination</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Advanced Capabilities</h4>
+                            <ul>
+                                <li>AI-powered threat detection</li>
+                                <li>Behavioral analytics (UEBA)</li>
+                                <li>Automated response playbooks</li>
+                                <li>Threat intelligence integration</li>
+                                <li>Custom detection rule development</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Reporting & Analysis</h4>
+                            <ul>
+                                <li>Real-time dashboards</li>
+                                <li>Monthly security metrics</li>
+                                <li>Quarterly business reviews</li>
+                                <li>Trend analysis and recommendations</li>
+                                <li>Executive reporting</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> 24/7 monitoring, incident tickets, monthly reports, and quarterly strategic reviews
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training & Development -->
+            <div class="service-block">
+                <div class="service-header">
+                    <div class="service-icon">🎓</div>
+                    <h3>Professional Training & Certification</h3>
+                </div>
+                <div class="service-content">
+                    <p class="service-description">
+                        Industry-leading cybersecurity training programs designed to upskill your team with hands-on, real-world scenarios. Our certified instructors deliver both standard and custom training aligned with your security objectives.
+                    </p>
+                    <div class="service-features">
+                        <div class="feature-column">
+                            <h4>Offensive Security</h4>
+                            <ul>
+                                <li>Advanced penetration testing</li>
+                                <li>Web application hacking</li>
+                                <li>Network exploitation techniques</li>
+                                <li>Exploit development</li>
+                                <li>Red team operations</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Defensive Security</h4>
+                            <ul>
+                                <li>SOC analyst training</li>
+                                <li>Malware analysis bootcamp</li>
+                                <li>Digital forensics and incident response</li>
+                                <li>Threat hunting methodologies</li>
+                                <li>Security architecture design</li>
+                            </ul>
+                        </div>
+                        <div class="feature-column">
+                            <h4>Specialized Topics</h4>
+                            <ul>
+                                <li>Cloud security (AWS, Azure, GCP)</li>
+                                <li>Kubernetes security</li>
+                                <li>API security testing</li>
+                                <li>IoT and embedded security</li>
+                                <li>AI/ML security</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="service-deliverables">
+                        <strong>Deliverables:</strong> Course materials, hands-on labs, certification exams, and ongoing support
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Approach -->
+    <section class="approach-section">
+        <div class="container">
+            <h2 class="section-title">Our Approach</h2>
+            <div class="approach-grid">
+                <div class="approach-card">
+                    <h3>1. Assessment</h3>
+                    <p>Deep dive into your current security posture, business objectives, and risk landscape</p>
+                </div>
+                <div class="approach-card">
+                    <h3>2. Strategy</h3>
+                    <p>Develop tailored security strategy aligned with your business goals and compliance requirements</p>
+                </div>
+                <div class="approach-card">
+                    <h3>3. Implementation</h3>
+                    <p>Execute security initiatives with minimal business disruption and maximum effectiveness</p>
+                </div>
+                <div class="approach-card">
+                    <h3>4. Optimization</h3>
+                    <p>Continuous improvement through monitoring, testing, and adaptation to emerging threats</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container cta-container">
+            <h2>Ready to Strengthen Your Security?</h2>
+            <p>Schedule a consultation to discuss your security needs</p>
+            <div class="cta-buttons">
+                <a href="contact.html" class="btn btn-primary btn-lg">Get Started</a>
+                <a href="pricing.html" class="btn btn-outline btn-lg">View Pricing</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="footer-logo">
+                    <p class="footer-tagline">Global Cybersecurity Tools, Apps, Services, Automation, R&D Platform</p>
+                    <p class="footer-location">Bhubaneswar, Odisha, India</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Platforms</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-PRODUCTION-APPS-SUITE/" target="_blank">Production Apps</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/cyberdudebivash-top-10-tools/" target="_blank">Top 10 Tools</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-ECOSYSTEM" target="_blank">Ecosystem</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/mcp-server/" target="_blank">MCP Server</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Research</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://cyberbivash.blogspot.com" target="_blank">Cybersecurity Blog</a></li>
+                        <li><a href="https://cyberdudebivash-news.blogspot.com" target="_blank">Security News</a></li>
+                        <li><a href="https://cryptobivash.code.blog" target="_blank">Crypto Research</a></li>
+                        <li><a href="research.html">All Research</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="pricing.html">Pricing</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cyberdudebivash" target="_blank">GitHub</a></li>
+                        <li><a href="https://www.patreon.com/c/CYBERDUDEBIVASH" target="_blank">Patreon</a></li>
+                        <li><a href="https://cyberdudebivash.gumroad.com/affiliates" target="_blank">Gumroad</a></li>
+                        <li><a href="https://github.com/apps/cyberdudebivash-security-platform" target="_blank">GitHub App</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CYBERDUDEBIVASH Pvt. Ltd. All rights reserved.</p>
+                <p class="footer-website"><a href="https://www.cyberdudebivash.com" target="_blank">www.cyberdudebivash.com</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./assets/js/matrix.js"></script>
+    <script src="./assets/js/main.js"></script>
+</body>
+</html>

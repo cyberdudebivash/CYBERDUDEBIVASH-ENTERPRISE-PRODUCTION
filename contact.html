@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact CYBERDUDEBIVASH - Enterprise Security Consultations, Support, Partnerships & Inquiries">
+    <title>Contact Us | CYBERDUDEBIVASH®</title>
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+    <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand">
+                <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
+                <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="research.html" class="nav-link">Research</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="contact.html" class="nav-link active">Contact</a></li>
+                <li><a href="./react-portal/build/index.html" class="nav-link btn-portal">Client Portal</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title gradient-text">Contact Us</h1>
+            <p class="page-subtitle">Get in touch for enterprise security solutions and partnerships</p>
+        </div>
+    </section>
+
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- Contact Form -->
+                <div class="contact-form-wrapper">
+                    <h2>Send Us a Message</h2>
+                    <p>Fill out the form below and we'll get back to you within 24 hours</p>
+                    
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" required placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="company">Company</label>
+                                <input type="text" id="company" name="company" placeholder="Acme Corporation">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required placeholder="john@company.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="service">Service Interested In</label>
+                            <select id="service" name="service">
+                                <option value="">Select a service</option>
+                                <option value="penetration-testing">Penetration Testing</option>
+                                <option value="threat-intelligence">Threat Intelligence</option>
+                                <option value="incident-response">Incident Response</option>
+                                <option value="security-consulting">Security Consulting</option>
+                                <option value="managed-soc">Managed SOC</option>
+                                <option value="training">Professional Training</option>
+                                <option value="custom-development">Custom Development</option>
+                                <option value="enterprise-licensing">Enterprise Licensing</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message *</label>
+                            <textarea id="message" name="message" required rows="6" placeholder="Tell us about your security needs..."></textarea>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" name="newsletter" id="newsletter">
+                                Subscribe to our threat intelligence newsletter
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                        
+                        <div id="formMessage" class="form-message" style="display:none;"></div>
+                    </form>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="contact-info-wrapper">
+                    <h2>Get In Touch</h2>
+                    
+                    <div class="contact-info-card">
+                        <div class="info-icon">📧</div>
+                        <h3>Email</h3>
+                        <p><a href="/cdn-cgi/l/email-protection#f69f979b949f8097859eb6958f94938492839293949f8097859ed895999b"><span class="__cf_email__" data-cfemail="b8d1d9d5dad1ced9cbd0f8dbc1daddcadccddcdddad1ced9cbd096dbd7d5">[email&#160;protected]</span></a></p>
+                        <p class="info-note">For general inquiries and support</p>
+                    </div>
+
+                    <div class="contact-info-card">
+                        <div class="info-icon">🏢</div>
+                        <h3>Headquarters</h3>
+                        <p>Bhubaneswar, Odisha<br>India</p>
+                        <p class="info-note">Serving clients globally across 50+ countries</p>
+                    </div>
+
+                    <div class="contact-info-card">
+                        <div class="info-icon">🕐</div>
+                        <h3>Business Hours</h3>
+                        <p>Monday - Friday: 9:00 AM - 6:00 PM IST</p>
+                        <p class="info-note">24/7 emergency response available</p>
+                    </div>
+
+                    <div class="contact-info-card">
+                        <div class="info-icon">🚨</div>
+                        <h3>Emergency Response</h3>
+                        <p>For active security incidents:</p>
+                        <p><a href="/cdn-cgi/l/email-protection#d0b9b1bdb2b9a6b1a3b890b3a9b2b5a2b4a5b4b5b2b9a6b1a3b8feb3bfbd" class="emergency-link"><span class="__cf_email__" data-cfemail="ea838b8788839c8b9982aa8993888f988e9f8e8f88839c8b9982c4898587">[email&#160;protected]</span></a></p>
+                        <p class="info-note">24/7 incident response hotline</p>
+                    </div>
+
+                    <div class="social-links">
+                        <h3>Connect With Us</h3>
+                        <div class="social-icons">
+                            <a href="https://github.com/cyberdudebivash" target="_blank" class="social-icon" title="GitHub">
+                                <span>GitHub</span>
+                            </a>
+                            <a href="https://www.patreon.com/c/CYBERDUDEBIVASH" target="_blank" class="social-icon" title="Patreon">
+                                <span>Patreon</span>
+                            </a>
+                            <a href="https://cyberdudebivash.gumroad.com" target="_blank" class="social-icon" title="Gumroad">
+                                <span>Gumroad</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="partnerships-section">
+        <div class="container">
+            <h2 class="section-title">Partnership Opportunities</h2>
+            <div class="partnerships-grid">
+                <div class="partnership-card">
+                    <h3>🤝 Technology Partners</h3>
+                    <p>Integrate CYBERDUDEBIVASH tools and intelligence into your security platform</p>
+                    <a href="/cdn-cgi/l/email-protection#345d5559565d4255475c74574d56514650415051565d4255475c1a575b590b4741565e515740096051575c5a5b585b534d14645546405a5146475c5d44147d5a45415d464d" class="partnership-link">Partner with Us →</a>
+                </div>
+
+                <div class="partnership-card">
+                    <h3>🎓 Academic Collaboration</h3>
+                    <p>Research partnerships with universities and educational institutions</p>
+                    <a href="/cdn-cgi/l/email-protection#f99098949b908f988a91b99a809b9c8b9d8c9d9c9b908f988a91d79a9694c68a8c9b939c9a8dc4b89a989d9c94909ad9ba969595989b968b988d909697" class="partnership-link">Collaborate →</a>
+                </div>
+
+                <div class="partnership-card">
+                    <h3>💼 Reseller Program</h3>
+                    <p>Become an authorized reseller of CYBERDUDEBIVASH services and tools</p>
+                    <a href="/cdn-cgi/l/email-protection#0168606c636877607269416278636473657465646368776072692f626e6c3e7274636b6462753c536472646d6d64732151736e6673606c" class="partnership-link">Join Program →</a>
+                </div>
+
+                <div class="partnership-card">
+                    <h3>📰 Media & Press</h3>
+                    <p>Press inquiries, interviews, and media kit requests</p>
+                    <a href="/cdn-cgi/l/email-protection#630a020e010a1502100b23001a01061107160706010a1502100b4d000c0e5c101601090600175e2e06070a02432a0d12160a111a" class="partnership-link">Contact Press →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="support-section">
+        <div class="container">
+            <h2 class="section-title">Support Resources</h2>
+            <div class="support-grid">
+                <div class="support-card">
+                    <h3>📚 Documentation</h3>
+                    <p>Comprehensive guides, API docs, and tutorials</p>
+                    <a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH" target="_blank" class="support-link">View Docs →</a>
+                </div>
+
+                <div class="support-card">
+                    <h3>💬 Community Forum</h3>
+                    <p>Ask questions and engage with our community</p>
+                    <a href="https://github.com/cyberdudebivash/discussions" target="_blank" class="support-link">Join Forum →</a>
+                </div>
+
+                <div class="support-card">
+                    <h3>🎫 Client Portal</h3>
+                    <p>Manage licenses, submit tickets, access tools</p>
+                    <a href="./react-portal/build/index.html" class="support-link">Access Portal →</a>
+                </div>
+
+                <div class="support-card">
+                    <h3>📖 Knowledge Base</h3>
+                    <p>FAQs, troubleshooting, and best practices</p>
+                    <a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-ECOSYSTEM" target="_blank" class="support-link">Browse KB →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="footer-logo">
+                    <p class="footer-tagline">Global Cybersecurity Tools, Apps, Services, Automation, R&D Platform</p>
+                    <p class="footer-location">Bhubaneswar, Odisha, India</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Platforms</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-PRODUCTION-APPS-SUITE/" target="_blank">Production Apps</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/cyberdudebivash-top-10-tools/" target="_blank">Top 10 Tools</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-ECOSYSTEM" target="_blank">Ecosystem</a></li>
+                        <li><a href="https://cyberdudebivash.github.io/mcp-server/" target="_blank">MCP Server</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Research</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://cyberbivash.blogspot.com" target="_blank">Cybersecurity Blog</a></li>
+                        <li><a href="https://cyberdudebivash-news.blogspot.com" target="_blank">Security News</a></li>
+                        <li><a href="https://cryptobivash.code.blog" target="_blank">Crypto Research</a></li>
+                        <li><a href="research.html">All Research</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="pricing.html">Pricing</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/cyberdudebivash" target="_blank">GitHub</a></li>
+                        <li><a href="https://www.patreon.com/c/CYBERDUDEBIVASH" target="_blank">Patreon</a></li>
+                        <li><a href="https://cyberdudebivash.gumroad.com/affiliates" target="_blank"
