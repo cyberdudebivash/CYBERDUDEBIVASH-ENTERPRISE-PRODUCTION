@@ -363,3 +363,28 @@
     console.log('%cGlobal Cybersecurity Authority', 'color: #FF8C42; font-size: 14px;');
     console.log('%cwww.cyberdudebivash.com', 'color: #00D09C; font-size: 12px;');
     console.log('%c📧 iambivash@cyberdudebivash.com | 📞 +91 81798 81447', 'color: #999; font-size: 11px;');
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("mobile-menu-btn");
+  const sidebar = document.getElementById("mobile-sidebar");
+  const overlay = document.getElementById("mobile-overlay");
+  const closeBtn = document.getElementById("sidebar-close");
+
+  function closeMenu() {
+    sidebar?.classList.remove("active");
+    overlay?.classList.remove("active");
+  }
+
+  menuBtn?.addEventListener("click", () => {
+    sidebar?.classList.add("active");
+    overlay?.classList.add("active");
+  });
+
+  closeBtn?.addEventListener("click", closeMenu);
+  overlay?.addEventListener("click", closeMenu);
+
+  document.querySelectorAll("#mobile-sidebar a").forEach(link => {
+    link.addEventListener("click", closeMenu);
+  });
+});
