@@ -1268,3 +1268,169 @@ a:hover {
         display: inline-block;
     }
 }
+
+/* ========================================
+   CRITICAL MOBILE NAVIGATION FIX
+   All pages visible on mobile
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background: rgba(5, 10, 18, 0.98);
+        width: 100%;
+        text-align: center;
+        transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        padding: 1.5rem 0 2rem 0;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        backdrop-filter: blur(20px);
+        border-bottom: 3px solid #00FFFF;
+        z-index: 1000;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-menu li {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .nav-link {
+        display: block;
+        width: 100%;
+        padding: 1.2rem 2rem;
+        margin: 0;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+        font-size: 1.1rem;
+        text-align: left;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        background: rgba(0, 255, 255, 0.15);
+        padding-left: 2.5rem;
+        border-left: 4px solid #00FFFF;
+    }
+    
+    .btn-portal {
+        margin: 1rem 2rem;
+        display: block !important;
+        text-align: center !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* Hamburger Enhanced */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+    z-index: 1001;
+    padding: 0.5rem;
+}
+
+.hamburger span {
+    width: 28px;
+    height: 3px;
+    background: #00FFFF;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(9px, 9px);
+    background: #FF8C42;
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+    background: #FF8C42;
+}
+
+@media (max-width: 1024px) {
+    .hamburger {
+        display: flex;
+    }
+}
+
+/* ========================================
+   CLIENT PORTAL BUTTON - SUPER VISIBLE
+   ======================================== */
+
+.btn-portal {
+    background: linear-gradient(135deg, #FF8C42, #FF6B35) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    border: 2px solid #FF8C42 !important;
+    box-shadow: 0 4px 20px rgba(255, 140, 66, 0.5) !important;
+    padding: 0.9rem 1.8rem !important;
+    font-size: 1.05rem !important;
+    animation: pulse-portal 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-portal::before {
+    content: '🔐';
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.btn-portal::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-portal:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-portal:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 30px rgba(255, 140, 66, 0.7) !important;
+    border-color: #FFa563 !important;
+}
+
+@keyframes pulse-portal {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(255, 140, 66, 0.5);
+    }
+    50% {
+        box-shadow: 0 4px 30px rgba(255, 140, 66, 0.8), 0 0 40px rgba(255, 140, 66, 0.4);
+    }
+}
+
+/* Mobile Portal Button */
+@media (max-width: 768px) {
+    .btn-portal {
+        font-size: 1rem !important;
+        padding: 1rem 1.5rem !important;
+        width: calc(100% - 4rem);
+        margin: 0.5rem 2rem !important;
+    }
+}
