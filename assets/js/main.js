@@ -12,10 +12,11 @@
     const navMenu = document.getElementById('navMenu');
     
     if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        });
+        hamburger.addEventListener("click", () => {
+  navMenu.classList.toggle("active");
+  document.body.classList.toggle("menu-open");
+});
+
         
         // Close menu when clicking nav links
         const navLinks = document.querySelectorAll('.nav-link');
