@@ -14,9 +14,9 @@ Your changes aren't showing on www.cyberdudebivash.com because:
 cd /path/to/CYBERDUDEBIVASH-ENTERPRISE-PRODUCTION
 ```
 
-### Step 2: Check Current Status
+### Step 2: Check Current 
 ```bash
-git status
+git 
 ```
 
 ### Step 3: Add ALL Changes
@@ -50,7 +50,7 @@ GitHub Pages will automatically rebuild and deploy.
 
 After pushing, check:
 1. GitHub repo shows new commit
-2. Go to: Settings → Pages → Check deployment status
+2. Go to: Settings → Pages → Check deployment 
 3. Visit: https://www.cyberdudebivash.com
 4. Hard refresh (Ctrl+Shift+R)
 

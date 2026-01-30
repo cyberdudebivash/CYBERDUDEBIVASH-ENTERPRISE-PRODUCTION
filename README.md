@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-Proprietary-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](package.json)
-[![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)]()
+[![](https://img.shields.io/badge/-Production%20Ready-success.svg)]()
 
 ---
 

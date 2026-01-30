@@ -70,7 +70,7 @@ Reliable access to platforms and services
 
 Use of resilient hosting and CDN infrastructure
 
-Incident response and recovery planning
+ and recovery planning
 
 🔐 Confidentiality
 

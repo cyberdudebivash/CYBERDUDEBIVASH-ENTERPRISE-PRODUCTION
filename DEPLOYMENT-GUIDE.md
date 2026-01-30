@@ -203,9 +203,9 @@ Test on these devices:
 
 ## 📊 MONITORING
 
-### Site Status:
+### Site :
 - Main site: https://cyberdudebivash.com
-- Status page: https://cyberdudebivash.com/status.html
+-  page: https://cyberdudebivash.com/.html
 - GitHub repo: https://github.com/cyberdudebivash/CYBERDUDEBIVASH-ENTERPRISE-PRODUCTION
 
 ### Uptime Monitoring (Recommended):

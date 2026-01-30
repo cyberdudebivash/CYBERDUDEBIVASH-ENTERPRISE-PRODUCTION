@@ -54,7 +54,7 @@ Each page follows this professional structure:
 
 ---
 
-## INCIDENT RESPONSE PAGE
+##  PAGE
 
 ### Sections:
 1. Hero (24/7 Emergency Response)
