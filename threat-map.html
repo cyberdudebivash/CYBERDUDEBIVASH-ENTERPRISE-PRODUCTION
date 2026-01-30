@@ -1,1 +1,191 @@
-<!DOCTYPE html><html><head><title>Threat Map</title><link rel='stylesheet' href='assets/css/style.css'></head><body><h1>Global Threat Map</h1><canvas id='threatMap'></canvas><script src='assets/js/main.js'></script><script src="assets/js/layout-loader.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Threat Map | CYBERDUDEBIVASH®</title>
+<meta name="description" content="Live global cyber threat intelligence visualization">
+<link rel="icon" href="./assets/images/favicon.ico">
+<link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+<canvas id="matrixCanvas"></canvas>
+
+<!-- Top Contact Bar -->
+    <div class="top-contact-bar">
+        📧 <a href="mailto:iambivash@cyberdudebivash.com">iambivash@cyberdudebivash.com</a> |
+        📞 <a href="tel:+918179881447">+91 81798 81447</a>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand">
+                <a href="index.html" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
+                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
+                    <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="apps.html" class="nav-link">Apps</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="status.html" class="nav-link">Status</a></li>
+                <li><a href="research.html" class="nav-link">Research</a></li>
+                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="trust-center.html" class="nav-link">Trust & Security</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="soc-services.html">soc services</a></li>
+                <li><a href="security-advisories.html">security advisories</a></li>
+                <li><a href="bug-bounty.html">Bug Bounty</a></li>
+                <li><a href="incident-response.html">incident response</a></li>
+                <li><a href="threat-map.html">Threat Map</a></li>
+                <li><a href="trust-center.html">Trust Center</a></li>
+                <li><a href="status.html">Status</a></li>
+                <li><a href="./react-portal/build/portal-landing.html" class="nav-link btn-portal">Client Portal</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+<!-- Floating Contact Buttons -->
+    <div class="floating-contact">
+        <a href="contact.html" class="float-btn">
+            <span class="float-icon">📧</span>
+            <span class="float-text">Contact Us</span>
+        </a>
+        <a href="tel:+918179881447" class="float-btn float-phone">
+            <span class="float-icon">📞</span>
+            <span class="float-text">+91 81798 81447</span>
+        </a>
+    </div>
+
+
+
+<!-- SAME TOP BAR + NAV -->
+
+<section class="page-header">
+<div class="container">
+<h1 class="page-title gradient-text">🌐 Global Threat Map</h1>
+<p class="page-subtitle">
+Real-Time Cyber Threat Intelligence & Attack Visualization
+</p>
+</div>
+</section>
+
+<section style="padding:5rem 0;">
+<div class="container">
+<div class="threat-map-container">
+<h2 class="section-title">Live Threat Overview</h2>
+<p style="color:#ccc;text-align:center;margin-bottom:2rem;">
+Tracking malware, phishing, DDoS & APT activity worldwide.
+</p>
+
+<div style="height:400px;border:2px dashed rgba(0,255,255,0.3);
+display:flex;align-items:center;justify-content:center;color:#00FFFF;">
+[ Interactive Threat Map Canvas ]
+</div>
+</div>
+</div>
+</section>
+
+<section style="padding:5rem 0;background:rgba(0,255,255,0.03);">
+<div class="container">
+<h2 class="section-title">Threat Categories</h2>
+<ul class="capability-list" style="max-width:700px;margin:auto;">
+<li>Malware Campaigns</li>
+<li>Phishing Infrastructure</li>
+<li>DDoS Attacks</li>
+<li>APT Operations</li>
+<li>Botnet Activity</li>
+</ul>
+</div>
+</section>
+
+<!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="footer-logo">
+                    <p class="footer-tagline">Global Cybersecurity Authority</p>
+                    <p class="footer-location">Bhubaneswar, Odisha, India</p>
+                    <p style="margin-top: 1rem;">
+                        <strong>📧:</strong> <a href="mailto:iambivash@cyberdudebivash.com" style="color: #00FFFF;">iambivash@cyberdudebivash.com</a><br>
+                        <strong>📞:</strong> <a href="tel:+918179881447" style="color: #00FFFF;">+91 81798 81447</a>
+                    </p>
+                    <!-- Social Media -->
+                    <div style="margin-top: 2rem;">
+                        <h4 style="color: #00FFFF; margin-bottom: 1rem;">Follow Us</h4>
+                        <div style="display: flex; gap: 1rem;">
+                            <a href="https://github.com/cyberdudebivash" target="_blank" style="color: #00FFFF; font-size: 1.5rem;" title="GitHub">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.840 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            </a>
+                            <a href="https://www.linkedin.com/company/cyberdudebivash/" target="_blank" style="color: #00FFFF; font-size: 1.5rem;" title="LinkedIn">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            </a>
+                            <a href="https://x.com/cyberbivash" target="_blank" style="color: #00FFFF; font-size: 1.5rem;" title="Twitter">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </a>
+                            <a href="https://www.facebook.com/people/Cyberdudebivash-Pvt-Ltd/61583373732736/" target="_blank" style="color: #00FFFF; font-size: 1.5rem;" title="Facebook">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M15.386.524c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 4.4 20.136.524 15.386.524M.003 23.537h4.22V.524H.003"/></svg>
+                            </a>
+                            <a href="https://www.instagram.com/cyberdudebivash_official/" target="_blank" style="color: #00FFFF; font-size: 1.5rem;" title="Instagram">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Products</h4>
+                    <ul class="footer-links">
+                        <li><a href="apps.html">Apps</a></li>
+                        <li><a href="platforms.html">Platforms</a></li>
+                        <li><a href="pricing.html">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="incident-response.html">Incident Response</a></li>
+                        <li><a href="research.html">Research</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Security</h4>
+                    <ul class="footer-links">
+                        <li><a href="soc-services.html">soc services</a></li>
+                        <li><a href="threat-map.html">threat map</a></li>
+                        <li><a href="security-advisories.html">security advisories</a></li>
+                        <li><a href="bug-bounty.html">Bug Bounty</a></li>
+                        <li><a href="incident-response.html">incident response</a></li>
+                        <li><a href="trust-center.html">Trust Center</a></li>
+                        <li><a href="status.html">Status</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CYBERDUDEBIVASH Pvt. Ltd.</p>
+                <p><a href="https://www.cyberdudebivash.com">www.cyberdudebivash.com</a></p>
+            </div>
+        </div>
+    </footer>
+
+
+<script src="./assets/js/matrix.js"></script>
+<script src="./assets/js/main.js"></script>
+</body>
+</html>
