@@ -379,8 +379,8 @@ Files to update:
 - contact.html
 - bug-bounty.html
 - soc-services.html
-- trust-center.html
-- status.html
+- 
+- 
 
 ---
 

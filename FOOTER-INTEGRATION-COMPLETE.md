@@ -17,8 +17,8 @@ The enhanced footer has been successfully integrated into all pages of the CYBER
 - contact.html
 - bug-bounty.html
 - soc-services.html
-- trust-center.html
-- status.html
+- 
+- 
 
 ### New Files Added
 

@@ -29,8 +29,8 @@ html_files = [
     'contact.html',
     'bug-bounty.html',
     'soc-services.html',
-    'trust-center.html',
-    'status.html'
+    '',
+    ''
 ]
 
 def update_html_file(filepath):
