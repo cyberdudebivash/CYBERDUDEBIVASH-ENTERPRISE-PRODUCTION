@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Open Graph / LinkedIn -->
+<meta property="og:title" content="CYBERDUDEBIVASH THREAT-INTEL – LIVE" />
+<meta property="og:description" content="Global Cyber Incident Radar tracking data breaches, malware campaigns, zero-day vulnerabilities and critical cyber threats from the last 24 hours." />
+<meta property="og:image" content="https://raw.githubusercontent.com/cyberdudebivash/CYBERDUDEBIVASH-THREAT-INTEL/main/assets/threat-intel-og.png" />
+<meta property="og:url" content="https://cyberdudebivash.github.io/CYBERDUDEBIVASH-THREAT-INTEL/frontend/dashboard/" />
+<meta property="og:type" content="website" />
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBERDUDEBIVASH® THREAT-INTEL LIVE | Global Cyber Incident Radar</title>
+    <meta name="description" content="Real-time global cyber threat intelligence feed powered by CyberDudeBivash">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="brand">
+                    <div class="brand-icon">🛡️</div>
+                    <div class="brand-text">
+                        <h1>CYBERDUDEBIVASH<sup>®</sup></h1>
+                        <p>THREAT-INTEL LIVE</p>
+                    </div>
+                </div>
+                <div class="live-indicator">
+                    <span class="pulse"></span>
+                    <span class="text">LIVE</span>
+                </div>
+            </div>
+            <div class="subtitle">Global Cyber Incident Radar • Last 24 Hours</div>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+        <div class="container">
+            <div class="stat-item">
+                <div class="stat-icon">🔴</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="stat-critical">0</div>
+                    <div class="stat-label">Critical</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🟠</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="stat-high">0</div>
+                    <div class="stat-label">High</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🟡</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="stat-medium">0</div>
+                    <div class="stat-label">Medium</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total Incidents</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🕐</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="stat-updated">--</div>
+                    <div class="stat-label">Last Updated</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+        <div class="container">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="CRITICAL">Critical</button>
+            <button class="filter-btn" data-filter="HIGH">High</button>
+            <button class="filter-btn" data-filter="Zero-Day">Zero-Day</button>
+            <button class="filter-btn" data-filter="Ransomware">Ransomware</button>
+            <button class="filter-btn" data-filter="Data Breach">Data Breach</button>
+            <button class="filter-btn" data-filter="CVE">CVEs</button>
+        </div>
+    </section>
+
+    <!-- Threat Cards Grid -->
+    <section class="threats-section">
+        <div class="container">
+            <div id="threats-grid" class="threats-grid">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 CyberDudeBivash Pvt Ltd. All Rights Reserved Worldwide.</p>
+            <p>Founder & CEO: Bivash Kumar Nayak | <a href="mailto:iambivash@cyberdudebivash.com">iambivash@cyberdudebivash.com</a></p>
+            <p><a href="https://www.cyberdudebivash.com" target="_blank">www.cyberdudebivash.com</a></p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

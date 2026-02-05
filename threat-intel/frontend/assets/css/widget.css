@@ -1,0 +1,169 @@
+/* CYBERDUDEBIVASH THREAT-INTEL Sidebar Widget */
+/* © 2026 CyberDudeBivash Pvt Ltd */
+
+#cyberdudebivash-threat-widget {
+    background: linear-gradient(135deg, #0a0e27 0%, #151932 100%);
+    border: 2px solid #00ff88;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+    max-width: 400px;
+}
+
+.cdb-widget-header {
+    background: rgba(0, 255, 136, 0.1);
+    padding: 16px;
+    border-bottom: 1px solid #00ff88;
+    text-align: center;
+}
+
+.cdb-widget-brand {
+    font-size: 16px;
+    font-weight: 800;
+    color: #00ff88;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.cdb-widget-subtitle {
+    font-size: 11px;
+    color: #8b92a8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cdb-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 51, 102, 0.2);
+    padding: 6px 12px;
+    border-radius: 15px;
+    margin-top: 8px;
+}
+
+.cdb-pulse {
+    width: 8px;
+    height: 8px;
+    background: #ff3366;
+    border-radius: 50%;
+    animation: cdb-pulse 1.5s infinite;
+}
+
+@keyframes cdb-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(1.5); }
+}
+
+.cdb-live-text {
+    font-size: 11px;
+    font-weight: 800;
+    color: #ff3366;
+    letter-spacing: 1px;
+}
+
+.cdb-widget-threats {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.cdb-widget-threats::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cdb-widget-threats::-webkit-scrollbar-track {
+    background: #0a0e27;
+}
+
+.cdb-widget-threats::-webkit-scrollbar-thumb {
+    background: #00ff88;
+    border-radius: 3px;
+}
+
+.cdb-threat-item {
+    padding: 16px;
+    border-bottom: 1px solid #2a3150;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.cdb-threat-item:hover {
+    background: rgba(0, 255, 136, 0.05);
+}
+
+.cdb-threat-item:last-child {
+    border-bottom: none;
+}
+
+.cdb-threat-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.cdb-severity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.cdb-severity-dot.critical { background: #ff3366; box-shadow: 0 0 8px #ff3366; }
+.cdb-severity-dot.high { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
+.cdb-severity-dot.medium { background: #00d4ff; box-shadow: 0 0 8px #00d4ff; }
+
+.cdb-category-mini {
+    font-size: 10px;
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.cdb-threat-title-mini {
+    font-size: 13px;
+    color: #e0e6ed;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+
+.cdb-threat-time-mini {
+    font-size: 11px;
+    color: #8b92a8;
+}
+
+.cdb-widget-footer {
+    background: rgba(0, 255, 136, 0.05);
+    padding: 12px 16px;
+    text-align: center;
+    border-top: 1px solid #00ff88;
+}
+
+.cdb-view-all-btn {
+    display: inline-block;
+    background: #00ff88;
+    color: #0a0e27;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.cdb-view-all-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.cdb-copyright {
+    font-size: 10px;
+    color: #8b92a8;
+    margin-top: 8px;
+}

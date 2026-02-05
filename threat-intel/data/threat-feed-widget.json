@@ -1,0 +1,55 @@
+{
+  "brand": "CYBERDUDEBIVASH\u00ae THREAT-INTEL LIVE",
+  "generated": "2026-02-05T03:08:25.447259Z",
+  "incidents": [
+    {
+      "title": "CISA Alert: Active Exploitation of Critical Infrastructure Vulnerabilities",
+      "category": "Advisory",
+      "severity": "CRITICAL",
+      "hours_ago": 0,
+      "url": "https://www.cisa.gov/news-events/cybersecurity-advisories"
+    },
+    {
+      "title": "CVE-2026-0001: Critical Remote Code Execution Vulnerability in Enterprise Softwa",
+      "category": "CVE",
+      "severity": "CRITICAL",
+      "hours_ago": 0,
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-0001"
+    },
+    {
+      "title": "TrickBot Variant Targeting Financial Institutions",
+      "category": "Banking Trojan",
+      "severity": "HIGH",
+      "hours_ago": 0,
+      "url": "https://www.cyberdudebivash.com/malware-intel"
+    },
+    {
+      "title": "Ransomware Campaign Leveraging ProxyShell Exploits",
+      "category": "Ransomware",
+      "severity": "HIGH",
+      "hours_ago": 0,
+      "url": "https://www.cyberdudebivash.com/malware-intel"
+    },
+    {
+      "title": "CVE-2026-0002: SQL Injection Vulnerability in Popular CMS Platform",
+      "category": "CVE",
+      "severity": "HIGH",
+      "hours_ago": 0,
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-0002"
+    },
+    {
+      "title": "Major Social Media Platform Reports Unauthorized Access to User Database",
+      "category": "Data Breach",
+      "severity": "HIGH",
+      "hours_ago": 0,
+      "url": "https://www.cyberdudebivash.com/threat-intel"
+    },
+    {
+      "title": "Cloud Storage Provider Discloses Security Incident",
+      "category": "Incident",
+      "severity": "MEDIUM",
+      "hours_ago": 0,
+      "url": "https://www.cyberdudebivash.com/threat-intel"
+    }
+  ]
+}

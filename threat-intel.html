@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CYBERDUDEBIVASH Threat Intelligence Live Feed - Real-time Global Cyber Incident Monitoring">
+    <title>Threat Intelligence Live | CYBERDUDEBIVASH®</title>
+    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <style>
+        /* Threat Intel Page Specific Styles */
+        .threat-intel-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .threat-intel-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .threat-intel-header h1 {
+            font-size: 48px;
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0,255,136,0.5);
+        }
+        
+        .threat-intel-header p {
+            font-size: 18px;
+            color: #8b92a8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-iframe {
+            width: 100%;
+            height: 1200px;
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            background: #0a0e27;
+            box-shadow: 0 10px 40px rgba(0,255,136,0.2);
+        }
+        
+        .threat-intel-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #151932 0%, #1a1e3a 100%);
+            border: 1px solid #2a3150;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0,255,136,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .feature-card p {
+            color: #8b92a8;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .threat-intel-header h1 {
+                font-size: 32px;
+            }
+            
+            .dashboard-iframe {
+                height: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    
+    <!-- Navigation (copied from index.html) -->
+    <div class="top-contact-bar">
+        📧 <a href="mailto:iambivash@cyberdudebivash.com">iambivash@cyberdudebivash.com</a> |
+        📞 <a href="tel:+918179881447">+91 81798 81447</a>
+    </div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand"><a href="index.html" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
+                <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
+                <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span></a>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="apps.html" class="nav-link">Apps</a></li>
+                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
+                <li><a href="research.html" class="nav-link">Research</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="threat-intel.html" class="nav-link active">🛡️ Threat Intel</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="./react-portal/build/portal-landing.html" class="nav-link btn-portal">Client Portal</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Threat Intel Content -->
+    <div class="threat-intel-container">
+        <div class="threat-intel-header">
+            <h1>🛡️ THREAT INTELLIGENCE LIVE</h1>
+            <p>
+                Real-time Global Cyber Incident Monitoring • 24-Hour Rolling Intelligence<br>
+                Multi-Source Threat Aggregation • Professional SOC Dashboard
+            </p>
+        </div>
+
+        <!-- Dashboard iFrame -->
+        <iframe 
+            src="./threat-intel/frontend/dashboard/index.html"
+            class="dashboard-iframe"
+            title="CYBERDUDEBIVASH Threat Intelligence Dashboard"
+            frameborder="0"
+            allowfullscreen>
+        </iframe>
+
+        <!-- Features Section -->
+        <div class="threat-intel-features">
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Global Coverage</h3>
+                <p>Real-time threat intelligence from 10+ authoritative sources worldwide</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Live Updates</h3>
+                <p>24-hour rolling window with automatic refresh every 5 minutes</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Smart Filtering</h3>
+                <p>Filter by severity, category, and region for targeted intelligence</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Professional Dashboard</h3>
+                <p>SOC-style interface with statistics and threat visualization</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (same as main site) -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>CYBERDUDEBIVASH®</h3>
+                    <p>Global Cybersecurity Authority delivering enterprise-grade security solutions.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: iambivash@cyberdudebivash.com</p>
+                    <p>Phone: +91 81798 81447</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CyberDudeBivash Pvt Ltd. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./assets/js/main.js"></script>
+</body>
+</html>
