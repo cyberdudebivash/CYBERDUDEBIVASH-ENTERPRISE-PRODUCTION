@@ -3,7 +3,7 @@
 
 class ThreatIntelDashboard {
     constructor() {
-        this.feedUrl = '../../../data/threat-feed.json';
+        this.feedUrl = '../../data/threat-feed.json';
         this.incidents = [];
         this.currentFilter = 'all';
         this.init();
