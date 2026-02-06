@@ -2,8 +2,8 @@
 // © 2026 CyberDudeBivash Pvt Ltd
 
 (function() {
-    const WIDGET_FEED_URL = '../../backend/data/threat-feed-widget.json';
-    const DASHBOARD_URL = '../dashboard/index.html';
+    const WIDGET_FEED_URL = './threat-intel/data/threat-feed-widget.json';
+    const DASHBOARD_URL = './threat-intel/frontend/dashboard/index.html';
 
     class ThreatWidget {
         constructor(containerId) {
