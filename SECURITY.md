@@ -28,7 +28,7 @@ If you discover a security vulnerability affecting any CYBERDUDEBIVASH® asset, 
 
 Please report security issues to:
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 When reporting a vulnerability, please include:
 
@@ -107,7 +107,7 @@ Global Cybersecurity Tools, Services & Threat Research
 Bhubaneswar, Odisha, India
 🌐 https://www.cyberdudebivash.com
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 © 2026 CyberDudeBivash Pvt. Ltd.
 All rights reserved.

@@ -145,7 +145,7 @@ Global Cybersecurity Tools, Services & Threat Research
 Bhubaneswar, Odisha, India
 🌐 https://www.cyberdudebivash.com
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 📜 Legal Notice
 

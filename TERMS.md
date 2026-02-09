@@ -151,7 +151,7 @@ CyberDudeBivash Pvt. Ltd.
 Bhubaneswar, Odisha, India
 🌐 https://www.cyberdudebivash.com
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 © 2026 CyberDudeBivash Pvt. Ltd.
 All rights reserved.

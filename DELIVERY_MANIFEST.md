@@ -149,7 +149,7 @@ React portal requires: `npm install && npm run build`
 ## 📧 DELIVERED TO
 
 **Customer**: CYBERDUDEBIVASH® Organization  
-**Contact**: iambivash@cyberdudebivash.com  
+**Contact**: bivash@cyberdudebivash.com  
 **Website**: www.cyberdudebivash.com  
 
 ---

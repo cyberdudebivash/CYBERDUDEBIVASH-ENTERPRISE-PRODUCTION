@@ -178,7 +178,7 @@ CYBERDUDEBIVASH®
 Global Cybersecurity Tools, Services & Threat Research
 🌐 https://www.cyberdudebivash.com
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 © 2026 CyberDudeBivash Pvt. Ltd.
 All rights reserved.

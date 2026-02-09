@@ -39,7 +39,7 @@ Research and threat intelligence infrastructure
 Security issues should be reported privately and responsibly.
 
 📧 Primary contact:
-iambivash@cyberdudebivash.com
+bivash@cyberdudebivash.com
 
 Please include the following details:
 
@@ -134,7 +134,7 @@ Global Cybersecurity Tools, Services & Threat Research
 Bhubaneswar, Odisha, India
 🌐 https://www.cyberdudebivash.com
 
-📧 iambivash@cyberdudebivash.com
+📧 bivash@cyberdudebivash.com
 
 © 2026 CyberDudeBivash Pvt. Ltd.
 All rights reserved.

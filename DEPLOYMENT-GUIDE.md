@@ -78,7 +78,7 @@ Your custom domain is already configured! Changes will reflect immediately after
 1. Go to: https://cyberdudebivash.com/contact.html
 2. Fill out the form
 3. Submit
-4. Check email at: iambivash@cyberdudebivash.com
+4. Check email at: bivash@cyberdudebivash.com
 
 ### 2. Google Analytics (Optional - To Enable)
 
@@ -211,7 +211,7 @@ Test on these devices:
 ### Uptime Monitoring (Recommended):
 1. **UptimeRobot** (Free)
    - Monitor: https://cyberdudebivash.com
-   - Email alerts to: iambivash@cyberdudebivash.com
+   - Email alerts to: bivash@cyberdudebivash.com
 
 2. **Google Search Console**
    - Verify domain
@@ -224,7 +224,7 @@ Test on these devices:
 
 ### Contact Form Not Working:
 1. Check Formspree dashboard: https://formspree.io/forms/xkordvzn
-2. Verify email: iambivash@cyberdudebivash.com
+2. Verify email: bivash@cyberdudebivash.com
 3. Check browser console for errors
 
 ### Apps Page Not Loading:
@@ -241,7 +241,7 @@ Test on these devices:
 
 ## 📞 SUPPORT CONTACTS
 
-**Primary Email:** iambivash@cyberdudebivash.com
+**Primary Email:** bivash@cyberdudebivash.com
 **Phone:** +91 81798 81447
 **GitHub:** https://github.com/cyberdudebivash
 

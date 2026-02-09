@@ -57,7 +57,7 @@
 
 ### 5. **Working Contact Form (Formspree Integration)**
 - ✅ Connected to: https://formspree.io/f/xkordvzn
-- ✅ Real email delivery to: iambivash@cyberdudebivash.com
+- ✅ Real email delivery to: bivash@cyberdudebivash.com
 - ✅ Success/error notifications
 - ✅ Toast notifications
 - ✅ Form validation
@@ -309,7 +309,7 @@
 ## 📞 SUPPORT
 
 **Questions about this update?**
-- Email: iambivash@cyberdudebivash.com
+- Email: bivash@cyberdudebivash.com
 - Phone: +91 81798 81447
 - GitHub: https://github.com/cyberdudebivash
 

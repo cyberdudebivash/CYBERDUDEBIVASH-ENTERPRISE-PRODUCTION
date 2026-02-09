@@ -143,7 +143,7 @@ All links to CYBERDUDEBIVASH platforms are integrated:
 
 ## 📧 Contact & Support
 
-**Email**: iambivash@cyberdudebivash.com  
+**Email**: bivash@cyberdudebivash.com  
 **Website**: www.cyberdudebivash.com  
 **Location**: Bhubaneswar, Odisha, India
 

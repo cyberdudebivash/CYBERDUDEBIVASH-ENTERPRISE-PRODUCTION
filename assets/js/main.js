@@ -79,7 +79,7 @@
                 }
             } catch (error) {
                 console.error('Form submission error:', error);
-                showFormMessage('❌ Sorry, there was an error sending your message. Please email us directly at iambivash@cyberdudebivash.com', 'error');
+                showFormMessage('❌ Sorry, there was an error sending your message. Please email us directly at bivash@cyberdudebivash.com', 'error');
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
@@ -362,7 +362,7 @@
     console.log('%c🛡️ CYBERDUDEBIVASH®', 'color: #00FFFF; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(0,255,255,0.5);');
     console.log('%cGlobal Cybersecurity Authority', 'color: #FF8C42; font-size: 14px;');
     console.log('%cwww.cyberdudebivash.com', 'color: #00D09C; font-size: 12px;');
-    console.log('%c📧 iambivash@cyberdudebivash.com | 📞 +91 81798 81447', 'color: #999; font-size: 11px;');
+    console.log('%c📧 bivash@cyberdudebivash.com | 📞 +91 81798 81447', 'color: #999; font-size: 11px;');
 
 
 document.addEventListener("DOMContentLoaded", () => {

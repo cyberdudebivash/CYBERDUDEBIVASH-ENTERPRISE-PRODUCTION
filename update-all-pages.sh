@@ -8,7 +8,7 @@ for file in *.html; do
         
         # Add top contact bar before navbar (if not already present)
         if ! grep -q "top-contact-bar" "$file"; then
-            sed -i '/<nav class="navbar">/i\    <!-- Top Contact Bar -->\n    <div class="top-contact-bar">\n        📧 <a href="mailto:iambivash@cyberdudebivash.com">iambivash@cyberdudebivash.com</a> |\n        📞 <a href="tel:+918179881447">+91 81798 81447</a>\n    </div>\n' "$file"
+            sed -i '/<nav class="navbar">/i\    <!-- Top Contact Bar -->\n    <div class="top-contact-bar">\n        📧 <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a> |\n        📞 <a href="tel:+918179881447">+91 81798 81447</a>\n    </div>\n' "$file"
         fi
         
         # Add floating contact buttons before footer (if not already present)

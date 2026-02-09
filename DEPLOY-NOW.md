@@ -145,7 +145,7 @@ After deploying:
 
 ## 📞 STILL HAVING ISSUES?
 
-**Email:** iambivash@cyberdudebivash.com
+**Email:** bivash@cyberdudebivash.com
 **Phone:** +91 81798 81447
 
 **Most likely cause:** You forgot to push to GitHub!
