@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CYBERDUDEBIVASH SENTINEL APEX SOC 3.0 — Threat Intelligence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CYBERDUDEBIVASH SENTINEL APEX SOC 3.0 — AI-Powered Threat Intelligence. Real-time CVE, MITRE ATT&CK, threat actor tracking, IOC enrichment.">
+<link rel="canonical" href="https://intel.cyberdudebivash.com/threat/">
+<meta property="og:title" content="CYBERDUDEBIVASH SENTINEL APEX SOC 3.0">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@cyberbivash">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#020205;--bg-card:#080a10;--bg-surface:#0d1017;--border:#151a24;--text:#c8d1dc;--text-muted:#5a6578;--white:#f0f4f8;--accent:#00d4aa;--critical:#dc2626;--high:#ea580c;--medium:#d97706;--low:#16a34a;--blue:#3b82f6;--purple:#8b5cf6;--pink:#ec4899;--fd:'Outfit',system-ui,sans-serif;--fm:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--text);font-family:var(--fd);line-height:1.6;min-height:100vh}a{color:var(--accent);text-decoration:none}
+.sh{max-width:1520px;margin:0 auto;padding:0 24px}
+.tb{background:rgba(8,10,16,.95);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
+.tb h1{font-size:14px;font-weight:800;color:var(--white);letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+.tb .vr{font-family:var(--fm);font-size:9px;padding:2px 8px;background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.25);border-radius:4px}
+.tb .su{font-family:var(--fm);font-size:9px;color:var(--text-muted);letter-spacing:2px}
+.bk{font-family:var(--fm);font-size:10px;color:var(--accent);letter-spacing:1px;padding:6px 14px;border:1px solid rgba(0,212,170,.25);border-radius:4px;transition:all .2s}
+.bk:hover{background:rgba(0,212,170,.08);border-color:var(--accent)}
+
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+.kp{background:var(--bg-card);border:1px solid var(--border);padding:14px;text-align:center;position:relative;overflow:hidden}
+.kp::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.kp.kc::after{background:var(--critical)}.kp.kh::after{background:var(--high)}.kp.kb::after{background:var(--blue)}.kp.kv::after{background:var(--purple)}
+.kp .kn{font-family:var(--fm);font-size:26px;font-weight:800;color:var(--white);text-shadow:0 0 14px rgba(0,212,170,.12)}
+.kp.kc .kn{color:var(--critical);text-shadow:0 0 14px rgba(220,38,38,.15)}
+.kp.kh .kn{color:var(--high)}.kp.kb .kn{color:var(--blue)}.kp.kv .kn{color:var(--purple)}
+.kp .kl{font-family:var(--fm);font-size:8px;color:var(--text-muted);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+
+.tk{overflow:hidden;border-bottom:1px solid var(--border);padding:6px 0;background:rgba(0,0,0,.3)}
+.tk span{display:inline-block;white-space:nowrap;animation:ts 55s linear infinite;font-family:var(--fm);font-size:10px;color:#94a3b8}
+@keyframes ts{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+
+.tabs{display:flex;gap:2px;margin:14px 0 10px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:6px;padding:3px;overflow-x:auto}
+.tab{font-family:var(--fm);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px 18px;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.02)}
+.tab.on{color:var(--accent);background:rgba(0,212,170,.08);box-shadow:inset 0 -2px 0 var(--accent)}
+.tab .cn{font-size:8px;background:rgba(0,212,170,.1);color:var(--accent);padding:1px 5px;border-radius:3px;margin-left:4px}
+
+.pn{display:none;animation:pf .25s ease}.pn.on{display:block}
+@keyframes pf{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.ct{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.fb{font-family:var(--fm);font-size:9px;font-weight:700;color:#9FB3C8;background:var(--bg-card);border:1px solid var(--border);padding:5px 12px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.fb:hover{color:var(--white);border-color:rgba(0,212,170,.3)}.fb.on{color:var(--accent);border-color:var(--accent);background:rgba(0,212,170,.08)}
+.sb{flex:1;min-width:200px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);color:var(--white);border-radius:4px;font-family:var(--fm);font-size:11px}
+.sb:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,170,.06)}.sb::placeholder{color:var(--text-muted)}
+.ss{padding:5px 10px;background:var(--bg-card);border:1px solid var(--border);color:#9FB3C8;border-radius:4px;font-family:var(--fm);font-size:10px}
+
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:10px}
+.cc{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:14px 16px;transition:all .25s;display:block;color:inherit;text-decoration:none;overflow:hidden}
+.cc:hover{border-color:rgba(255,255,255,.06);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.cc.cr{border-left-color:var(--critical)}.cc.ch{border-left-color:var(--high)}.cc.cm{border-left-color:var(--medium)}.cc.cl{border-left-color:var(--low)}
+.cc .ct2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sv{font-family:var(--fm);font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.5px}
+.sv.s1{background:rgba(220,38,38,.12);color:#ff6b6b}.sv.s2{background:rgba(234,88,12,.12);color:#fb923c}.sv.s3{background:rgba(217,119,6,.1);color:#fbbf24}.sv.s4{background:rgba(22,163,74,.1);color:#4ade80}
+.cc .tm{font-family:var(--fm);font-size:9px;color:var(--text-muted)}
+.cc .tt{font-size:12px;font-weight:600;color:#E6EDF3;line-height:1.35;margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc .tg{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.tg1{font-family:var(--fm);font-size:8px;padding:1px 5px;border-radius:3px}
+.tg1.cv{background:rgba(59,130,246,.08);color:var(--blue)}.tg1.mi{background:rgba(139,92,246,.08);color:var(--purple)}.tg1.kv{background:rgba(220,38,38,.1);color:#ff6b6b;font-weight:700}.tg1.ac{background:rgba(236,72,153,.08);color:var(--pink)}.tg1.io{background:rgba(0,212,170,.06);color:var(--accent)}
+.cc .rb{height:2px;margin-top:8px;background:rgba(255,255,255,.03);border-radius:1px;overflow:hidden}
+.cc .rf{height:100%;border-radius:1px}
+.ab{font-family:var(--fm);font-size:9px;color:var(--purple);background:none;border:none;cursor:pointer;padding:0;margin-top:6px;transition:color .2s}
+.ab:hover{color:#c4b5fd;text-shadow:0 0 8px rgba(139,92,246,.3)}
+
+.ds{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}@media(max-width:900px){.ds{grid-template-columns:1fr}}
+.dp{background:var(--bg-card);border:1px solid var(--border);padding:16px;border-radius:4px}
+.dp h3{font-family:var(--fm);font-size:10px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+
+.td{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--accent);letter-spacing:2px;padding:10px 0 5px;border-bottom:1px solid rgba(0,212,170,.12);display:flex;justify-content:space-between}
+.td .tc{font-size:9px;color:var(--text-muted);font-weight:500}
+.ti{display:flex;flex-direction:column;gap:5px;padding:8px 0}
+.tr{display:flex;gap:10px;padding:6px 10px;background:rgba(0,0,0,.2);border-left:2px solid var(--accent);transition:background .2s;font-size:11px;color:#C9D1D9}
+.tr:hover{background:rgba(0,212,170,.03)}.tr.rc{border-left-color:var(--critical)}.tr.rh{border-left-color:var(--high)}
+.tr .tw{font-family:var(--fm);font-size:9px;color:var(--text-muted);min-width:42px}
+
+.gc{background:var(--bg-card);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px}
+.gc:hover{border-color:rgba(0,212,170,.15)}
+.gh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.03)}
+.gn{font-size:13px;font-weight:700;color:#E6EDF3}.gm{font-family:var(--fm);font-size:9px;color:var(--text-muted)}
+.gi{display:flex;flex-direction:column;gap:3px}
+.gj{display:flex;justify-content:space-between;padding:3px 8px;font-size:11px;color:#9FB3C8;background:rgba(0,0,0,.2);border-radius:3px}
+.gj:hover{background:rgba(0,212,170,.03)}
+
+.sm{display:none;position:fixed;inset:0;z-index:9500;background:rgba(2,2,5,.94);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px}
+.sm.op{display:flex}
+.smb{background:#080a14;border:1px solid rgba(139,92,246,.25);border-radius:8px;max-width:720px;width:100%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:ms .3s ease}
+@keyframes ms{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.smc{position:absolute;top:12px;right:14px;background:none;border:none;color:#6B7C93;font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+.smc:hover{color:#E6EDF3;background:rgba(255,255,255,.05)}
+.smh{padding:18px 22px;border-bottom:1px solid rgba(139,92,246,.15);display:flex;align-items:center;gap:10px}
+.smh .mi{width:34px;height:34px;border-radius:8px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);display:flex;align-items:center;justify-content:center;font-size:16px}
+.smh .mt{font-family:var(--fm);font-size:10px;font-weight:700;color:var(--purple);letter-spacing:2px;text-transform:uppercase}
+.smh .ms2{font-size:10px;color:#6B7C93;margin-top:1px}
+.smd{padding:18px 22px}
+.se{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.03)}
+.se:last-child{border-bottom:none}.se h4{font-family:var(--fm);font-size:9px;font-weight:700;color:var(--purple);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.se p{font-size:12px;color:#C9D1D9;line-height:1.6}
+
+.pg{display:flex;justify-content:center;gap:5px;padding:16px 0}
+.pb{padding:5px 12px;background:var(--bg-card);border:1px solid var(--border);color:#9FB3C8;border-radius:4px;cursor:pointer;font-family:var(--fm);font-size:10px;transition:all .2s}
+.pb:hover,.pb.on{background:rgba(0,212,170,.08);color:var(--accent);border-color:var(--accent)}
+.ft{text-align:center;padding:20px;font-family:var(--fm);font-size:9px;color:var(--text-muted);letter-spacing:2px;border-top:1px solid var(--border);margin-top:20px}
+.ld{text-align:center;padding:50px;font-family:var(--fm);font-size:11px;color:var(--text-muted);letter-spacing:3px}
+.rb2{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0}
+.rb2 div{transition:width .5s ease}
+</style>
+</head>
+<body>
+<div class="tb">
+<div><h1>CYBERDUDEBIVASH<sup style="font-size:8px;color:var(--accent);">&reg;</sup> SENTINEL APEX <span class="vr">SOC 3.0</span></h1><div class="su">AI-POWERED THREAT INTELLIGENCE &middot; STIX 2.1 &middot; MITRE ATT&CK</div></div>
+<a class="bk" href="https://intel.cyberdudebivash.com/">&larr; MAIN DASHBOARD</a>
+</div>
+
+<div class="sh">
+<div class="mg" id="met"></div>
+<div class="tk"><span id="tick">Initializing SENTINEL APEX SOC 3.0...</span></div>
+
+<div class="tabs" id="tabbar">
+<button class="tab on" onclick="stab('feed',this)">THREAT FEED<span class="cn" id="tc-feed">0</span></button>
+<button class="tab" onclick="stab('timeline',this)">TIMELINE</button>
+<button class="tab" onclick="stab('actors',this)">ACTORS</button>
+<button class="tab" onclick="stab('analytics',this)">ANALYTICS</button>
+</div>
+
+<!-- FEED PANEL -->
+<div class="pn on" id="p-feed">
+<div class="ct">
+<button class="fb on" onclick="flt('all',this)">ALL</button>
+<button class="fb" onclick="flt('CRITICAL',this)">CRITICAL</button>
+<button class="fb" onclick="flt('HIGH',this)">HIGH</button>
+<button class="fb" onclick="flt('MEDIUM',this)">MEDIUM</button>
+<button class="fb" onclick="flt('LOW',this)">LOW</button>
+<input class="sb" type="text" placeholder="Search threats, CVEs, actors..." id="srch" oninput="doS(this.value)">
+<select class="ss" onchange="doSort(this.value)"><option value="newest">Newest</option><option value="risk">Risk &#x2193;</option></select>
+</div>
+<div class="ds">
+<div class="dp"><h3>Severity Distribution</h3><canvas id="chart1" height="160"></canvas></div>
+<div class="dp"><h3>Risk Timeline (Last 10 Days)</h3><canvas id="chart2" height="160"></canvas></div>
+</div>
+<div class="cg" id="clist"><div class="ld">LOADING THREAT INTELLIGENCE...</div></div>
+<div class="pg" id="pag"></div>
+</div>
+
+<!-- TIMELINE PANEL -->
+<div class="pn" id="p-timeline"><div class="ld">Select TIMELINE tab to load...</div></div>
+
+<!-- ACTORS PANEL -->
+<div class="pn" id="p-actors"><div class="ld">Select ACTORS tab to load...</div></div>
+
+<!-- ANALYTICS PANEL -->
+<div class="pn" id="p-analytics"><div class="ld">Select ANALYTICS tab to load...</div></div>
+</div>
+
+<!-- Agent Modal -->
+<div class="sm" id="agm" onclick="if(event.target===this)clAg()">
+<div class="smb"><button class="smc" onclick="clAg()">&#x2715;</button>
+<div class="smh"><div class="mi">&#x1f9e0;</div><div><div class="mt">SOC Analyst Agent</div><div class="ms2" id="ag-sub">Analyzing...</div></div></div>
+<div class="smd" id="ag-body"><div class="ld">Processing...</div></div>
+</div></div>
+
+<div class="ft">CYBERDUDEBIVASH&reg; SENTINEL APEX SOC 3.0 &middot; AI-Powered Threat Intelligence &middot; &copy; 2026 CyberDudeBivash Pvt. Ltd.</div>
+
+<script>
+const MU=["https://raw.githubusercontent.com/cyberdudebivash/CYBERDUDEBIVASH-THREAT-INTEL-PLATFORM/main/data/stix/feed_manifest.json","https://cdn.jsdelivr.net/gh/cyberdudebivash/CYBERDUDEBIVASH-THREAT-INTEL-PLATFORM@main/data/stix/feed_manifest.json","/data/stix/feed_manifest.json"];
+const PP=24;let D=[],F=[],pg=1,cf='all',sq='',so='newest',ch1=null,ch2=null;
+const MT={'T1595':'Recon','T1190':'Initial Access','T1566':'Phishing','T1133':'Remote Services','T1059':'Execution','T1053':'Scheduled Task','T1547':'Persistence','T1548':'Priv Escalation','T1003':'Credential Access','T1110':'Brute Force','T1021':'Lateral Movement','T1071':'C2 Protocol','T1041':'Exfiltration','T1486':'Ransomware','T1490':'Inhibit Recovery'};
+function sv(s){return s>=9?'CRITICAL':s>=7?'HIGH':s>=4?'MEDIUM':'LOW'}
+function sc(s){return s>=9?'cr':s>=7?'ch':s>=4?'cm':'cl'}
+function svn(s){return s>=9?1:s>=7?2:s>=4?3:4}
+function svc(s){return s>=9?'var(--critical)':s>=7?'var(--high)':s>=4?'var(--medium)':'var(--low)'}
+function ago(t){if(!t)return'';var d=Math.floor((Date.now()-new Date(t).getTime())/6e4);return d<1?'Now':d<60?d+'m':d<1440?Math.floor(d/60)+'h':Math.floor(d/1440)+'d'}
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+async function boot(){for(var u of MU){try{var c=new AbortController(),t=setTimeout(function(){c.abort()},8e3),r=await fetch(u,{cache:'no-cache',signal:c.signal});clearTimeout(t);if(!r.ok)throw new Error('HTTP '+r.status);var d=await r.json();if(Array.isArray(d)&&d.length>0){D=d.reverse();go();return}}catch(e){console.warn('[SOC3]',e.message)}}document.getElementById('tick').textContent='Feed unavailable — retrying...';setTimeout(boot,1e4)}
+
+function go(){metrics();ticker();filters();chart();timeline_chart();stab('feed',document.querySelector('.tab.on'))}
+
+function metrics(){var t=D.length,cr=D.filter(function(x){return sv(x.risk_score)==='CRITICAL'}).length;
+var hi=D.filter(function(x){return sv(x.risk_score)==='HIGH'}).length;
+var io=0;D.forEach(function(x){if(x.ioc_counts)Object.values(x.ioc_counts).forEach(function(v){io+=typeof v==='number'?v:0})});
+var kv=D.filter(function(x){return x.kev_present}).length;
+var ar=t?(D.reduce(function(s,x){return s+(x.risk_score||0)},0)/t).toFixed(1):'0';
+var n24=D.filter(function(x){return(Date.now()-new Date(x.timestamp||0).getTime())<864e5}).length;
+document.getElementById('tc-feed').textContent=t;
+document.getElementById('met').innerHTML='<div class="kp"><div class="kn">'+t+'</div><div class="kl">Total Intel</div></div><div class="kp kc"><div class="kn">'+cr+'</div><div class="kl">Critical</div></div><div class="kp kh"><div class="kn">'+hi+'</div><div class="kl">High</div></div><div class="kp"><div class="kn">'+ar+'</div><div class="kl">Avg Risk</div></div><div class="kp kb"><div class="kn">'+io+'</div><div class="kl">IOCs</div></div><div class="kp kv"><div class="kn">'+kv+'</div><div class="kl">CISA KEV</div></div><div class="kp"><div class="kn">'+n24+'</div><div class="kl">Last 24H</div></div>'}
+
+function ticker(){var top=D.filter(function(x){return x.risk_score>=7}).slice(0,25);document.getElementById('tick').textContent=top.map(function(x){return'['+sv(x.risk_score)+'] '+x.title}).join('  \u26a1  ')||'No critical threats.'}
+
+function stab(n,b){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});document.querySelectorAll('.pn').forEach(function(x){x.classList.remove('on')});b.classList.add('on');var p=document.getElementById('p-'+n);if(p)p.classList.add('on');if(n==='feed')filters();else if(n==='timeline')rTimeline();else if(n==='actors')rActors();else if(n==='analytics')rAnalytics()}
+
+function flt(s,b){cf=s;pg=1;document.querySelectorAll('.fb').forEach(function(x){x.classList.remove('on')});b.classList.add('on');filters()}
+function doS(q){sq=q.toLowerCase();pg=1;filters()}
+function doSort(v){so=v;filters()}
+
+function filters(){F=[].concat(D);if(cf!=='all')F=F.filter(function(x){return sv(x.risk_score)===cf});if(sq)F=F.filter(function(x){return((x.title||'')+(x.actor_tag||'')).toLowerCase().indexOf(sq)>=0});if(so==='risk')F.sort(function(a,b){return(b.risk_score||0)-(a.risk_score||0)});cards();pagi()}
+
+function cards(){var s=(pg-1)*PP,p=F.slice(s,s+PP),g=document.getElementById('clist');if(!p.length){g.innerHTML='<div class="ld">NO MATCHING THREATS</div>';return}
+g.innerHTML=p.map(function(d){var rs=d.risk_score||0,sev=sv(rs),cves=(d.title||'').match(/CVE-\d{4}-\d{4,}/gi)||[],tac=(d.mitre_tactics||[]).slice(0,3),lk=d.blog_url||'#',ts=ago(d.timestamp),ioc=0;if(d.ioc_counts)Object.values(d.ioc_counts).forEach(function(v){ioc+=typeof v==='number'?v:0});
+return '<div class="cc '+sc(rs)+'"><div class="ct2"><span class="sv s'+svn(rs)+'">'+sev+' '+rs.toFixed(1)+'/10</span><span class="tm">'+ts+'</span></div><div class="tt">'+esc(d.title||'Unknown')+'</div><div class="tg">'+(cves.length?'<span class="tg1 cv">'+cves[0]+'</span>':'')+(d.kev_present?'<span class="tg1 kv">KEV</span>':'')+(d.actor_tag&&d.actor_tag!=='UNC-CDB-99'?'<span class="tg1 ac">'+esc(d.actor_tag)+'</span>':'')+tac.map(function(t){return '<span class="tg1 mi">'+t+'</span>'}).join('')+(ioc?'<span class="tg1 io">'+ioc+' IOCs</span>':'')+'</div><div class="rb"><div class="rf" style="width:'+Math.min(rs*10,100)+'%;background:'+svc(rs)+';"></div></div><div style="display:flex;gap:10px;margin-top:6px;align-items:center"><a href="'+esc(lk)+'" style="font-family:var(--fm);font-size:9px;color:var(--accent)">VIEW REPORT &rarr;</a><button class="ab" onclick="event.stopPropagation();opAg('+JSON.stringify(JSON.stringify(d)).replace(/'/g,"\'")+')">&#x1f9e0; ANALYZE</button></div></div>'}).join('')}
+
+function pagi(){var tp=Math.ceil(F.length/PP);if(tp<=1){document.getElementById('pag').innerHTML='';return}var h='';for(var i=1;i<=Math.min(tp,12);i++)h+='<button class="pb'+(i===pg?' on':'')+'" onclick="gp('+i+')">'+i+'</button>';if(tp>12)h+='<span style="color:var(--text-muted);font-size:10px;padding:5px">...'+tp+'</span>';document.getElementById('pag').innerHTML=h}
+function gp(n){pg=n;cards();pagi();window.scrollTo({top:document.getElementById('clist').offsetTop-80,behavior:'smooth'})}
+
+function chart(){var c=0,h=0,m=0,l=0;D.forEach(function(x){var s=sv(x.risk_score);if(s==='CRITICAL')c++;else if(s==='HIGH')h++;else if(s==='MEDIUM')m++;else l++});if(ch1)ch1.destroy();ch1=new Chart(document.getElementById('chart1'),{type:'doughnut',data:{labels:['Critical','High','Medium','Low'],datasets:[{data:[c,h,m,l],backgroundColor:['#dc2626','#ea580c','#d97706','#16a34a'],borderWidth:0,borderRadius:2}]},options:{responsive:true,cutout:'65%',plugins:{legend:{labels:{color:'#9FB3C8',font:{size:10,family:'JetBrains Mono'}}}}}})}
+
+function timeline_chart(){var days={};D.forEach(function(x){var d=x.timestamp?new Date(x.timestamp).toISOString().substring(0,10):'unknown';days[d]=(days[d]||0)+1});var sorted=Object.entries(days).sort().slice(-10);if(ch2)ch2.destroy();ch2=new Chart(document.getElementById('chart2'),{type:'bar',data:{labels:sorted.map(function(e){return e[0].substring(5)}),datasets:[{label:'Advisories',data:sorted.map(function(e){return e[1]}),backgroundColor:'rgba(0,212,170,0.5)',borderRadius:3}]},options:{responsive:true,scales:{x:{ticks:{color:'#5a6578',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#5a6578',font:{size:9}},grid:{color:'rgba(255,255,255,0.03)'}}},plugins:{legend:{display:false}}}})}
+
+function rTimeline(){var p=document.getElementById('p-timeline');var g={};D.forEach(function(x){var ts=x.timestamp||'';var dk=ts?new Date(ts).toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'}):'Unknown';if(!g[dk])g[dk]=[];g[dk].push(x)});var ds=Object.keys(g).sort(function(a,b){return new Date(b)-new Date(a)});var h='';ds.forEach(function(d){var items=g[d];h+='<div class="td">'+esc(d)+'<span class="tc">'+items.length+' advisories</span></div><div class="ti">';items.sort(function(a,b){return(b.risk_score||0)-(a.risk_score||0)}).forEach(function(x){var rs=x.risk_score||0;h+='<div class="tr'+(rs>=9?' rc':rs>=7?' rh':'')+'"><span class="tw">'+ago(x.timestamp)+'</span><span style="flex:1">'+esc((x.title||'').substring(0,100))+'</span><span class="sv s'+svn(rs)+'" style="font-size:8px;padding:1px 5px">'+rs.toFixed(1)+'</span></div>'});h+='</div>'});p.innerHTML=h||'<div class="ld">No timeline data</div>'}
+
+function rActors(){var p=document.getElementById('p-actors');var a={};D.forEach(function(x){var ac=x.actor_tag||'Unattributed';if(!a[ac])a[ac]={items:[],risk:0,kev:0,cr:0};a[ac].items.push(x);a[ac].risk+=(x.risk_score||0);if(x.kev_present)a[ac].kev++;if((x.risk_score||0)>=9)a[ac].cr++});var s=Object.entries(a).sort(function(a,b){return b[1].items.length-a[1].items.length});var h='';s.forEach(function(e){var n=e[0],i=e[1],av=(i.risk/i.items.length).toFixed(1);h+='<div class="gc"><div class="gh"><div class="gn" style="color:var(--critical)">'+esc(n)+'</div><div style="display:flex;gap:10px;font-family:var(--fm);font-size:9px;color:var(--text-muted)"><span>'+i.items.length+' intel</span><span>Avg: <b style="color:#E6EDF3">'+av+'</b></span>'+(i.kev?'<span style="color:#ff6b6b">KEV: '+i.kev+'</span>':'')+'<span>Critical: '+i.cr+'</span></div></div><div class="gi">';i.items.sort(function(a,b){return(b.risk_score||0)-(a.risk_score||0)}).slice(0,6).forEach(function(x){h+='<div class="gj"><span style="color:#E6EDF3">'+esc((x.title||'').substring(0,75))+'</span><span style="font-family:var(--fm);font-size:9px;color:'+svc(x.risk_score||0)+'">'+(x.risk_score||0).toFixed(1)+'</span></div>'});if(i.items.length>6)h+='<div style="font-size:10px;color:var(--text-muted);padding:3px 8px">+ '+(i.items.length-6)+' more</div>';h+='</div></div>'});p.innerHTML=h||'<div class="ld">No actor data</div>'}
+
+function rAnalytics(){var p=document.getElementById('p-analytics');var t=D.length,cr=D.filter(function(x){return(x.risk_score||0)>=9}).length,hi=D.filter(function(x){return(x.risk_score||0)>=7&&(x.risk_score||0)<9}).length,md=D.filter(function(x){return(x.risk_score||0)>=4&&(x.risk_score||0)<7}).length,lo=t-cr-hi-md;var ar=t?(D.reduce(function(s,x){return s+(x.risk_score||0)},0)/t).toFixed(1):'0';var kv=D.filter(function(x){return x.kev_present}).length;var n24=D.filter(function(x){return(Date.now()-new Date(x.timestamp||0).getTime())<864e5}).length;var n7d=D.filter(function(x){return(Date.now()-new Date(x.timestamp||0).getTime())<6048e5}).length;
+var cp=t?Math.round(cr/t*100):0,hp=t?Math.round(hi/t*100):0,mp=t?Math.round(md/t*100):0,lp=100-cp-hp-mp;
+
+// Top actors
+var am={};D.forEach(function(x){var a=x.actor_tag||'Unattributed';am[a]=(am[a]||0)+1});var ta=Object.entries(am).sort(function(a,b){return b[1]-a[1]}).slice(0,5);
+// Top MITRE
+var tm={};D.forEach(function(x){(x.mitre_tactics||[]).forEach(function(t){tm[t]=(tm[t]||0)+1})});var tt=Object.entries(tm).sort(function(a,b){return b[1]-a[1]}).slice(0,8);
+
+var h='<div class="mg"><div class="kp"><div class="kn">'+t+'</div><div class="kl">Total Intel</div></div><div class="kp kc"><div class="kn">'+cr+'</div><div class="kl">Critical</div></div><div class="kp kh"><div class="kn">'+hi+'</div><div class="kl">High</div></div><div class="kp"><div class="kn">'+ar+'</div><div class="kl">Avg Risk</div></div><div class="kp kv"><div class="kn">'+kv+'</div><div class="kl">KEV</div></div><div class="kp kb"><div class="kn">'+n24+'</div><div class="kl">24H New</div></div><div class="kp"><div class="kn">'+n7d+'</div><div class="kl">7D New</div></div></div>';
+
+h+='<div style="margin-bottom:16px"><div style="font-family:var(--fm);font-size:9px;color:var(--text-muted);letter-spacing:2px;margin-bottom:6px">RISK DISTRIBUTION</div><div class="rb2"><div style="width:'+cp+'%;background:var(--critical)"></div><div style="width:'+hp+'%;background:var(--high)"></div><div style="width:'+mp+'%;background:var(--medium)"></div><div style="width:'+lp+'%;background:var(--low)"></div></div><div style="display:flex;justify-content:space-between;font-family:var(--fm);font-size:9px;color:var(--text-muted);margin-top:4px"><span style="color:var(--critical)">Critical '+cp+'%</span><span style="color:var(--high)">High '+hp+'%</span><span style="color:var(--medium)">Medium '+mp+'%</span><span style="color:var(--low)">Low '+lp+'%</span></div></div>';
+
+h+='<div class="ds"><div class="gc"><div class="gh"><div class="gn">Top Threat Actors</div></div><div class="gi">';ta.forEach(function(e){h+='<div class="gj"><span style="color:var(--critical);font-weight:600">'+esc(e[0])+'</span><span style="color:var(--accent)">'+e[1]+' intel</span></div>'});h+='</div></div><div class="gc"><div class="gh"><div class="gn">Top MITRE Techniques</div></div><div class="gi">';tt.forEach(function(e){h+='<div class="gj"><a href="https://attack.mitre.org/techniques/'+e[0].replace('.','/') +'/" target="_blank" style="color:var(--purple)">'+e[0]+(MT[e[0]]?' — '+MT[e[0]]:'')+'</a><span style="color:var(--accent)">'+e[1]+'</span></div>'});h+='</div></div></div>';p.innerHTML=h}
+
+// Agent
+function opAg(jsonStr){try{var item=JSON.parse(jsonStr);var m=document.getElementById('agm'),b=document.getElementById('ag-body'),s=document.getElementById('ag-sub');m.classList.add('op');b.innerHTML='<div class="ld">Analyzing threat...</div>';s.textContent=(item.title||'').substring(0,55)+'...';setTimeout(function(){try{var a=analyze(item);renderAg(a,b)}catch(e){b.innerHTML='<div class="se"><h4>Error</h4><p>Analysis failed. Raw data shown.</p><pre style="font-size:10px;color:#6B7C93;white-space:pre-wrap;margin-top:8px">'+esc(JSON.stringify(item,null,2).substring(0,1500))+'</pre></div>'}},350)}catch(e){console.warn('[AGENT]',e)}}
+
+function clAg(){document.getElementById('agm').classList.remove('op')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')clAg()});
+
+function analyze(i){var rs=i.risk_score||0,t=i.title||'',cves=t.match(/CVE-\d{4}-\d{4,}/gi)||[],cvss=i.cvss_score!=null?parseFloat(i.cvss_score):null,epss=i.epss_score!=null?parseFloat(i.epss_score):null,kev=!!i.kev_present,actor=i.actor_tag||'Unattributed',tacs=i.mitre_tactics||[],ioc=0;if(i.ioc_counts)Object.values(i.ioc_counts).forEach(function(v){ioc+=typeof v==='number'?v:0});var sev=sv(rs),src=(i.feed_source||'').replace(/https?:\/\//,'').split('/')[0];
+var sum='';if(cves.length){sum='This advisory concerns '+cves[0]+', a '+sev.toLowerCase()+' vulnerability';if(cvss)sum+=' (CVSS '+cvss+'/10)';sum+='. ';if(kev)sum+='CRITICAL: Listed in CISA KEV — active exploitation confirmed. ';if(epss&&epss>.5)sum+='EPSS: '+(epss*100).toFixed(1)+'% exploitation probability. '}else{sum='"'+t.substring(0,80)+'" assessed at '+rs.toFixed(1)+'/10 ('+sev+'). '}if(ioc)sum+=ioc+' IOCs extracted. ';
+var ra='Risk: '+rs.toFixed(1)+'/10 ('+sev+')\n';if(cvss)ra+='CVSS: '+cvss+'/10\n';if(kev)ra+='KEV: ACTIVE EXPLOITATION\n';if(epss)ra+='EPSS: '+(epss*100).toFixed(1)+'%\n';
+var acts=[];if(kev)acts.push({p:'P0',t:'IMMEDIATE: Patch within 24h (CISA KEV active)'});if(cves.length)acts.push({p:'P1',t:'Scan assets for '+cves[0]});if(ioc)acts.push({p:'P1',t:'Deploy '+ioc+' IOCs to SIEM/EDR'});if(rs>=7)acts.push({p:'P2',t:'Initiate threat hunt for related indicators'});acts.push({p:'P3',t:'Update SOC intelligence briefing'});
+return{sum:sum,ra:ra,acts:acts,tacs:tacs,sev:sev,svc:svc(rs),rs:rs,cves:cves,kev:kev,cvss:cvss,epss:epss,ioc:ioc,src:src}}
+
+function renderAg(a,c){var rp=Math.min(a.rs*10,100);var h='<div class="se"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-family:var(--fm);font-size:18px;font-weight:900;color:'+a.svc+'">'+a.sev+'</span><span style="font-family:var(--fm);font-size:14px;color:#E6EDF3;font-weight:700">'+a.rs.toFixed(1)+'/10</span></div><div style="height:5px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+rp+'%;background:'+a.svc+';border-radius:3px"></div></div>';
+h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">';if(a.cves.length)h+='<span class="tg1 cv">'+a.cves[0]+'</span>';if(a.cvss!==null)h+='<span style="font-family:var(--fm);font-size:9px;color:var(--text-muted)">CVSS '+a.cvss+'</span>';if(a.epss!==null)h+='<span style="font-family:var(--fm);font-size:9px;color:var(--text-muted)">EPSS '+(a.epss*100).toFixed(1)+'%</span>';if(a.kev)h+='<span class="tg1 kv">CISA KEV</span>';if(a.ioc)h+='<span style="font-family:var(--fm);font-size:9px;color:var(--accent)">'+a.ioc+' IOCs</span>';h+='</div></div>';
+h+='<div class="se"><h4>Executive Summary</h4><p>'+a.sum+'</p></div>';
+h+='<div class="se"><h4>Risk Assessment</h4><p style="white-space:pre-line;font-family:var(--fm);font-size:11px;line-height:1.7">'+a.ra+'</p></div>';
+if(a.tacs.length){h+='<div class="se"><h4>MITRE ATT&CK</h4><div class="soc3-mitre-tags">';a.tacs.forEach(function(t){h+='<a href="https://attack.mitre.org/techniques/'+t.replace('.','/') +'/" target="_blank">'+t+(MT[t]?' — '+MT[t]:'')+'</a>'});h+='</div></div>'}
+h+='<div class="se"><h4>Recommended Actions</h4>';a.acts.forEach(function(x){var pc=x.p==='P0'?'var(--critical)':x.p==='P1'?'var(--high)':x.p==='P2'?'var(--accent)':'var(--text-muted)';h+='<div class="soc3-act"><span class="an" style="color:'+pc+'">'+x.p+'</span><span>'+x.t+'</span></div>'});h+='</div>';
+h+='<div style="font-family:var(--fm);font-size:8px;color:#6B7C93;text-align:center;letter-spacing:1px;padding-top:8px">CYBERDUDEBIVASH SENTINEL APEX SOC 3.0 AGENT &middot; '+new Date().toISOString().substring(0,19)+' UTC</div>';c.innerHTML=h}
+
+setInterval(boot,3e5);boot();
+</script>
+</body>
+</html>
