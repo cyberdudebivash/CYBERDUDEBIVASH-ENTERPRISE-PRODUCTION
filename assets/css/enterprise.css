@@ -317,3 +317,56 @@
 
 /* ---- UTILITY ---- */
 .container { max-width:1400px; margin:0 auto; padding:0 1.5rem; position:relative; z-index:1; }
+
+/* ============================================================
+   PLATFORM DOMINATION SECTION
+   © 2026 CYBERDUDEBIVASH Pvt. Ltd.
+   ============================================================ */
+.platform-dom-section { padding:90px 0; background:linear-gradient(180deg,#050A12 0%,#0A1220 60%,#050A12 100%); position:relative; overflow:hidden; }
+.platform-dom-section::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse at 50% 0%,rgba(0,255,255,.06) 0%,transparent 65%); pointer-events:none; }
+
+.pdom-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.75rem; margin-top:2.5rem; }
+@media(max-width:1100px){ .pdom-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:640px){ .pdom-grid { grid-template-columns:1fr; } }
+
+.pdom-card { background:rgba(8,16,30,.85); border:1px solid rgba(0,255,255,.14); border-radius:16px; padding:2rem; display:flex; flex-direction:column; gap:1rem; transition:all .3s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; }
+.pdom-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,rgba(0,255,255,.4),transparent); opacity:0; transition:.3s; }
+.pdom-card:hover { transform:translateY(-8px); box-shadow:0 24px 48px rgba(0,0,0,.4),0 0 0 1px rgba(0,255,255,.2); border-color:rgba(0,255,255,.35); }
+.pdom-card:hover::after { opacity:1; }
+
+.pdom-card-featured-dom { border:1px solid rgba(255,107,53,.3); background:rgba(20,10,5,.9); grid-column:span 1; }
+.pdom-card-featured-dom:hover { border-color:rgba(255,107,53,.6); box-shadow:0 24px 48px rgba(255,107,53,.15),0 0 0 1px rgba(255,107,53,.25); }
+.pdom-card-featured-dom::after { background:linear-gradient(90deg,transparent,rgba(255,107,53,.5),transparent); }
+.pdom-featured-ribbon { position:absolute; top:0; right:0; background:linear-gradient(135deg,#ff6b35,#FF8C42); color:#fff; font-size:.7rem; font-weight:800; padding:.3rem .9rem; border-bottom-left-radius:10px; letter-spacing:1px; }
+
+.pdom-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:.25rem; }
+.pdom-icon { font-size:2.4rem; line-height:1; }
+.pdom-badge { font-size:.68rem; font-weight:800; padding:.25rem .75rem; border-radius:20px; text-transform:uppercase; letter-spacing:1px; background:rgba(0,255,255,.12); color:#00FFFF; border:1px solid rgba(0,255,255,.25); }
+.pdom-badge-blue { background:rgba(0,168,232,.12); color:#00A8E8; border-color:rgba(0,168,232,.25); }
+.pdom-badge-red { background:rgba(255,51,102,.12); color:#ff3366; border-color:rgba(255,51,102,.25); }
+.pdom-badge-purple { background:rgba(167,105,255,.12); color:#a769ff; border-color:rgba(167,105,255,.25); }
+.pdom-badge-green { background:rgba(0,208,156,.12); color:#00D09C; border-color:rgba(0,208,156,.25); }
+
+.pdom-card h3 { font-size:1.2rem; font-weight:700; color:#fff; margin:0; }
+.pdom-card > p { color:#9CA3AF; font-size:.9rem; line-height:1.65; flex-grow:1; }
+
+.pdom-features { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; }
+.pdom-features li { display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:#E5E7EB; }
+.pf-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.pf-green { background:#00D09C; box-shadow:0 0 6px rgba(0,208,156,.5); }
+.pf-blue  { background:#00A8E8; box-shadow:0 0 6px rgba(0,168,232,.5); }
+.pf-red   { background:#ff3366; box-shadow:0 0 6px rgba(255,51,102,.5); }
+.pf-purple{ background:#a769ff; box-shadow:0 0 6px rgba(167,105,255,.5); }
+
+.pdom-cta-row { display:flex; align-items:center; gap:1rem; margin-top:.5rem; }
+.pdom-btn { padding:.7rem 1.35rem; font-size:.88rem; border-radius:8px; }
+.pdom-status { font-size:.75rem; font-weight:700; color:#00D09C; display:flex; align-items:center; gap:.3rem; }
+.pdom-status-pulse { animation:statusPulse 2s ease-in-out infinite; }
+@keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.pdom-cta-strip { margin-top:3rem; padding:1.5rem; background:rgba(0,255,255,.04); border:1px solid rgba(0,255,255,.1); border-radius:12px; }
+.pdom-cta-strip-inner { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:1rem; }
+.pdom-strip-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.65rem 1.35rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:8px; color:#E5E7EB; text-decoration:none; font-size:.88rem; font-weight:600; transition:.25s; white-space:nowrap; }
+.pdom-strip-btn:hover { background:rgba(0,255,255,.1); border-color:rgba(0,255,255,.3); color:#00FFFF; transform:translateY(-2px); }
+.pdom-strip-btn-hot { background:rgba(255,51,102,.08); border-color:rgba(255,51,102,.25); color:#ff3366; }
+.pdom-strip-btn-hot:hover { background:rgba(255,51,102,.15); border-color:rgba(255,51,102,.5); color:#ff3366; }

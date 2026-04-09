@@ -74,11 +74,13 @@
     { sev: 'HIGH',     msg: 'Suspicious lateral movement detected in enterprise AD environments' },
   ];
   var sevColor = { CRITICAL: '#ff3366', HIGH: '#ff6b35', MEDIUM: '#ffd700' };
+  // All threat links route to intel platform
+  var INTEL_URL = 'https://intel.cyberdudebivash.com/';
   var inner = document.getElementById('tickerInner');
   if (inner) {
     var doubled = threats.concat(threats);
     inner.innerHTML = doubled.map(function (t) {
-      return '<span class="ticker-item"><span style="color:' + sevColor[t.sev] + ';font-weight:700">● ' + t.sev + '</span> — ' + t.msg + '</span>';
+      return '<a class="ticker-item" href="' + INTEL_URL + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit"><span style="color:' + sevColor[t.sev] + ';font-weight:700">● ' + t.sev + '</span> — ' + t.msg + '</a>';
     }).join('');
   }
 
@@ -115,6 +117,12 @@
     if (cntEl) cntEl.textContent = new Set(feedData.map(function (x) { return x.country; })).size;
     var blkEl = document.getElementById('blockedCount');
     if (blkEl) blkEl.textContent = '2,847';
+    // Ensure dashboard button links to intel platform (runtime patch)
+    document.querySelectorAll('a[href="threat-intel.html"]').forEach(function(a){
+      a.href = 'https://intel.cyberdudebivash.com/';
+      a.setAttribute('target','_blank');
+      a.setAttribute('rel','noopener noreferrer');
+    });
   }
   /* ===== PRICING TOGGLE ===== */
   var pricingToggle = document.getElementById('pricingToggle');
