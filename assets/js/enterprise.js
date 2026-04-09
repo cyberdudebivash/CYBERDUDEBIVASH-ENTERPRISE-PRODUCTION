@@ -143,7 +143,7 @@
       btn.disabled = true;
       try {
         var fd = new FormData(this);
-        var res = await fetch('https://formspree.io/f/xkordvzn', {
+        var res = await fetch('https://formspree.io/f/mnjoydgl', {
           method: 'POST', body: fd, headers: { Accept: 'application/json' }
         });
         if (res.ok) {
