@@ -1,0 +1,86 @@
+<!-- Cybersecurity & AI Animated Banner -->
+<!-- Add this to any page for visual enhancement -->
+
+<section class="cyber-banner-section" style="margin: 3rem 0;">
+    <div class="container">
+        <div class="cyber-banner">
+            <div class="cyber-banner-content">
+                <h2 class="cyber-banner-title">
+                    🛡️ Enterprise-Grade Cybersecurity • AI-Powered Protection • 24/7 Threat Monitoring
+                </h2>
+                <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 1.5rem;">
+                    Trusted by 100+ organizations across 50+ countries | 500K+ threats analyzed
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <div class="security-badge">
+                        🔒 Zero-Trust Architecture
+                    </div>
+                    <div class="security-badge">
+                        ⚡ Real-Time Detection
+                    </div>
+                    <div class="security-badge">
+                        🤖 AI-Enhanced
+                    </div>
+                    <div class="security-badge">
+                        ✓ SOC 2 Compliant
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Animated Stats Banner -->
+<section class="stats-banner" style="background: linear-gradient(135deg, rgba(0,255,255,0.05), rgba(255,140,66,0.05)); padding: 3rem 0; margin: 2rem 0;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;">
+            <div class="stat-box">
+                <div style="font-size: 3rem; font-weight: 900; color: #00FFFF; margin-bottom: 0.5rem;" class="counter" data-target="500000">0</div>
+                <div style="color: #999; font-size: 1rem;">Threats Analyzed</div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 3rem; font-weight: 900; color: #FF8C42; margin-bottom: 0.5rem;" class="counter" data-target="100">0</div>
+                <div style="color: #999; font-size: 1rem;">Enterprise Clients</div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 3rem; font-weight: 900; color: #00D09C; margin-bottom: 0.5rem;" class="counter" data-target="50">0</div>
+                <div style="color: #999; font-size: 1rem;">Countries Served</div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 3rem; font-weight: 900; color: #00FFFF; margin-bottom: 0.5rem;">24/7</div>
+                <div style="color: #999; font-size: 1rem;">Threat Monitoring</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Animated Counter
+document.querySelectorAll('.counter').forEach(counter => {
+    const target = +counter.getAttribute('data-target');
+    const increment = target / 100;
+    
+    const updateCounter = () => {
+        const current = +counter.innerText.replace(/,/g, '');
+        
+        if (current < target) {
+            counter.innerText = Math.ceil(current + increment).toLocaleString();
+            setTimeout(updateCounter, 20);
+        } else {
+            counter.innerText = target.toLocaleString();
+        }
+    };
+    
+    // Trigger when element is in viewport
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                updateCounter();
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+    
+    observer.observe(counter);
+});
+</script>

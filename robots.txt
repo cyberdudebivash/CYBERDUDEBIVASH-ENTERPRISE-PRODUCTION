@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /react-portal/src/
+Disallow: /react-portal/node_modules/
+Disallow: /.git/
+Disallow: /integrate-footer.py
+Disallow: /update-all-pages.sh
+
+# Crawl-delay for bots
+Crawl-delay: 10
+
+# Sitemap
+Sitemap: https://www.cyberdudebivash.com/sitemap.xml
