@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Portal — CYBERDUDEBIVASH®</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="../assets/images/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cyan:#00FFFF;--orange:#FF8C42;--green:#00D09C;--red:#ff3366;
+  --bg:#060C16;--bg2:#0A1220;--bg3:#0E1828;--border:rgba(0,255,255,.12);
+  --text:#E5E7EB;--muted:#9CA3AF;--white:#fff;
+  --font:'Inter',sans-serif;--mono:'Fira Code',monospace;--head:'Orbitron',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.portal-wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.main-content{background:var(--bg);overflow-y:auto;padding:2rem 2.5rem}
+.sidebar-brand{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+.sidebar-brand img{width:36px;height:36px;border-radius:50%;border:2px solid var(--cyan)}
+.sidebar-brand-text{font-family:var(--head);font-size:.75rem;font-weight:700;color:var(--cyan)}
+.sidebar-nav{padding:1rem 0;flex:1}
+.nav-section-label{padding:.4rem 1.5rem;font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:.5rem}
+.sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem;color:var(--muted);text-decoration:none;font-size:.88rem;font-weight:500;transition:.2s;border-left:3px solid transparent;cursor:pointer}
+.sidebar-link:hover{color:var(--cyan);background:rgba(0,255,255,.05);border-left-color:rgba(0,255,255,.3)}
+.sidebar-link.active{color:var(--cyan);background:rgba(0,255,255,.08);border-left-color:var(--cyan)}
+.sidebar-footer{padding:1rem 1.5rem;border-top:1px solid var(--border)}
+.sidebar-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#00A8E8);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#0A1220;flex-shrink:0}
+.sidebar-user{display:flex;align-items:center;gap:.75rem}
+.sidebar-user-name{font-size:.82rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-plan{font-size:.7rem;color:var(--green);text-transform:uppercase;letter-spacing:.5px}
+.portal-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.portal-topbar h1{font-family:var(--head);font-size:1.2rem;font-weight:700;color:var(--white)}
+.topbar-actions{display:flex;align-items:center;gap:1rem}
+.plan-badge{padding:.3rem .9rem;border-radius:20px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.plan-free{background:rgba(156,163,175,.12);color:var(--muted);border:1px solid rgba(156,163,175,.2)}
+.plan-starter{background:rgba(0,208,156,.1);color:var(--green);border:1px solid rgba(0,208,156,.2)}
+.plan-pro{background:rgba(0,168,232,.1);color:#00A8E8;border:1px solid rgba(0,168,232,.2)}
+.plan-enterprise{background:rgba(255,140,66,.1);color:var(--orange);border:1px solid rgba(255,140,66,.2)}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:7px;font-size:.87rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:.2s;font-family:var(--font)}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),#00A8E8);color:#0A1220}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,255,255,.3)}
+.btn-outline{background:transparent;color:var(--cyan);border:1px solid var(--cyan)}
+.btn-outline:hover{background:rgba(0,255,255,.08)}
+.btn-sm{padding:.4rem .85rem;font-size:.8rem}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.card-title{font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.75rem;font-weight:600}
+.card-value{font-family:var(--head);font-size:2rem;font-weight:800;color:var(--cyan)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:.25s}
+.stat-card:hover{border-color:rgba(0,255,255,.25);transform:translateY(-3px)}
+.apikey-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.75rem}
+.apikey-value{font-family:var(--mono);font-size:.85rem;color:var(--cyan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{background:rgba(0,255,255,.08);border:1px solid rgba(0,255,255,.2);color:var(--cyan);padding:.35rem .75rem;border-radius:6px;font-size:.78rem;cursor:pointer;transition:.2s}
+.copy-btn:hover{background:rgba(0,255,255,.18)}
+.revoke-btn{background:rgba(255,51,102,.06);border:1px solid rgba(255,51,102,.15);color:var(--red);padding:.35rem .75rem;border-radius:6px;font-size:.78rem;cursor:pointer;transition:.2s}
+.revoke-btn:hover{background:rgba(255,51,102,.15)}
+.usage-bar-wrap{margin:1rem 0}
+.usage-bar-labels{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:.4rem}
+.usage-bar{background:rgba(255,255,255,.06);border-radius:10px;height:10px;overflow:hidden}
+.usage-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--cyan),#00A8E8);transition:width .8s ease}
+.usage-bar-fill.warn{background:linear-gradient(90deg,var(--orange),#ff6b35)}
+.usage-bar-fill.danger{background:linear-gradient(90deg,var(--red),#ff6b35)}
+</style>
+</head>
+<body>
+<style>
+.pricing-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:1.5rem}
+.price-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:.25s;position:relative}
+.price-card:hover{border-color:rgba(0,255,255,.25);transform:translateY(-4px)}
+.price-card-featured{border-color:rgba(255,140,66,.35)}
+.price-tier{font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.price-amount{font-family:var(--head);font-size:2.2rem;font-weight:800;color:var(--cyan)}
+.price-amount span{font-size:.9rem;color:var(--muted);font-family:var(--font)}
+.price-features{list-style:none;padding:0;margin:1rem 0;display:flex;flex-direction:column;gap:.5rem}
+.price-features li{font-size:.83rem;color:var(--text);border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:.45rem}
+.current-plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--green);color:#060C16;font-size:.68rem;font-weight:800;padding:.2rem .8rem;border-radius:20px;white-space:nowrap}
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.data-table th{text-align:left;padding:.6rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:600}
+.data-table td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text)}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.badge-paid{background:rgba(0,208,156,.1);color:var(--green)}
+.badge-created{background:rgba(255,215,0,.1);color:#ffd700}
+.badge-failed{background:rgba(255,51,102,.1);color:var(--red)}
+.notif{position:fixed;top:1.5rem;right:1.5rem;padding:.85rem 1.25rem;border-radius:10px;font-size:.88rem;font-weight:600;z-index:9999;display:flex;align-items:center;gap:.75rem;box-shadow:0 10px 30px rgba(0,0,0,.4);animation:slideIn .3s ease;max-width:340px}
+.notif-success{background:rgba(0,208,156,.15);border:1px solid rgba(0,208,156,.3);color:var(--green)}
+.notif-error{background:rgba(255,51,102,.15);border:1px solid rgba(255,51,102,.3);color:var(--red)}
+.notif-info{background:rgba(0,168,232,.15);border:1px solid rgba(0,168,232,.3);color:#00A8E8}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+#authScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);padding:2rem}
+.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:420px}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo img{width:56px;height:56px;border-radius:50%;border:2px solid var(--cyan)}
+.auth-logo h2{font-family:var(--head);font-size:1rem;margin-top:.75rem;color:var(--cyan)}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.auth-tab{flex:1;padding:.7rem;text-align:center;font-size:.88rem;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:none;transition:.2s}
+.auth-tab.active{color:var(--cyan);border-bottom:2px solid var(--cyan)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:.4rem}
+.form-group input{width:100%;padding:.8rem 1rem;background:rgba(0,0,0,.3);border:1px solid rgba(0,255,255,.2);border-radius:8px;color:var(--white);font-size:.9rem;outline:none;transition:.2s;font-family:var(--font)}
+.form-group input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,255,255,.1)}
+.auth-submit{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--cyan),#00A8E8);color:#0A1220;font-weight:700;font-size:.95rem;border:none;border-radius:8px;cursor:pointer;margin-top:.5rem;transition:.2s;font-family:var(--font)}
+.auth-submit:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,255,255,.3)}
+.auth-error{background:rgba(255,51,102,.1);border:1px solid rgba(255,51,102,.25);color:var(--red);padding:.7rem 1rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem;display:none}
+.portal-section{display:none}
+.portal-section.active{display:block}
+@media(max-width:900px){.portal-wrap{grid-template-columns:1fr}.sidebar{display:none}.stats-row{grid-template-columns:repeat(2,1fr)}.pricing-row{grid-template-columns:1fr}}
+@media(max-width:480px){.main-content{padding:1.25rem}.stats-row{grid-template-columns:1fr}}
+</style>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="../assets/images/logo.jpg" alt="CYBERDUDEBIVASH">
+      <h2>CYBERDUDEBIVASH®<br><small style="font-family:var(--font);font-size:.75rem;color:var(--muted);font-weight:400">Client Portal</small></h2>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+      <button class="auth-submit" id="loginBtn" onclick="doLogin()">Sign In to Portal</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="Bivash Kumar"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@company.com"></div>
+      <div class="form-group"><label>Password <small style="color:var(--muted)">(8+ chars)</small></label><input type="password" id="regPass" placeholder="••••••••"></div>
+      <button class="auth-submit" id="registerBtn" onclick="doRegister()">Create Account &amp; Get API Key</button>
+    </div>
+    <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:1.25rem">
+      <a href="../privacy.html" style="color:var(--cyan)">Privacy Policy</a> · <a href="../index.html" style="color:var(--muted)">Back to site</a>
+    </p>
+  </div>
+</div>
+<!-- PORTAL SHELL -->
+<div id="portalWrap" class="portal-wrap" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../assets/images/logo.jpg" alt="Logo">
+      <span class="sidebar-brand-text">CYBERDUDEBIVASH®</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Dashboard</div>
+      <div class="sidebar-link active" onclick="showSection('overview')"><span>📊</span> Overview</div>
+      <div class="sidebar-link" onclick="showSection('apikeys')"><span>🔑</span> API Keys</div>
+      <div class="sidebar-link" onclick="showSection('usage')"><span>📈</span> Usage Analytics</div>
+      <div class="nav-section-label">Billing</div>
+      <div class="sidebar-link" onclick="showSection('billing')"><span>💳</span> Subscription</div>
+      <div class="sidebar-link" onclick="showSection('payments')"><span>🧾</span> Payment History</div>
+      <div class="nav-section-label">Platforms</div>
+      <a class="sidebar-link" href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer"><span>📡</span> Threat Intel</a>
+      <a class="sidebar-link" href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer"><span>🛠️</span> Tools Platform</a>
+      <a class="sidebar-link" href="https://api.cyberdudebivash.com" target="_blank" rel="noopener noreferrer"><span>⚙️</span> API Platform</a>
+      <a class="sidebar-link" href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer"><span>🧠</span> AI Security Hub</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <div style="display:flex;flex-direction:column;overflow:hidden">
+          <span class="sidebar-user-name" id="sidebarName">Loading...</span>
+          <span class="sidebar-user-plan" id="sidebarPlan">free</span>
+        </div>
+      </div>
+      <button onclick="doLogout()" style="width:100%;margin-top:.75rem;padding:.5rem;background:rgba(255,51,102,.08);border:1px solid rgba(255,51,102,.15);color:var(--red);border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- OVERVIEW -->
+    <div id="section-overview" class="portal-section active">
+      <div class="portal-topbar">
+        <h1>Dashboard Overview</h1>
+        <div class="topbar-actions">
+          <span class="plan-badge plan-free" id="topPlanBadge">Free</span>
+          <button class="btn btn-primary btn-sm" onclick="showSection('billing')">⚡ Upgrade Plan</button>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="card-title">API Calls Today</div><div class="card-value" id="statToday">—</div><div style="font-size:.8rem;color:var(--muted);margin-top:.3rem" id="statLimit">of — limit</div></div>
+        <div class="stat-card"><div class="card-title">Total API Calls</div><div class="card-value" id="statTotal">—</div><div style="font-size:.8rem;color:var(--muted);margin-top:.3rem">lifetime usage</div></div>
+        <div class="stat-card"><div class="card-title">Active API Keys</div><div class="card-value" id="statKeys">—</div><div style="font-size:.8rem;color:var(--muted);margin-top:.3rem">max 5 per account</div></div>
+        <div class="stat-card"><div class="card-title">Current Plan</div><div class="card-value" id="statPlan" style="font-size:1.5rem;text-transform:capitalize">—</div><div style="font-size:.8rem;margin-top:.3rem"><span onclick="showSection('billing')" style="color:var(--orange);cursor:pointer">Upgrade →</span></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+        <div class="card">
+          <div class="card-title">Daily API Usage</div>
+          <div class="usage-bar-wrap">
+            <div class="usage-bar-labels"><span id="usageBarUsed">0 used</span><span id="usageBarLimit">100 limit</span></div>
+            <div class="usage-bar"><div class="usage-bar-fill" id="usageBarFill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:.5rem">
+            <span onclick="showSection('apikeys')" class="btn btn-outline" style="justify-content:flex-start;cursor:pointer">🔑 Manage API Keys</span>
+            <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="justify-content:flex-start">📡 View Threat Intelligence</a>
+            <a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="justify-content:flex-start">🛠️ Launch Security Tools</a>
+            <span onclick="showSection('billing')" class="btn btn-primary" style="justify-content:flex-start;cursor:pointer">⚡ Upgrade for More API Calls</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Primary API Key</div>
+        <div id="primaryKeyDisplay"></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Use header <code style="background:rgba(0,255,255,.08);padding:.1rem .4rem;border-radius:4px;font-family:var(--mono);color:var(--cyan)">X-Api-Key: your_key</code> on all API requests</p>
+      </div>
+    </div>
+
+    <!-- API KEYS -->
+    <div id="section-apikeys" class="portal-section">
+      <div class="portal-topbar">
+        <h1>API Keys</h1>
+        <button class="btn btn-primary" id="genKeyBtn" onclick="generateKey()">+ Generate New Key</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Active Keys</div>
+        <div id="keysList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Usage Example</div>
+        <pre style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:var(--mono);font-size:.8rem;color:var(--cyan);overflow-x:auto">curl -H "X-Api-Key: cdb_your_key" https://api.cyberdudebivash.com/api/validate
+
+# Response:
+{ "status":"valid", "plan":"pro", "usage_today":142, "limit_today":10000, "remaining":9858 }</pre>
+      </div>
+    </div>
+
+    <!-- USAGE -->
+    <div id="section-usage" class="portal-section">
+      <div class="portal-topbar"><h1>Usage Analytics</h1></div>
+      <div class="stats-row" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat-card"><div class="card-title">Today</div><div class="card-value" id="usageToday2">—</div></div>
+        <div class="stat-card"><div class="card-title">This Week</div><div class="card-value" id="usageWeek">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Top Endpoints</div>
+        <table class="data-table">
+          <thead><tr><th>Endpoint</th><th>Calls</th></tr></thead>
+          <tbody id="endpointTbody"><tr><td colspan="2" style="color:var(--muted);text-align:center;padding:2rem">No usage data yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="section-billing" class="portal-section">
+      <div class="portal-topbar"><h1>Subscription &amp; Billing</h1></div>
+      <div class="card"><div class="card-title">Current Plan</div><div id="currentPlanInfo"></div></div>
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:1rem">Upgrade Your Plan</div>
+      <div class="pricing-row" id="pricingRow"></div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:1.5rem;text-align:center">Payments processed securely via Razorpay · Plans auto-renew monthly · Cancel anytime</p>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div id="section-payments" class="portal-section">
+      <div class="portal-topbar"><h1>Payment History</h1></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="paymentsTbody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:2rem">No payments yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+/* CYBERDUDEBIVASH® Client Portal JS © 2026 */
+const API_BASE = 'https://api.cyberdudebivash.com';
+const PLAN_LIMITS = {free:100,starter:1000,pro:10000,enterprise:Infinity};
+const PLAN_PRICES = {
+  starter:    {label:'Starter',     monthly:49,  annual:39,  badge:'plan-starter'},
+  pro:        {label:'Professional',monthly:299, annual:239, badge:'plan-pro'},
+  enterprise: {label:'Enterprise',  monthly:999, annual:799, badge:'plan-enterprise'}
+};
+let TOKEN = localStorage.getItem('cdb_token');
+let USER = null, API_KEYS = [];
+if (TOKEN) loadPortal();
+
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display    = tab==='login'    ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab==='register' ? '' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('authError').style.display='none';
+}
+
+async function doLogin() {
+  const email=document.getElementById('loginEmail').value.trim(),pass=document.getElementById('loginPass').value;
+  const btn=document.getElementById('loginBtn');
+  if (!email||!pass) return showAuthError('Email and password required');
+  btn.disabled=true; btn.textContent='Signing in...';
+  try { const r=await api('/auth/login','POST',{email,password:pass}); TOKEN=r.token; USER=r.user; localStorage.setItem('cdb_token',TOKEN); loadPortal(); }
+  catch(e) { showAuthError(e.message); }
+  finally { btn.disabled=false; btn.textContent='Sign In to Portal'; }
+}
+
+async function doRegister() {
+  const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPass').value;
+  const btn=document.getElementById('registerBtn');
+  if (!name||!email||!pass) return showAuthError('All fields required');
+  if (pass.length<8) return showAuthError('Password must be 8+ characters');
+  btn.disabled=true; btn.textContent='Creating account...';
+  try { const r=await api('/auth/register','POST',{name,email,password:pass}); TOKEN=r.token; USER=r.user; localStorage.setItem('cdb_token',TOKEN); loadPortal(); notify('✅ Account created! API key is ready.','success'); }
+  catch(e) { showAuthError(e.message); }
+  finally { btn.disabled=false; btn.textContent='Create Account & Get API Key'; }
+}
+
+function doLogout() {
+  localStorage.removeItem('cdb_token'); TOKEN=null; USER=null;
+  document.getElementById('portalWrap').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+}
+
+function showAuthError(m) { const e=document.getElementById('authError'); e.textContent='⚠️ '+m; e.style.display='block'; }
+
+async function loadPortal() {
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('portalWrap').style.display='grid';
+  try {
+    const d=await api('/auth/me','GET');
+    USER=d.user; API_KEYS=d.api_keys||[];
+    renderSidebar(); renderOverview(d); renderApiKeys(); renderUsage(d.usage); renderBilling(); renderPayments();
+  } catch(e) { if(e.status===401){doLogout();return;} notify('Portal load failed: '+e.message,'error'); }
+}
+
+function renderSidebar() {
+  document.getElementById('sidebarAvatar').textContent=(USER.name||USER.email||'U')[0].toUpperCase();
+  document.getElementById('sidebarName').textContent=USER.name||USER.email;
+  document.getElementById('sidebarPlan').textContent=USER.plan;
+  const b=document.getElementById('topPlanBadge');
+  b.textContent=USER.plan.charAt(0).toUpperCase()+USER.plan.slice(1);
+  b.className='plan-badge plan-'+USER.plan;
+}
+
+function renderOverview(d) {
+  const today=d.usage?.today||0,total=d.usage?.total||0,plan=USER.plan;
+  const limit=PLAN_LIMITS[plan]||100,pct=limit===Infinity?0:Math.min(100,(today/limit)*100);
+  document.getElementById('statToday').textContent=today.toLocaleString();
+  document.getElementById('statLimit').textContent='of '+(limit===Infinity?'∞':limit.toLocaleString())+' limit';
+  document.getElementById('statTotal').textContent=total.toLocaleString();
+  document.getElementById('statKeys').textContent=API_KEYS.filter(k=>k.active).length;
+  document.getElementById('statPlan').textContent=plan;
+  document.getElementById('usageBarUsed').textContent=today+' used';
+  document.getElementById('usageBarLimit').textContent=(limit===Infinity?'∞':limit)+' limit';
+  const f=document.getElementById('usageBarFill');
+  f.style.width=pct+'%'; f.className='usage-bar-fill'+(pct>=90?' danger':pct>=70?' warn':'');
+  const pk=API_KEYS.find(k=>k.active);
+  document.getElementById('primaryKeyDisplay').innerHTML=pk
+    ? `<div class="apikey-box"><span class="apikey-value">${pk.api_key.slice(0,12)}••••••••••••${pk.api_key.slice(-4)}</span><div><button class="copy-btn" onclick="copyKey('${pk.api_key}')">📋 Copy</button></div></div>`
+    : '<p style="color:var(--muted);font-size:.88rem">No API key. <span onclick="showSection(\'apikeys\')" style="color:var(--cyan);cursor:pointer">Generate one →</span></p>';
+}
+
+function renderApiKeys() {
+  const active=API_KEYS.filter(k=>k.active);
+  document.getElementById('keysList').innerHTML=active.length
+    ? active.map(k=>`<div class="apikey-box"><span class="apikey-value">${k.api_key}</span><div style="display:flex;gap:.5rem"><button class="copy-btn" onclick="copyKey('${k.api_key}')">📋 Copy</button><button class="revoke-btn" onclick="revokeKey(${k.id})">🗑 Revoke</button></div></div>`).join('')
+    : '<p style="color:var(--muted);font-size:.88rem;padding:.5rem 0">No active API keys. Generate one above.</p>';
+}
+
+async function generateKey() {
+  const btn=document.getElementById('genKeyBtn'); btn.disabled=true; btn.textContent='Generating...';
+  try { const r=await api('/generate-api-key','POST'); API_KEYS.push({id:Date.now(),api_key:r.api_key,active:true}); renderApiKeys(); notify('✅ API key generated! Copy and store it securely.','success'); }
+  catch(e) { notify(e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent='+ Generate New Key'; }
+}
+
+async function revokeKey(id) {
+  if (!confirm('Revoke this key? All requests using it will immediately fail.')) return;
+  try { await api('/api-keys/'+id,'DELETE'); API_KEYS=API_KEYS.map(k=>k.id===id?{...k,active:false}:k); renderApiKeys(); notify('API key revoked.','info'); }
+  catch(e) { notify(e.message,'error'); }
+}
+
+function copyKey(key) {
+  navigator.clipboard.writeText(key).then(()=>notify('API key copied!','success')).catch(()=>{
+    const t=document.createElement('textarea');t.value=key;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);notify('Copied!','success');
+  });
+}
+
+function renderUsage(u) {
+  if (!u) return;
+  document.getElementById('usageToday2').textContent=(u.today||0).toLocaleString();
+  document.getElementById('usageWeek').textContent=(u.week||0).toLocaleString();
+  const tbody=document.getElementById('endpointTbody');
+  if (u.by_endpoint&&u.by_endpoint.length)
+    tbody.innerHTML=u.by_endpoint.map(e=>`<tr><td><code style="font-family:var(--mono);color:var(--cyan)">${e.endpoint||'/'}</code></td><td>${e.calls}</td></tr>`).join('');
+}
+
+function renderBilling() {
+  const plan=USER.plan,p=PLAN_PRICES[plan];
+  document.getElementById('currentPlanInfo').innerHTML=`<div style="display:flex;align-items:center;gap:1rem;margin-top:.5rem"><span class="plan-badge plan-${plan}" style="font-size:.88rem;padding:.4rem 1rem">${plan.charAt(0).toUpperCase()+plan.slice(1)}</span><span style="color:var(--muted);font-size:.88rem">${p?'$'+p.monthly+'/month · '+(PLAN_LIMITS[plan]===Infinity?'Unlimited':PLAN_LIMITS[plan].toLocaleString())+' API calls/day':'Free · 100 API calls/day'}</span></div>`;
+  document.getElementById('pricingRow').innerHTML=Object.entries(PLAN_PRICES).map(([key,pp])=>{
+    const isCurrent=key===plan;
+    return `<div class="price-card${key==='pro'?' price-card-featured':''}">${isCurrent?'<div class="current-plan-badge">✓ Current Plan</div>':''}
+      <div class="price-tier">${pp.label}</div>
+      <div class="price-amount">$${pp.monthly}<span>/mo</span></div>
+      <ul class="price-features"><li>${PLAN_LIMITS[key]===Infinity?'Unlimited':PLAN_LIMITS[key].toLocaleString()} API calls/day</li><li>${key==='starter'?'Email support':'Priority support'}</li><li>Full Threat Intel access</li><li>${key==='enterprise'?'24/7 SOC Monitoring':key==='pro'?'SOC (8×5)':'Community'}</li></ul>
+      ${isCurrent?'<button class="btn btn-outline" disabled style="width:100%;opacity:.5;cursor:default">Current Plan</button>':`<button class="btn btn-primary" style="width:100%" onclick="startPayment('${key}')">⚡ Upgrade to ${pp.label}</button>`}
+    </div>`;
+  }).join('');
+}
+
+async function startPayment(plan) {
+  try {
+    notify('Creating payment order...','info');
+    const order=await api('/create-order','POST',{plan});
+    new Razorpay({
+      key:order.key_id,amount:order.amount,currency:order.currency,
+      name:'CYBERDUDEBIVASH Pvt. Ltd.',description:plan+' Plan Subscription',
+      image:'https://www.cyberdudebivash.com/assets/images/logo.jpg',
+      order_id:order.order_id,prefill:{email:USER.email,name:USER.name||''},
+      theme:{color:'#00FFFF'},
+      handler:async function(resp){
+        try {
+          const v=await api('/verify-payment','POST',{razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
+          notify('🎉 Payment successful! Plan upgraded to '+v.plan,'success');
+          USER.plan=v.plan; renderSidebar(); renderBilling();
+        } catch(e){notify('Verification failed: '+e.message,'error');}
+      }
+    }).open();
+  } catch(e){notify('Order failed: '+e.message,'error');}
+}
+
+async function renderPayments() {
+  try {
+    const d=await api('/payment-history','GET');
+    const t=document.getElementById('paymentsTbody');
+    if (d.payments&&d.payments.length)
+      t.innerHTML=d.payments.map(p=>`<tr><td>${new Date(p.created_at*1000).toLocaleDateString()}</td><td style="text-transform:capitalize">${p.plan}</td><td>${p.currency==='INR'?'₹'+(p.amount/100).toLocaleString():'$'+p.amount}</td><td><span class="badge badge-${p.status}">${p.status}</span></td></tr>`).join('');
+  } catch(e){}
+}
+
+function showSection(name) {
+  document.querySelectorAll('.portal-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  const s=document.getElementById('section-'+name); if(s) s.classList.add('active');
+}
+
+let notifTimer;
+function notify(msg,type='info'){
+  let e=document.getElementById('_notif'); if(e) e.remove();
+  e=document.createElement('div'); e.id='_notif'; e.className='notif notif-'+type; e.textContent=msg;
+  document.body.appendChild(e); clearTimeout(notifTimer); notifTimer=setTimeout(()=>e.remove(),4500);
+}
+
+async function api(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(API_BASE+path,opts);
+  const d=await r.json();
+  if(!r.ok){const err=new Error(d.error||'Request failed');err.status=r.status;throw err;}
+  return d;
+}
+</script>
+</body>
+</html>

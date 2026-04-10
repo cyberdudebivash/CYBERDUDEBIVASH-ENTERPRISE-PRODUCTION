@@ -1,6 +1,19 @@
 # Dependencies
 node_modules/
 react-portal/node_modules/
+backend/node_modules/
+
+# Database (runtime data — never commit)
+backend/data/
+
+# Secrets
+backend/.env
+.env
+
+# Temp
+backend/test-boot.js
+backend/check.js
+install-backend.ps1
 
 # Production builds
 react-portal/build/
