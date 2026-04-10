@@ -1,455 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Portal | CYBERDUDEBIVASH®</title>
-    <link rel="icon" href="../../assets/images/favicon.ico">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0A1628 0%, #050A12 100%);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-        
-        /* Animated Background */
-        .cyber-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 140, 66, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(0, 208, 156, 0.1) 0%, transparent 50%);
-            animation: bgShift 20s ease-in-out infinite;
-            z-index: 0;
-        }
-        
-        @keyframes bgShift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-        
-        /* Particle Effects */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: #00FFFF;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #00FFFF;
-            animation: float-particle 10s infinite;
-        }
-        
-        @keyframes float-particle {
-            0% {
-                transform: translateY(100vh) translateX(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) translateX(100px);
-                opacity: 0;
-            }
-        }
-        
-        /* Content */
-        .container {
-            position: relative;
-            z-index: 10;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .portal-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            animation: fadeInDown 1s ease;
-        }
-        
-        .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid #00FFFF;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
-            margin-bottom: 2rem;
-            animation: rotate-logo 20s linear infinite, pulse-glow 3s ease-in-out infinite;
-        }
-        
-        @keyframes rotate-logo {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        @keyframes pulse-glow {
-            0%, 100% {
-                box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
-            }
-            50% {
-                box-shadow: 0 0 60px rgba(0, 255, 255, 0.9), 0 0 100px rgba(0, 255, 255, 0.4);
-            }
-        }
-        
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #00FFFF, #FF8C42, #00D09C);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            letter-spacing: -1px;
-            animation: gradient-shift 5s ease infinite;
-            background-size: 200% 200%;
-        }
-        
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        
-        .tagline {
-            font-size: 1.3rem;
-            color: #ccc;
-            margin-bottom: 3rem;
-        }
-        
-        /* Portal Cards */
-        .portal-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            width: 100%;
-            max-width: 1200px;
-            margin-bottom: 3rem;
-        }
-        
-        .portal-card {
-            background: rgba(10, 22, 40, 0.6);
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 16px;
-            padding: 2.5rem;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            animation: fadeInUp 1s ease;
-        }
-        
-        .portal-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-        
-        .portal-card:hover::before {
-            left: 100%;
-        }
-        
-        .portal-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: #00FFFF;
-            box-shadow: 0 20px 60px rgba(0, 255, 255, 0.4);
-        }
-        
-        .card-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.6));
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        
-        .portal-card h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: #00FFFF;
-        }
-        
-        .portal-card p {
-            color: #bbb;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            background: linear-gradient(135deg, #00FFFF, #00A8E8);
-            color: #0A1628;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 255, 255, 0.6);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #FF8C42, #FF6B35);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.4);
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 8px 30px rgba(255, 140, 66, 0.6);
-        }
-        
-        /* Features Section */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 3rem 0;
-            max-width: 1000px;
-        }
-        
-        .feature {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            animation: fadeIn 1s ease;
-        }
-        
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        /* Back Button */
-        .back-link {
-            position: fixed;
-            top: 2rem;
-            left: 2rem;
-            color: #00FFFF;
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            z-index: 100;
-            background: rgba(10, 22, 40, 0.8);
-            padding: 0.8rem 1.5rem;
-            border-radius: 50px;
-            border: 2px solid rgba(0, 255, 255, 0.3);
-        }
-        
-        .back-link:hover {
-            transform: translateX(-5px);
-            border-color: #00FFFF;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-        }
-        
-        /* Animations */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-            
-            .tagline {
-                font-size: 1.1rem;
-            }
-            
-            .portal-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .logo {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .back-link {
-                top: 1rem;
-                left: 1rem;
-                font-size: 0.9rem;
-                padding: 0.6rem 1rem;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CYBERDUDEBIVASH® | Client Portal</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../../assets/images/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--cyan:#00FFFF;--orange:#FF8C42;--green:#00D09C;--red:#ff3366;--bg:#060C18;--card:#0C1525;--border:rgba(0,255,255,.13);}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#E5E7EB;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+/* AUTH SCREEN */
+.auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:440px;}
+.auth-logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;justify-content:center;}
+.auth-logo img{width:44px;height:44px;border-radius:50%;border:2px solid var(--cyan);}
+.auth-logo span{font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-tabs{display:flex;gap:.5rem;margin-bottom:2rem;background:rgba(0,0,0,.2);border-radius:10px;padding:.3rem;}
+.auth-tab{flex:1;padding:.65rem;border:none;background:none;color:#9CA3AF;font-size:.9rem;font-weight:600;border-radius:8px;cursor:pointer;transition:.2s;}
+.auth-tab.active{background:rgba(0,255,255,.12);color:var(--cyan);}
+.form-group{margin-bottom:1.1rem;}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:#9CA3AF;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px;}
+.form-group input{width:100%;padding:.85rem 1rem;background:rgba(0,0,0,.25);border:1px solid rgba(0,255,255,.18);border-radius:8px;color:#fff;font-size:.95rem;outline:none;transition:.2s;font-family:'Inter',sans-serif;}
+.form-group input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,255,255,.08);}
+.auth-btn{width:100%;padding:.95rem;background:linear-gradient(135deg,var(--cyan),#00A8E8);color:#060C18;font-weight:700;font-size:1rem;border:none;border-radius:8px;cursor:pointer;transition:.25s;font-family:'Inter',sans-serif;}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,255,.3);}
+.auth-msg{margin-top:1rem;padding:.75rem 1rem;border-radius:8px;font-size:.88rem;display:none;}
+.auth-msg.error{background:rgba(255,51,102,.1);border:1px solid rgba(255,51,102,.25);color:var(--red);}
+.auth-msg.success{background:rgba(0,208,156,.1);border:1px solid rgba(0,208,156,.25);color:var(--green);}
+</style>
 </head>
 <body>
-    <div class="cyber-bg"></div>
-    
-    <div class="particles" id="particles"></div>
-    
-    <a href="../../index.html" class="back-link">
-        ← Back to Home
-    </a>
-    
-    <div class="container">
-        <div class="portal-header">
-            <img src="../../assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="logo">
-            <h1>CYBERDUDEBIVASH®</h1>
-            <p class="tagline">Secure Client Portal • Enterprise-Grade Security Management</p>
-        </div>
-        
-        <div class="portal-grid">
-            <div class="portal-card">
-                <div class="card-icon">🔐</div>
-                <h3>Enterprise Login</h3>
-                <p>Access your secure dashboard, manage licenses, and monitor security operations in real-time</p>
-                <a href="./index.html" class="btn">Access Portal</a>
-            </div>
-            
-            <div class="portal-card">
-                <div class="card-icon">📊</div>
-                <h3>Security Dashboard</h3>
-                <p>View threat intelligence, manage tools, track incidents, and access comprehensive analytics</p>
-                <a href="./index.html" class="btn">View Dashboard</a>
-            </div>
-            
-            <div class="portal-card">
-                <div class="card-icon">🛡️</div>
-                <h3>Request Access</h3>
-                <p>New client? Contact us to set up your secure enterprise portal and start protecting your assets</p>
-                <a href="../../contact.html" class="btn btn-secondary">Get Started</a>
-            </div>
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <strong>256-bit Encryption</strong>
-                <p>Military-grade security</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🚀</div>
-                <strong>Real-time Updates</strong>
-                <p>Instant threat alerts</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📈</div>
-                <strong>Advanced Analytics</strong>
-                <p>AI-powered insights</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🌐</div>
-                <strong>24/7 Access</strong>
-                <p>Anywhere, anytime</p>
-            </div>
-        </div>
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="../../assets/images/logo.jpg" alt="CYBERDUDEBIVASH">
+      <span>CYBERDUDEBIVASH®</span>
     </div>
-    
-    <script>
-        // Create floating particles
-        const particlesContainer = document.getElementById('particles');
-        const particleCount = 50;
-        
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 10 + 's';
-            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-            particlesContainer.appendChild(particle);
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Create Account</button>
+    </div>
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="auth-btn" onclick="doLogin()">🔒 Sign In to Portal</button>
+    </div>
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="Your Name" autocomplete="name"></div>
+      <div class="form-group"><label>Work Email</label><input type="email" id="regEmail" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="form-group"><label>Password (min 8 chars)</label><input type="password" id="regPassword" placeholder="••••••••" autocomplete="new-password"></div>
+      <button class="auth-btn" onclick="doRegister()">🚀 Create Free Account</button>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD SCREEN -->
+<div id="dashboardScreen" style="display:none">
+<style>
+.dash-nav{background:rgba(6,12,24,.96);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.dash-nav-brand{display:flex;align-items:center;gap:.75rem;}
+.dash-nav-brand img{width:36px;height:36px;border-radius:50%;border:2px solid var(--cyan);}
+.dash-nav-brand span{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:900;color:var(--cyan);}
+.dash-nav-right{display:flex;align-items:center;gap:1rem;}
+.dash-plan-badge{background:rgba(0,255,255,.1);border:1px solid var(--border);color:var(--cyan);padding:.3rem .9rem;border-radius:20px;font-size:.78rem;font-weight:700;text-transform:uppercase;}
+.dash-signout{background:none;border:1px solid rgba(255,255,255,.15);color:#9CA3AF;padding:.35rem .85rem;border-radius:8px;cursor:pointer;font-size:.82rem;transition:.2s;}
+.dash-signout:hover{border-color:var(--red);color:var(--red);}
+.dash-main{max-width:1200px;margin:0 auto;padding:2.5rem 1.5rem;}
+.dash-greeting{margin-bottom:2.5rem;}
+.dash-greeting h1{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:.4rem;}
+.dash-greeting p{color:#9CA3AF;font-size:.95rem;}
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2.5rem;}
+.dash-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.ds-label{font-size:.78rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.5rem;}
+.ds-value{font-family:'Orbitron',sans-serif;font-size:1.75rem;font-weight:800;color:var(--cyan);}
+.ds-sub{font-size:.78rem;color:#9CA3AF;margin-top:.3rem;}
+.dash-row{display:grid;grid-template-columns:1.4fr 1fr;gap:1.5rem;margin-bottom:2rem;}
+.dash-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;}
+.dash-card h3{font-size:1rem;font-weight:700;color:#fff;margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.06);}
+.api-key-display{display:flex;align-items:center;gap:.75rem;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;margin-bottom:1rem;}
+.api-key-val{font-family:'Fira Code',monospace;font-size:.85rem;color:var(--green);flex:1;word-break:break-all;}
+.btn-sm{padding:.5rem 1rem;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;}
+.btn-copy{background:rgba(0,255,255,.1);color:var(--cyan);border:1px solid var(--border);}
+.btn-copy:hover{background:rgba(0,255,255,.2);}
+.btn-regen{background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2);}
+.btn-regen:hover{background:rgba(255,107,53,.2);}
+.usage-bar-wrap{margin:1rem 0;}
+.usage-bar-labels{display:flex;justify-content:space-between;font-size:.78rem;color:#9CA3AF;margin-bottom:.4rem;}
+.usage-bar-bg{background:rgba(255,255,255,.07);border-radius:20px;height:10px;overflow:hidden;}
+.usage-bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:20px;transition:width .5s ease;}
+.plan-card-inner{text-align:center;padding:1rem 0;}
+.plan-name{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;color:var(--cyan);margin-bottom:.4rem;}
+.plan-limit{font-size:.9rem;color:#9CA3AF;margin-bottom:1.25rem;}
+.btn-upgrade{display:block;width:100%;padding:.85rem;background:linear-gradient(135deg,var(--orange),#ff6b35);color:#fff;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;transition:.2s;font-family:'Inter',sans-serif;text-align:center;}
+.btn-upgrade:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,140,66,.35);}
+.upgrade-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-bottom:2rem;}
+.upgrade-section h3{font-size:1rem;font-weight:700;color:#fff;margin-bottom:1.25rem;}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.plan-option{background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:center;transition:.25s;cursor:pointer;}
+.plan-option:hover,.plan-option.selected{border-color:var(--cyan);background:rgba(0,255,255,.04);}
+.po-name{font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:800;color:#fff;margin-bottom:.3rem;}
+.po-price{font-size:1.4rem;font-weight:700;color:var(--cyan);margin-bottom:.3rem;}
+.po-limit{font-size:.75rem;color:#9CA3AF;}
+.btn-pay{width:100%;margin-top:1.25rem;padding:.85rem;background:linear-gradient(135deg,var(--cyan),#00A8E8);color:#060C18;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;transition:.2s;font-family:'Inter',sans-serif;}
+.btn-pay:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,255,.3);}
+.btn-pay:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.pay-msg{margin-top:.75rem;padding:.65rem 1rem;border-radius:8px;font-size:.85rem;display:none;}
+@media(max-width:900px){.dash-stats{grid-template-columns:repeat(2,1fr);}.dash-row{grid-template-columns:1fr;}.plan-grid{grid-template-columns:1fr;}}
+</style>
+<nav class="dash-nav">
+  <div class="dash-nav-brand">
+    <img src="../../assets/images/logo.jpg" alt="CBD">
+    <span>CYBERDUDEBIVASH®</span>
+  </div>
+  <div class="dash-nav-right">
+    <span class="dash-plan-badge" id="navPlanBadge">FREE</span>
+    <button class="dash-signout" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+<div class="dash-main">
+  <div class="dash-greeting">
+    <h1>Welcome back, <span id="dashUserName">User</span> 👋</h1>
+    <p id="dashUserEmail" style="color:#9CA3AF;font-size:.9rem;"></p>
+  </div>
+  <div class="dash-stats">
+    <div class="dash-stat"><div class="ds-label">Current Plan</div><div class="ds-value" id="statPlan">FREE</div><div class="ds-sub">Active subscription</div></div>
+    <div class="dash-stat"><div class="ds-label">API Calls Today</div><div class="ds-value" id="statUsed">0</div><div class="ds-sub" id="statLimit">of 100 limit</div></div>
+    <div class="dash-stat"><div class="ds-label">Remaining Today</div><div class="ds-value" id="statRemaining">100</div><div class="ds-sub">Resets at midnight UTC</div></div>
+    <div class="dash-stat"><div class="ds-label">Member Since</div><div class="ds-value" style="font-size:1rem;" id="statMember">—</div><div class="ds-sub">CYBERDUDEBIVASH user</div></div>
+  </div>
+</div>
+</div>
+  <div class="dash-main" id="dashMainCont" style="margin-top:0;padding-top:0;max-width:1200px;margin:0 auto;padding:0 1.5rem 2.5rem;">
+  <div class="dash-row">
+    <!-- API KEY CARD -->
+    <div class="dash-card">
+      <h3>🔑 Your API Key</h3>
+      <div class="api-key-display">
+        <span class="api-key-val" id="apiKeyVal">Loading...</span>
+        <button class="btn-sm btn-copy" onclick="copyKey()">Copy</button>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn-sm btn-regen" onclick="regenKey()">🔄 Regenerate Key</button>
+        <a href="https://api.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="btn-sm btn-copy">📡 API Docs →</a>
+      </div>
+      <div style="margin-top:1.25rem;">
+        <div style="font-size:.78rem;color:#9CA3AF;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px;">Usage Today</div>
+        <div class="usage-bar-wrap">
+          <div class="usage-bar-labels">
+            <span id="usageLabel">0 / 100</span>
+            <span id="usagePct">0%</span>
+          </div>
+          <div class="usage-bar-bg"><div class="usage-bar-fill" id="usageBarFill" style="width:0%"></div></div>
+        </div>
+        <div style="font-size:.78rem;color:#9CA3AF;">Example: <code style="color:var(--green)">curl -H "X-API-Key: YOUR_KEY" https://api.cyberdudebivash.com/v1/threat/scan</code></div>
+      </div>
+    </div>
+    <!-- PLAN CARD -->
+    <div class="dash-card">
+      <h3>📦 Subscription Plan</h3>
+      <div class="plan-card-inner">
+        <div class="plan-name" id="pcPlanName">FREE</div>
+        <div class="plan-limit" id="pcPlanLimit">100 API calls/day</div>
+        <button class="btn-upgrade" onclick="scrollToUpgrade()">⚡ Upgrade Plan</button>
+      </div>
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.06);">
+        <div style="font-size:.8rem;color:#9CA3AF;margin-bottom:.6rem;">Platform Access</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" style="font-size:.82rem;color:var(--cyan);display:flex;align-items:center;gap:.4rem;">🛠️ Tools Platform →</a>
+          <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" style="font-size:.82rem;color:var(--cyan);display:flex;align-items:center;gap:.4rem;">📡 Threat Intel →</a>
+          <a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" style="font-size:.82rem;color:var(--cyan);display:flex;align-items:center;gap:.4rem;">🧠 AI Security Hub →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- UPGRADE SECTION -->
+  <div class="upgrade-section" id="upgradeSection">
+    <h3>⚡ Upgrade Your Plan</h3>
+    <div class="plan-grid">
+      <div class="plan-option" onclick="selectPlan('starter',this)">
+        <div class="po-name">STARTER</div>
+        <div class="po-price">$49<span style="font-size:.9rem;color:#9CA3AF">/mo</span></div>
+        <div class="po-limit">1,000 API calls/day</div>
+      </div>
+      <div class="plan-option" onclick="selectPlan('professional',this)">
+        <div class="po-name">PROFESSIONAL</div>
+        <div class="po-price">$299<span style="font-size:.9rem;color:#9CA3AF">/mo</span></div>
+        <div class="po-limit">10,000 API calls/day</div>
+      </div>
+      <div class="plan-option" onclick="selectPlan('enterprise',this)">
+        <div class="po-name">ENTERPRISE</div>
+        <div class="po-price">$999<span style="font-size:.9rem;color:#9CA3AF">/mo</span></div>
+        <div class="po-limit">Unlimited API calls</div>
+      </div>
+    </div>
+    <button class="btn-pay" id="payBtn" disabled onclick="initiatePayment()">Select a plan to continue</button>
+    <div class="pay-msg" id="payMsg"></div>
+  </div>
+  </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+'use strict';
+const API = 'https://api.cyberdudebivash.com'; // update to your backend URL
+let TOKEN = localStorage.getItem('cbd_token');
+let USER  = null;
+let SELECTED_PLAN = null;
+
+/* ── On load: check if already logged in ── */
+window.addEventListener('DOMContentLoaded', function() {
+  if (TOKEN) { fetchMe(); }
+});
+
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',    tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  clearAuthMsg();
+}
+
+function showAuthMsg(msg, type) {
+  var el = document.getElementById('authMsg');
+  el.textContent = msg; el.className = 'auth-msg ' + type; el.style.display = 'block';
+}
+function clearAuthMsg() { document.getElementById('authMsg').style.display = 'none'; }
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showAuthMsg('Email and password required', 'error');
+  try {
+    const res  = await fetch(API + '/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password}) });
+    const data = await res.json();
+    if (!res.ok) return showAuthMsg(data.error || 'Login failed', 'error');
+    TOKEN = data.token;
+    USER  = data.user;
+    localStorage.setItem('cbd_token', TOKEN);
+    showDashboard(USER);
+    fetchUsage();
+  } catch(e) { showAuthMsg('Connection error — check backend URL', 'error'); }
+}
+
+async function doRegister() {
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  if (!name || !email || !password) return showAuthMsg('All fields required', 'error');
+  if (password.length < 8) return showAuthMsg('Password must be 8+ characters', 'error');
+  try {
+    const res  = await fetch(API + '/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, email, password}) });
+    const data = await res.json();
+    if (!res.ok) return showAuthMsg(data.error || 'Registration failed', 'error');
+    TOKEN = data.token;
+    USER  = data.user;
+    localStorage.setItem('cbd_token', TOKEN);
+    showDashboard(USER);
+    fetchUsage();
+  } catch(e) { showAuthMsg('Connection error — check backend URL', 'error'); }
+}
+
+async function fetchMe() {
+  try {
+    const res  = await fetch(API + '/auth/me', { headers:{ Authorization:'Bearer ' + TOKEN } });
+    if (!res.ok) { signOut(); return; }
+    const data = await res.json();
+    USER = data.user;
+    showDashboard(USER);
+    fetchUsage();
+  } catch(e) { signOut(); }
+}
+
+async function fetchUsage() {
+  try {
+    const res  = await fetch(API + '/api/api-usage', { headers:{ Authorization:'Bearer ' + TOKEN } });
+    const data = await res.json();
+    if (!res.ok) return;
+    document.getElementById('statUsed').textContent      = data.usedToday;
+    document.getElementById('statRemaining').textContent = data.remaining;
+    document.getElementById('statLimit').textContent     = 'of ' + data.dailyLimit + ' limit';
+    var pct = Math.min(100, Math.round((data.usedToday / data.dailyLimit) * 100)) || 0;
+    document.getElementById('usageBarFill').style.width  = pct + '%';
+    document.getElementById('usageLabel').textContent    = data.usedToday + ' / ' + data.dailyLimit;
+    document.getElementById('usagePct').textContent      = pct + '%';
+  } catch(e) {}
+}
+</script>
+<script>
+function showDashboard(user) {
+  document.getElementById('authScreen').style.display      = 'none';
+  document.getElementById('dashboardScreen').style.display = '';
+  document.getElementById('dashUserName').textContent  = user.name || 'User';
+  document.getElementById('dashUserEmail').textContent = user.email;
+  var plan = (user.plan || 'free').toUpperCase();
+  document.getElementById('navPlanBadge').textContent = plan;
+  document.getElementById('statPlan').textContent     = plan;
+  document.getElementById('pcPlanName').textContent   = plan;
+  var limits = {free:100,starter:1000,professional:10000,enterprise:'Unlimited'};
+  document.getElementById('pcPlanLimit').textContent  = (limits[user.plan] || 100) + ' API calls/day';
+  document.getElementById('statMember').textContent   = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
+  if (user.apiKey) {
+    document.getElementById('apiKeyVal').textContent = user.apiKey;
+  }
+}
+
+function copyKey() {
+  var key = document.getElementById('apiKeyVal').textContent;
+  navigator.clipboard.writeText(key).then(function() {
+    var btn = event.target; btn.textContent = '✅ Copied!';
+    setTimeout(function(){btn.textContent = 'Copy';}, 2000);
+  });
+}
+
+async function regenKey() {
+  if (!confirm('Regenerate your API key? Your existing key will stop working immediately.')) return;
+  try {
+    var res  = await fetch(API + '/api/generate-api-key', { method:'POST', headers:{ Authorization:'Bearer ' + TOKEN } });
+    var data = await res.json();
+    if (data.apiKey) {
+      document.getElementById('apiKeyVal').textContent = data.apiKey;
+      if (USER) USER.apiKey = data.apiKey;
+    }
+  } catch(e) { alert('Failed to regenerate key'); }
+}
+
+function signOut() {
+  localStorage.removeItem('cbd_token');
+  TOKEN = null; USER = null;
+  document.getElementById('authScreen').style.display      = '';
+  document.getElementById('dashboardScreen').style.display = 'none';
+}
+
+function scrollToUpgrade() {
+  document.getElementById('upgradeSection').scrollIntoView({behavior:'smooth'});
+}
+
+function selectPlan(plan, el) {
+  SELECTED_PLAN = plan;
+  document.querySelectorAll('.plan-option').forEach(function(p){p.classList.remove('selected');});
+  el.classList.add('selected');
+  var labels = {starter:'Starter $49/mo',professional:'Professional $299/mo',enterprise:'Enterprise $999/mo'};
+  var payBtn = document.getElementById('payBtn');
+  payBtn.disabled   = false;
+  payBtn.textContent = '🔒 Pay for ' + labels[plan];
+}
+
+async function initiatePayment() {
+  if (!SELECTED_PLAN) return;
+  var payBtn = document.getElementById('payBtn');
+  var payMsg = document.getElementById('payMsg');
+  payBtn.disabled = true; payBtn.textContent = 'Creating order...';
+  try {
+    var res  = await fetch(API + '/payment/create-order', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + TOKEN },
+      body: JSON.stringify({ plan: SELECTED_PLAN })
+    });
+    var order = await res.json();
+    if (!res.ok) throw new Error(order.error || 'Failed to create order');
+
+    var options = {
+      key:      order.keyId,
+      amount:   order.amount,
+      currency: order.currency,
+      name:     'CYBERDUDEBIVASH Pvt. Ltd.',
+      description: order.planLabel,
+      image:    '../../assets/images/logo.jpg',
+      order_id: order.orderId,
+      handler: async function(response) {
+        var vRes = await fetch(API + '/payment/verify-payment', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + TOKEN },
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+            plan: SELECTED_PLAN,
+          })
+        });
+        var vData = await vRes.json();
+        if (vData.success) {
+          payMsg.style.cssText = 'display:block;background:rgba(0,208,156,.1);color:#00D09C;border:1px solid rgba(0,208,156,.25);padding:.75rem;border-radius:8px;margin-top:.75rem;font-size:.88rem;';
+          payMsg.textContent = vData.message;
+          if (USER) USER.plan = SELECTED_PLAN;
+          showDashboard(USER);
+          fetchUsage();
         }
-        
-        // Console branding
-        console.log('%c🛡️ CYBERDUDEBIVASH® Client Portal', 'color: #00FFFF; font-size: 20px; font-weight: bold;');
-        console.log('%cSecure Enterprise Access', 'color: #FF8C42; font-size: 14px;');
-    </script>
-<script src="assets/js/layout-loader.js"></script></body>
+      },
+      prefill: { name: USER ? USER.name : '', email: USER ? USER.email : '' },
+      theme:   { color: '#00FFFF' },
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+    rzp.on('payment.failed', function(r){ payMsg.style.cssText='display:block;background:rgba(255,51,102,.1);color:#ff3366;border:1px solid rgba(255,51,102,.25);padding:.75rem;border-radius:8px;margin-top:.75rem;font-size:.88rem;'; payMsg.textContent='Payment failed: ' + r.error.description; });
+  } catch(err) {
+    payMsg.style.cssText = 'display:block;background:rgba(255,51,102,.1);color:#ff3366;border:1px solid rgba(255,51,102,.25);padding:.75rem;border-radius:8px;margin-top:.75rem;font-size:.88rem;';
+    payMsg.textContent = '❌ ' + (err.message || 'Payment error');
+  } finally { payBtn.disabled = false; payBtn.textContent = 'Retry Payment'; }
+}
+</script>
+</body>
 </html>

@@ -74,8 +74,8 @@
     { sev: 'HIGH',     msg: 'Suspicious lateral movement detected in enterprise AD environments' },
   ];
   var sevColor = { CRITICAL: '#ff3366', HIGH: '#ff6b35', MEDIUM: '#ffd700' };
-  // All threat links route to intel platform
-  var INTEL_URL = 'https://intel.cyberdudebivash.com/';
+  /* ===== BACKEND CONFIG ===== */
+  var CBD_API = 'https://api.cyberdudebivash.com'; // set to your deployed backend
   var inner = document.getElementById('tickerInner');
   if (inner) {
     var doubled = threats.concat(threats);
