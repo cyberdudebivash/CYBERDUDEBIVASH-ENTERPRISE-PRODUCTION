@@ -1,4 +1,4 @@
-📋 Compliance & Regulatory Alignment — CYBERDUDEBIVASH®
+﻿📋 Compliance & Regulatory Alignment — CYBERDUDEBIVASH®
 
 CYBERDUDEBIVASH® is committed to building and operating cybersecurity platforms, tools, and services that align with recognized security, privacy, and compliance best practices.
 
@@ -20,7 +20,7 @@ Establish a foundation for future formal certifications
 
 CYBERDUDEBIVASH®
 Operated by CyberDudeBivash Pvt. Ltd.
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 
 CYBERDUDEBIVASH® delivers:
 
@@ -150,7 +150,7 @@ For compliance, security, or regulatory inquiries, contact:
 
 CYBERDUDEBIVASH®
 CyberDudeBivash Pvt. Ltd.
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 🌐 https://www.cyberdudebivash.com
 
 📧 bivash@cyberdudebivash.com

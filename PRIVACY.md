@@ -1,4 +1,4 @@
-🔐 Privacy Policy — CYBERDUDEBIVASH®
+﻿🔐 Privacy Policy — CYBERDUDEBIVASH®
 
 CYBERDUDEBIVASH® is committed to protecting the privacy and security of individuals, organizations, and customers who interact with our platforms, tools, services, and websites.
 
@@ -142,7 +142,7 @@ For privacy-related questions or requests, contact:
 
 CYBERDUDEBIVASH®
 Global Cybersecurity Tools, Services & Threat Research
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 🌐 https://www.cyberdudebivash.com
 
 📧 bivash@cyberdudebivash.com

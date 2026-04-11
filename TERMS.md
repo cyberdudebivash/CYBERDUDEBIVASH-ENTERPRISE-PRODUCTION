@@ -1,4 +1,4 @@
-📜 Terms of Use — CYBERDUDEBIVASH®
+﻿📜 Terms of Use — CYBERDUDEBIVASH®
 
 These Terms of Use (“Terms”) govern access to and use of CYBERDUDEBIVASH® websites, platforms, tools, applications, services, and content.
 
@@ -18,7 +18,7 @@ Enterprise cybersecurity services
 
 Training and educational resources
 
-All offerings are operated by CyberDudeBivash Pvt. Ltd., Bhubaneswar, Odisha, India.
+All offerings are operated by CyberDudeBivash Pvt. Ltd., CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019.
 
 🔐 Acceptable Use
 
@@ -148,7 +148,7 @@ For questions regarding these Terms, contact:
 
 CYBERDUDEBIVASH®
 CyberDudeBivash Pvt. Ltd.
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 🌐 https://www.cyberdudebivash.com
 
 📧 bivash@cyberdudebivash.com

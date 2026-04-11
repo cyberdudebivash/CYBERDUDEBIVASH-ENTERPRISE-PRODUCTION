@@ -1,4 +1,4 @@
-🤝 Responsible Disclosure Policy — CYBERDUDEBIVASH®
+﻿🤝 Responsible Disclosure Policy — CYBERDUDEBIVASH®
 
 CYBERDUDEBIVASH® is committed to maintaining the security and integrity of our platforms, tools, research infrastructure, and customer-facing services.
 
@@ -131,7 +131,7 @@ Explore future partnerships or research opportunities
 
 CYBERDUDEBIVASH®
 Global Cybersecurity Tools, Services & Threat Research
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 🌐 https://www.cyberdudebivash.com
 
 📧 bivash@cyberdudebivash.com

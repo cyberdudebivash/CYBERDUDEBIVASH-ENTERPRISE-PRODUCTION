@@ -1,4 +1,4 @@
-🔐 Security Policy — CYBERDUDEBIVASH®
+﻿🔐 Security Policy — CYBERDUDEBIVASH®
 
 CYBERDUDEBIVASH® takes the security of our platforms, tools, research infrastructure, and customer-facing services seriously.
 
@@ -104,7 +104,7 @@ CYBERDUDEBIVASH® reserves the right to take legal action against malicious or i
 
 CYBERDUDEBIVASH®
 Global Cybersecurity Tools, Services & Threat Research
-Bhubaneswar, Odisha, India
+CYBERDUDEBIVASH PRIVATE LIMITED, Bivash Kumar Nayaks Enclave, 29, Korai-Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019
 🌐 https://www.cyberdudebivash.com
 
 📧 bivash@cyberdudebivash.com
