@@ -6,6 +6,22 @@
 (function () {
   'use strict';
 
+  /* ===== SMOOTH SCROLL FOR HERO CTA ===== */
+  document.querySelectorAll('.hero-scroll-cta, a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        var target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          var offset = 90;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
+      }
+    });
+  });
+
   /* ===== COUNTER ANIMATION ===== */
   function animateCounter(el) {
     const target = parseFloat(el.dataset.target) || 0;
