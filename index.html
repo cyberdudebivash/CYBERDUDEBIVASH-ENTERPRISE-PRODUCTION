@@ -35,6 +35,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./assets/css/style.css">
 <link rel="stylesheet" href="./assets/css/enterprise.css">
+<link rel="stylesheet" href="./assets/css/addons.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MDT720X9YW"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MDT720X9YW',{page_path:window.location.pathname});</script>
@@ -221,6 +222,7 @@
     </div>
     <div class="platform-grid">
       <div class="platform-card">
+        <div class="product-brand-tag pbt-apex">SENTINEL APEX™</div>
         <div class="pc-icon">🧠</div>
         <h3>AI Threat Intelligence</h3>
         <p>Real-time IOC detection, APT tracking, dark web monitoring, and predictive threat scoring powered by machine learning.</p>
@@ -229,6 +231,7 @@
       </div>
       <div class="platform-card platform-card-featured">
         <div class="pc-badge">MOST POPULAR</div>
+        <div class="product-brand-tag pbt-socx">CDB SOC-X™</div>
         <div class="pc-icon">🏢</div>
         <h3>SOC-as-a-Service</h3>
         <p>24/7 managed security operations center with AI-augmented analysts, SIEM integration, and sub-15-minute response SLA.</p>
@@ -250,6 +253,7 @@
         <a href="services.html" class="pc-link">Explore →</a>
       </div>
       <div class="platform-card">
+        <div class="product-brand-tag pbt-core">CDB THREATCORE™</div>
         <div class="pc-icon">🛠️</div>
         <h3>Security Apps Suite</h3>
         <p>100+ production-grade cybersecurity tools for threat hunting, malware analysis, network scanning, and automation.</p>
@@ -257,6 +261,7 @@
         <a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="pc-link">Explore →</a>
       </div>
       <div class="platform-card">
+        <div class="product-brand-tag pbt-shield">CDB AI SHIELD™</div>
         <div class="pc-icon">🤖</div>
         <h3>AI Security Automation</h3>
         <p>MCP server integration, AI-driven playbooks, automated threat hunting, and LLM-powered security analysis.</p>
@@ -557,6 +562,161 @@
     </div>
   </div>
 </section>
+
+<!-- GLOBAL ATTACK MAP -->
+<section class="attack-map-section" id="attackMap" aria-label="Global cyber attack map">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag section-tag-red">🌐 GLOBAL</span>
+      <h2 class="section-title">Live Global Cyber Attack Map</h2>
+      <p class="section-sub">Real-time visualization of active cyber attacks, threat origins, and targeted regions worldwide</p>
+    </div>
+    <div class="attack-map-wrap">
+      <div class="attack-map-header">
+        <div class="attack-map-header-left">
+          <div class="map-live-badge"><span class="map-live-dot"></span> LIVE</div>
+          <span style="font-size:.8rem;color:var(--text-muted)">Updating every 3 seconds</span>
+        </div>
+        <div class="attack-map-stats">
+          <div class="ams-item"><div class="ams-num" id="mapActiveAttacks">0</div><div class="ams-lbl">Active Attacks</div></div>
+          <div class="ams-item"><div class="ams-num" id="mapBlockedTotal">0</div><div class="ams-lbl">Blocked Today</div></div>
+          <div class="ams-item"><div class="ams-num" id="mapCountries">0</div><div class="ams-lbl">Countries</div></div>
+        </div>
+      </div>
+      <canvas id="attackMapCanvas" aria-label="Global cyber attack visualization"></canvas>
+      <div class="attack-map-legend">
+        <div class="aml-item"><span class="aml-dot aml-dot-critical"></span>Critical Attack</div>
+        <div class="aml-item"><span class="aml-dot aml-dot-high"></span>High Severity</div>
+        <div class="aml-item"><span class="aml-dot aml-dot-medium"></span>Medium Severity</div>
+        <div class="aml-item"><span class="aml-line"></span>Attack Path</div>
+        <div class="aml-item" style="margin-left:auto">
+          <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">📡 Full Intel Dashboard →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="dashboard-preview-section" id="dashboardPreview" aria-label="Platform dashboard preview">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">SEE INSIDE</span>
+      <h2 class="section-title">See Inside the Platform</h2>
+      <p class="section-sub">Experience a live simulation of our enterprise security dashboard — SOC monitoring, threat intelligence, and AI analysis in one view</p>
+    </div>
+    <div class="dashboard-preview-wrap">
+      <!-- Login Screen -->
+      <div class="dbp-login" id="dbpLogin">
+        <div class="dbp-login-box">
+          <div class="dbp-login-logo">
+            <span class="dbp-logo-icon">🛡️</span>
+            <h3>CYBERDUDEBIVASH®</h3>
+            <p>Secure Platform Access</p>
+          </div>
+          <div class="dbp-field">
+            <label>Email Address</label>
+            <input type="email" id="dbpEmail" placeholder="analyst@company.com" value="demo@cyberdudebivash.com">
+          </div>
+          <div class="dbp-field">
+            <label>Password</label>
+            <input type="password" id="dbpPass" placeholder="••••••••••••" value="••••••••••••">
+          </div>
+          <button class="dbp-login-btn" id="dbpLoginBtn">
+            <span>🔐</span><span>Enter Dashboard</span>
+          </button>
+          <p class="dbp-demo-note">🎭 This is a UI preview — no real authentication required</p>
+        </div>
+      </div>
+      <!-- Dashboard -->
+      <div class="dbp-dashboard" id="dbpDashboard">
+        <div class="dbp-topbar">
+          <div class="dbp-topbar-brand">
+            <span>🛡️</span>
+            <strong>SENTINEL APEX™ — Security Operations Center</strong>
+          </div>
+          <div class="dbp-topbar-right">
+            <div class="dbp-status-ok"><span class="dbp-status-dot"></span>All Systems Operational</div>
+            <span class="dbp-user">demo@cyberdudebivash.com</span>
+            <button class="dbp-close-btn" id="dbpCloseBtn">✕ Exit Preview</button>
+          </div>
+        </div>
+        <div class="dbp-tabs">
+          <div class="dbp-tab active" data-tab="soc">🔍 SOC Dashboard</div>
+          <div class="dbp-tab" data-tab="intel">📡 Threat Intelligence</div>
+          <div class="dbp-tab" data-tab="ai">🤖 AI Security</div>
+        </div>
+        <div class="dbp-content">
+          <!-- SOC Pane -->
+          <div class="dbp-pane active" id="dbp-soc">
+            <div class="dbp-soc-grid">
+              <div class="dbp-metric-card">
+                <div class="dbp-metric-val red" id="dbpActiveAlerts">14</div>
+                <div class="dbp-metric-lbl">Active Alerts</div>
+              </div>
+              <div class="dbp-metric-card">
+                <div class="dbp-metric-val orange" id="dbpOpenInc">3</div>
+                <div class="dbp-metric-lbl">Open Incidents</div>
+              </div>
+              <div class="dbp-metric-card">
+                <div class="dbp-metric-val green">8m 24s</div>
+                <div class="dbp-metric-lbl">Avg Response Time</div>
+              </div>
+            </div>
+            <div class="dbp-alert-list" id="dbpAlertList">
+              <div class="dbp-alert-item crit"><span class="dbp-alert-sev crit">CRITICAL</span><span class="dbp-alert-msg">Ransomware lateral movement — DC-PROD-01 — Quarantined</span><span class="dbp-alert-time">0m ago</span></div>
+              <div class="dbp-alert-item high"><span class="dbp-alert-sev high">HIGH</span><span class="dbp-alert-msg">Suspicious PowerShell execution — WORKSTATION-44 — Investigating</span><span class="dbp-alert-time">3m ago</span></div>
+              <div class="dbp-alert-item high"><span class="dbp-alert-sev high">HIGH</span><span class="dbp-alert-msg">Brute-force SSH — 185.220.101.x — Blocked by WAF</span><span class="dbp-alert-time">7m ago</span></div>
+              <div class="dbp-alert-item med"><span class="dbp-alert-sev med">MEDIUM</span><span class="dbp-alert-msg">DNS tunneling detected — ENDPOINT-12 — Monitoring</span><span class="dbp-alert-time">12m ago</span></div>
+            </div>
+          </div>
+          <!-- Threat Intel Pane -->
+          <div class="dbp-pane" id="dbp-intel">
+            <table class="dbp-ioc-table">
+              <thead><tr><th>IOC</th><th>Type</th><th>APT Group</th><th>Risk Score</th><th>First Seen</th></tr></thead>
+              <tbody id="dbpIocTable">
+                <tr><td>185.220.101.47</td><td>IP</td><td>APT-29</td><td><span class="dbp-risk-badge dbp-risk-crit">98</span></td><td>2m ago</td></tr>
+                <tr><td>malware-cdn.onion</td><td>Domain</td><td>Lazarus</td><td><span class="dbp-risk-badge dbp-risk-crit">96</span></td><td>8m ago</td></tr>
+                <tr><td>3a2b1c4d5e6f7a8b9c0d</td><td>Hash</td><td>Sandworm</td><td><span class="dbp-risk-badge dbp-risk-high">84</span></td><td>15m ago</td></tr>
+                <tr><td>192.168.evil.ru</td><td>Domain</td><td>APT-41</td><td><span class="dbp-risk-badge dbp-risk-high">79</span></td><td>22m ago</td></tr>
+                <tr><td>91.108.56.130</td><td>IP</td><td>Unknown</td><td><span class="dbp-risk-badge dbp-risk-med">61</span></td><td>34m ago</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- AI Security Pane -->
+          <div class="dbp-pane" id="dbp-ai">
+            <div class="dbp-ai-grid">
+              <div class="dbp-ai-panel">
+                <h4>🤖 AI Threat Analysis</h4>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">⚠️</span><span>Ransomware pattern detected matching LockBit 3.0 variant — confidence 94%</span></div>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">🔍</span><span>Lateral movement path: WORKSTATION-44 → DC-PROD-01 → FILESERVER-02</span></div>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">📊</span><span>Predicted next target: BACKUP-SERVER — risk score elevated to 87/100</span></div>
+              </div>
+              <div class="dbp-ai-panel">
+                <h4>🛡️ Suggested Actions</h4>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">1️⃣</span><span>Isolate DC-PROD-01 immediately from network segment</span></div>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">2️⃣</span><span>Deploy emergency patch CVE-2024-21338 on affected nodes</span></div>
+                <div class="dbp-ai-item"><span class="dbp-ai-icon">3️⃣</span><span>Rotate all domain admin credentials — possible credential leak</span></div>
+              </div>
+              <div class="dbp-ai-panel">
+                <h4>📈 Threat Predictions</h4>
+                <div class="dbp-ai-bar-wrap"><div class="dbp-ai-bar-lbl"><span>Ransomware Risk</span><span>87%</span></div><div class="dbp-ai-bar"><div class="dbp-ai-bar-fill red" style="width:87%"></div></div></div>
+                <div class="dbp-ai-bar-wrap"><div class="dbp-ai-bar-lbl"><span>Data Exfiltration</span><span>62%</span></div><div class="dbp-ai-bar"><div class="dbp-ai-bar-fill purple" style="width:62%"></div></div></div>
+                <div class="dbp-ai-bar-wrap"><div class="dbp-ai-bar-lbl"><span>Phishing Wave</span><span>45%</span></div><div class="dbp-ai-bar"><div class="dbp-ai-bar-fill cyan" style="width:45%"></div></div></div>
+              </div>
+              <div class="dbp-ai-panel" style="text-align:center">
+                <h4>⚡ Overall Risk Score</h4>
+                <div class="dbp-ai-score high-risk" id="dbpRiskScore">87</div>
+                <div style="font-size:.72rem;color:var(--c-red);font-weight:600;margin-bottom:1rem">HIGH RISK — IMMEDIATE ACTION</div>
+                <a href="contact.html" class="btn btn-sm btn-secondary" style="width:100%;justify-content:center">🚨 Escalate to SOC Team</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <footer class="footer" role="contentinfo">
   <div class="container">
     <div class="footer-grid">
@@ -616,9 +776,11 @@
   <a href="contact.html" class="fcta-btn fcta-primary" aria-label="Contact us"><span class="fcta-icon">💬</span><span class="fcta-text">Free Consultation</span></a>
   <a href="tel:+918179881447" class="fcta-btn fcta-phone" aria-label="Call us"><span class="fcta-icon">📞</span><span class="fcta-text">+91 81798 81447</span></a>
 </div>
+<button class="sound-toggle-btn" id="soundToggleBtn" title="Toggle sound alerts for critical threats" aria-label="Toggle sound alerts">🔇 Sound Alerts</button>
 <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
 <script src="./assets/js/matrix.js" defer></script>
 <script src="./assets/js/main.js" defer></script>
 <script src="./assets/js/enterprise.js" defer></script>
+<script src="./assets/js/addons.js" defer></script>
 </body>
 </html>
