@@ -71,6 +71,7 @@
 <link rel="stylesheet" href="./assets/css/addons.css">
 <link rel="stylesheet" href="./assets/css/elite-upgrade.css">
 <link rel="stylesheet" href="./assets/css/revenue-engine.css">
+<link rel="stylesheet" href="./assets/css/godmode-ecosystem.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MDT720X9YW"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MDT720X9YW',{page_path:window.location.pathname});</script>
@@ -176,44 +177,78 @@
   <div class="hero-bg-grid" aria-hidden="true"></div>
   <div class="hero-radial-glow" aria-hidden="true"></div>
   <div class="container">
-    <!-- ══ BRAND HEADER — AREA 1 ══ -->
-    <div class="hero-v5-brand-bar">
-      <div class="hvbb-left">
-        <div class="hvbb-logo-block">
-          <span class="hvbb-hex">⬡</span>
-          <span class="hvbb-hex2">⬡</span>
+    <!-- ══ GOD MODE BRAND BANNER — AREA 1 ══ -->
+    <div class="gm-brand-banner">
+      <div class="gm-bb-scan"></div>
+      <div class="gm-bb-glow-left"></div>
+      <div class="gm-bb-glow-right"></div>
+
+      <div class="gm-bb-left">
+        <div class="gm-bb-shield">
+          <svg width="36" height="40" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 2L34 9V20C34 29.5 27 37.5 18 40C9 37.5 2 29.5 2 20V9L18 2Z"
+              fill="url(#shieldGrad)" stroke="rgba(0,255,255,0.6)" stroke-width="1.5"/>
+            <path d="M18 10L27 14V20C27 25.5 23 30.5 18 32C13 30.5 9 25.5 9 20V14L18 10Z"
+              fill="url(#shieldInner)" opacity="0.8"/>
+            <path d="M14 20L17 23L22 17" stroke="#00FFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="shieldGrad" x1="2" y1="2" x2="34" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#FF8C42" stop-opacity="0.15"/>
+              </linearGradient>
+              <linearGradient id="shieldInner" x1="9" y1="10" x2="27" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#a769ff" stop-opacity="0.2"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-        <div class="hvbb-text-block">
-          <span class="hvbb-name">CYBERDUDEBIVASH</span>
-          <span class="hvbb-divider">—</span>
-          <span class="hvbb-tagline">AI POWERED CYBERSECURITY VENDOR</span>
+        <div class="gm-bb-identity">
+          <div class="gm-bb-name-row">
+            <span class="gm-bb-name">CYBERDUDEBIVASH</span>
+            <span class="gm-bb-reg">®</span>
+            <div class="gm-bb-live-pill">
+              <span class="gm-bb-live-ring"></span>
+              <span class="gm-bb-live-dot"></span>
+              LIVE
+            </div>
+          </div>
+          <div class="gm-bb-tagline">
+            <span class="gm-bb-tag-text">AI POWERED CYBERSECURITY VENDOR</span>
+            <span class="gm-bb-cursor-blink">_</span>
+          </div>
         </div>
-        <span class="hvbb-live-badge"><span class="hvbb-live-dot"></span>LIVE</span>
       </div>
-      <div class="hvbb-stats">
-        <div class="hvbb-stat">
-          <span class="hvbb-stat-n">500K+</span>
-          <span class="hvbb-stat-l">Threat IOCs</span>
+
+      <div class="gm-bb-stats-row">
+        <div class="gm-bb-stat gm-stat-cyan">
+          <span class="gm-bbs-num">500K+</span>
+          <span class="gm-bbs-icon">&#x25B2;</span>
+          <span class="gm-bbs-lbl">Threat IOCs</span>
         </div>
-        <div class="hvbb-stat-sep"></div>
-        <div class="hvbb-stat">
-          <span class="hvbb-stat-n">50+</span>
-          <span class="hvbb-stat-l">Countries</span>
+        <div class="gm-bb-stat-div"></div>
+        <div class="gm-bb-stat gm-stat-purple">
+          <span class="gm-bbs-num">50+</span>
+          <span class="gm-bbs-icon">&#x25B2;</span>
+          <span class="gm-bbs-lbl">Countries</span>
         </div>
-        <div class="hvbb-stat-sep"></div>
-        <div class="hvbb-stat">
-          <span class="hvbb-stat-n">100+</span>
-          <span class="hvbb-stat-l">AI Tools</span>
+        <div class="gm-bb-stat-div"></div>
+        <div class="gm-bb-stat gm-stat-orange">
+          <span class="gm-bbs-num">100+</span>
+          <span class="gm-bbs-icon">&#x25B2;</span>
+          <span class="gm-bbs-lbl">AI Tools</span>
         </div>
-        <div class="hvbb-stat-sep"></div>
-        <div class="hvbb-stat">
-          <span class="hvbb-stat-n">99.9%</span>
-          <span class="hvbb-stat-l">Uptime SLA</span>
+        <div class="gm-bb-stat-div"></div>
+        <div class="gm-bb-stat gm-stat-green">
+          <span class="gm-bbs-num">99.9%</span>
+          <span class="gm-bbs-icon">&#x25B2;</span>
+          <span class="gm-bbs-lbl">Uptime SLA</span>
         </div>
-        <div class="hvbb-stat-sep"></div>
-        <div class="hvbb-stat">
-          <span class="hvbb-stat-n">24/7</span>
-          <span class="hvbb-stat-l">SOC Active</span>
+        <div class="gm-bb-stat-div"></div>
+        <div class="gm-bb-stat gm-stat-red">
+          <span class="gm-bbs-num">24/7</span>
+          <span class="gm-bbs-icon">&#x25B2;</span>
+          <span class="gm-bbs-lbl">SOC Active</span>
         </div>
       </div>
     </div>
@@ -264,72 +299,138 @@
       <!-- RIGHT: ECOSYSTEM PANEL + Live Threat Terminal — AREA 2 -->
       <div class="hero-v5-right-col">
 
-        <!-- ECOSYSTEM PANEL -->
-        <div class="hero-ecosystem-panel">
-          <div class="hep-header">
-            <span class="hep-live-dot"></span>
-            <span class="hep-title">CYBERDUDEBIVASH® ECOSYSTEM</span>
-            <span class="hep-count">5 LIVE PLATFORMS</span>
+        <!-- ══ GOD MODE ECOSYSTEM PANEL — AREA 2 ══ -->
+        <div class="gm-eco-panel">
+          <div class="gm-eco-scan"></div>
+
+          <div class="gm-eco-header">
+            <div class="gm-eco-hdr-left">
+              <span class="gm-eco-pulse"></span>
+              <span class="gm-eco-hdr-title">CYBERDUDEBIVASH<sup>&#174;</sup> ECOSYSTEM</span>
+            </div>
+            <div class="gm-eco-hdr-right">
+              <span class="gm-eco-count-badge">5 LIVE PLATFORMS</span>
+            </div>
           </div>
-          <div class="hep-cards">
 
-            <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="hep-card hep-card-intel">
-              <div class="hep-card-icon">📡</div>
-              <div class="hep-card-body">
-                <div class="hep-card-name">SENTINEL APEX™</div>
-                <div class="hep-card-desc">Threat Intel Platform</div>
-                <div class="hep-card-domain">intel.cyberdudebivash.com</div>
-              </div>
-              <div class="hep-card-badge hep-live">LIVE</div>
-              <span class="hep-arrow">→</span>
-            </a>
+          <!-- CARD 1: SENTINEL APEX -->
+          <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="gm-eco-card gm-card-1">
+            <div class="gm-eco-card-accent"></div>
+            <div class="gm-eco-card-glow"></div>
+            <div class="gm-eco-icon-wrap gm-icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <div class="gm-eco-card-body">
+              <div class="gm-eco-card-name gm-name-cyan">SENTINEL APEX&#x2122;</div>
+              <div class="gm-eco-card-desc">Threat Intelligence Platform</div>
+              <div class="gm-eco-card-domain">intel.cyberdudebivash.com</div>
+            </div>
+            <div class="gm-eco-card-right">
+              <span class="gm-live-badge gm-live-cyan">
+                <span class="gm-live-ring gm-ring-cyan"></span>LIVE
+              </span>
+              <span class="gm-eco-arrow gm-arrow-cyan">&#8594;</span>
+            </div>
+          </a>
 
-            <a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="hep-card hep-card-ai">
-              <div class="hep-card-icon">🧠</div>
-              <div class="hep-card-body">
-                <div class="hep-card-name">AI SECURITY HUB</div>
-                <div class="hep-card-desc">AI-Powered Security Analysis</div>
-                <div class="hep-card-domain">cyberdudebivash.in</div>
-              </div>
-              <div class="hep-card-badge hep-live">LIVE</div>
-              <span class="hep-arrow">→</span>
-            </a>
+          <!-- CARD 2: AI SECURITY HUB -->
+          <a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="gm-eco-card gm-card-2">
+            <div class="gm-eco-card-accent"></div>
+            <div class="gm-eco-card-glow"></div>
+            <div class="gm-eco-icon-wrap gm-icon-purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
+                <line x1="10" y1="21" x2="14" y2="21"/>
+                <line x1="9" y1="18" x2="15" y2="18"/>
+              </svg>
+            </div>
+            <div class="gm-eco-card-body">
+              <div class="gm-eco-card-name gm-name-purple">AI SECURITY HUB</div>
+              <div class="gm-eco-card-desc">AI-Powered Security Analysis</div>
+              <div class="gm-eco-card-domain">cyberdudebivash.in</div>
+            </div>
+            <div class="gm-eco-card-right">
+              <span class="gm-live-badge gm-live-purple">
+                <span class="gm-live-ring gm-ring-purple"></span>LIVE
+              </span>
+              <span class="gm-eco-arrow gm-arrow-purple">&#8594;</span>
+            </div>
+          </a>
 
-            <a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="hep-card hep-card-tools">
-              <div class="hep-card-icon">🛠️</div>
-              <div class="hep-card-body">
-                <div class="hep-card-name">TOOLS PLATFORM</div>
-                <div class="hep-card-desc">100+ Security Tools &amp; Apps</div>
-                <div class="hep-card-domain">tools.cyberdudebivash.com</div>
-              </div>
-              <div class="hep-card-badge hep-live">LIVE</div>
-              <span class="hep-arrow">→</span>
-            </a>
+          <!-- CARD 3: TOOLS PLATFORM -->
+          <a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="gm-eco-card gm-card-3">
+            <div class="gm-eco-card-accent"></div>
+            <div class="gm-eco-card-glow"></div>
+            <div class="gm-eco-icon-wrap gm-icon-orange">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="gm-eco-card-body">
+              <div class="gm-eco-card-name gm-name-orange">TOOLS PLATFORM</div>
+              <div class="gm-eco-card-desc">100+ Security Tools &amp; Apps</div>
+              <div class="gm-eco-card-domain">tools.cyberdudebivash.com</div>
+            </div>
+            <div class="gm-eco-card-right">
+              <span class="gm-live-badge gm-live-orange">
+                <span class="gm-live-ring gm-ring-orange"></span>LIVE
+              </span>
+              <span class="gm-eco-arrow gm-arrow-orange">&#8594;</span>
+            </div>
+          </a>
 
-            <a href="https://blog.cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="hep-card hep-card-blog">
-              <div class="hep-card-icon">📝</div>
-              <div class="hep-card-body">
-                <div class="hep-card-name">INTELLIGENCE BLOG</div>
-                <div class="hep-card-desc">Threat Research &amp; Advisories</div>
-                <div class="hep-card-domain">blog.cyberdudebivash.in</div>
-              </div>
-              <div class="hep-card-badge hep-live">LIVE</div>
-              <span class="hep-arrow">→</span>
-            </a>
+          <!-- CARD 4: INTELLIGENCE BLOG -->
+          <a href="https://blog.cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="gm-eco-card gm-card-4">
+            <div class="gm-eco-card-accent"></div>
+            <div class="gm-eco-card-glow"></div>
+            <div class="gm-eco-icon-wrap gm-icon-green">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+              </svg>
+            </div>
+            <div class="gm-eco-card-body">
+              <div class="gm-eco-card-name gm-name-green">INTELLIGENCE BLOG</div>
+              <div class="gm-eco-card-desc">Threat Research &amp; Advisories</div>
+              <div class="gm-eco-card-domain">blog.cyberdudebivash.in</div>
+            </div>
+            <div class="gm-eco-card-right">
+              <span class="gm-live-badge gm-live-green">
+                <span class="gm-live-ring gm-ring-green"></span>LIVE
+              </span>
+              <span class="gm-eco-arrow gm-arrow-green">&#8594;</span>
+            </div>
+          </a>
 
-            <a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" rel="noopener noreferrer" class="hep-card hep-card-api">
-              <div class="hep-card-icon">⚙️</div>
-              <div class="hep-card-body">
-                <div class="hep-card-name">INTELLIGENCE API</div>
-                <div class="hep-card-desc">REST API — Threat Data at Scale</div>
-                <div class="hep-card-domain">intel.cyberdudebivash.com/api</div>
-              </div>
-              <div class="hep-card-badge hep-api">FREE</div>
-              <span class="hep-arrow">→</span>
-            </a>
+          <!-- CARD 5: INTELLIGENCE API -->
+          <a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" rel="noopener noreferrer" class="gm-eco-card gm-card-5">
+            <div class="gm-eco-card-accent"></div>
+            <div class="gm-eco-card-glow"></div>
+            <div class="gm-eco-icon-wrap gm-icon-red">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16,18 22,12 16,6"/>
+                <polyline points="8,6 2,12 8,18"/>
+                <line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="3,3"/>
+              </svg>
+            </div>
+            <div class="gm-eco-card-body">
+              <div class="gm-eco-card-name gm-name-red">INTELLIGENCE API</div>
+              <div class="gm-eco-card-desc">REST API — Threat Data at Scale</div>
+              <div class="gm-eco-card-domain">intel.cyberdudebivash.com/api</div>
+            </div>
+            <div class="gm-eco-card-right">
+              <span class="gm-free-badge">FREE TIER</span>
+              <span class="gm-eco-arrow gm-arrow-red">&#8594;</span>
+            </div>
+          </a>
 
-          </div>
-        </div><!-- /hero-ecosystem-panel -->
+        </div><!-- /gm-eco-panel -->
 
         <!-- TERMINAL -->
         <div class="hero-v5-terminal" aria-hidden="true">
