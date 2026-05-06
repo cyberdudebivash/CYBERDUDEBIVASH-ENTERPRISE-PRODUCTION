@@ -1624,38 +1624,112 @@ console.<span class="c-function">log</span>(<span class="c-string">`Risk: \${res
 </section>
 
 <!-- GLOBAL ATTACK MAP -->
-<section class="attack-map-section" id="attackMap" aria-label="Global cyber attack map">
+<section class="gm-attack-map-section" id="attackMap" aria-label="Live Global Cyber Attack Map">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag section-tag-red">🌐 GLOBAL</span>
-      <h2 class="section-title">Live Global Cyber Attack Map</h2>
-      <p class="section-sub">Real-time visualization of active cyber attacks, threat origins, and targeted regions worldwide</p>
+      <span class="section-tag section-tag-red" style="background:rgba(255,51,102,.12);border:1px solid rgba(255,51,102,.3);color:#FF3366;padding:.3rem 1rem;border-radius:50px;font-size:.72rem;font-weight:800;letter-spacing:.1em;display:inline-flex;align-items:center;gap:.4rem;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#FF3366;animation:pulseDot 1s ease-in-out infinite;box-shadow:0 0 8px rgba(255,51,102,.8);"></span>
+        LIVE GLOBAL THREAT MAP
+      </span>
+      <h2 class="section-title" style="margin-top:.8rem;">Live Global Cyber Attack Map</h2>
+      <p class="section-sub">Real-time AI-tracked cyber attack visualization — threat origins, attack vectors, and targeted regions across 50+ countries</p>
     </div>
-    <div class="attack-map-wrap">
-      <div class="attack-map-header">
-        <div class="attack-map-header-left">
-          <div class="map-live-badge"><span class="map-live-dot"></span> LIVE</div>
-          <span style="font-size:.8rem;color:var(--text-muted)">Updating every 3 seconds</span>
+
+    <div class="gm-am-wrap">
+
+      <!-- ── HEADER STATS BAR ── -->
+      <div class="gm-am-header">
+        <div class="gm-am-live-status">
+          <span class="gm-am-live-ring"></span>
+          <span class="gm-am-live-dot"></span>
+          <span class="gm-am-live-text">LIVE</span>
+          <span class="gm-am-update-text">Updating every 3 seconds</span>
         </div>
-        <div class="attack-map-stats">
-          <div class="ams-item"><div class="ams-num" id="mapActiveAttacks">0</div><div class="ams-lbl">Active Attacks</div></div>
-          <div class="ams-item"><div class="ams-num" id="mapBlockedTotal">0</div><div class="ams-lbl">Blocked Today</div></div>
-          <div class="ams-item"><div class="ams-num" id="mapCountries">0</div><div class="ams-lbl">Countries</div></div>
+        <div class="gm-am-stats-strip">
+          <div class="gm-am-stat gm-am-stat-red">
+            <span class="gm-am-stat-num" id="gmMapActive">0</span>
+            <span class="gm-am-stat-lbl">Active Attacks</span>
+          </div>
+          <div class="gm-am-stat-sep"></div>
+          <div class="gm-am-stat gm-am-stat-orange">
+            <span class="gm-am-stat-num" id="gmMapBlocked">0</span>
+            <span class="gm-am-stat-lbl">Blocked Today</span>
+          </div>
+          <div class="gm-am-stat-sep"></div>
+          <div class="gm-am-stat gm-am-stat-cyan">
+            <span class="gm-am-stat-num" id="gmMapCountries">0</span>
+            <span class="gm-am-stat-lbl">Countries</span>
+          </div>
+          <div class="gm-am-stat-sep"></div>
+          <div class="gm-am-stat gm-am-stat-yellow">
+            <span class="gm-am-stat-num" id="gmMapCritical">0</span>
+            <span class="gm-am-stat-lbl">Critical</span>
+          </div>
+          <div class="gm-am-stat-sep"></div>
+          <div class="gm-am-stat gm-am-stat-green">
+            <span class="gm-am-stat-num" id="gmMapBlocking">SENTINEL APEX&#x2122;</span>
+            <span class="gm-am-stat-lbl">Protecting With</span>
+          </div>
+        </div>
+        <div class="gm-am-threat-level">
+          <span class="gm-am-tl-lbl">GLOBAL THREAT</span>
+          <span class="gm-am-tl-value" id="gmThreatLevel">HIGH</span>
         </div>
       </div>
-      <canvas id="attackMapCanvas" aria-label="Global cyber attack visualization"></canvas>
-      <div class="attack-map-legend">
-        <div class="aml-item"><span class="aml-dot aml-dot-critical"></span>Critical Attack</div>
-        <div class="aml-item"><span class="aml-dot aml-dot-high"></span>High Severity</div>
-        <div class="aml-item"><span class="aml-dot aml-dot-medium"></span>Medium Severity</div>
-        <div class="aml-item"><span class="aml-line"></span>Attack Path</div>
-        <div class="aml-item" style="margin-left:auto">
-          <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline">📡 Full Intel Dashboard →</a>
+
+      <!-- ── MAIN: CANVAS + LIVE FEED ── -->
+      <div class="gm-am-main">
+        <!-- Map Canvas -->
+        <div class="gm-am-canvas-wrap">
+          <div class="gm-am-scan-line" aria-hidden="true"></div>
+          <canvas id="gmAttackMapCanvas" aria-label="Live global cyber attack visualization"></canvas>
+        </div>
+
+        <!-- Live Attack Feed Sidebar -->
+        <div class="gm-am-feed-panel">
+          <div class="gm-am-feed-hdr">
+            <span class="gm-am-feed-dot"></span>
+            <span>LIVE ATTACK FEED</span>
+            <span class="gm-am-feed-count" id="gmFeedCount">0 active</span>
+          </div>
+          <div class="gm-am-feed-list" id="gmAttackFeed">
+            <!-- populated by JS -->
+          </div>
+          <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="gm-am-feed-cta">
+            View Full Intel Dashboard &#8594;
+          </a>
         </div>
       </div>
+
+      <!-- ── LEGEND ── -->
+      <div class="gm-am-legend">
+        <div class="gm-am-leg-item">
+          <span class="gm-am-leg-dot" style="background:#FF3366;box-shadow:0 0 6px rgba(255,51,102,.8);"></span>
+          Critical Attack
+        </div>
+        <div class="gm-am-leg-item">
+          <span class="gm-am-leg-dot" style="background:#FF8C42;box-shadow:0 0 6px rgba(255,140,66,.8);"></span>
+          High Severity
+        </div>
+        <div class="gm-am-leg-item">
+          <span class="gm-am-leg-dot" style="background:#FFD700;box-shadow:0 0 6px rgba(255,215,0,.8);"></span>
+          Medium Severity
+        </div>
+        <div class="gm-am-leg-item">
+          <span style="display:inline-block;width:24px;height:2px;background:linear-gradient(90deg,rgba(255,51,102,.8),rgba(255,51,102,.1));border-radius:2px;vertical-align:middle;margin-right:.3rem;"></span>
+          Attack Path
+        </div>
+        <div class="gm-am-leg-item">
+          <span class="gm-am-leg-dot" style="background:#00FFFF;box-shadow:0 0 6px rgba(0,255,255,.8);width:8px;height:8px;"></span>
+          Node (Protected)
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
+
+<!-- DASHBOARD PREVIEW -->
 
 <!-- DASHBOARD PREVIEW -->
 <section class="dashboard-preview-section" id="dashboardPreview" aria-label="Platform dashboard preview">
@@ -2151,5 +2225,460 @@ console.<span class="c-function">log</span>(<span class="c-string">`Risk: \${res
   } else { initApiTabs(); }
 })();
 </script>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CYBERDUDEBIVASH® — GOD MODE LIVE ATTACK MAP ENGINE v2.0
+   Fully dynamic, animated, production-grade
+   ════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var canvas = document.getElementById('gmAttackMapCanvas');
+  if (!canvas) return;
+
+  var inited = false;
+  var obs = new IntersectionObserver(function(e) {
+    if (e[0].isIntersecting && !inited) { inited = true; initGMMap(); obs.disconnect(); }
+  }, { threshold: 0.15 });
+  obs.observe(canvas);
+
+  function initGMMap() {
+    var ctx = canvas.getContext('2d');
+    var W, H;
+
+    /* ── NODE DATA ── */
+    var NODES = [
+      { name:'USA',       lat:38.0,  lng:-97.0,  flag:'🇺🇸', weight:4 },
+      { name:'India',     lat:20.5,  lng:78.9,   flag:'🇮🇳', weight:3 },
+      { name:'China',     lat:35.8,  lng:104.1,  flag:'🇨🇳', weight:4 },
+      { name:'Russia',    lat:61.5,  lng:105.3,  flag:'🇷🇺', weight:3 },
+      { name:'Germany',   lat:51.1,  lng:10.4,   flag:'🇩🇪', weight:2 },
+      { name:'Brazil',    lat:-14.2, lng:-51.9,  flag:'🇧🇷', weight:2 },
+      { name:'UK',        lat:55.3,  lng:-3.4,   flag:'🇬🇧', weight:2 },
+      { name:'Japan',     lat:36.2,  lng:138.2,  flag:'🇯🇵', weight:3 },
+      { name:'Australia', lat:-25.2, lng:133.7,  flag:'🇦🇺', weight:2 },
+      { name:'Canada',    lat:56.1,  lng:-106.3, flag:'🇨🇦', weight:2 },
+      { name:'UAE',       lat:23.4,  lng:53.8,   flag:'🇦🇪', weight:2 },
+      { name:'France',    lat:46.2,  lng:2.2,    flag:'🇫🇷', weight:1 },
+      { name:'S.Korea',   lat:35.9,  lng:127.7,  flag:'🇰🇷', weight:2 },
+      { name:'Singapore', lat:1.35,  lng:103.8,  flag:'🇸🇬', weight:2 },
+      { name:'Netherlands',lat:52.1, lng:5.2,    flag:'🇳🇱', weight:1 },
+      { name:'Ukraine',   lat:48.3,  lng:31.1,   flag:'🇺🇦', weight:2 },
+      { name:'Israel',    lat:31.0,  lng:34.8,   flag:'🇮🇱', weight:1 },
+      { name:'Iran',      lat:32.4,  lng:53.6,   flag:'🇮🇷', weight:2 },
+      { name:'Indonesia', lat:-0.78, lng:113.9,  flag:'🇮🇩', weight:1 },
+      { name:'S.Africa',  lat:-30.5, lng:22.9,   flag:'🇿🇦', weight:1 },
+    ];
+
+    var ATTACK_TYPES = [
+      'Ransomware', 'DDoS Amplification', 'APT Intrusion', 'Zero-Day Exploit',
+      'Spear Phishing', 'Supply Chain Attack', 'SQL Injection', 'Credential Stuffing',
+      'C2 Beacon', 'Data Exfiltration', 'Cryptojacking', 'Lateral Movement',
+      'BGP Hijacking', 'Insider Threat', 'Malware Drop', 'Brute Force'
+    ];
+
+    var SEV_DATA = [
+      { sev: 'CRITICAL', color: '#FF3366', weight: 2 },
+      { sev: 'HIGH',     color: '#FF8C42', weight: 3 },
+      { sev: 'MEDIUM',   color: '#FFD700', weight: 5 },
+    ];
+
+    function pickSeverity() {
+      var r = Math.random() * 10;
+      if (r < 2) return SEV_DATA[0];
+      if (r < 5) return SEV_DATA[1];
+      return SEV_DATA[2];
+    }
+
+    /* ── PROJECTION ── */
+    function proj(lat, lng) {
+      var x = ((lng + 180) / 360) * W;
+      var latR = lat * Math.PI / 180;
+      var mercN = Math.log(Math.tan(Math.PI / 4 + latR / 2));
+      var y = ((Math.PI - mercN) / (2 * Math.PI)) * H;
+      return { x: x, y: Math.max(0, Math.min(H, y)) };
+    }
+
+    /* ── ATTACKS ARRAY ── */
+    var attacks = [];
+    var explosions = [];
+
+    function spawnAttack() {
+      var src = NODES[Math.floor(Math.random() * NODES.length)];
+      var tgt = NODES[Math.floor(Math.random() * NODES.length)];
+      if (src === tgt) return;
+      var sp = proj(src.lat, src.lng);
+      var tp = proj(tgt.lat, tgt.lng);
+      var sev = pickSeverity();
+      attacks.push({
+        sx: sp.x, sy: sp.y, tx: tp.x, ty: tp.y,
+        prog: 0,
+        speed: 0.003 + Math.random() * 0.006,
+        color: sev.color,
+        sev: sev.sev,
+        type: ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)],
+        srcName: src.name, tgtName: tgt.name,
+        srcFlag: src.flag, tgtFlag: tgt.flag,
+        alpha: 1, tail: [], done: false,
+        dot: { x: sp.x, y: sp.y },
+        id: Date.now() + Math.random()
+      });
+    }
+
+    /* Initial */
+    for (var i = 0; i < 12; i++) setTimeout(function(){ spawnAttack(); }, i * 200);
+    setInterval(spawnAttack, 1100);
+
+    /* ── RESIZE ── */
+    function resize() {
+      W = canvas.parentElement.offsetWidth || 800;
+      H = Math.round(Math.min(480, W * 0.50));
+      canvas.width = W;
+      canvas.height = H;
+    }
+
+    /* ── WORLD MAP DRAWING ── */
+    function drawWorld() {
+      /* Ocean bg */
+      var bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#010a1a');
+      bg.addColorStop(1, '#020c1e');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      /* Lat/Lng grid */
+      ctx.strokeStyle = 'rgba(0,255,255,.03)';
+      ctx.lineWidth = 1;
+      for (var lng = -180; lng <= 180; lng += 30) {
+        var p = proj(0, lng);
+        ctx.beginPath(); ctx.moveTo(p.x, 0); ctx.lineTo(p.x, H); ctx.stroke();
+      }
+      for (var lat2 = -60; lat2 <= 60; lat2 += 30) {
+        var p2 = proj(lat2, -180);
+        var p3 = proj(lat2, 180);
+        ctx.beginPath(); ctx.moveTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.stroke();
+      }
+
+      /* Continents */
+      ctx.fillStyle = 'rgba(0,255,255,.05)';
+      ctx.strokeStyle = 'rgba(0,255,255,.18)';
+      ctx.lineWidth = 1;
+
+      function drawContinent(points) {
+        ctx.beginPath();
+        var first = proj(points[0][0], points[0][1]);
+        ctx.moveTo(first.x, first.y);
+        for (var k = 1; k < points.length; k++) {
+          var pp = proj(points[k][0], points[k][1]);
+          ctx.lineTo(pp.x, pp.y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      /* North America */
+      drawContinent([
+        [70,-140],[72,-100],[68,-80],[55,-55],[45,-52],[40,-55],[25,-77],
+        [15,-85],[10,-83],[8,-77],[10,-75],[15,-60],[20,-72],[30,-80],
+        [35,-75],[42,-70],[47,-53],[55,-60],[60,-63],[62,-68],[65,-80],
+        [68,-95],[68,-120],[60,-130],[52,-128],[48,-124],[45,-122],[32,-117],
+        [22,-105],[18,-95],[16,-90],[18,-87],[22,-88],[25,-90],[28,-97],
+        [30,-96],[32,-94],[35,-95],[37,-95],[40,-95],[42,-93],[43,-88],
+        [42,-80],[43,-75],[45,-73],[47,-70],[50,-65],[55,-65],[60,-70],
+        [63,-75],[65,-80],[68,-95],[70,-110],[70,-130],[70,-140]
+      ]);
+
+      /* South America */
+      drawContinent([
+        [10,-72],[8,-60],[5,-52],[0,-50],[-5,-35],[-10,-37],[-15,-39],
+        [-20,-40],[-23,-43],[-25,-48],[-30,-50],[-35,-57],[-40,-62],
+        [-45,-65],[-50,-68],[-55,-65],[-55,-68],[-50,-73],[-45,-73],
+        [-40,-72],[-35,-70],[-30,-70],[-25,-68],[-20,-68],[-15,-72],
+        [-10,-75],[-5,-80],[0,-78],[5,-77],[10,-72]
+      ]);
+
+      /* Europe */
+      drawContinent([
+        [71,-8],[70,10],[65,15],[60,25],[55,22],[55,18],[52,14],
+        [47,8],[43,5],[36,5],[36,14],[38,22],[41,28],[43,28],
+        [45,30],[48,38],[50,30],[52,22],[55,22],[58,15],[60,5],
+        [58,-5],[55,-8],[50,-5],[48,0],[44,0],[40,-8],[38,-8],
+        [36,-5],[36,5],[43,5],[47,8],[52,5],[55,8],[58,12],
+        [60,12],[63,10],[65,15],[68,15],[70,15],[71,-8]
+      ]);
+
+      /* Africa */
+      drawContinent([
+        [37,10],[35,25],[30,32],[22,37],[12,42],[5,41],[0,42],
+        [-5,40],[-10,38],[-15,35],[-20,35],[-25,32],[-30,28],
+        [-35,20],[-34,18],[-33,26],[-28,30],[-22,33],[-15,37],
+        [-10,40],[-5,38],[0,36],[5,38],[10,37],[15,38],[20,37],
+        [25,32],[30,30],[35,22],[37,15],[36,10],[37,5],[34,0],
+        [28,-10],[20,-17],[15,-17],[10,-15],[5,-5],[0,5],[-5,10],
+        [0,15],[5,5],[10,0],[15,0],[20,0],[25,5],[30,5],
+        [35,5],[37,10]
+      ]);
+
+      /* Asia (main) */
+      drawContinent([
+        [70,30],[72,60],[70,90],[68,120],[65,130],[58,132],[50,140],
+        [43,132],[35,130],[25,120],[20,110],[10,104],[1,104],
+        [5,100],[10,98],[20,95],[25,90],[22,80],[12,78],[8,77],
+        [12,75],[15,73],[20,72],[25,68],[28,62],[30,55],[25,50],
+        [20,45],[15,42],[12,44],[15,48],[20,55],[25,58],[30,62],
+        [35,62],[40,58],[42,52],[45,60],[48,68],[50,58],[52,52],
+        [55,50],[58,52],[60,58],[62,55],[65,50],[68,48],[70,40],
+        [70,30]
+      ]);
+
+      /* India sub-continent */
+      drawContinent([
+        [28,68],[28,80],[25,87],[20,87],[15,80],[10,76],[8,77],
+        [8,78],[12,80],[15,82],[18,83],[20,86],[22,88],[25,88],
+        [27,85],[25,82],[20,80],[20,76],[22,73],[25,70],[28,68]
+      ]);
+
+      /* Australia */
+      drawContinent([
+        [-15,130],[-12,135],[-12,140],[-15,145],[-20,148],[-25,152],
+        [-32,152],[-38,147],[-38,140],[-35,136],[-32,132],[-28,122],
+        [-22,114],[-20,118],[-17,122],[-15,130]
+      ]);
+
+      /* Japan */
+      drawContinent([
+        [40,140],[37,136],[33,130],[31,130],[33,132],[36,136],[38,140],
+        [42,142],[44,144],[42,142],[40,140]
+      ]);
+
+      /* UK */
+      drawContinent([
+        [58,-5],[60,-2],[58,0],[54,0],[51,2],[50,0],[51,-2],
+        [52,-4],[53,-5],[55,-5],[58,-5]
+      ]);
+    }
+
+    /* ── NODE DOTS WITH PULSE ── */
+    var nodePulse = 0;
+    function drawNodes() {
+      nodePulse += 0.04;
+      NODES.forEach(function(n) {
+        var p = proj(n.lat, n.lng);
+        var r = 2 + n.weight * 0.8;
+
+        /* Pulse ring */
+        var pulseR = r + 4 + Math.sin(nodePulse + n.lat) * 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,255,255,' + (0.08 + Math.sin(nodePulse + n.lat) * 0.05) + ')';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        /* Core dot */
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#00FFFF';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00FFFF';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        /* Inner dot */
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 0.45, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+
+        /* Label */
+        ctx.font = '10px "Fira Code", monospace';
+        ctx.fillStyle = 'rgba(0,255,255,.7)';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, p.x, p.y - r - 4);
+      });
+      ctx.textAlign = 'left';
+    }
+
+    /* ── EXPLOSIONS ── */
+    function spawnExplosion(x, y, color) {
+      explosions.push({ x:x, y:y, color:color, r:0, maxR:28, alpha:1 });
+    }
+
+    function drawExplosions() {
+      explosions = explosions.filter(function(e) { return e.alpha > 0.01; });
+      explosions.forEach(function(e) {
+        e.r += 1.2;
+        e.alpha -= 0.03;
+        if (e.r > e.maxR) e.alpha -= 0.05;
+
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.strokeStyle = e.color.replace('rgb', 'rgba').replace(')', ',' + e.alpha + ')');
+        if (e.color.startsWith('#')) {
+          var r2 = parseInt(e.color.slice(1,3),16);
+          var g2 = parseInt(e.color.slice(3,5),16);
+          var b2 = parseInt(e.color.slice(5,7),16);
+          ctx.strokeStyle = 'rgba('+r2+','+g2+','+b2+','+e.alpha+')';
+        }
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = e.color;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    /* ── ATTACK ARC DRAWING ── */
+    function hexA(hex, a) {
+      var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+      return 'rgba('+r+','+g+','+b+','+a+')';
+    }
+
+    function drawAttacks() {
+      attacks = attacks.filter(function(a){ return a.alpha > 0.02; });
+      attacks.forEach(function(a) {
+        if (!a.done) {
+          a.prog = Math.min(1, a.prog + a.speed);
+          var t = a.prog;
+          var cx = (a.sx + a.tx) / 2;
+          var arcH = Math.min(H * 0.25, Math.abs(a.tx - a.sx) * 0.25 + 30);
+          var cy = Math.min(a.sy, a.ty) - arcH;
+          a.dot.x = (1-t)*(1-t)*a.sx + 2*(1-t)*t*cx + t*t*a.tx;
+          a.dot.y = (1-t)*(1-t)*a.sy + 2*(1-t)*t*cy + t*t*a.ty;
+          a.tail.push({ x: a.dot.x, y: a.dot.y });
+          if (a.tail.length > 24) a.tail.shift();
+          if (a.prog >= 1) {
+            a.done = true;
+            spawnExplosion(a.tx, a.ty, a.color);
+            addFeedItem(a);
+          }
+        } else {
+          a.alpha -= 0.02;
+        }
+
+        /* Tail */
+        for (var ti = 1; ti < a.tail.length; ti++) {
+          var tailA = (ti / a.tail.length) * a.alpha * 0.8;
+          ctx.beginPath();
+          ctx.moveTo(a.tail[ti-1].x, a.tail[ti-1].y);
+          ctx.lineTo(a.tail[ti].x, a.tail[ti].y);
+          ctx.strokeStyle = hexA(a.color, tailA);
+          ctx.lineWidth = 1 + ti / a.tail.length;
+          ctx.shadowBlur = ti > a.tail.length * 0.7 ? 6 : 0;
+          ctx.shadowColor = a.color;
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+
+        /* Head dot */
+        if (!a.done) {
+          var dotA = a.done ? a.alpha : 1;
+          ctx.beginPath();
+          ctx.arc(a.dot.x, a.dot.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = hexA(a.color, dotA);
+          ctx.shadowBlur = 14;
+          ctx.shadowColor = a.color;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          /* Outer glow ring */
+          var g2 = ctx.createRadialGradient(a.dot.x, a.dot.y, 0, a.dot.x, a.dot.y, 12);
+          g2.addColorStop(0, hexA(a.color, 0.4 * dotA));
+          g2.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.arc(a.dot.x, a.dot.y, 12, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    /* ── LIVE FEED ── */
+    var feedItems = [];
+    var feedEl = document.getElementById('gmAttackFeed');
+    var feedCountEl = document.getElementById('gmFeedCount');
+
+    function addFeedItem(a) {
+      feedItems.unshift(a);
+      if (feedItems.length > 12) feedItems.pop();
+      renderFeed();
+    }
+
+    function renderFeed() {
+      if (!feedEl) return;
+      feedEl.innerHTML = feedItems.slice(0, 10).map(function(a) {
+        var now = new Date();
+        var ts = now.getHours().toString().padStart(2,'0') + ':' +
+                 now.getMinutes().toString().padStart(2,'0') + ':' +
+                 now.getSeconds().toString().padStart(2,'0');
+        var sev = a.sev;
+        var col = sev === 'CRITICAL' ? '#FF3366' : sev === 'HIGH' ? '#FF8C42' : '#FFD700';
+        return '<div class="gm-feed-item" style="border-left:2px solid '+col+';">' +
+          '<div class="gm-fi-top">' +
+            '<span class="gm-fi-sev" style="color:'+col+';background:'+col.replace('rgb','rgba').replace(')',',0.12)')+'">'+sev+'</span>' +
+            '<span class="gm-fi-type">'+a.type+'</span>' +
+            '<span class="gm-fi-ts">'+ts+'</span>' +
+          '</div>' +
+          '<div class="gm-fi-route">' +
+            '<span class="gm-fi-src">'+a.srcFlag+' '+a.srcName+'</span>' +
+            '<span class="gm-fi-arrow" style="color:'+col+'"> &#8594; </span>' +
+            '<span class="gm-fi-tgt">'+a.tgtFlag+' '+a.tgtName+'</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      if (feedCountEl) feedCountEl.textContent = attacks.filter(function(a){return !a.done;}).length + ' active';
+    }
+
+    /* ── STATS ── */
+    var stats = { active: 0, blocked: 0, countries: 0, critical: 0 };
+    var statsTarget = { active: 247, blocked: 2847, countries: 14, critical: 23 };
+
+    function animateStats() {
+      ['active','blocked','countries','critical'].forEach(function(k) {
+        if (stats[k] < statsTarget[k]) {
+          stats[k] = Math.min(statsTarget[k], Math.ceil(stats[k] + (statsTarget[k]-stats[k]) * 0.12 + 1));
+        }
+      });
+      var eA = document.getElementById('gmMapActive');
+      var eB = document.getElementById('gmMapBlocked');
+      var eC = document.getElementById('gmMapCountries');
+      var eD = document.getElementById('gmMapCritical');
+      if (eA) eA.textContent = stats.active.toLocaleString();
+      if (eB) eB.textContent = stats.blocked.toLocaleString();
+      if (eC) eC.textContent = stats.countries;
+      if (eD) eD.textContent = stats.critical;
+    }
+
+    /* Fluctuate stats */
+    setInterval(function() {
+      statsTarget.active = Math.max(180, statsTarget.active + Math.floor(Math.random()*8-3));
+      statsTarget.blocked += Math.floor(Math.random()*5);
+      statsTarget.critical = Math.max(5, statsTarget.critical + Math.floor(Math.random()*3-1));
+      var eA = document.getElementById('gmMapActive');
+      if (eA) eA.textContent = statsTarget.active.toLocaleString();
+    }, 2800);
+
+    /* ── MAIN LOOP ── */
+    var rafId;
+    function draw() {
+      drawWorld();
+      drawNodes();
+      drawExplosions();
+      drawAttacks();
+      animateStats();
+      rafId = requestAnimationFrame(draw);
+    }
+
+    resize();
+    window.addEventListener('resize', function() {
+      cancelAnimationFrame(rafId);
+      resize();
+    }, { passive: true });
+    draw();
+  }
+})();
+</script>
+
 </body>
 </html>
