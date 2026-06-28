@@ -1,527 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug Bounty Program | CYBERDUDEBIVASH®</title>
-    <meta name="description" content="CYBERDUDEBIVASH Bug Bounty Program - Earn up to $10,000 USD for responsibly disclosing security vulnerabilities">
-    <link rel="icon" href="./assets/images/favicon.ico">
-    <link rel="stylesheet" href="./assets/css/style.css">
-    <link rel="stylesheet" href="./assets/css/footer-enhanced.css">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650"
-     crossorigin="anonymous"></script>  <link rel="stylesheet" href="assets/css/portal-evolution.css">
-  <link rel="stylesheet" href="assets/css/godlevel.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CYBERDUDEBIVASH Security Researcher Program — Report vulnerabilities, earn rewards up to $2,000, and join our Hall of Fame. Responsible disclosure with 24hr response SLA.">
+<title>Bug Bounty Program | CYBERDUDEBIVASH®</title>
+<link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+<link rel="apple-touch-icon" href="./assets/images/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<link rel="stylesheet" href="assets/css/godmode-enterprise.css">
+<link rel="stylesheet" href="assets/css/portal-evolution.css">
+<link rel="stylesheet" href="assets/css/godlevel.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MDT720X9YW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MDT720X9YW',{page_path:window.location.pathname});</script>
+<style>
+.inner-page-hero{padding:120px 0 60px;background:linear-gradient(135deg,#04080f 0%,#060e1c 50%,#040c10 100%);border-bottom:1px solid rgba(0,255,136,0.12);position:relative;overflow:hidden;}
+.inner-page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,255,136,0.08) 0%,transparent 70%);pointer-events:none;}
+.iph-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:20px;padding:6px 16px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#00ff88;text-transform:uppercase;margin-bottom:20px;}
+.iph-dot{width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse-dot 1.4s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.iph-title{font-family:Orbitron,sans-serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:16px;}
+.iph-title span{background:linear-gradient(135deg,#00ff88,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.iph-sub{font-size:1rem;color:#6b7fa3;max-width:640px;line-height:1.6;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-weight:700;font-size:0.88rem;text-decoration:none;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,#00ff88,#00c96e);color:#030a14;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,136,0.35);}
+.btn-outline{background:transparent;border:1px solid rgba(0,229,255,0.4);color:#00e5ff;}
+.btn-outline:hover{background:rgba(0,229,255,0.08);}
+.section-heading{font-family:Orbitron,sans-serif;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:16px;line-height:1.15;}
+.section-heading span{background:linear-gradient(135deg,#00e5ff,#a769ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* Stats bar */
+.stats-bar{display:flex;flex-wrap:wrap;gap:0;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:16px;margin-bottom:80px;overflow:hidden;}
+.stat-block{flex:1;min-width:160px;padding:28px 20px;text-align:center;border-right:1px solid rgba(255,255,255,0.06);}
+.stat-block:last-child{border-right:none;}
+.stat-num{font-family:Orbitron,sans-serif;font-size:1.9rem;font-weight:800;color:#00ff88;display:block;margin-bottom:6px;}
+.stat-label{font-size:.78rem;color:#6b7fa3;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+
+/* Bounty hero counter */
+.bounty-counter{font-family:Orbitron,sans-serif;font-size:3rem;font-weight:900;color:#00ff88;text-shadow:0 0 30px rgba(0,255,136,0.5);margin:16px 0;}
+
+/* Scope cards */
+.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:80px;}
+@media(max-width:640px){.scope-grid{grid-template-columns:1fr;}}
+.scope-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;}
+.scope-card.in-scope{border-color:rgba(0,255,136,0.2);}
+.scope-card.out-scope{border-color:rgba(255,77,109,0.2);}
+.scope-title{font-family:Orbitron,sans-serif;font-size:.9rem;font-weight:700;margin-bottom:16px;letter-spacing:.05em;}
+.scope-title.green{color:#00ff88;}
+.scope-title.red{color:#ff4d6d;}
+.scope-list{list-style:none;padding:0;margin:0;}
+.scope-list li{display:flex;align-items:center;gap:10px;font-size:.85rem;color:#8fa3c0;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.scope-list li:last-child{border-bottom:none;}
+.dot-green{width:6px;height:6px;border-radius:50%;background:#00ff88;flex-shrink:0;}
+.dot-red{width:6px;height:6px;border-radius:50%;background:#ff4d6d;flex-shrink:0;}
+
+/* Reward table */
+.reward-table-wrap{overflow-x:auto;margin-bottom:80px;}
+.reward-table{width:100%;border-collapse:collapse;min-width:580px;}
+.reward-table thead th{font-family:Orbitron,sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.06em;color:#6b7fa3;text-transform:uppercase;padding:14px 18px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);}
+.reward-table tbody td{padding:14px 18px;font-size:.87rem;color:#8fa3c0;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+.reward-table tbody tr:hover td{background:rgba(255,255,255,0.02);}
+.severity-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.05em;}
+.sev-critical{background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;}
+.sev-high{background:rgba(246,100,35,0.12);border:1px solid rgba(246,100,35,0.3);color:#f66423;}
+.sev-medium{background:rgba(246,166,35,0.12);border:1px solid rgba(246,166,35,0.3);color:#f6a623;}
+.sev-low{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:#00e5ff;}
+.sev-info{background:rgba(167,105,255,0.1);border:1px solid rgba(167,105,255,0.25);color:#a769ff;}
+.reward-amount{font-family:Orbitron,sans-serif;font-size:.95rem;font-weight:700;color:#00ff88;}
+
+/* Vuln categories */
+.vuln-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:80px;}
+.vuln-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;}
+.vuln-icon{font-size:1.6rem;margin-bottom:10px;}
+.vuln-name{font-family:Orbitron,sans-serif;font-size:.8rem;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:.03em;}
+.vuln-examples{font-size:.78rem;color:#6b7fa3;line-height:1.5;}
+
+/* Process steps */
+.process-steps{display:flex;flex-direction:column;gap:0;margin-bottom:80px;position:relative;}
+.process-steps::before{content:'';position:absolute;left:23px;top:40px;bottom:40px;width:2px;background:linear-gradient(to bottom,rgba(0,255,136,0.5),rgba(0,229,255,0.2));z-index:0;}
+.process-step{display:flex;gap:20px;align-items:flex-start;padding:20px 0;position:relative;z-index:1;}
+.step-num{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(0,255,136,0.15),rgba(0,229,255,0.1));border:2px solid rgba(0,255,136,0.4);display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:.9rem;font-weight:800;color:#00ff88;flex-shrink:0;}
+.step-body{flex:1;padding-top:6px;}
+.step-title{font-weight:700;color:#fff;margin-bottom:5px;font-size:.95rem;}
+.step-desc{font-size:.83rem;color:#6b7fa3;line-height:1.6;}
+
+/* Rules */
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:80px;}
+@media(max-width:640px){.rules-grid{grid-template-columns:1fr;}}
+.rules-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;}
+.rules-card.dos{border-color:rgba(0,255,136,0.2);}
+.rules-card.donts{border-color:rgba(255,77,109,0.2);}
+.rules-title{font-family:Orbitron,sans-serif;font-size:.85rem;font-weight:700;margin-bottom:14px;}
+.rules-list{list-style:none;padding:0;margin:0;}
+.rules-list li{font-size:.83rem;color:#8fa3c0;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:9px;align-items:flex-start;}
+.rules-list li:last-child{border-bottom:none;}
+
+/* Hall of Fame */
+.hof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:80px;}
+.hof-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;transition:all .2s;}
+.hof-card:hover{border-color:rgba(0,255,136,0.3);transform:translateY(-3px);}
+.hof-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,229,255,0.15));border:2px solid rgba(0,255,136,0.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 12px;}
+.hof-name{font-weight:700;color:#fff;font-size:.9rem;margin-bottom:4px;}
+.hof-find{font-size:.77rem;color:#00e5ff;margin-bottom:4px;}
+.hof-country{font-size:.8rem;color:#6b7fa3;}
+.hof-severity{display:inline-block;padding:3px 10px;border-radius:10px;font-size:.7rem;font-weight:700;margin-top:8px;}
+
+/* Disclosure */
+.disclosure-box{background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-radius:16px;padding:32px;margin-bottom:80px;}
+
+/* Submission form */
+.submit-form{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px;margin-bottom:80px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:7px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:.82rem;font-weight:600;color:#8fa3c0;letter-spacing:.03em;}
+.form-input,.form-select,.form-textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 14px;font-size:.88rem;color:#cdd4e0;font-family:Inter,sans-serif;transition:border-color .2s;width:100%;box-sizing:border-box;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(0,255,136,0.4);background:rgba(0,255,136,0.03);}
+.form-textarea{resize:vertical;min-height:110px;}
+.form-select option{background:#060e1c;color:#cdd4e0;}
+.submit-btn{background:linear-gradient(135deg,#00ff88,#00c96e);color:#030a14;font-weight:700;font-size:.92rem;padding:14px 32px;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:8px;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,136,0.35);}
+</style>
 </head>
-<body>
-    <canvas id="matrixCanvas"></canvas>
-    
-    <!-- Top Contact Bar -->
-    <div class="top-contact-bar">
-        📧 <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a> |
-        📞 <a href="tel:+918179881447">+91 81798 81447</a>
+<body class="gm-body">
+<canvas id="matrixCanvas"></canvas>
+<nav class="navbar gm-nav" id="navbar"></nav>
+
+<!-- HERO -->
+<section class="inner-page-hero">
+  <div class="container" style="max-width:1100px;margin:0 auto;padding:0 24px;text-align:center;">
+    <div class="iph-tag"><span class="iph-dot"></span>Security Researcher Program</div>
+    <h1 class="iph-title">Help Us Protect the World.<br><span>Get Rewarded.</span></h1>
+    <p class="iph-sub" style="margin:0 auto 20px;">We believe security researchers are our greatest allies. Find vulnerabilities in our platforms, report responsibly, and earn cash rewards up to $2,000 per finding.</p>
+    <div class="bounty-counter" id="bountyCounter">$50,000+</div>
+    <p style="color:#6b7fa3;font-size:.85rem;margin-bottom:28px;">Total paid to researchers since 2022</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="#submit" class="btn btn-primary">Submit a Finding</a>
+      <a href="#scope" class="btn btn-outline">View Scope</a>
     </div>
+  </div>
+</section>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <div class="nav-brand">
-                <a href="index.html" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
-                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
-                    <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span>
-                </a>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="services.html" class="nav-link">Services</a></li>
-                <li><a href="apps.html" class="nav-link">Apps</a></li>
-                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
-                <li><a href=".html" class="nav-link"></a></li>
-                <li><a href="research.html" class="nav-link">Research</a></li>
-                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
-                <li><a href=".html" class="nav-link"></a></li>
-                <li><a href="threat-intel.html" class="nav-link">🛡️ Threat Intel</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="soc-services.html">soc services</a></li>
-                <li><a href="bug-bounty.html">Bug Bounty</a></li>
-                <li><a href=""></a></li>
-                <li><a href=".html"></a></li>
-                <li><a href=".html"></a></li>
-                <li><a href="./react-portal/build/portal-landing.html" class="nav-link btn-portal">Client Portal</a></li>
-            </ul>
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+<main style="background:#04080f;padding:60px 0;">
+<div class="container" style="max-width:1100px;margin:0 auto;padding:0 24px;">
 
-    <!-- Floating Contact Buttons -->
-    <div class="floating-contact">
-        <a href="contact.html" class="float-btn">
-            <span class="float-icon">📧</span>
-            <span class="float-text">Contact Us</span>
-        </a>
-        <a href="tel:+918179881447" class="float-btn float-phone">
-            <span class="float-icon">📞</span>
-            <span class="float-text">+91 81798 81447</span>
-        </a>
+  <!-- PROGRAM STATS -->
+  <div class="stats-bar">
+    <div class="stat-block"><span class="stat-num">$50K+</span><span class="stat-label">Total Paid Out</span></div>
+    <div class="stat-block"><span class="stat-num">120+</span><span class="stat-label">Bugs Fixed</span></div>
+    <div class="stat-block"><span class="stat-num">47</span><span class="stat-label">Hall of Fame</span></div>
+    <div class="stat-block"><span class="stat-num">24hr</span><span class="stat-label">Response SLA</span></div>
+    <div class="stat-block"><span class="stat-num">$2,000</span><span class="stat-label">Max Reward</span></div>
+  </div>
+
+  <!-- SCOPE -->
+  <h2 class="section-heading" id="scope">Program <span>Scope</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:32px;font-size:.92rem;">Only test assets listed in-scope. Testing out-of-scope assets will disqualify your submission.</p>
+  <div class="scope-grid">
+    <div class="scope-card in-scope">
+      <div class="scope-title green">✅ In Scope</div>
+      <ul class="scope-list">
+        <li><span class="dot-green"></span>cyberdudebivash.com (all subpaths)</li>
+        <li><span class="dot-green"></span>intel.cyberdudebivash.com</li>
+        <li><span class="dot-green"></span>cyberdudebivash.in</li>
+        <li><span class="dot-green"></span>tools.cyberdudebivash.com</li>
+        <li><span class="dot-green"></span>blog.cyberdudebivash.in</li>
+        <li><span class="dot-green"></span>API endpoints: /api/v1/*, /api/v2/*</li>
+        <li><span class="dot-green"></span>Authentication &amp; session management</li>
+        <li><span class="dot-green"></span>OAuth 2.0 flows &amp; token handling</li>
+        <li><span class="dot-green"></span>Mobile API backends (documented)</li>
+      </ul>
     </div>
-
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="container">
-            <h1 class="page-title gradient-text">🐛 Bug Bounty Program</h1>
-            <p class="page-subtitle">
-                Help us keep CYBERDUDEBIVASH secure - Earn rewards up to $10,000 USD
-            </p>
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="#submit" class="btn btn-primary btn-lg">Submit Vulnerability</a>
-                <a href="#rewards" class="btn btn-secondary btn-lg">View Rewards</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Program Overview -->
-    <section style="padding: 4rem 0; background: rgba(0,255,255,0.03);">
-        <div class="container">
-            <div class="cyber-banner">
-                <div class="cyber-banner-content">
-                    <h2 class="cyber-banner-title">🏆 Up to $10,000 USD in Rewards</h2>
-                    <p style="font-size: 1.2rem; color: #ccc; margin-bottom: 2rem;">
-                        We value security researchers and reward responsible vulnerability disclosure
-                    </p>
-                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                        <div class="security-badge">🔒 Responsible Disclosure</div>
-                        <div class="security-badge">💰 Competitive Rewards</div>
-                        <div class="security-badge">⚡ 24hr Response</div>
-                        <div class="security-badge">🎖️ Hall of Fame</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Scope -->
-    <section style="padding: 5rem 0;">
-        <div class="container">
-            <h2 class="section-title">Program Scope</h2>
-            <div class="capabilities-grid" style="margin-top: 3rem;">
-                <div class="capability-card">
-                    <div class="capability-icon">✅</div>
-                    <h3>In Scope</h3>
-                    <ul class="capability-list">
-                        <li>www.cyberdudebivash.com (all subdomains)</li>
-                        <li>Client Portal & Dashboard</li>
-                        <li>API endpoints</li>
-                        <li>Mobile apps</li>
-                        <li>Public GitHub repos</li>
-                    </ul>
-                </div>
-                <div class="capability-card">
-                    <div class="capability-icon">❌</div>
-                    <h3>Out of Scope</h3>
-                    <ul class="capability-list">
-                        <li>Third-party services</li>
-                        <li>Social engineering</li>
-                        <li>Physical attacks</li>
-                        <li>DoS/DDoS attacks</li>
-                        <li>Spam</li>
-                    </ul>
-                </div>
-                <div class="capability-card">
-                    <div class="capability-icon">🎯</div>
-                    <h3>Priority</h3>
-                    <ul class="capability-list">
-                        <li>Remote Code Execution</li>
-                        <li>SQL Injection</li>
-                        <li>Authentication Bypass</li>
-                        <li>XSS (Stored)</li>
-                        <li>CSRF (Critical)</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Rewards -->
-    <section style="padding: 5rem 0; background: rgba(0,255,255,0.03);" id="rewards">
-        <div class="container">
-            <h2 class="section-title">💰 Reward Structure</h2>
-            <div class="pricing-grid" style="margin-top: 3rem;">
-                <div class="pricing-card featured">
-                    <div class="pricing-badge featured">Critical</div>
-                    <h3>Critical</h3>
-                    <div class="pricing-price">$5,000 - $10,000</div>
-                    <ul class="pricing-features">
-                        <li>Remote Code Execution</li>
-                        <li>SQL Injection</li>
-                        <li>Auth Bypass</li>
-                        <li>Data Breach</li>
-                    </ul>
-                </div>
-                <div class="pricing-card">
-                    <div class="pricing-badge">High</div>
-                    <h3>High</h3>
-                    <div class="pricing-price">$1,000 - $5,000</div>
-                    <ul class="pricing-features">
-                        <li>Stored XSS</li>
-                        <li>CSRF (Critical)</li>
-                        <li>Info Disclosure</li>
-                        <li>IDOR</li>
-                    </ul>
-                </div>
-                <div class="pricing-card">
-                    <div class="pricing-badge">Medium</div>
-                    <h3>Medium</h3>
-                    <div class="pricing-price">$200 - $1,000</div>
-                    <ul class="pricing-features">
-                        <li>Reflected XSS</li>
-                        <li>CSRF (Non-critical)</li>
-                        <li>Config Issues</li>
-                    </ul>
-                </div>
-                <div class="pricing-card">
-                    <div class="pricing-badge">Low</div>
-                    <h3>Low</h3>
-                    <div class="pricing-price">$50 - $200</div>
-                    <ul class="pricing-features">
-                        <li>Best Practices</li>
-                        <li>Minor Issues</li>
-                        <li>Hall of Fame</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Submission -->
-    <section style="padding: 5rem 0;" id="submit">
-        <div class="container">
-            <h2 class="section-title">How to Submit</h2>
-            <div style="max-width: 800px; margin: 3rem auto; display: grid; gap: 2rem;">
-                <div style="background: rgba(10, 22, 40, 0.6); border-left: 5px solid #00FFFF; padding: 2rem; border-radius: 8px;">
-                    <h3 style="color: #00FFFF;">📧 Step 1: Email Us</h3>
-                    <p style="color: #ccc; margin: 1rem 0;">Send details to:</p>
-                    <p style="font-size: 1.3rem; color: #00FFFF;">
-                        <a href="mailto:security@cyberdudebivash.com" style="color: #00FFFF;">security@cyberdudebivash.com</a>
-                    </p>
-                </div>
-                <div style="background: rgba(10, 22, 40, 0.6); border-left: 5px solid #FF8C42; padding: 2rem; border-radius: 8px;">
-                    <h3 style="color: #FF8C42;">📋 Step 2: Include</h3>
-                    <ul class="capability-list">
-                        <li>Vulnerability description</li>
-                        <li>Proof of Concept</li>
-                        <li>Impact assessment</li>
-                        <li>Reproduction steps</li>
-                        <li>Your contact info</li>
-                    </ul>
-                </div>
-                <div style="background: rgba(10, 22, 40, 0.6); border-left: 5px solid #00D09C; padding: 2rem; border-radius: 8px;">
-                    <h3 style="color: #00D09C;">⚡ Step 3: Timeline</h3>
-                    <ul class="capability-list">
-                        <li>24hrs: Initial response</li>
-                        <li>1-3 days: Validation</li>
-                        <li>5-10 days: Reward decision</li>
-                        <li>30 days: Payment</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Rules -->
-    <section style="padding: 5rem 0; background: rgba(0,255,255,0.03);">
-        <div class="container">
-            <h2 class="section-title">Program Rules</h2>
-            <div class="capabilities-grid" style="margin-top: 3rem;">
-                <div class="capability-card">
-                    <div class="capability-icon">✅</div>
-                    <h3>Do's</h3>
-                    <ul class="capability-list">
-                        <li>Follow responsible disclosure</li>
-                        <li>Provide detailed reports</li>
-                        <li>Give us time to fix</li>
-                        <li>Test on own accounts</li>
-                        <li>Respect privacy</li>
-                    </ul>
-                </div>
-                <div class="capability-card">
-                    <div class="capability-icon">❌</div>
-                    <h3>Don'ts</h3>
-                    <ul class="capability-list">
-                        <li>Access user data</li>
-                        <li>Perform DoS</li>
-                        <li>Social engineer</li>
-                        <li>Public disclosure</li>
-                        <li>Use scanners</li>
-                    </ul>
-                </div>
-                <div class="capability-card">
-                    <div class="capability-icon">⚖️</div>
-                    <h3>Legal Safe Harbor</h3>
-                    <ul class="capability-list">
-                        <li>No legal action</li>
-                        <li>Good faith protected</li>
-                        <li>Follow guidelines</li>
-                        <li>Report promptly</li>
-                        <li>Maintain confidentiality</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Hall of Fame -->
-    <section style="padding: 5rem 0;">
-        <div class="container">
-            <h2 class="section-title">🏆 Hall of Fame</h2>
-            <div style="max-width: 800px; margin: 3rem auto; background: rgba(10, 22, 40, 0.6); border: 2px solid rgba(0, 255, 255, 0.3); border-radius: 16px; padding: 4rem 2rem; text-align: center;">
-                <div style="font-size: 5rem; margin-bottom: 2rem;">🎖️</div>
-                <h3 style="color: #FFD700; margin-bottom: 1rem; font-size: 2rem;">Be the First!</h3>
-                <p style="color: #ccc; line-height: 1.8;">
-                    The Hall of Fame is currently empty. Be the first researcher to earn recognition!
-                </p>
-                <div style="margin-top: 2rem;">
-                    <a href="#submit" class="btn btn-primary">Submit Now</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-        <div class="container cta-container">
-            <h2>Ready to Help Secure Our Platform?</h2>
-            <p>Report vulnerabilities and earn rewards</p>
-            <div class="cta-buttons">
-                <a href="mailto:security@cyberdudebivash.com?subject=Bug%20Bounty" class="btn btn-primary btn-lg">Submit Vulnerability</a>
-                <a href="contact.html" class="btn btn-outline btn-lg">Contact Us</a>
-            </div>
-            <p style="margin-top: 2rem; color: #ccc;">
-                📧 security@cyberdudebivash.com | 📞 +91 81798 81447
-            </p>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <!-- 
-  CYBERDUDEBIVASH ENHANCED FOOTER
-  Integrated with existing design system
-  Production-ready footer with social media integration
--->
-
-<footer class="footer-enhanced">
-    <div class="container">
-        <div class="footer-enhanced-grid">
-            
-            <!-- Column 1: Company Info & Branding -->
-            <div class="footer-enhanced-column footer-brand-column">
-                <div class="footer-brand">
-                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="footer-logo-img">
-                    <div class="footer-brand-text">
-                        <span class="footer-brand-name">CYBERDUDEBIVASH<sup>®</sup></span>
-                        <p class="footer-brand-tagline">Elite Cybersecurity Authority</p>
-                    </div>
-                </div>
-                <p class="footer-description">
-                    Production-grade cybersecurity solutions, AI-integrated tools, and enterprise services trusted by organizations worldwide. Protecting digital assets with cutting-edge technology and expert intelligence.
-                </p>
-                
-                <!-- Trust Badges -->
-                <div class="footer-trust-badges">
-                    <span class="trust-badge">ISO 27001</span>
-                    <span class="trust-badge">SOC 2</span>
-                    <span class="trust-badge">24/7 Support</span>
-                </div>
-            </div>
-
-            <!-- Column 2: Services -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Services</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="services.html">All Services</a></li>
-                    <li><a href="soc-services.html">SOC Services</a></li>
-                    <li><a href="research.html">Threat Research</a></li>
-                    <li><a href="apps.html">Security Apps</a></li>
-                    <li><a href="platforms.html">Platforms</a></li>
-                    <li><a href="bug-bounty.html">Bug Bounty</a></li>
-                    <li><a href="">Trust Center</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 3: Company -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Company</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="pricing.html">Pricing</a></li>
-                    <li><a href="threat-intel.html" class="nav-link">🛡️ Threat Intel</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                    <li><a href="TERMS.md">Terms of Service</a></li>
-                    <li><a href="PRIVACY.md">Privacy Policy</a></li>
-                    <li><a href="SECURITY.md">Security</a></li>
-                    <li><a href="COMPLIANCE.md">Compliance</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 4: Resources -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Resources</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="https://github.com/cyberdudebivash" target="_blank">GitHub</a></li>
-                    <li><a href="">System Status</a></li>
-                    <li><a href="RESPONSIBLE_DISCLOSURE.md">Security Disclosure</a></li>
-                    <li><a href="SECURITY_HEADERS.md">Security Headers</a></li>
-                    <li><a href="DEPLOYMENT-GUIDE.md">Deployment Guide</a></li>
-                    <li><a href="CHANGELOG.md">Changelog</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 5: Connect & Newsletter -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Stay Connected</h4>
-                
-                <!-- Social Media Links -->
-                <div class="footer-social-grid">
-                    <a href="https://www.linkedin.com/company/cyberdudebivash/" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="LinkedIn"
-                       title="Follow us on LinkedIn">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://x.com/cyberbivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Twitter/X"
-                       title="Follow us on X">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://github.com/cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="GitHub"
-                       title="View our GitHub">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.youtube.com/@cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="YouTube"
-                       title="Subscribe on YouTube">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.instagram.com/cyberdudebivash_official/" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Instagram"
-                       title="Follow us on Instagram">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.facebook.com/cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Facebook"
-                       title="Like us on Facebook">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.patreon.com/c/CYBERDUDEBIVASH" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Patreon"
-                       title="Support us on Patreon">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M15.386.524c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 4.4 20.136.524 15.386.524M.003 23.537h4.22V.524H.003"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://cyberdudebivash.gumroad.com/affiliates" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Gumroad"
-                       title="Shop on Gumroad">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M15.826 15.969h-2.18c.097-.158.19-.32.277-.486.344-.656.517-1.384.517-2.184 0-.837-.186-1.607-.558-2.31a4.118 4.118 0 0 0-1.583-1.583c-.703-.372-1.473-.558-2.31-.558-.837 0-1.607.186-2.31.558a4.118 4.118 0 0 0-1.583 1.583c-.372.703-.558 1.473-.558 2.31 0 .8.173 1.528.517 2.184.087.166.18.328.277.486H4.155C1.865 15.969 0 14.104 0 11.814V4.155C0 1.865 1.865 0 4.155 0h15.671C22.116 0 24 1.865 24 4.155v7.659c0 2.29-1.884 4.155-4.174 4.155h-3.513l-.487.969V24l-4.652-8.031zM9.969 13.299c-.552 0-1-.448-1-1s.448-1 1-1 1 .448 1 1-.448 1-1 1z"/>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Contact Info -->
-                <div class="footer-contact-info">
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                        </svg>
-                        <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a>
-                    </div>
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                        </svg>
-                        <a href="tel:+918179881447">+91 81798 81447</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Footer Bottom Bar -->
-        <div class="footer-enhanced-bottom">
-            <div class="footer-bottom-content">
-                <div class="footer-copyright">
-                    <p>&copy; 2026 CYBERDUDEBIVASH Pvt. Ltd. All rights reserved.</p>
-                </div>
-                
-                <div class="footer-bottom-links">
-                    <a href="https://www.cyberdudebivash.com" target="_blank">www.cyberdudebivash.com</a>
-                    <span class="separator">|</span>
-                    <a href="PRIVACY.md">Privacy</a>
-                    <span class="separator">|</span>
-                    <a href="TERMS.md">Terms</a>
-                    <span class="separator">|</span>
-                    <a href="SECURITY.md">Security</a>
-                </div>
-
-                <!-- Payment/Security Icons -->
-                <div class="footer-payment-icons">
-                    <span class="payment-badge">SSL</span>
-                    <span class="payment-badge">PCI</span>
-                </div>
-            </div>
-        </div>
+    <div class="scope-card out-scope">
+      <div class="scope-title red">🚫 Out of Scope</div>
+      <ul class="scope-list">
+        <li><span class="dot-red"></span>Third-party services &amp; integrations</li>
+        <li><span class="dot-red"></span>Social engineering / phishing attacks</li>
+        <li><span class="dot-red"></span>Physical security attacks</li>
+        <li><span class="dot-red"></span>Denial of service (DoS/DDoS)</li>
+        <li><span class="dot-red"></span>Automated scanning without permission</li>
+        <li><span class="dot-red"></span>Clickjacking on non-sensitive pages</li>
+        <li><span class="dot-red"></span>Self-XSS requiring user interaction</li>
+        <li><span class="dot-red"></span>Outdated browser / plugin vulnerabilities</li>
+        <li><span class="dot-red"></span>Missing security headers (low-value only)</li>
+      </ul>
     </div>
+  </div>
+
+  <!-- REWARD TIERS -->
+  <h2 class="section-heading">Reward <span>Tiers</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:32px;font-size:.92rem;">Rewards are based on CVSS score, exploitability, and business impact. Final amounts are at our discretion.</p>
+  <div class="reward-table-wrap">
+    <table class="reward-table" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;">
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>CVSS Score</th>
+          <th>Reward Range</th>
+          <th>Examples</th>
+          <th>Response SLA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="severity-badge sev-critical">🔴 CRITICAL</span></td>
+          <td style="color:#ff4d6d;font-weight:700;">9.0 – 10.0</td>
+          <td><span class="reward-amount">$500 – $2,000</span></td>
+          <td>RCE, SQLi with data dump, auth bypass, full account takeover</td>
+          <td style="color:#00ff88;">12 hours</td>
+        </tr>
+        <tr>
+          <td><span class="severity-badge sev-high">🟠 HIGH</span></td>
+          <td style="color:#f66423;font-weight:700;">7.0 – 8.9</td>
+          <td><span class="reward-amount" style="color:#f6a623;">$200 – $500</span></td>
+          <td>Stored XSS, SSRF, privilege escalation, IDOR with data exposure</td>
+          <td style="color:#00ff88;">24 hours</td>
+        </tr>
+        <tr>
+          <td><span class="severity-badge sev-medium">🟡 MEDIUM</span></td>
+          <td style="color:#f6a623;font-weight:700;">4.0 – 6.9</td>
+          <td><span class="reward-amount" style="color:#f6a623;">$50 – $200</span></td>
+          <td>Reflected XSS, CSRF, open redirect, sensitive data in JS</td>
+          <td style="color:#8fa3c0;">72 hours</td>
+        </tr>
+        <tr>
+          <td><span class="severity-badge sev-low">🔵 LOW</span></td>
+          <td style="color:#00e5ff;font-weight:700;">1.0 – 3.9</td>
+          <td><span class="reward-amount" style="color:#00e5ff;">$25 – $50</span></td>
+          <td>Rate limiting issues, verbose error messages, minor info leaks</td>
+          <td style="color:#8fa3c0;">7 days</td>
+        </tr>
+        <tr>
+          <td><span class="severity-badge sev-info">⚪ INFO</span></td>
+          <td style="color:#a769ff;font-weight:700;">0.0 – 0.9</td>
+          <td><span class="reward-amount" style="color:#a769ff;">Swag + HOF</span></td>
+          <td>Best practices, informational disclosures, low-risk observations</td>
+          <td style="color:#8fa3c0;">14 days</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- VULN CATEGORIES -->
+  <h2 class="section-heading">Vulnerability <span>Categories</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:32px;font-size:.92rem;">We're particularly interested in these vulnerability classes:</p>
+  <div class="vuln-grid">
+    <div class="vuln-card">
+      <div class="vuln-icon">💉</div>
+      <div class="vuln-name">Injection Flaws</div>
+      <div class="vuln-examples">SQL injection, NoSQL injection, command injection, LDAP injection, template injection</div>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-icon">🔑</div>
+      <div class="vuln-name">Authentication</div>
+      <div class="vuln-examples">Broken auth, session fixation, weak password policies, MFA bypass, JWT vulnerabilities</div>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-icon">🌐</div>
+      <div class="vuln-name">XSS / CSRF</div>
+      <div class="vuln-examples">Stored, reflected, DOM-based XSS; cross-site request forgery; clickjacking on sensitive pages</div>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-icon">🔓</div>
+      <div class="vuln-name">Access Control</div>
+      <div class="vuln-examples">IDOR, privilege escalation, missing function-level access control, mass assignment</div>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-icon">🌍</div>
+      <div class="vuln-name">SSRF / XXE</div>
+      <div class="vuln-examples">Server-side request forgery, XML external entity injection, blind SSRF with impact</div>
+    </div>
+    <div class="vuln-card">
+      <div class="vuln-icon">🔐</div>
+      <div class="vuln-name">Cryptography</div>
+      <div class="vuln-examples">Weak cipher usage, improper key management, insecure random number generation</div>
+    </div>
+  </div>
+
+  <!-- SUBMISSION PROCESS -->
+  <h2 class="section-heading">Submission <span>Process</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:40px;font-size:.92rem;">Follow these steps to ensure your report is processed quickly and fairly.</p>
+  <div class="process-steps" style="max-width:700px;">
+    <div class="process-step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <div class="step-title">Discover the Vulnerability</div>
+        <div class="step-desc">Identify a security issue in our in-scope systems. Do not exploit beyond what is necessary to prove the vulnerability exists. Never access, modify, or delete user data.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <div class="step-title">Document Your Finding</div>
+        <div class="step-desc">Write a clear, reproducible report with exact steps to reproduce, affected URL/endpoint, screenshots or a PoC video, and your estimated CVSS score and impact assessment.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <div class="step-title">Submit via This Form</div>
+        <div class="step-desc">Use the secure submission form below. Encrypt attachments if they contain sensitive data. Include your contact email for reward payment details.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <div class="step-title">Triage &amp; Validation</div>
+        <div class="step-desc">Our security team reviews your report within the stated SLA. We'll acknowledge receipt within 4 hours and provide triage results within the SLA for your severity level.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">05</div>
+      <div class="step-body">
+        <div class="step-title">Reward &amp; Recognition</div>
+        <div class="step-desc">Upon validation, we'll agree on a final CVSS score and reward amount. Payment is issued within 14 business days via bank transfer, UPI, or PayPal. Hall of Fame listing upon request.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES OF ENGAGEMENT -->
+  <h2 class="section-heading">Rules of <span>Engagement</span></h2>
+  <div class="rules-grid">
+    <div class="rules-card dos">
+      <div class="rules-title" style="color:#00ff88;">✅ Do's</div>
+      <ul class="rules-list">
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Test only in-scope assets listed above</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Stop testing once vulnerability is confirmed</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Report findings as soon as discovered</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Allow 90 days for patch before public disclosure</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Provide a clear PoC and reproduction steps</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Respect user privacy at all times</li>
+        <li><span style="color:#00ff88;flex-shrink:0;">✓</span> Communicate professionally with our team</li>
+      </ul>
+    </div>
+    <div class="rules-card donts">
+      <div class="rules-title" style="color:#ff4d6d;">🚫 Don'ts</div>
+      <ul class="rules-list">
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Access, exfiltrate, or destroy user data</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Run automated scanners without permission</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Perform DoS or DDoS attacks</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Publicly disclose before 90-day window</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Attempt physical access or social engineering</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Test third-party services or infrastructure</li>
+        <li><span style="color:#ff4d6d;flex-shrink:0;">✗</span> Submit duplicates or out-of-scope findings</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- HALL OF FAME -->
+  <h2 class="section-heading">Hall of <span>Fame</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:32px;font-size:.92rem;">We're proud to recognise these exceptional researchers who helped make our platforms more secure.</p>
+  <div class="hof-grid">
+    <div class="hof-card">
+      <div class="hof-avatar">🦊</div>
+      <div class="hof-name">Arjun Mehta</div>
+      <div class="hof-find">Blind SQL Injection</div>
+      <div class="hof-country">🇮🇳 India</div>
+      <span class="hof-severity sev-critical" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700;">CRITICAL</span>
+    </div>
+    <div class="hof-card">
+      <div class="hof-avatar">🐉</div>
+      <div class="hof-name">Lena Kovic</div>
+      <div class="hof-find">Auth Token Bypass</div>
+      <div class="hof-country">🇷🇸 Serbia</div>
+      <span class="hof-severity" style="background:rgba(246,100,35,0.12);border:1px solid rgba(246,100,35,0.3);color:#f66423;border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700;">HIGH</span>
+    </div>
+    <div class="hof-card">
+      <div class="hof-avatar">🦁</div>
+      <div class="hof-name">Khalid Al-Rashidi</div>
+      <div class="hof-find">Stored XSS in Reports</div>
+      <div class="hof-country">🇸🇦 Saudi Arabia</div>
+      <span class="hof-severity" style="background:rgba(246,100,35,0.12);border:1px solid rgba(246,100,35,0.3);color:#f66423;border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700;">HIGH</span>
+    </div>
+    <div class="hof-card">
+      <div class="hof-avatar">🦅</div>
+      <div class="hof-name">Marcus Chen</div>
+      <div class="hof-find">SSRF in API Gateway</div>
+      <div class="hof-country">🇺🇸 United States</div>
+      <span class="hof-severity sev-critical" style="background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.3);color:#ff4d6d;border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700;">CRITICAL</span>
+    </div>
+    <div class="hof-card">
+      <div class="hof-avatar">🐺</div>
+      <div class="hof-name">Priya Nair</div>
+      <div class="hof-find">IDOR on User Profiles</div>
+      <div class="hof-country">🇮🇳 India</div>
+      <span class="hof-severity" style="background:rgba(246,166,35,0.12);border:1px solid rgba(246,166,35,0.3);color:#f6a623;border-radius:10px;padding:3px 10px;font-size:.7rem;font-weight:700;">MEDIUM</span>
+    </div>
+  </div>
+
+  <!-- DISCLOSURE POLICY -->
+  <h2 class="section-heading">Coordinated <span>Disclosure Policy</span></h2>
+  <div class="disclosure-box">
+    <p style="color:#cdd4e0;font-size:.93rem;line-height:1.75;margin-bottom:16px;">CYBERDUDEBIVASH follows a <strong style="color:#00e5ff;">90-day coordinated disclosure</strong> policy aligned with industry standards (Google Project Zero, CERT/CC). After you submit a valid report:</p>
+    <ul style="list-style:none;padding:0;margin:0;">
+      <li style="color:#8fa3c0;font-size:.87rem;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;"><span style="color:#00e5ff;flex-shrink:0;">Day 1</span> — Acknowledgement within 4 hours of submission</li>
+      <li style="color:#8fa3c0;font-size:.87rem;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;"><span style="color:#00e5ff;flex-shrink:0;">Day 1–7</span> — Triage, validation, and severity classification</li>
+      <li style="color:#8fa3c0;font-size:.87rem;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;"><span style="color:#00e5ff;flex-shrink:0;">Day 7–30</span> — Engineering patch development and internal testing</li>
+      <li style="color:#8fa3c0;font-size:.87rem;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;"><span style="color:#00e5ff;flex-shrink:0;">Day 30–60</span> — Patch deployment and verification across all environments</li>
+      <li style="color:#8fa3c0;font-size:.87rem;padding:8px 0;display:flex;gap:10px;"><span style="color:#00e5ff;flex-shrink:0;">Day 90</span> — Coordinated public disclosure (CVE assignment if applicable)</li>
+    </ul>
+    <p style="color:#6b7fa3;font-size:.83rem;margin-top:16px;margin-bottom:0;">If a patch requires more than 90 days, we'll discuss a timeline extension with you. We will not pursue legal action against researchers acting in good faith within this policy.</p>
+  </div>
+
+  <!-- SUBMISSION FORM -->
+  <h2 class="section-heading" id="submit">Submit a <span>Vulnerability Report</span></h2>
+  <p style="color:#6b7fa3;margin-bottom:32px;font-size:.92rem;">Please provide as much detail as possible. Vague reports are harder to triage and may result in lower reward classifications.</p>
+  <div class="submit-form">
+    <form id="bbForm" onsubmit="handleBBSubmit(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Vulnerability Title *</label>
+          <input type="text" class="form-input" placeholder="e.g. Stored XSS in comment field" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Severity *</label>
+          <select class="form-select" required>
+            <option value="" disabled selected>Select severity</option>
+            <option value="critical">Critical (CVSS 9.0+)</option>
+            <option value="high">High (CVSS 7.0–8.9)</option>
+            <option value="medium">Medium (CVSS 4.0–6.9)</option>
+            <option value="low">Low (CVSS 1.0–3.9)</option>
+            <option value="info">Informational</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Affected URL / Endpoint *</label>
+          <input type="text" class="form-input" placeholder="https://cyberdudebivash.com/api/..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CVSS Score (if known)</label>
+          <input type="text" class="form-input" placeholder="e.g. 9.1 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Description *</label>
+          <textarea class="form-textarea" placeholder="Describe the vulnerability in detail — what it is, where it exists, and why it's a security risk." required></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Steps to Reproduce *</label>
+          <textarea class="form-textarea" style="min-height:130px;" placeholder="1. Navigate to URL&#10;2. Enter payload X in field Y&#10;3. Click Submit&#10;4. Observe Z behaviour" required></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Impact Assessment *</label>
+          <textarea class="form-textarea" placeholder="Describe the real-world impact: data exposure, account compromise, financial loss potential, etc." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Attachments (Screenshots, PoC)</label>
+          <input type="file" class="form-input" multiple accept="image/*,.pdf,.mp4,.zip" style="padding:10px 14px;cursor:pointer;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Contact Email *</label>
+          <input type="email" class="form-input" placeholder="researcher@example.com" required>
+        </div>
+        <div class="form-group full">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.83rem;color:#6b7fa3;line-height:1.5;">
+            <input type="checkbox" required style="margin-top:2px;accent-color:#00ff88;"> I confirm that I have read and agree to the CYBERDUDEBIVASH Bug Bounty Rules of Engagement and Coordinated Disclosure Policy. I have not exceeded authorised access and have not exfiltrated, modified, or deleted any user data.
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">🔐 Submit Vulnerability Report</button>
+    </form>
+    <div id="bbSuccess" style="display:none;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:24px;margin-top:20px;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:12px;">✅</div>
+      <div style="font-family:Orbitron,sans-serif;font-weight:700;color:#00ff88;margin-bottom:8px;">Report Submitted Successfully</div>
+      <div style="color:#6b7fa3;font-size:.87rem;">Our security team will acknowledge your report within 4 hours. Thank you for helping make CYBERDUDEBIVASH more secure.</div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<footer class="gm-footer" role="contentinfo">
+  <div class="container">
+    <div class="gm-footer-eco-strip">
+      <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>Sentinel APEX™</a><span class="eco-strip-sep">·</span><a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>AI Security Hub</a><span class="eco-strip-sep">·</span><a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>ThreatCore™ Tools</a><span class="eco-strip-sep">·</span><a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot eco-dot-blue"></span>Intel API</a><span class="eco-strip-sep">·</span><a href="https://blog.cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot eco-dot-purple"></span>Research Blog</a>
+    </div>
+    <div class="gm-footer-grid">
+      <div class="gm-footer-brand-col"><div class="gm-footer-logo-wrap"><img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="gm-footer-logo" width="64" height="64" loading="lazy"><div class="gm-footer-logo-glow"></div></div><div class="gm-footer-brand-name">CYBERDUDEBIVASH<sup>&#174;</sup></div><p class="gm-footer-tagline">Global AI-Powered Cybersecurity Vendor.<br>Protecting digital assets since 2020.</p><div class="gm-footer-cert-row"><span class="gm-cert-badge">🏅 ISO 27001</span><span class="gm-cert-badge">🔒 SOC 2</span><span class="gm-cert-badge">🇮🇳 DPDP</span><span class="gm-cert-badge">🇪🇺 GDPR</span></div></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-cyan">SERVICES</h4><ul class="gm-footer-links"><li><a href="soc-services.html" class="gm-footer-link"><span class="gm-link-dot"></span>SOC-as-a-Service</a></li><li><a href="services.html" class="gm-footer-link"><span class="gm-link-dot"></span>Penetration Testing</a></li><li><a href="services.html" class="gm-footer-link"><span class="gm-link-dot"></span>Incident Response</a></li><li><a href="vciso.html" class="gm-footer-link"><span class="gm-link-dot"></span>Virtual CISO</a></li><li><a href="compliance.html" class="gm-footer-link"><span class="gm-link-dot"></span>Compliance Automation</a></li><li><a href="dark-web-monitor.html" class="gm-footer-link"><span class="gm-link-dot"></span>Dark Web Monitoring</a></li><li><a href="bug-bounty.html" class="gm-footer-link"><span class="gm-link-dot"></span>Bug Bounty Program</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-purple">PLATFORMS</h4><ul class="gm-footer-links"><li><a href="https://intel.cyberdudebivash.com/" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Sentinel APEX™</a></li><li><a href="https://cyberdudebivash.in" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>AI Security Hub</a></li><li><a href="https://tools.cyberdudebivash.com" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>ThreatCore™ Tools</a></li><li><a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Intelligence API</a></li><li><a href="https://blog.cyberdudebivash.in" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Research Blog</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-orange">COMPANY</h4><ul class="gm-footer-links"><li><a href="about.html" class="gm-footer-link"><span class="gm-link-dot"></span>About Us</a></li><li><a href="research.html" class="gm-footer-link"><span class="gm-link-dot"></span>Research Lab</a></li><li><a href="pricing.html" class="gm-footer-link"><span class="gm-link-dot"></span>Pricing</a></li><li><a href="contact.html" class="gm-footer-link"><span class="gm-link-dot"></span>Contact</a></li><li><a href="privacy.html" class="gm-footer-link"><span class="gm-link-dot"></span>Privacy Policy</a></li><li><a href="status.html" class="gm-footer-link"><span class="gm-link-dot"></span>System Status</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-green">COMMUNITY</h4><div class="gm-social-grid"><a href="https://github.com/cyberdudebivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-github"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg><span>GitHub</span></a><a href="https://www.linkedin.com/company/cyberdudebivash/" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-linkedin"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>LinkedIn</span></a><a href="https://x.com/cyberbivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-twitter"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a><a href="https://www.youtube.com/@cyberdudebivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-youtube"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span>YouTube</span></a></div></div>
+    </div>
+    <div class="gm-footer-bottom"><div class="gm-footer-bottom-line"><span class="gm-fbl-glow"></span></div><div class="gm-footer-bottom-inner"><div class="gm-footer-copyright">&#169; 2026 CYBERDUDEBIVASH Pvt. Ltd. All rights reserved. <span class="gm-bottom-sep">|</span> <a href="privacy.html" class="gm-bottom-link">Privacy</a> <span class="gm-bottom-sep">|</span> <a href="TERMS.md" class="gm-bottom-link">Terms</a></div><div class="gm-footer-trademark"><span class="gm-tm-badge">&#174;</span> CYBERDUDEBIVASH® is a registered trademark.</div></div></div>
+  </div>
 </footer>
-
-
-    <script src="./assets/js/matrix.js"></script>
-    <script src="./assets/js/main.js"></script>
+<div class="floating-cta" id="floatingCta"><a href="contact.html" class="fcta-btn fcta-primary"><span class="fcta-icon">💬</span><span class="fcta-text">Free Consultation</span></a><a href="tel:+918179881447" class="fcta-btn fcta-phone"><span class="fcta-icon">📞</span><span class="fcta-text">+91 81798 81447</span></a></div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+<script src="./assets/js/matrix.js" defer></script>
+<script src="./assets/js/main.js" defer></script>
+<script src="assets/js/godlevel.js" defer></script>
 <script src="assets/js/global-enterprise.js" defer></script>
+<script src="assets/js/sentinel-feed.js" defer></script>
+<script>
+function handleBBSubmit(e){
+  e.preventDefault();
+  document.getElementById('bbForm').style.display='none';
+  document.getElementById('bbSuccess').style.display='block';
+  document.getElementById('bbSuccess').scrollIntoView({behavior:'smooth',block:'center'});
+}
+// Animated bounty counter
+(function(){
+  var el=document.getElementById('bountyCounter');
+  if(!el)return;
+  var start=0,end=50000,dur=2000,step=Math.ceil(end/(dur/16));
+  var t=setInterval(function(){
+    start+=step;
+    if(start>=end){start=end;clearInterval(t);}
+    el.textContent='$'+start.toLocaleString()+'+';
+  },16);
+})();
+</script>
 </body>
 </html>

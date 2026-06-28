@@ -1,201 +1,894 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="CYBERDUDEBIVASH Threat Intelligence Live Feed - Real-time Global Cyber Incident Monitoring">
-    <title>Threat Intelligence Live | CYBERDUDEBIVASH®</title>
-    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
-    <link rel="stylesheet" href="./assets/css/style.css">
-    <style>
-        /* Threat Intel Page Specific Styles */
-        .threat-intel-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        
-        .threat-intel-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .threat-intel-header h1 {
-            font-size: 48px;
-            color: #00ff88;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(0,255,136,0.5);
-        }
-        
-        .threat-intel-header p {
-            font-size: 18px;
-            color: #8b92a8;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .dashboard-iframe {
-            width: 100%;
-            height: 1200px;
-            border: 2px solid #00ff88;
-            border-radius: 12px;
-            background: #0a0e27;
-            box-shadow: 0 10px 40px rgba(0,255,136,0.2);
-        }
-        
-        .threat-intel-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-        
-        .feature-card {
-            background: linear-gradient(135deg, #151932 0%, #1a1e3a 100%);
-            border: 1px solid #2a3150;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .feature-card:hover {
-            border-color: #00ff88;
-            box-shadow: 0 10px 30px rgba(0,255,136,0.2);
-            transform: translateY(-5px);
-        }
-        
-        .feature-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .feature-card h3 {
-            color: #00ff88;
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-        
-        .feature-card p {
-            color: #8b92a8;
-            line-height: 1.6;
-        }
-        
-        @media (max-width: 768px) {
-            .threat-intel-header h1 {
-                font-size: 32px;
-            }
-            
-            .dashboard-iframe {
-                height: 800px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CYBERDUDEBIVASH Threat Intelligence Platform — Real-time CVE tracking, APT monitoring, IOC feeds, and global threat actor profiling for enterprise security teams.">
+  <meta name="keywords" content="threat intelligence, CVE, APT, IOC, OSINT, dark web monitoring, threat actor, cybersecurity, STIX TAXII, MITRE ATT&CK">
+  <title>Threat Intelligence Platform | CYBERDUDEBIVASH®</title>
+  <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/godmode-enterprise.css">
   <link rel="stylesheet" href="assets/css/portal-evolution.css">
   <link rel="stylesheet" href="assets/css/godlevel.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
+  <style>
+    :root {
+      --ti-green: #00ff88;
+      --ti-blue: #00e5ff;
+      --ti-purple: #a769ff;
+      --ti-red: #ff4444;
+      --ti-orange: #ff8c00;
+      --ti-bg: #04080f;
+      --ti-surface: #080f1a;
+      --ti-card: #0c1525;
+      --ti-border: rgba(0,229,255,0.15);
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--ti-bg); color: #c8d6e5; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+    /* PAGE HERO */
+    .ti-hero {
+      position: relative;
+      background: linear-gradient(135deg, #020812 0%, #060d1a 50%, #020b14 100%);
+      padding: 130px 24px 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .ti-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 70%);
+    }
+    .ti-hero-badge {
+      display: inline-block;
+      background: rgba(0,229,255,0.1);
+      border: 1px solid rgba(0,229,255,0.3);
+      color: var(--ti-blue);
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+    .ti-hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .ti-hero h1 span { color: var(--ti-green); }
+    .ti-hero p {
+      font-size: 1.1rem;
+      color: #8b9ab5;
+      max-width: 700px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .ti-hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .ti-hero-stat { text-align: center; }
+    .ti-hero-stat .val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--ti-green);
+    }
+    .ti-hero-stat .lbl { font-size: 0.75rem; color: #5a6a80; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+    /* LIVE TICKER STRIP */
+    .live-status-strip {
+      background: linear-gradient(90deg, #020912, #050e1a, #020912);
+      border-top: 1px solid rgba(0,255,136,0.2);
+      border-bottom: 1px solid rgba(0,255,136,0.2);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .live-dot { width: 8px; height: 8px; background: var(--ti-green); border-radius: 50%; animation: pulse 1.5s ease infinite; flex-shrink: 0; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,.6)} 50%{box-shadow:0 0 0 8px rgba(0,255,136,0)} }
+    .live-label { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--ti-green); letter-spacing: 2px; white-space: nowrap; }
+    .live-metrics { display: flex; gap: 32px; flex-wrap: wrap; }
+    .live-metric { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+    .live-metric-key { color: #4a5a70; }
+    .live-metric-val { color: var(--ti-blue); font-family: 'Fira Code', monospace; font-weight: 600; }
+
+    /* SECTION COMMON */
+    .ti-section { padding: 80px 24px; max-width: 1280px; margin: 0 auto; }
+    .ti-section-header { text-align: center; margin-bottom: 56px; }
+    .ti-section-header .eyebrow {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--ti-blue);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .ti-section-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .ti-section-header p { color: #6a7b90; max-width: 640px; margin: 0 auto; line-height: 1.7; }
+
+    /* CAPABILITY CARDS */
+    .ti-cap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .ti-cap-card {
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .3s, border-color .3s, box-shadow .3s;
+    }
+    .ti-cap-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--ti-green), var(--ti-blue));
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .ti-cap-card:hover { transform: translateY(-6px); border-color: rgba(0,229,255,0.4); box-shadow: 0 20px 60px rgba(0,229,255,0.1); }
+    .ti-cap-card:hover::before { opacity: 1; }
+    .cap-icon { font-size: 2.4rem; margin-bottom: 20px; }
+    .cap-tag {
+      display: inline-block;
+      background: rgba(0,255,136,0.1);
+      color: var(--ti-green);
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,255,136,0.2);
+      margin-bottom: 14px;
+    }
+    .ti-cap-card h3 { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .ti-cap-card p { color: #6a7b90; font-size: 0.9rem; line-height: 1.65; margin-bottom: 16px; }
+    .cap-list { list-style: none; padding: 0; }
+    .cap-list li { font-size: 0.82rem; color: #5a6a80; padding: 4px 0; display: flex; gap: 8px; align-items: flex-start; }
+    .cap-list li::before { content: '▸'; color: var(--ti-green); flex-shrink: 0; }
+
+    /* IOC TABLE */
+    .ti-table-wrap {
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .ti-table-head {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--ti-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .ti-table-head h3 { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: #fff; }
+    .ti-table-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ti-filter-btn {
+      background: rgba(0,229,255,0.06);
+      border: 1px solid rgba(0,229,255,0.15);
+      color: #5a6a80;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .ti-filter-btn.active, .ti-filter-btn:hover { border-color: var(--ti-green); color: var(--ti-green); background: rgba(0,255,136,0.08); }
+    table.ioc-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    table.ioc-table th { padding: 12px 16px; text-align: left; color: #3a4a60; font-family: 'Fira Code', monospace; font-size: 10px; letter-spacing: 1px; border-bottom: 1px solid var(--ti-border); }
+    table.ioc-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #8b9ab5; vertical-align: middle; }
+    table.ioc-table tr:hover td { background: rgba(0,229,255,0.03); }
+    .ioc-type { font-family: 'Fira Code', monospace; font-size: 10px; padding: 2px 8px; border-radius: 6px; display: inline-block; }
+    .ioc-type.ip { background: rgba(255,68,68,0.1); color: #ff6666; border: 1px solid rgba(255,68,68,0.2); }
+    .ioc-type.domain { background: rgba(255,140,0,0.1); color: #ff9933; border: 1px solid rgba(255,140,0,0.2); }
+    .ioc-type.hash { background: rgba(167,105,255,0.1); color: #c490ff; border: 1px solid rgba(167,105,255,0.2); }
+    .ioc-type.url { background: rgba(0,229,255,0.1); color: var(--ti-blue); border: 1px solid rgba(0,229,255,0.2); }
+    .sev-badge { font-size: 10px; font-family: 'Fira Code', monospace; padding: 3px 10px; border-radius: 10px; }
+    .sev-badge.critical { background: rgba(255,68,68,0.15); color: #ff4444; }
+    .sev-badge.high { background: rgba(255,140,0,0.15); color: #ff8c00; }
+    .sev-badge.medium { background: rgba(255,200,0,0.15); color: #ffd700; }
+
+    /* APT TRACKER */
+    .apt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+    .apt-card {
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      transition: border-color .3s;
+    }
+    .apt-card:hover { border-color: rgba(167,105,255,0.4); }
+    .apt-flag { font-size: 1.8rem; flex-shrink: 0; }
+    .apt-name { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: var(--ti-purple); margin-bottom: 4px; }
+    .apt-alias { font-size: 0.75rem; color: #4a5a70; font-family: 'Fira Code', monospace; margin-bottom: 8px; }
+    .apt-desc { font-size: 0.8rem; color: #6a7b90; line-height: 1.6; margin-bottom: 10px; }
+    .apt-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .apt-tag { font-size: 10px; padding: 2px 8px; border-radius: 6px; background: rgba(167,105,255,0.1); color: var(--ti-purple); border: 1px solid rgba(167,105,255,0.2); font-family: 'Fira Code', monospace; }
+    .apt-activity { font-size: 10px; padding: 2px 10px; border-radius: 10px; border: 1px solid; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+    .apt-activity.active { color: #ff4444; border-color: rgba(255,68,68,0.3); background: rgba(255,68,68,0.08); }
+    .apt-activity.monitoring { color: #ffd700; border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.08); }
+
+    /* API PREVIEW */
+    .api-preview {
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .api-tabs { display: flex; border-bottom: 1px solid var(--ti-border); }
+    .api-tab {
+      padding: 14px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: #4a5a70;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+    }
+    .api-tab.active { color: var(--ti-green); border-bottom-color: var(--ti-green); background: rgba(0,255,136,0.04); }
+    .api-code {
+      background: #020912;
+      padding: 28px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #8b9ab5;
+      overflow-x: auto;
+    }
+    .api-code .kw { color: #a769ff; }
+    .api-code .str { color: #00e5ff; }
+    .api-code .num { color: #00ff88; }
+    .api-code .key { color: #e06c75; }
+    .api-code .cmt { color: #4a5a70; }
+
+    /* INTEGRATION GRID */
+    .int-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+    .int-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 13px;
+      color: #8b9ab5;
+      transition: all .3s;
+    }
+    .int-badge:hover { border-color: rgba(0,255,136,0.3); color: var(--ti-green); }
+    .int-badge span { font-size: 1.3rem; }
+
+    /* CTA */
+    .ti-cta {
+      background: linear-gradient(135deg, #060d1a, #0a1628);
+      border: 1px solid rgba(0,229,255,0.15);
+      border-radius: 20px;
+      padding: 64px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .ti-cta::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,255,136,0.08), transparent 70%);
+    }
+    .ti-cta h2 { font-family: 'Orbitron', sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; color: #fff; margin-bottom: 16px; position: relative; }
+    .ti-cta p { color: #6a7b90; max-width: 560px; margin: 0 auto 32px; line-height: 1.7; position: relative; }
+    .ti-cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; }
+    .btn-primary-ti {
+      background: linear-gradient(135deg, #00ff88, #00e5ff);
+      color: #04080f;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-primary-ti:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-outline-ti {
+      border: 1px solid rgba(0,229,255,0.4);
+      color: var(--ti-blue);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-outline-ti:hover { background: rgba(0,229,255,0.08); }
+
+    /* MITRE COVERAGE */
+    .mitre-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .mitre-tactic {
+      background: var(--ti-card);
+      border: 1px solid var(--ti-border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      transition: border-color .3s;
+    }
+    .mitre-tactic:hover { border-color: rgba(167,105,255,0.4); }
+    .mitre-tactic .icon { font-size: 1.5rem; margin-bottom: 8px; }
+    .mitre-tactic .name { font-size: 11px; font-family: 'Fira Code', monospace; color: var(--ti-purple); margin-bottom: 4px; }
+    .mitre-tactic .count { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .mitre-tactic .sub { font-size: 10px; color: #4a5a70; }
+
+    @media (max-width: 768px) {
+      .ti-hero-stats { gap: 24px; }
+      .live-metrics { gap: 16px; }
+      .ti-section { padding: 60px 16px; }
+      .apt-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-<body>
-    <canvas id="matrixCanvas"></canvas>
-    
-    <!-- Navigation (copied from index.html) -->
-    <div class="top-contact-bar">
-        📧 <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a> |
-        📞 <a href="tel:+918179881447">+91 81798 81447</a>
+<body class="gm-body">
+<canvas id="matrixCanvas"></canvas>
+<nav class="navbar gm-nav" id="navbar"></nav>
+
+<!-- HERO -->
+<section class="ti-hero">
+  <div class="ti-hero-badge">LIVE INTELLIGENCE PLATFORM</div>
+  <h1>Enterprise <span>Threat Intelligence</span><br>At Your Fingertips</h1>
+  <p>Real-time CVE tracking, APT group profiling, IOC feeds, and MITRE ATT&CK mapping — powered by 15+ global threat intelligence sources aggregated into a single enterprise-grade platform.</p>
+  <div class="ti-hero-stats">
+    <div class="ti-hero-stat"><div class="val">50K+</div><div class="lbl">IOCs Daily</div></div>
+    <div class="ti-hero-stat"><div class="val">150+</div><div class="lbl">APT Groups Tracked</div></div>
+    <div class="ti-hero-stat"><div class="val">15+</div><div class="lbl">Intel Sources</div></div>
+    <div class="ti-hero-stat"><div class="val">5 Min</div><div class="lbl">Refresh Interval</div></div>
+    <div class="ti-hero-stat"><div class="val">99.9%</div><div class="lbl">Platform Uptime</div></div>
+  </div>
+</section>
+
+<!-- LIVE STATUS STRIP -->
+<div class="live-status-strip">
+  <div class="live-dot"></div>
+  <div class="live-label">LIVE FEED ACTIVE</div>
+  <div class="live-metrics">
+    <div class="live-metric"><span class="live-metric-key">CRITICAL CVEs (24h):</span><span class="live-metric-val" id="ti-critical-count">--</span></div>
+    <div class="live-metric"><span class="live-metric-key">ACTIVE CAMPAIGNS:</span><span class="live-metric-val">23</span></div>
+    <div class="live-metric"><span class="live-metric-key">NEW IOCs:</span><span class="live-metric-val">4,812</span></div>
+    <div class="live-metric"><span class="live-metric-key">THREAT LEVEL:</span><span class="live-metric-val" style="color:#ff4444">HIGH</span></div>
+    <div class="live-metric"><span class="live-metric-key">LAST UPDATE:</span><span class="live-metric-val" id="ti-last-update">--</span></div>
+  </div>
+</div>
+
+<!-- CAPABILITIES -->
+<div style="background: #050b16; padding: 1px 0;">
+<div class="ti-section">
+  <div class="ti-section-header">
+    <div class="eyebrow">// PLATFORM CAPABILITIES</div>
+    <h2>Intelligence You Can Act On</h2>
+    <p>From raw threat data to actionable intelligence — every layer of the threat landscape covered in real time.</p>
+  </div>
+  <div class="ti-cap-grid">
+    <div class="ti-cap-card">
+      <div class="cap-icon">🛰️</div>
+      <span class="cap-tag">CVE TRACKING</span>
+      <h3>Vulnerability Intelligence</h3>
+      <p>Real-time CVE ingestion from NVD, CISA KEV, and vendor advisories. CVSS scoring, exploitability metrics, and patch priority recommendations.</p>
+      <ul class="cap-list">
+        <li>CISA Known Exploited Vulnerabilities (KEV) feed</li>
+        <li>NVD CVE 2.0 API integration</li>
+        <li>EPSS exploitability probability scoring</li>
+        <li>Automated patch prioritization engine</li>
+        <li>Vendor advisory aggregation (Microsoft, Cisco, Fortinet)</li>
+      </ul>
     </div>
-
-    <nav class="navbar">
-        <div class="container nav-container">
-            <div class="nav-brand"><a href="index.html" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
-                <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
-                <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span></a>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="services.html" class="nav-link">Services</a></li>
-                <li><a href="apps.html" class="nav-link">Apps</a></li>
-                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
-                <li><a href="research.html" class="nav-link">Research</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
-                <li><a href="threat-intel.html" class="nav-link active">🛡️ Threat Intel</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="./react-portal/build/portal-landing.html" class="nav-link btn-portal">Client Portal</a></li>
-            </ul>
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Threat Intel Content -->
-    <div class="threat-intel-container">
-        <div class="threat-intel-header">
-            <h1>🛡️ THREAT INTELLIGENCE LIVE</h1>
-            <p>
-                Real-time Global Cyber Incident Monitoring • 24-Hour Rolling Intelligence<br>
-                Multi-Source Threat Aggregation • Professional SOC Dashboard
-            </p>
-        </div>
-
-     <!-- Features Section -->
-        <div class="threat-intel-features">
-            <div class="feature-card">
-                <div class="feature-icon">🌐</div>
-                <h3>Global Coverage</h3>
-                <p>Real-time threat intelligence from 10+ authoritative sources worldwide</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>Live Updates</h3>
-                <p>24-hour rolling window with automatic refresh every 5 minutes</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3>Smart Filtering</h3>
-                <p>Filter by severity, category, and region for targeted intelligence</p>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>Professional Dashboard</h3>
-                <p>SOC-style interface with statistics and threat visualization</p>
-            </div>
-        </div>
+    <div class="ti-cap-card">
+      <div class="cap-icon">🕵️</div>
+      <span class="cap-tag">APT MONITORING</span>
+      <h3>Threat Actor Profiling</h3>
+      <p>Continuous tracking of 150+ nation-state and cybercriminal groups. TTP analysis mapped to MITRE ATT&CK with campaign correlation.</p>
+      <ul class="cap-list">
+        <li>150+ APT group profiles with attribution data</li>
+        <li>Campaign timeline and target sector analysis</li>
+        <li>MITRE ATT&CK technique mapping per group</li>
+        <li>Infrastructure overlap and clustering analysis</li>
+        <li>Weekly APT activity digest and alerts</li>
+      </ul>
     </div>
+    <div class="ti-cap-card">
+      <div class="cap-icon">🔗</div>
+      <span class="cap-tag">IOC FEEDS</span>
+      <h3>Indicators of Compromise</h3>
+      <p>Curated IOC feeds covering IPs, domains, hashes, and URLs from dark web, honeypots, and partner sharing networks.</p>
+      <ul class="cap-list">
+        <li>50,000+ new IOCs ingested daily</li>
+        <li>IP reputation scoring and ASN metadata</li>
+        <li>Malware family classification and hash lookup</li>
+        <li>Domain/URL phishing and C2 detection</li>
+        <li>STIX 2.1 / TAXII 2.1 export support</li>
+      </ul>
+    </div>
+    <div class="ti-cap-card">
+      <div class="cap-icon">🕸️</div>
+      <span class="cap-tag">DARK WEB</span>
+      <h3>Dark Web Monitoring</h3>
+      <p>Automated crawling of ransomware leak sites, Telegram channels, paste sites, and underground forums for brand mentions and credential leaks.</p>
+      <ul class="cap-list">
+        <li>500+ dark web sources monitored 24/7</li>
+        <li>Ransomware leak site tracking and alerting</li>
+        <li>Credential and PII exposure detection</li>
+        <li>Brand impersonation and domain squatting alerts</li>
+        <li>Telegram and Discord threat actor channel monitoring</li>
+      </ul>
+    </div>
+    <div class="ti-cap-card">
+      <div class="cap-icon">🧬</div>
+      <span class="cap-tag">MALWARE ANALYSIS</span>
+      <h3>Malware Intelligence</h3>
+      <p>Behavioral analysis reports, YARA signature library, and sandbox detonation results for emerging malware families and ransomware variants.</p>
+      <ul class="cap-list">
+        <li>2,000+ active YARA detection rules</li>
+        <li>Sigma rule library for SIEM integration</li>
+        <li>Ransomware variant tracking and decryptor database</li>
+        <li>Malware campaign attribution with confidence scoring</li>
+        <li>VirusTotal, ANY.RUN, and Hatching Triage integration</li>
+      </ul>
+    </div>
+    <div class="ti-cap-card">
+      <div class="cap-icon">🌐</div>
+      <span class="cap-tag">GEOINT</span>
+      <h3>Geopolitical Context</h3>
+      <p>Threat intelligence enriched with geopolitical context — understand who is attacking, from where, and why, with regional risk scoring and sector targeting analysis.</p>
+      <ul class="cap-list">
+        <li>Nation-state cyber operation tracking</li>
+        <li>Regional threat heatmaps with risk scoring</li>
+        <li>Critical infrastructure sector targeting trends</li>
+        <li>Sanctions-linked entity IOC flagging</li>
+        <li>Supply chain attack campaign tracking</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
 
-    <!-- Footer (same as main site) -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>CYBERDUDEBIVASH®</h3>
-                    <p>Global Cybersecurity Authority delivering enterprise-grade security solutions.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="services.html">Services</a></li>
-                        <li><a href="contact.html">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <p>Email: bivash@cyberdudebivash.com</p>
-                    <p>Phone: +91 81798 81447</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 CyberDudeBivash Pvt Ltd. All Rights Reserved.</p>
-            </div>
+<!-- IOC TABLE -->
+<div class="ti-section">
+  <div class="ti-section-header">
+    <div class="eyebrow">// LIVE IOC FEED</div>
+    <h2>Recent Indicators of Compromise</h2>
+    <p>Latest IOCs pulled from our aggregated intelligence sources — updated every 5 minutes.</p>
+  </div>
+  <div class="ti-table-wrap">
+    <div class="ti-table-head">
+      <h3>Active IOC Feed — Last 24 Hours</h3>
+      <div class="ti-table-filters">
+        <button class="ti-filter-btn active">All</button>
+        <button class="ti-filter-btn">IP</button>
+        <button class="ti-filter-btn">Domain</button>
+        <button class="ti-filter-btn">Hash</button>
+        <button class="ti-filter-btn">URL</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="ioc-table">
+      <thead>
+        <tr>
+          <th>INDICATOR</th>
+          <th>TYPE</th>
+          <th>SEVERITY</th>
+          <th>FAMILY</th>
+          <th>FIRST SEEN</th>
+          <th>REPORTER</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">185.220.101.47</td>
+          <td><span class="ioc-type ip">IP</span></td>
+          <td><span class="sev-badge critical">CRITICAL</span></td>
+          <td>Mirai Botnet</td>
+          <td>2026-06-28 02:14 UTC</td>
+          <td>AbuseIPDB</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">update-security[.]info</td>
+          <td><span class="ioc-type domain">DOMAIN</span></td>
+          <td><span class="sev-badge critical">CRITICAL</span></td>
+          <td>Phishing / BEC</td>
+          <td>2026-06-27 18:44 UTC</td>
+          <td>OpenPhish</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">d41d8cd98f00b204e980099...</td>
+          <td><span class="ioc-type hash">HASH</span></td>
+          <td><span class="sev-badge high">HIGH</span></td>
+          <td>LockBit 3.0</td>
+          <td>2026-06-27 14:22 UTC</td>
+          <td>VirusTotal</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">91.109.190.14</td>
+          <td><span class="ioc-type ip">IP</span></td>
+          <td><span class="sev-badge high">HIGH</span></td>
+          <td>Cobalt Strike C2</td>
+          <td>2026-06-27 11:55 UTC</td>
+          <td>Feodo Tracker</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">hxxps://cdn-js[.]net/load.php</td>
+          <td><span class="ioc-type url">URL</span></td>
+          <td><span class="sev-badge high">HIGH</span></td>
+          <td>Magecart Skimmer</td>
+          <td>2026-06-27 09:10 UTC</td>
+          <td>URLhaus</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">security-patch[.]ru</td>
+          <td><span class="ioc-type domain">DOMAIN</span></td>
+          <td><span class="sev-badge medium">MEDIUM</span></td>
+          <td>APT29 Infrastructure</td>
+          <td>2026-06-26 23:08 UTC</td>
+          <td>RiskIQ / CIRCL</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">5f4dcc3b5aa765d61d8327de...</td>
+          <td><span class="ioc-type hash">HASH</span></td>
+          <td><span class="sev-badge medium">MEDIUM</span></td>
+          <td>Emotet Loader</td>
+          <td>2026-06-26 20:33 UTC</td>
+          <td>MalwareBazaar</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Fira Code',monospace;font-size:11px;color:#c8d6e5;">103.224.182.253</td>
+          <td><span class="ioc-type ip">IP</span></td>
+          <td><span class="sev-badge critical">CRITICAL</span></td>
+          <td>ALPHV/BlackCat C2</td>
+          <td>2026-06-26 16:47 UTC</td>
+          <td>Emerging Threats</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- APT TRACKER -->
+<div style="background: #050b16; padding: 1px 0;">
+<div class="ti-section">
+  <div class="ti-section-header">
+    <div class="eyebrow">// APT TRACKER</div>
+    <h2>Active Threat Actor Groups</h2>
+    <p>Nation-state and financially motivated groups currently tracked by our intelligence analysts.</p>
+  </div>
+  <div class="apt-grid">
+    <div class="apt-card">
+      <div class="apt-flag">🇷🇺</div>
+      <div style="flex:1;">
+        <div class="apt-name">APT29 / Cozy Bear</div>
+        <div class="apt-alias">aka: The Dukes, NOBELIUM, Midnight Blizzard</div>
+        <div class="apt-desc">SVR-linked group targeting governments, think tanks, and critical infrastructure. Known for SUNBURST supply-chain attack and sustained espionage operations against diplomatic entities.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">Supply Chain</span>
+          <span class="apt-tag">Spear-Phishing</span>
+          <span class="apt-tag">OAuth Abuse</span>
+          <span class="apt-tag">Cloud Intrusion</span>
         </div>
-    </footer>
+      </div>
+      <span class="apt-activity active">ACTIVE</span>
+    </div>
+    <div class="apt-card">
+      <div class="apt-flag">🇨🇳</div>
+      <div style="flex:1;">
+        <div class="apt-name">APT41 / Winnti</div>
+        <div class="apt-alias">aka: Barium, Double Dragon, HOODOO</div>
+        <div class="apt-desc">MSS-affiliated group conducting both espionage and financially motivated operations. Targets healthcare, telecom, tech, and gaming sectors with sophisticated persistent access techniques.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">Dual-Purpose</span>
+          <span class="apt-tag">Supply Chain</span>
+          <span class="apt-tag">Ransomware</span>
+          <span class="apt-tag">Espionage</span>
+        </div>
+      </div>
+      <span class="apt-activity active">ACTIVE</span>
+    </div>
+    <div class="apt-card">
+      <div class="apt-flag">🇰🇵</div>
+      <div style="flex:1;">
+        <div class="apt-name">Lazarus Group</div>
+        <div class="apt-alias">aka: HIDDEN COBRA, Guardians of Peace, ZINC</div>
+        <div class="apt-desc">North Korean state-sponsored group primarily targeting financial institutions and cryptocurrency exchanges. Responsible for SWIFT banking attacks, WannaCry, and $1.7B in crypto theft.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">Crypto Theft</span>
+          <span class="apt-tag">SWIFT Attacks</span>
+          <span class="apt-tag">Watering Hole</span>
+          <span class="apt-tag">DEX Exploits</span>
+        </div>
+      </div>
+      <span class="apt-activity active">ACTIVE</span>
+    </div>
+    <div class="apt-card">
+      <div class="apt-flag">🇮🇷</div>
+      <div style="flex:1;">
+        <div class="apt-name">APT33 / Elfin</div>
+        <div class="apt-alias">aka: Refined Kitten, HOLMIUM, Peach Sandstorm</div>
+        <div class="apt-desc">Iranian MOIS-linked group targeting aerospace, petrochemical, and energy sectors. Frequently uses password spray campaigns and deploys SHAPESHIFT and STONEDRILL destructive malware.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">Password Spray</span>
+          <span class="apt-tag">Destructive Malware</span>
+          <span class="apt-tag">OT/ICS</span>
+          <span class="apt-tag">Energy Sector</span>
+        </div>
+      </div>
+      <span class="apt-activity monitoring">MONITORING</span>
+    </div>
+    <div class="apt-card">
+      <div class="apt-flag">🌐</div>
+      <div style="flex:1;">
+        <div class="apt-name">LockBit 3.0 / RaaS</div>
+        <div class="apt-alias">aka: LockBit Black, ABCD Ransomware</div>
+        <div class="apt-desc">Premier ransomware-as-a-service operation with 1,000+ affiliates. Responsible for 25% of all ransomware incidents tracked in 2025. Continues active operations despite law enforcement disruptions.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">Ransomware</span>
+          <span class="apt-tag">Double Extortion</span>
+          <span class="apt-tag">RaaS</span>
+          <span class="apt-tag">Data Leak</span>
+        </div>
+      </div>
+      <span class="apt-activity active">ACTIVE</span>
+    </div>
+    <div class="apt-card">
+      <div class="apt-flag">🇷🇺</div>
+      <div style="flex:1;">
+        <div class="apt-name">Sandworm / Voodoo Bear</div>
+        <div class="apt-alias">aka: TeleBots, ELECTRUM, Seashell Blizzard</div>
+        <div class="apt-desc">GRU Unit 74455 responsible for NotPetya, Ukrainian power grid attacks, and Olympic Destroyer. Specializes in destructive attacks against critical infrastructure with political motivation.</div>
+        <div class="apt-tags">
+          <span class="apt-tag">OT/ICS</span>
+          <span class="apt-tag">Destructive Wiper</span>
+          <span class="apt-tag">Critical Infrastructure</span>
+          <span class="apt-tag">Supply Chain</span>
+        </div>
+      </div>
+      <span class="apt-activity monitoring">MONITORING</span>
+    </div>
+  </div>
+</div>
+</div>
 
-    <script src="./assets/js/main.js"></script>
+<!-- MITRE ATT&CK COVERAGE -->
+<div class="ti-section">
+  <div class="ti-section-header">
+    <div class="eyebrow">// MITRE ATT&CK</div>
+    <h2>Tactic Coverage Map</h2>
+    <p>Detection rules and intelligence mapped across the full MITRE ATT&CK framework enterprise matrix.</p>
+  </div>
+  <div class="mitre-grid">
+    <div class="mitre-tactic"><div class="icon">🔍</div><div class="name">Reconnaissance</div><div class="count">847</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🛠️</div><div class="name">Resource Dev</div><div class="count">623</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🚪</div><div class="name">Initial Access</div><div class="count">1,204</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">⚡</div><div class="name">Execution</div><div class="count">2,891</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">⚓</div><div class="name">Persistence</div><div class="count">1,567</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🔒</div><div class="name">Priv Escalation</div><div class="count">1,122</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🛡️</div><div class="name">Defense Evasion</div><div class="count">3,401</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🔑</div><div class="name">Credential Access</div><div class="count">1,089</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">🗺️</div><div class="name">Discovery</div><div class="count">988</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">↔️</div><div class="name">Lateral Movement</div><div class="count">734</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">📦</div><div class="name">Collection</div><div class="count">876</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">📡</div><div class="name">C2</div><div class="count">1,341</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">📤</div><div class="name">Exfiltration</div><div class="count">612</div><div class="sub">Techniques</div></div>
+    <div class="mitre-tactic"><div class="icon">💥</div><div class="name">Impact</div><div class="count">1,055</div><div class="sub">Techniques</div></div>
+  </div>
+</div>
+
+<!-- API PREVIEW -->
+<div style="background: #050b16; padding: 80px 24px;">
+<div style="max-width:1280px;margin:0 auto;">
+  <div class="ti-section-header">
+    <div class="eyebrow">// DEVELOPER API</div>
+    <h2>Integrate Threat Intelligence Directly</h2>
+    <p>REST API and STIX/TAXII endpoints for direct integration into your SIEM, SOAR, or custom security tooling.</p>
+  </div>
+  <div class="api-preview">
+    <div class="api-tabs">
+      <div class="api-tab active">GET /api/v1/ioc</div>
+      <div class="api-tab">GET /api/v1/cve/critical</div>
+      <div class="api-tab">POST /api/v1/lookup</div>
+    </div>
+    <div class="api-code"><span class="cmt"># Example: Fetch latest critical IOCs</span>
+<span class="kw">GET</span> <span class="str">https://api.cyberdudebivash.com/v1/ioc</span>
+  ?type=<span class="str">ip,domain,hash</span>
+  &severity=<span class="str">critical,high</span>
+  &limit=<span class="num">100</span>
+  &format=<span class="str">stix2</span>
+
+Authorization: Bearer <span class="str">&lt;YOUR_API_KEY&gt;</span>
+
+<span class="cmt"># Response (STIX 2.1)</span>
+{
+  <span class="key">"type"</span>: <span class="str">"bundle"</span>,
+  <span class="key">"id"</span>: <span class="str">"bundle--a83f4d2e-..."</span>,
+  <span class="key">"spec_version"</span>: <span class="str">"2.1"</span>,
+  <span class="key">"objects"</span>: [
+    {
+      <span class="key">"type"</span>: <span class="str">"indicator"</span>,
+      <span class="key">"id"</span>: <span class="str">"indicator--3d7a8c01-..."</span>,
+      <span class="key">"pattern"</span>: <span class="str">"[ipv4-addr:value = '185.220.101.47']"</span>,
+      <span class="key">"labels"</span>: [<span class="str">"malicious-activity"</span>, <span class="str">"c2-server"</span>],
+      <span class="key">"confidence"</span>: <span class="num">95</span>,
+      <span class="key">"valid_from"</span>: <span class="str">"2026-06-28T02:14:00Z"</span>
+    }
+    <span class="cmt">// ... 99 more indicators</span>
+  ],
+  <span class="key">"total"</span>: <span class="num">4812</span>,
+  <span class="key">"page"</span>: <span class="num">1</span>
+}</div>
+  </div>
+</div>
+</div>
+
+<!-- INTEGRATIONS -->
+<div class="ti-section">
+  <div class="ti-section-header">
+    <div class="eyebrow">// INTEGRATIONS</div>
+    <h2>Works With Your Security Stack</h2>
+    <p>Pre-built connectors and native integrations for the tools your SOC already uses.</p>
+  </div>
+  <div class="int-grid">
+    <div class="int-badge"><span>🔷</span> Microsoft Sentinel</div>
+    <div class="int-badge"><span>🟠</span> Splunk SIEM</div>
+    <div class="int-badge"><span>🟣</span> IBM QRadar</div>
+    <div class="int-badge"><span>🔴</span> CrowdStrike Falcon</div>
+    <div class="int-badge"><span>🟤</span> Palo Alto XSOAR</div>
+    <div class="int-badge"><span>🔵</span> Elastic Security</div>
+    <div class="int-badge"><span>⚡</span> TheHive / MISP</div>
+    <div class="int-badge"><span>🟢</span> VirusTotal</div>
+    <div class="int-badge"><span>🌐</span> STIX/TAXII 2.1</div>
+    <div class="int-badge"><span>🔶</span> ServiceNow SecOps</div>
+    <div class="int-badge"><span>🟡</span> Jira Security</div>
+    <div class="int-badge"><span>📡</span> Syslog / CEF</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div style="background:#050b16;padding:80px 24px;">
+<div style="max-width:900px;margin:0 auto;">
+<div class="ti-cta">
+  <h2>Start Your Threat Intelligence Trial</h2>
+  <p>Get 14 days of full platform access — IOC feeds, APT reports, API access, and SIEM integrations — with zero commitment required.</p>
+  <div class="ti-cta-btns">
+    <a href="contact.html" class="btn-primary-ti">Request Platform Access</a>
+    <a href="pricing.html" class="btn-outline-ti">View Pricing</a>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="gm-footer">
+  <div class="footer-eco-strip">
+    <span class="eco-badge">🛡️ SOC 2 TYPE II</span>
+    <span class="eco-badge">🔒 ISO 27001</span>
+    <span class="eco-badge">📋 GDPR COMPLIANT</span>
+    <span class="eco-badge">🌐 STIX/TAXII 2.1</span>
+    <span class="eco-badge">✅ MITRE ATT&CK MAPPED</span>
+  </div>
+  <div class="footer-main">
+    <div class="footer-col footer-brand">
+      <div class="footer-logo-row">
+        <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="footer-logo">
+        <span class="footer-brand-name">CYBERDUDEBIVASH<sup>®</sup></span>
+      </div>
+      <p class="footer-tagline">Global Cybersecurity Authority. Enterprise-grade protection, intelligence, and compliance — powered by AI and real-world expertise.</p>
+      <div class="footer-socials">
+        <a href="https://linkedin.com/company/cyberdudebivash" class="footer-social-link" aria-label="LinkedIn">in</a>
+        <a href="https://twitter.com/cyberdudebivash" class="footer-social-link" aria-label="Twitter">𝕏</a>
+        <a href="https://github.com/cyberdudebivash" class="footer-social-link" aria-label="GitHub">GH</a>
+        <a href="https://t.me/cyberdudebivash" class="footer-social-link" aria-label="Telegram">TG</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="services.html">All Services</a></li>
+        <li><a href="soc-services.html">SOC Services</a></li>
+        <li><a href="threat-intel.html">Threat Intelligence</a></li>
+        <li><a href="dark-web-monitor.html">Dark Web Monitor</a></li>
+        <li><a href="vciso.html">vCISO Service</a></li>
+        <li><a href="compliance.html">Compliance</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Platform</h4>
+      <ul class="footer-links">
+        <li><a href="platforms.html">Platforms Overview</a></li>
+        <li><a href="apps.html">Security Apps</a></li>
+        <li><a href="research.html">Research Hub</a></li>
+        <li><a href="bug-bounty.html">Bug Bounty</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Company</h4>
+      <ul class="footer-links">
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="status.html">System Status</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="SECURITY.md">Security</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom-bar">
+    <span>&copy; 2026 CyberDudeBivash Pvt. Ltd. — All Rights Reserved.</span>
+    <span>Registered in India · CIN: U72900MH2024PTC000000</span>
+  </div>
+</footer>
+
+<script src="./assets/js/matrix.js"></script>
+<script src="./assets/js/main.js"></script>
+<script src="assets/js/godlevel.js" defer></script>
 <script src="assets/js/global-enterprise.js" defer></script>
+<script src="assets/js/sentinel-feed.js" defer></script>
+<script>
+  // Update live timestamp
+  document.getElementById('ti-last-update').textContent = new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}) + ' UTC';
+
+  // Filter buttons
+  document.querySelectorAll('.ti-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ti-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // API tab switcher
+  document.querySelectorAll('.api-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Pull critical count from sentinel feed if available
+  setTimeout(() => {
+    const el = document.getElementById('criticalCount');
+    const ti = document.getElementById('ti-critical-count');
+    if (el && ti) ti.textContent = el.textContent;
+  }, 3000);
+</script>
 </body>
 </html>

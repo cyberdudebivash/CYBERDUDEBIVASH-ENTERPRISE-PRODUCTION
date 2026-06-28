@@ -1,629 +1,586 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Enterprise Cybersecurity Services by CYBERDUDEBIVASH - Penetration Testing, Threat Intelligence, Security Consulting, Training & More">
-    <title>Enterprise Services | CYBERDUDEBIVASH®</title>
-    <link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
-    <link rel="stylesheet" href="./assets/css/style.css">
-    <link rel="stylesheet" href="./assets/css/footer-enhanced.css">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650"
-     crossorigin="anonymous"></script>  <link rel="stylesheet" href="assets/css/portal-evolution.css">
-  <link rel="stylesheet" href="assets/css/godlevel.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Enterprise cybersecurity services: penetration testing, SOC-as-a-Service, incident response, virtual CISO, compliance automation, dark web monitoring, and more. Powered by CYBERDUDEBIVASH®.">
+<title>Enterprise Security Services | CYBERDUDEBIVASH®</title>
+<link rel="icon" type="image/x-icon" href="./assets/images/favicon.ico">
+<link rel="apple-touch-icon" href="./assets/images/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/style.css">
+<link rel="stylesheet" href="assets/css/godmode-enterprise.css">
+<link rel="stylesheet" href="assets/css/portal-evolution.css">
+<link rel="stylesheet" href="assets/css/godlevel.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MDT720X9YW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MDT720X9YW',{page_path:window.location.pathname});</script>
+<style>
+.inner-page-hero{padding:120px 0 60px;background:linear-gradient(135deg,#04080f 0%,#060e1c 50%,#040c10 100%);border-bottom:1px solid rgba(0,255,136,0.12);position:relative;overflow:hidden;}
+.inner-page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,255,136,0.08) 0%,transparent 70%);pointer-events:none;}
+.iph-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);border-radius:20px;padding:6px 16px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#00ff88;text-transform:uppercase;margin-bottom:20px;}
+.iph-dot{width:7px;height:7px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse-dot 1.4s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.iph-title{font-family:Orbitron,sans-serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:#fff;line-height:1.1;margin-bottom:16px;}
+.iph-title span{background:linear-gradient(135deg,#00ff88,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.iph-sub{font-size:1rem;color:#6b7fa3;max-width:620px;line-height:1.6;}
+.section-label{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#00ff88;margin-bottom:12px;}
+.section-heading{font-family:Orbitron,sans-serif;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:16px;line-height:1.15;}
+.section-heading span{background:linear-gradient(135deg,#00e5ff,#a769ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.card-glass{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;transition:border-color .25s,transform .25s,box-shadow .25s;}
+.card-glass:hover{border-color:rgba(0,255,136,0.3);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,255,136,0.08);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-weight:700;font-size:0.88rem;text-decoration:none;transition:all .2s;letter-spacing:.04em;}
+.btn-primary{background:linear-gradient(135deg,#00ff88,#00c96e);color:#030a14;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,136,0.35);}
+.btn-outline{background:transparent;border:1px solid rgba(0,229,255,0.4);color:#00e5ff;}
+.btn-outline:hover{background:rgba(0,229,255,0.08);border-color:#00e5ff;}
+
+/* Page base */
+body.services-page{background:#04080f;color:#c8d6e5;font-family:Inter,sans-serif;}
+.container{max-width:1280px;margin:0 auto;padding:0 24px;}
+
+/* Quick Nav */
+.quick-nav-section{background:rgba(4,8,15,0.95);border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:90;backdrop-filter:blur(16px);}
+.quick-nav-inner{display:flex;align-items:center;gap:8px;padding:14px 0;overflow-x:auto;scrollbar-width:none;}
+.quick-nav-inner::-webkit-scrollbar{display:none;}
+.qn-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(255,255,255,0.1);color:#8899b0;background:transparent;white-space:nowrap;transition:all .2s;}
+.qn-pill:hover{background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.4);color:#00ff88;}
+.qn-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7;}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.06);border-radius:16px;overflow:hidden;margin:48px 0;}
+.stat-cell{background:#060d1a;padding:28px 20px;text-align:center;}
+.stat-num{font-family:Orbitron,sans-serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;background:linear-gradient(135deg,#00ff88,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-lbl{font-size:12px;color:#5a6e8a;margin-top:4px;letter-spacing:.06em;text-transform:uppercase;}
+
+/* Service Cards */
+.services-section{padding:80px 0;}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;margin-top:32px;}
+.svc-card{background:rgba(6,13,26,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:30px;display:flex;flex-direction:column;transition:all .3s;position:relative;overflow:hidden;}
+.svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-accent,linear-gradient(90deg,#00ff88,#00e5ff));opacity:0;transition:opacity .3s;}
+.svc-card:hover{border-color:rgba(0,255,136,0.25);transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.4);}
+.svc-card:hover::before{opacity:1;}
+.svc-icon-wrap{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:20px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);}
+.svc-category{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#00ff88;margin-bottom:8px;}
+.svc-title{font-family:Orbitron,sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.25;}
+.svc-desc{font-size:0.875rem;color:#6b7fa3;line-height:1.65;margin-bottom:16px;}
+.svc-features{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:6px;}
+.svc-features li{font-size:0.8rem;color:#8899b0;display:flex;align-items:flex-start;gap:8px;}
+.svc-features li::before{content:'▸';color:#00ff88;flex-shrink:0;font-size:10px;margin-top:2px;}
+.svc-footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);}
+.svc-price{font-family:'Fira Code',monospace;font-size:0.88rem;color:#00ff88;font-weight:500;}
+.svc-cta{padding:8px 18px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00ff88;transition:all .2s;letter-spacing:.04em;}
+.svc-cta:hover{background:rgba(0,255,136,0.2);border-color:#00ff88;box-shadow:0 4px 16px rgba(0,255,136,0.2);}
+
+/* Category headers */
+.cat-header{display:flex;align-items:center;gap:16px;margin:56px 0 0;padding-top:56px;border-top:1px solid rgba(255,255,255,0.06);}
+.cat-header:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+.cat-badge{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.cat-green{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00ff88;}
+.cat-red{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:#ff4444;}
+.cat-blue{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#00e5ff;}
+.cat-purple{background:rgba(167,105,255,0.1);border:1px solid rgba(167,105,255,0.3);color:#a769ff;}
+.cat-orange{background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.3);color:#ffa500;}
+.cat-title{font-family:Orbitron,sans-serif;font-size:1.3rem;font-weight:700;color:#fff;}
+
+/* Process */
+.process-section{padding:80px 0;background:rgba(0,0,0,0.25);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);}
+.process-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:48px;position:relative;}
+.process-steps::before{content:'';position:absolute;top:36px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,136,0.3),rgba(0,229,255,0.3),rgba(0,255,136,0.3),transparent);}
+.proc-step{text-align:center;padding:0 12px;position:relative;z-index:1;}
+.proc-num{width:72px;height:72px;border-radius:50%;border:2px solid rgba(0,255,136,0.3);background:#04080f;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 16px;box-shadow:0 0 24px rgba(0,255,136,0.12);}
+.proc-label{font-family:Orbitron,sans-serif;font-size:0.75rem;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:.06em;}
+.proc-desc{font-size:0.78rem;color:#5a6e8a;line-height:1.55;}
+
+/* Case Studies */
+.case-section{padding:80px 0;}
+.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;}
+.case-card{background:rgba(6,13,26,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;border-left:3px solid;}
+.cc-green{border-left-color:#00ff88;}
+.cc-blue{border-left-color:#00e5ff;}
+.cc-purple{border-left-color:#a769ff;}
+.case-tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
+.cc-green .case-tag{color:#00ff88;}
+.cc-blue .case-tag{color:#00e5ff;}
+.cc-purple .case-tag{color:#a769ff;}
+.case-title{font-family:Orbitron,sans-serif;font-size:0.95rem;font-weight:700;color:#fff;margin-bottom:10px;}
+.case-desc{font-size:0.82rem;color:#6b7fa3;line-height:1.6;margin-bottom:16px;}
+.case-metrics{display:flex;gap:16px;flex-wrap:wrap;}
+.cm-val{font-family:Orbitron,sans-serif;font-size:1.1rem;font-weight:800;color:#00ff88;}
+.cm-lbl{font-size:10px;color:#5a6e8a;letter-spacing:.06em;text-transform:uppercase;}
+
+/* CTA */
+.cta-section{padding:80px 0;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(0,255,136,0.05) 0%,transparent 70%);}
+.cta-title{font-family:Orbitron,sans-serif;font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:800;color:#fff;margin-bottom:16px;}
+.cta-sub{font-size:1rem;color:#6b7fa3;max-width:560px;margin:0 auto 36px;line-height:1.6;}
+.cta-btn-group{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+
+@media(max-width:900px){.process-steps{grid-template-columns:1fr 1fr;gap:32px;}.process-steps::before{display:none;}.case-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.services-grid{grid-template-columns:1fr;}.process-steps{grid-template-columns:1fr;}.stats-row{grid-template-columns:1fr;}}
+</style>
 </head>
-<body>
-    <canvas id="matrixCanvas"></canvas>
-    
-    <!-- Navigation -->
-    <!-- Top Contact Bar -->
-    <div class="top-contact-bar">
-        📧 <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a> |
-        📞 <a href="tel:+918179881447">+91 81798 81447</a>
+<body class="gm-body services-page">
+<canvas id="matrixCanvas"></canvas>
+<nav class="navbar gm-nav" id="navbar"></nav>
+
+<!-- HERO -->
+<section class="inner-page-hero">
+  <div class="container">
+    <div class="iph-tag"><span class="iph-dot"></span>Enterprise Security Services</div>
+    <h1 class="iph-title">Comprehensive <span>Cybersecurity Services</span><br>Built for the Enterprise</h1>
+    <p class="iph-sub">From adversarial red team engagements to 24/7 managed detection, CYBERDUDEBIVASH® delivers end-to-end security services powered by AI threat intelligence, elite analysts, and battle-tested methodologies.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;">
+      <a href="contact.html" class="btn btn-primary">&#9656; Get a Free Proposal</a>
+      <a href="#services-grid" class="btn btn-outline">Explore All Services</a>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK NAV -->
+<div class="quick-nav-section">
+  <div class="container">
+    <div class="quick-nav-inner">
+      <a href="#offensive" class="qn-pill"><span class="qn-dot"></span>Offensive</a>
+      <a href="#defensive" class="qn-pill"><span class="qn-dot"></span>Defensive</a>
+      <a href="#intelligence" class="qn-pill"><span class="qn-dot"></span>Intelligence</a>
+      <a href="#managed" class="qn-pill"><span class="qn-dot"></span>Managed</a>
+      <a href="#compliance" class="qn-pill"><span class="qn-dot"></span>Compliance</a>
+      <a href="#training" class="qn-pill"><span class="qn-dot"></span>Training</a>
+      <a href="#process" class="qn-pill"><span class="qn-dot"></span>Our Process</a>
+      <a href="#case-studies" class="qn-pill"><span class="qn-dot"></span>Case Studies</a>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-num">500+</div>
+      <div class="stat-lbl">Engagements Delivered</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">99.7%</div>
+      <div class="stat-lbl">Client Retention Rate</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">24/7</div>
+      <div class="stat-lbl">SOC Coverage</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">&lt;15 min</div>
+      <div class="stat-lbl">Mean Time to Detect</div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services-section" id="services-grid">
+  <div class="container">
+    <div class="section-label">&#11044; Full Service Catalog</div>
+    <h2 class="section-heading">12 Enterprise Security <span>Services</span></h2>
+    <p style="color:#6b7fa3;max-width:640px;font-size:0.95rem;line-height:1.65;">Every service is engineered to meet enterprise-grade security demands — from Fortune 500 financial institutions to critical infrastructure operators and government agencies.</p>
+
+    <!-- OFFENSIVE -->
+    <div class="cat-header" id="offensive">
+      <div class="cat-badge cat-red">&#9888; Offensive Security</div>
+      <div class="cat-title">Attack &amp; Penetration</div>
+    </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#ff4444,#ff8c00);">
+        <div class="svc-icon-wrap">&#128269;</div>
+        <div class="svc-category">Offensive · Penetration Testing</div>
+        <div class="svc-title">Penetration Testing Suite</div>
+        <p class="svc-desc">Comprehensive adversarial testing across Web Apps, REST/GraphQL APIs, Internal Networks, Mobile Apps (iOS &amp; Android), Cloud Infrastructure (AWS/Azure/GCP), and Social Engineering vectors. Each test follows OWASP, PTES, and NIST 800-115 methodology with full PoC evidence.</p>
+        <ul class="svc-features">
+          <li>Web application &amp; API testing — OWASP Top 10 + Business Logic flaws</li>
+          <li>Network infrastructure — External, Internal, Wireless, VPN perimeter</li>
+          <li>Mobile application — Static, Dynamic &amp; Runtime analysis (iOS/Android)</li>
+          <li>Cloud configuration review — IAM, storage, compute, serverless functions</li>
+          <li>Detailed remediation report with CVSS scores &amp; exploitation evidence</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $499 / engagement</span>
+          <a href="contact.html?plan=pentest" class="svc-cta">Get Quote &#8594;</a>
+        </div>
+      </div>
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#ff0060,#a769ff);">
+        <div class="svc-icon-wrap">&#127987;</div>
+        <div class="svc-category">Offensive · Adversarial Simulation</div>
+        <div class="svc-title">Red Team Operations</div>
+        <p class="svc-desc">Full-spectrum adversary simulation replicating nation-state and APT TTPs against your organization. Tests people, process, and technology simultaneously with multi-vector campaigns spanning weeks. Fully MITRE ATT&amp;CK aligned — designed to find what your blue team misses.</p>
+        <ul class="svc-features">
+          <li>Multi-vector campaigns — phishing, vishing, physical intrusion</li>
+          <li>C2 framework deployment &amp; advanced lateral movement simulation</li>
+          <li>Active Directory &amp; Kerberos attack chain exploitation</li>
+          <li>Crown jewel access — realistic data exfiltration scenarios</li>
+          <li>Purple team debrief session with actionable defender playbooks</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $2,499 / engagement</span>
+          <a href="contact.html?plan=redteam" class="svc-cta">Get Quote &#8594;</a>
+        </div>
+      </div>
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#a769ff,#00e5ff);">
+        <div class="svc-icon-wrap">&#129504;</div>
+        <div class="svc-category">Offensive · Emerging Threats</div>
+        <div class="svc-title">AI Security Assessment</div>
+        <p class="svc-desc">Specialized assessment targeting AI/ML systems, LLM deployments, and MLOps pipelines. Covers prompt injection, model inversion, training data poisoning, adversarial example generation, and supply chain risks in AI-integrated production environments.</p>
+        <ul class="svc-features">
+          <li>LLM prompt injection, jailbreak, and indirect injection testing</li>
+          <li>Model extraction &amp; membership inference attack simulation</li>
+          <li>Training data poisoning and model backdoor risk assessment</li>
+          <li>AI pipeline supply chain &amp; dependency analysis</li>
+          <li>Compliance mapping for EU AI Act, NIST AI RMF, and ISO 42001</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $999 / engagement</span>
+          <a href="contact.html?plan=ai-assessment" class="svc-cta">Get Quote &#8594;</a>
+        </div>
+      </div>
+
     </div>
 
-    <nav class="navbar">
-        <div class="container nav-container">
-            <div class="nav-brand"><a href="index.html" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
-                <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="nav-logo">
-                <span class="brand-text">CYBERDUDEBIVASH<sup>®</sup></span></a>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="services.html" class="nav-link active">Services</a></li>
-                <li><a href="apps.html" class="nav-link">Apps</a></li>
-                <li><a href="platforms.html" class="nav-link">Platforms</a></li>
-                <li><a href="research.html" class="nav-link">Research</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="pricing.html" class="nav-link">Pricing</a></li>
-                <li><a href=".html" class="nav-link"></a></li>
-                <li><a href=".html" class="nav-link"></a></li>
-                <li><a href="threat-intel.html" class="nav-link">🛡️ Threat Intel</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="soc-services.html">soc services</a></li>
-                <li><a href="bug-bounty.html">Bug Bounty</a></li>
-                <li><a href=""></a></li>
-                <li><a href="./react-portal/build/portal-landing.html" class="nav-link btn-portal">Client Portal</a></li>
-            </ul>
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+    <!-- DEFENSIVE -->
+    <div class="cat-header" id="defensive">
+      <div class="cat-badge cat-blue">&#9673; Defensive Security</div>
+      <div class="cat-title">Detect, Respond &amp; Recover</div>
+    </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#00e5ff,#00ff88);">
+        <div class="svc-icon-wrap">&#128057;</div>
+        <div class="svc-category">Defensive · Managed Detection &amp; Response</div>
+        <div class="svc-title">SOC-as-a-Service (24/7)</div>
+        <p class="svc-desc">Round-the-clock Security Operations Center powered by AI-augmented analyst teams. Real-time threat monitoring, triage, investigation, and response across your entire attack surface — cloud workloads, endpoints, identity, network, and SaaS applications.</p>
+        <ul class="svc-features">
+          <li>24/7/365 expert analyst coverage with guaranteed SLA commitments</li>
+          <li>SIEM integration — Splunk, Microsoft Sentinel, IBM QRadar, Elastic</li>
+          <li>AI-powered alert triage reducing noise by up to 94%</li>
+          <li>Mean Time to Detect (MTTD) under 15 minutes — contractually backed</li>
+          <li>Monthly threat reporting, executive dashboards &amp; QBRs</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $299 / month</span>
+          <a href="contact.html?plan=soc" class="svc-cta">Start Free Trial &#8594;</a>
         </div>
-    </nav>
+      </div>
 
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="container">
-            <h1 class="page-title gradient-text">Enterprise Security Services</h1>
-            <p class="page-subtitle">Comprehensive cybersecurity solutions for mission-critical environments</p>
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#ff8c00,#ff4444);">
+        <div class="svc-icon-wrap">&#128680;</div>
+        <div class="svc-category">Defensive · DFIR</div>
+        <div class="svc-title">Incident Response &amp; DFIR</div>
+        <p class="svc-desc">Rapid response to active breaches — containment within hours, not days. Our Digital Forensics &amp; Incident Response team deploys remotely or on-site with purpose-built tooling to minimize dwell time, recover operations, and build the evidentiary record for attribution.</p>
+        <ul class="svc-features">
+          <li>Emergency hotline available 24/7 — 2-hour remote response SLA</li>
+          <li>Forensic acquisition &amp; court-admissible chain-of-custody preservation</li>
+          <li>Ransomware triage, decryption assistance &amp; encrypted data recovery</li>
+          <li>Root cause analysis, threat actor attribution &amp; kill chain reconstruction</li>
+          <li>Litigation-ready forensics reports for legal and regulatory proceedings</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $199 / hour</span>
+          <a href="contact.html?plan=ir" class="svc-cta">Emergency Line &#8594;</a>
         </div>
-    </section>
+      </div>
 
-    <!-- Core Services -->
-    <section class="services-section">
-        <div class="container">
-            <h2 class="section-title">Core Service Offerings</h2>
-            
-            <!-- Offensive Security -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">⚔️</div>
-                    <h3>Offensive Security & Penetration Testing</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        Comprehensive security assessments using real-world attack techniques to identify vulnerabilities before malicious actors do. Our certified ethical hackers simulate advanced persistent threats to validate your security controls.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>External Testing</h4>
-                            <ul>
-                                <li>Network perimeter assessment</li>
-                                <li>Web application penetration testing</li>
-                                <li>API security testing</li>
-                                <li>Cloud infrastructure testing (AWS, Azure, GCP)</li>
-                                <li>Mobile application security assessment</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Internal Testing</h4>
-                            <ul>
-                                <li>Active Directory security assessment</li>
-                                <li>Internal network segmentation testing</li>
-                                <li>Privilege escalation testing</li>
-                                <li>Lateral movement simulation</li>
-                                <li>Physical security assessment</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Advanced Testing</h4>
-                            <ul>
-                                <li>Red Team exercises</li>
-                                <li>Purple Team collaborative assessments</li>
-                                <li>Assumed breach scenarios</li>
-                                <li>Zero-day research and exploitation</li>
-                                <li>Custom exploit development</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> Executive summary, technical report with proof-of-concepts, remediation roadmap, and retest validation
-                    </div>
-                </div>
-            </div>
-
-            <!-- Threat Intelligence -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">🔍</div>
-                    <h3>Threat Intelligence & Hunting</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        Proactive threat intelligence gathering, analysis, and hunting to identify advanced threats targeting your organization. We provide actionable intelligence that enhances your security posture and informs strategic decisions.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>Strategic Intelligence</h4>
-                            <ul>
-                                <li>Industry-specific threat landscape analysis</li>
-                                <li>APT group tracking and attribution</li>
-                                <li>Geopolitical threat assessment</li>
-                                <li>Executive threat briefings</li>
-                                <li>Competitor intelligence analysis</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Tactical Intelligence</h4>
-                            <ul>
-                                <li>IOC detection and enrichment</li>
-                                <li>Malware analysis and reverse engineering</li>
-                                <li>Threat actor TTP documentation</li>
-                                <li>MITRE ATT&CK mapping</li>
-                                <li>Custom YARA rule development</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Threat Hunting</h4>
-                            <ul>
-                                <li>Hypothesis-driven hunting</li>
-                                <li>Behavioral analytics</li>
-                                <li>Anomaly detection</li>
-                                <li>Dark web monitoring</li>
-                                <li>Brand protection and leak detection</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> Weekly threat reports, IOC feeds, hunting playbooks, and quarterly strategic briefings
-                    </div>
-                </div>
-            </div>
-
-            <!--  -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">🚨</div>
-                    <h3> & Forensics</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        24/7  services with rapid containment, forensic analysis, and recovery support. Our team of certified forensic analysts responds within hours to minimize business impact and preserve evidence for legal proceedings.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>Response Services</h4>
-                            <ul>
-                                <li>24/7/365 emergency hotline</li>
-                                <li>On-site and remote response</li>
-                                <li>Rapid containment and eradication</li>
-                                <li>Root cause analysis</li>
-                                <li>Business continuity support</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Digital Forensics</h4>
-                            <ul>
-                                <li>Disk and memory forensics</li>
-                                <li>Network traffic analysis</li>
-                                <li>Malware forensic analysis</li>
-                                <li>Email and cloud forensics</li>
-                                <li>Mobile device forensics</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Post-Incident</h4>
-                            <ul>
-                                <li>Lessons learned workshops</li>
-                                <li>Incident timeline reconstruction</li>
-                                <li>Legal and regulatory support</li>
-                                <li>Insurance claim documentation</li>
-                                <li>Recovery and hardening recommendations</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> Forensic report, incident timeline, chain of custody documentation, and recovery plan
-                    </div>
-                </div>
-            </div>
-
-            <!-- Security Consulting -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">🏛️</div>
-                    <h3>Security Architecture & Consulting</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        Strategic security consulting to design, implement, and optimize enterprise security architectures. We align security programs with business objectives while ensuring compliance and risk management.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>Architecture Design</h4>
-                            <ul>
-                                <li>Zero-trust architecture design</li>
-                                <li>Security reference architectures</li>
-                                <li>Cloud security architecture</li>
-                                <li>Network segmentation design</li>
-                                <li>Identity and access management</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Program Development</h4>
-                            <ul>
-                                <li>Security strategy and roadmap</li>
-                                <li>Risk assessment and management</li>
-                                <li>Security policy development</li>
-                                <li>Metrics and KPI definition</li>
-                                <li>Security awareness programs</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Compliance & Governance</h4>
-                            <ul>
-                                <li>ISO 27001/27002 implementation</li>
-                                <li>NIST framework alignment</li>
-                                <li>GDPR/CCPA compliance</li>
-                                <li>PCI-DSS assessment</li>
-                                <li>SOC 2 preparation</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> Architecture blueprints, security roadmap, policy documents, and implementation guidelines
-                    </div>
-                </div>
-            </div>
-
-            <!-- Managed Security -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">🛡️</div>
-                    <h3>Managed Security Services (SOC)</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        Fully-managed Security Operations Center providing 24/7 monitoring, detection, and response capabilities. Our AI-enhanced SOC combines human expertise with advanced automation to protect your organization around the clock.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>SOC Operations</h4>
-                            <ul>
-                                <li>24/7/365 security monitoring</li>
-                                <li>SIEM management and tuning</li>
-                                <li>Alert triage and investigation</li>
-                                <li>Threat detection engineering</li>
-                                <li>Incident escalation and coordination</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Advanced Capabilities</h4>
-                            <ul>
-                                <li>AI-powered threat detection</li>
-                                <li>Behavioral analytics (UEBA)</li>
-                                <li>Automated response playbooks</li>
-                                <li>Threat intelligence integration</li>
-                                <li>Custom detection rule development</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Reporting & Analysis</h4>
-                            <ul>
-                                <li>Real-time dashboards</li>
-                                <li>Monthly security metrics</li>
-                                <li>Quarterly business reviews</li>
-                                <li>Trend analysis and recommendations</li>
-                                <li>Executive reporting</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> 24/7 monitoring, incident tickets, monthly reports, and quarterly strategic reviews
-                    </div>
-                </div>
-            </div>
-
-            <!-- Training & Development -->
-            <div class="service-block">
-                <div class="service-header">
-                    <div class="service-icon">🎓</div>
-                    <h3>Professional Training & Certification</h3>
-                </div>
-                <div class="service-content">
-                    <p class="service-description">
-                        Industry-leading cybersecurity training programs designed to upskill your team with hands-on, real-world scenarios. Our certified instructors deliver both standard and custom training aligned with your security objectives.
-                    </p>
-                    <div class="service-features">
-                        <div class="feature-column">
-                            <h4>Offensive Security</h4>
-                            <ul>
-                                <li>Advanced penetration testing</li>
-                                <li>Web application hacking</li>
-                                <li>Network exploitation techniques</li>
-                                <li>Exploit development</li>
-                                <li>Red team operations</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Defensive Security</h4>
-                            <ul>
-                                <li>SOC analyst training</li>
-                                <li>Malware analysis bootcamp</li>
-                                <li>Digital forensics and </li>
-                                <li>Threat hunting methodologies</li>
-                                <li>Security architecture design</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>Specialized Topics</h4>
-                            <ul>
-                                <li>Cloud security (AWS, Azure, GCP)</li>
-                                <li>Kubernetes security</li>
-                                <li>API security testing</li>
-                                <li>IoT and embedded security</li>
-                                <li>AI/ML security</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="service-deliverables">
-                        <strong>Deliverables:</strong> Course materials, hands-on labs, certification exams, and ongoing support
-                    </div>
-                </div>
-            </div>
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#00ff88,#a769ff);">
+        <div class="svc-icon-wrap">&#127959;</div>
+        <div class="svc-category">Defensive · Architecture</div>
+        <div class="svc-title">Security Architecture Review</div>
+        <p class="svc-desc">Deep-dive analysis of your security architecture, network segmentation, identity &amp; access management, and cloud design patterns. Identifies structural vulnerabilities and delivers a prioritized remediation roadmap aligned to Zero Trust principles and industry frameworks.</p>
+        <ul class="svc-features">
+          <li>Zero Trust maturity assessment with gap analysis against NIST SP 800-207</li>
+          <li>Network segmentation &amp; microsegmentation design review</li>
+          <li>Identity &amp; access management (IAM/PAM/MFA) comprehensive evaluation</li>
+          <li>Cloud security posture assessment (CSPM) across multi-cloud environments</li>
+          <li>Executive risk briefing plus prioritized technical remediation roadmap</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $1,499 / engagement</span>
+          <a href="contact.html?plan=arch-review" class="svc-cta">Get Quote &#8594;</a>
         </div>
-    </section>
+      </div>
 
-    <!-- Service Approach -->
-    <section class="approach-section">
-        <div class="container">
-            <h2 class="section-title">Our Approach</h2>
-            <div class="approach-grid">
-                <div class="approach-card">
-                    <h3>1. Assessment</h3>
-                    <p>Deep dive into your current security posture, business objectives, and risk landscape</p>
-                </div>
-                <div class="approach-card">
-                    <h3>2. Strategy</h3>
-                    <p>Develop tailored security strategy aligned with your business goals and compliance requirements</p>
-                </div>
-                <div class="approach-card">
-                    <h3>3. Implementation</h3>
-                    <p>Execute security initiatives with minimal business disruption and maximum effectiveness</p>
-                </div>
-                <div class="approach-card">
-                    <h3>4. Optimization</h3>
-                    <p>Continuous improvement through monitoring, testing, and adaptation to emerging threats</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-        <div class="container cta-container">
-            <h2>Ready to Strengthen Your Security?</h2>
-            <p>Schedule a consultation to discuss your security needs</p>
-            <div class="cta-buttons">
-                <a href="contact.html" class="btn btn-primary btn-lg">Get Started</a>
-                <a href="pricing.html" class="btn btn-outline btn-lg">View Pricing</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <!-- Floating Contact Buttons -->
-    <div class="floating-contact">
-        <a href="contact.html" class="float-btn">
-            <span class="float-icon">📧</span>
-            <span class="float-text">Contact Us</span>
-        </a>
-        <a href="tel:+918179881447" class="float-btn float-phone">
-            <span class="float-icon">📞</span>
-            <span class="float-text">+91 81798 81447</span>
-        </a>
     </div>
 
-
-    <!-- 
-  CYBERDUDEBIVASH ENHANCED FOOTER
-  Integrated with existing design system
-  Production-ready footer with social media integration
--->
-
-<footer class="footer-enhanced">
-    <div class="container">
-        <div class="footer-enhanced-grid">
-            
-            <!-- Column 1: Company Info & Branding -->
-            <div class="footer-enhanced-column footer-brand-column">
-                <div class="footer-brand">
-                    <img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH Logo" class="footer-logo-img">
-                    <div class="footer-brand-text">
-                        <span class="footer-brand-name">CYBERDUDEBIVASH<sup>®</sup></span>
-                        <p class="footer-brand-tagline">Elite Cybersecurity Authority</p>
-                    </div>
-                </div>
-                <p class="footer-description">
-                    Production-grade cybersecurity solutions, AI-integrated tools, and enterprise services trusted by organizations worldwide. Protecting digital assets with cutting-edge technology and expert intelligence.
-                </p>
-                
-                <!-- Trust Badges -->
-                <div class="footer-trust-badges">
-                    <span class="trust-badge">ISO 27001</span>
-                    <span class="trust-badge">SOC 2</span>
-                    <span class="trust-badge">24/7 Support</span>
-                </div>
-            </div>
-
-            <!-- Column 2: Services -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Services</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="services.html">All Services</a></li>
-                    <li><a href="soc-services.html">SOC Services</a></li>
-                    <li><a href="research.html">Threat Research</a></li>
-                    <li><a href="apps.html">Security Apps</a></li>
-                    <li><a href="platforms.html">Platforms</a></li>
-                    <li><a href="bug-bounty.html">Bug Bounty</a></li>
-                    <li><a href="">Trust Center</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 3: Company -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Company</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="pricing.html">Pricing</a></li>
-                    <li><a href="threat-intel.html" class="nav-link">🛡️ Threat Intel</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                    <li><a href="TERMS.md">Terms of Service</a></li>
-                    <li><a href="PRIVACY.md">Privacy Policy</a></li>
-                    <li><a href="SECURITY.md">Security</a></li>
-                    <li><a href="COMPLIANCE.md">Compliance</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 4: Resources -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Resources</h4>
-                <ul class="footer-links-enhanced">
-                    <li><a href="https://github.com/cyberdudebivash" target="_blank">GitHub</a></li>
-                    <li><a href="">System Status</a></li>
-                    <li><a href="RESPONSIBLE_DISCLOSURE.md">Security Disclosure</a></li>
-                    <li><a href="SECURITY_HEADERS.md">Security Headers</a></li>
-                    <li><a href="DEPLOYMENT-GUIDE.md">Deployment Guide</a></li>
-                    <li><a href="CHANGELOG.md">Changelog</a></li>
-                </ul>
-            </div>
-
-            <!-- Column 5: Connect & Newsletter -->
-            <div class="footer-enhanced-column">
-                <h4 class="footer-column-title">Stay Connected</h4>
-                
-                <!-- Social Media Links -->
-                <div class="footer-social-grid">
-                    <a href="https://www.linkedin.com/company/cyberdudebivash/" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="LinkedIn"
-                       title="Follow us on LinkedIn">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://x.com/cyberbivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Twitter/X"
-                       title="Follow us on X">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://github.com/cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="GitHub"
-                       title="View our GitHub">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.youtube.com/@cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="YouTube"
-                       title="Subscribe on YouTube">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.instagram.com/cyberdudebivash_official/" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Instagram"
-                       title="Follow us on Instagram">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.facebook.com/cyberdudebivash" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Facebook"
-                       title="Like us on Facebook">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://www.patreon.com/c/CYBERDUDEBIVASH" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Patreon"
-                       title="Support us on Patreon">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M15.386.524c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 4.4 20.136.524 15.386.524M.003 23.537h4.22V.524H.003"/>
-                        </svg>
-                    </a>
-                    
-                    <a href="https://cyberdudebivash.gumroad.com/affiliates" 
-                       class="footer-social-link" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       aria-label="Gumroad"
-                       title="Shop on Gumroad">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M15.826 15.969h-2.18c.097-.158.19-.32.277-.486.344-.656.517-1.384.517-2.184 0-.837-.186-1.607-.558-2.31a4.118 4.118 0 0 0-1.583-1.583c-.703-.372-1.473-.558-2.31-.558-.837 0-1.607.186-2.31.558a4.118 4.118 0 0 0-1.583 1.583c-.372.703-.558 1.473-.558 2.31 0 .8.173 1.528.517 2.184.087.166.18.328.277.486H4.155C1.865 15.969 0 14.104 0 11.814V4.155C0 1.865 1.865 0 4.155 0h15.671C22.116 0 24 1.865 24 4.155v7.659c0 2.29-1.884 4.155-4.174 4.155h-3.513l-.487.969V24l-4.652-8.031zM9.969 13.299c-.552 0-1-.448-1-1s.448-1 1-1 1 .448 1 1-.448 1-1 1z"/>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Contact Info -->
-                <div class="footer-contact-info">
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                        </svg>
-                        <a href="mailto:bivash@cyberdudebivash.com">bivash@cyberdudebivash.com</a>
-                    </div>
-                    <div class="footer-contact-item">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                        </svg>
-                        <a href="tel:+918179881447">+91 81798 81447</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Footer Bottom Bar -->
-        <div class="footer-enhanced-bottom">
-            <div class="footer-bottom-content">
-                <div class="footer-copyright">
-                    <p>&copy; 2026 CYBERDUDEBIVASH Pvt. Ltd. All rights reserved.</p>
-                </div>
-                
-                <div class="footer-bottom-links">
-                    <a href="https://www.cyberdudebivash.com" target="_blank">www.cyberdudebivash.com</a>
-                    <span class="separator">|</span>
-                    <a href="PRIVACY.md">Privacy</a>
-                    <span class="separator">|</span>
-                    <a href="TERMS.md">Terms</a>
-                    <span class="separator">|</span>
-                    <a href="SECURITY.md">Security</a>
-                </div>
-
-                <!-- Payment/Security Icons -->
-                <div class="footer-payment-icons">
-                    <span class="payment-badge">SSL</span>
-                    <span class="payment-badge">PCI</span>
-                </div>
-            </div>
-        </div>
+    <!-- INTELLIGENCE -->
+    <div class="cat-header" id="intelligence">
+      <div class="cat-badge cat-purple">&#127760; Threat Intelligence</div>
+      <div class="cat-title">Know Your Adversary</div>
     </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#a769ff,#ff0060);">
+        <div class="svc-icon-wrap">&#127760;</div>
+        <div class="svc-category">Intelligence · Dark Web Surveillance</div>
+        <div class="svc-title">Dark Web Monitoring</div>
+        <p class="svc-desc">Continuous surveillance of dark web forums, Tor-based illicit marketplaces, Telegram threat channels, and paste sites for leaked credentials, data breach dumps, and chatter explicitly targeting your organization. Real-time alerts when your brand, IP ranges, or data surfaces underground.</p>
+        <ul class="svc-features">
+          <li>Credential leak detection across 500+ monitored dark web sources</li>
+          <li>Brand mention &amp; impersonation monitoring on forums &amp; marketplaces</li>
+          <li>Ransomware gang active leak site monitoring — pre-publication alerts</li>
+          <li>Executive personal data &amp; digital footprint exposure alerts</li>
+          <li>Automated takedown assistance for exposed credentials and assets</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $199 / month</span>
+          <a href="contact.html?plan=darkweb" class="svc-cta">Start Monitoring &#8594;</a>
+        </div>
+      </div>
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#00e5ff,#a769ff);">
+        <div class="svc-icon-wrap">&#128301;</div>
+        <div class="svc-category">Intelligence · Strategic &amp; Tactical</div>
+        <div class="svc-title">Threat Intelligence Subscription</div>
+        <p class="svc-desc">Curated, actionable threat intelligence feeds covering IOCs, APT campaigns, zero-day advisories, and sector-specific threat landscapes. Delivered as STIX/TAXII feeds, REST API, and human-readable reports — integrates with your SIEM/SOAR in under 15 minutes.</p>
+        <ul class="svc-features">
+          <li>500K+ IOCs continuously updated in real-time via STIX 2.1/TAXII 2.1</li>
+          <li>APT group tracking — 142+ threat actors profiled with TTPs and infrastructure</li>
+          <li>YARA &amp; Sigma rule packages validated and published weekly</li>
+          <li>Zero-day &amp; weaponized PoC exploit advisory alerts within 2 hours of disclosure</li>
+          <li>Sector-specific intelligence verticals: Finance, Healthcare, Energy, Government</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $49 / month</span>
+          <a href="contact.html?plan=threat-intel" class="svc-cta">Subscribe &#8594;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MANAGED -->
+    <div class="cat-header" id="managed">
+      <div class="cat-badge cat-green">&#9646; Managed Security</div>
+      <div class="cat-title">Fully Managed Services</div>
+    </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#00ff88,#ffa500);">
+        <div class="svc-icon-wrap">&#129351;</div>
+        <div class="svc-category">Managed · Security Leadership</div>
+        <div class="svc-title">Virtual CISO (vCISO) Service</div>
+        <p class="svc-desc">Strategic security leadership on-demand. Our vCISO program gives your organization access to seasoned Chief Information Security Officers who own your security program, drive board-level communication, and align security strategy to business risk at a fraction of the cost of a full-time hire.</p>
+        <ul class="svc-features">
+          <li>Dedicated senior security executive with 20+ years of enterprise experience</li>
+          <li>Security program development, policy ownership &amp; strategic roadmap</li>
+          <li>Board &amp; C-suite risk reporting, presentations &amp; stakeholder management</li>
+          <li>Security vendor evaluation, management &amp; procurement advisory</li>
+          <li>Regulatory liaison &amp; auditor interface for DPDP, GDPR, HIPAA, PCI-DSS</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $499 / month</span>
+          <a href="contact.html?plan=vciso" class="svc-cta">Learn More &#8594;</a>
+        </div>
+      </div>
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#ffa500,#ff4444);">
+        <div class="svc-icon-wrap">&#128027;</div>
+        <div class="svc-category">Managed · Crowdsourced Security</div>
+        <div class="svc-title">Bug Bounty Program Management</div>
+        <p class="svc-desc">End-to-end management of your bug bounty program — from policy drafting and researcher onboarding to triaging every submission, deduplication, severity validation, and payout processing. Leverage our global researcher community while we handle all operational overhead.</p>
+        <ul class="svc-features">
+          <li>Access to 8,000+ vetted security researchers across 90+ countries</li>
+          <li>AI-powered submission triage with automated deduplication engine</li>
+          <li>Senior analyst severity validation before any payout is approved</li>
+          <li>Real-time researcher portal, disclosure dashboard &amp; analytics</li>
+          <li>Responsible disclosure policy drafting, legal review &amp; CVE coordination</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">Custom pricing</span>
+          <a href="contact.html?plan=bugbounty" class="svc-cta">Get Quote &#8594;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="cat-header" id="compliance">
+      <div class="cat-badge cat-orange">&#9745; Compliance</div>
+      <div class="cat-title">Regulatory &amp; Standards Compliance</div>
+    </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#ffa500,#00ff88);">
+        <div class="svc-icon-wrap">&#128196;</div>
+        <div class="svc-category">Compliance · Continuous Automation</div>
+        <div class="svc-title">Compliance Automation Platform</div>
+        <p class="svc-desc">Automate evidence collection, control mapping, and audit preparation for SOC 2 Type II, ISO 27001, GDPR, India DPDP Act, HIPAA, and PCI-DSS. Our platform integrates with your existing toolchain to continuously monitor compliance posture and generate audit-ready evidence packages.</p>
+        <ul class="svc-features">
+          <li>Multi-framework support: SOC 2, ISO 27001, GDPR, DPDP, HIPAA, PCI-DSS</li>
+          <li>Automated evidence collection from 100+ tool integrations (GitHub, AWS, GCP)</li>
+          <li>Continuous control monitoring with real-time gap detection and alerts</li>
+          <li>AI-assisted security policy, procedure &amp; control narrative generation</li>
+          <li>Auditor collaboration portal — reduce audit preparation time by up to 70%</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $299 / month</span>
+          <a href="contact.html?plan=compliance" class="svc-cta">Start Audit Prep &#8594;</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRAINING -->
+    <div class="cat-header" id="training">
+      <div class="cat-badge cat-blue">&#127891; Training</div>
+      <div class="cat-title">Security Awareness &amp; Skills Development</div>
+    </div>
+    <div class="services-grid">
+
+      <div class="svc-card" style="--card-accent:linear-gradient(90deg,#00e5ff,#00ff88);">
+        <div class="svc-icon-wrap">&#127891;</div>
+        <div class="svc-category">Training · Human Risk Management</div>
+        <div class="svc-title">Security Awareness Training</div>
+        <p class="svc-desc">Continuous, role-based security awareness training with automated phishing simulations, interactive micro-learning modules, and behavioral risk analytics. Transform your entire workforce into a human firewall — measurably reduce phishing susceptibility within 90 days or receive a free re-engagement.</p>
+        <ul class="svc-features">
+          <li>500+ interactive learning modules — refreshed monthly with new content</li>
+          <li>Automated phishing simulations with dynamic branching and follow-up training</li>
+          <li>Role-based training paths — executives, developers, finance, HR, operations</li>
+          <li>Compliance training modules — GDPR, DPDP, HIPAA, PCI-DSS awareness</li>
+          <li>Behavioral risk scoring per employee with manager-facing dashboards</li>
+        </ul>
+        <div class="svc-footer">
+          <span class="svc-price">from $99 / month</span>
+          <a href="contact.html?plan=awareness-training" class="svc-cta">Start Training &#8594;</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process-section" id="process">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:8px;">
+      <div class="section-label" style="justify-content:center;">&#9654; Engagement Methodology</div>
+      <h2 class="section-heading" style="text-align:center;">How We <span>Work</span></h2>
+      <p style="color:#6b7fa3;max-width:560px;margin:0 auto;font-size:0.9rem;line-height:1.6;">Every engagement follows a rigorous, transparent 5-phase process designed to maximize security outcomes and minimize disruption to your business operations.</p>
+    </div>
+    <div class="process-steps">
+      <div class="proc-step">
+        <div class="proc-num">&#128172;</div>
+        <div class="proc-label">Discovery</div>
+        <p class="proc-desc">Scoping call to understand your environment, risk appetite, business objectives, and success criteria. Rules of engagement agreed in writing.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">&#128269;</div>
+        <div class="proc-label">Recon &amp; Planning</div>
+        <p class="proc-desc">Passive and active reconnaissance to map the full attack surface. Threat modeling performed before any active testing begins.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">&#9889;</div>
+        <div class="proc-label">Execution</div>
+        <p class="proc-desc">Expert analysts execute the engagement using industry-standard tools, custom exploits, and proven methodologies — ethically and with precision.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">&#128202;</div>
+        <div class="proc-label">Analysis &amp; Report</div>
+        <p class="proc-desc">Findings risk-rated by CVSS 3.1, compiled into dual-track executive and technical reports with full PoC evidence and reproduction steps.</p>
+      </div>
+      <div class="proc-step">
+        <div class="proc-num">&#9989;</div>
+        <div class="proc-label">Remediation &amp; Retest</div>
+        <p class="proc-desc">Guided remediation support, developer security briefings, and a complimentary retest to confirm every finding has been fully resolved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CASE STUDIES -->
+<section class="case-section" id="case-studies">
+  <div class="container">
+    <div class="section-label">&#127942; Client Outcomes</div>
+    <h2 class="section-heading">Real-World <span>Results</span></h2>
+    <p style="color:#6b7fa3;max-width:560px;font-size:0.9rem;line-height:1.6;margin-bottom:0;">Outcomes from real engagements — sanitized and shared with client permission.</p>
+    <div class="case-grid">
+      <div class="case-card cc-green">
+        <div class="case-tag">Financial Services · API Penetration Testing</div>
+        <div class="case-title">Critical Banking API Breach Prevented Pre-Launch</div>
+        <p class="case-desc">A Tier-1 fintech platform with 4M+ users engaged us for an API security assessment before a major product release. We identified a critical Broken Object Level Authorization (BOLA) vulnerability exposing all customer financial data — caught before a single user was affected.</p>
+        <div class="case-metrics">
+          <div class="case-metric"><div class="cm-val">1</div><div class="cm-lbl">Critical CVE</div></div>
+          <div class="case-metric"><div class="cm-val">$12M</div><div class="cm-lbl">Estimated Risk Averted</div></div>
+          <div class="case-metric"><div class="cm-val">4 days</div><div class="cm-lbl">Patch Delivered</div></div>
+        </div>
+      </div>
+      <div class="case-card cc-blue">
+        <div class="case-tag">Healthcare · Incident Response &amp; DFIR</div>
+        <div class="case-title">LockBit Ransomware Contained — Zero Ransom Paid</div>
+        <p class="case-desc">A regional hospital network suffered a LockBit 3.0 ransomware attack across 200+ endpoints at 2 AM. Our DFIR team was remote within 90 minutes, contained the active attack, isolated compromised segments, and restored all critical clinical systems from air-gapped backups — no ransom paid.</p>
+        <div class="case-metrics">
+          <div class="case-metric"><div class="cm-val">90 min</div><div class="cm-lbl">Initial Response</div></div>
+          <div class="case-metric"><div class="cm-val">$0</div><div class="cm-lbl">Ransom Paid</div></div>
+          <div class="case-metric"><div class="cm-val">18 hrs</div><div class="cm-lbl">Full Recovery</div></div>
+        </div>
+      </div>
+      <div class="case-card cc-purple">
+        <div class="case-tag">E-Commerce · SOC-as-a-Service</div>
+        <div class="case-title">APT-41 Campaign Detected at Initial Access Stage</div>
+        <p class="case-desc">Our SOC team correlated low-confidence signals to identify an APT-41 affiliated intrusion targeting a major e-commerce platform's supply chain integrations. The threat was neutralized at initial access — before lateral movement or any data exfiltration occurred.</p>
+        <div class="case-metrics">
+          <div class="case-metric"><div class="cm-val">11 min</div><div class="cm-lbl">Detection Time</div></div>
+          <div class="case-metric"><div class="cm-val">0 bytes</div><div class="cm-lbl">Data Exfiltrated</div></div>
+          <div class="case-metric"><div class="cm-val">APT-41</div><div class="cm-lbl">Threat Actor</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="section-label" style="justify-content:center;">&#9679; Ready to Secure Your Enterprise?</div>
+    <h2 class="cta-title">Get a Custom Security Proposal</h2>
+    <p class="cta-sub">Tell us about your environment and objectives. We will build a tailored security program proposal — no obligation, response within 24 hours from a senior security advisor.</p>
+    <div class="cta-btn-group">
+      <a href="contact.html" class="btn btn-primary">&#128338; Schedule Free Consultation</a>
+      <a href="pricing.html" class="btn btn-outline">View Pricing Plans</a>
+    </div>
+    <p style="margin-top:20px;font-size:0.8rem;color:#3d5068;">&#128274; All engagements protected by mutual NDA. SOC 2 Type II compliant processes throughout.</p>
+  </div>
+</section>
+
+<footer class="gm-footer" role="contentinfo">
+  <div class="container">
+    <div class="gm-footer-eco-strip">
+      <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>Sentinel APEX&#8482;</a>
+      <span class="eco-strip-sep">&#183;</span><a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>AI Security Hub</a>
+      <span class="eco-strip-sep">&#183;</span><a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot"></span>ThreatCore&#8482; Tools</a>
+      <span class="eco-strip-sep">&#183;</span><a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot eco-dot-blue"></span>Intel API</a>
+      <span class="eco-strip-sep">&#183;</span><a href="https://blog.cyberdudebivash.in" target="_blank" rel="noopener noreferrer" class="eco-strip-item"><span class="eco-live-dot eco-dot-purple"></span>Research Blog</a>
+    </div>
+    <div class="gm-footer-grid">
+      <div class="gm-footer-brand-col">
+        <div class="gm-footer-logo-wrap"><img src="./assets/images/logo.jpg" alt="CYBERDUDEBIVASH" class="gm-footer-logo" width="64" height="64" loading="lazy"><div class="gm-footer-logo-glow"></div></div>
+        <div class="gm-footer-brand-name">CYBERDUDEBIVASH<sup>&#174;</sup></div>
+        <p class="gm-footer-tagline">Global AI-Powered Cybersecurity Vendor.<br>Protecting digital assets since 2020.</p>
+        <div class="gm-footer-cert-row"><span class="gm-cert-badge">&#127885; ISO 27001</span><span class="gm-cert-badge">&#128274; SOC 2</span><span class="gm-cert-badge">&#127470;&#127475; DPDP</span><span class="gm-cert-badge">&#127466;&#127482; GDPR</span></div>
+      </div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-cyan">SERVICES</h4><ul class="gm-footer-links"><li><a href="soc-services.html" class="gm-footer-link"><span class="gm-link-dot"></span>SOC-as-a-Service</a></li><li><a href="services.html" class="gm-footer-link"><span class="gm-link-dot"></span>Penetration Testing</a></li><li><a href="services.html" class="gm-footer-link"><span class="gm-link-dot"></span>Incident Response</a></li><li><a href="vciso.html" class="gm-footer-link"><span class="gm-link-dot"></span>Virtual CISO</a></li><li><a href="compliance.html" class="gm-footer-link"><span class="gm-link-dot"></span>Compliance Automation</a></li><li><a href="dark-web-monitor.html" class="gm-footer-link"><span class="gm-link-dot"></span>Dark Web Monitoring</a></li><li><a href="bug-bounty.html" class="gm-footer-link"><span class="gm-link-dot"></span>Bug Bounty Program</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-purple">PLATFORMS</h4><ul class="gm-footer-links"><li><a href="https://intel.cyberdudebivash.com/" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Sentinel APEX&#8482;</a></li><li><a href="https://cyberdudebivash.in" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>AI Security Hub</a></li><li><a href="https://tools.cyberdudebivash.com" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>ThreatCore&#8482; Tools</a></li><li><a href="https://intel.cyberdudebivash.com/api/preview/" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Intelligence API</a></li><li><a href="https://blog.cyberdudebivash.in" target="_blank" class="gm-footer-link"><span class="gm-link-dot"></span>Research Blog</a></li><li><a href="platforms.html" class="gm-footer-link"><span class="gm-link-dot"></span>All Platforms</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-orange">COMPANY</h4><ul class="gm-footer-links"><li><a href="about.html" class="gm-footer-link"><span class="gm-link-dot"></span>About Us</a></li><li><a href="research.html" class="gm-footer-link"><span class="gm-link-dot"></span>Research Lab</a></li><li><a href="pricing.html" class="gm-footer-link"><span class="gm-link-dot"></span>Pricing</a></li><li><a href="contact.html" class="gm-footer-link"><span class="gm-link-dot"></span>Contact</a></li><li><a href="privacy.html" class="gm-footer-link"><span class="gm-link-dot"></span>Privacy Policy</a></li><li><a href="status.html" class="gm-footer-link"><span class="gm-link-dot"></span>System Status</a></li></ul></div>
+      <div class="gm-footer-col"><h4 class="gm-footer-col-hdr gm-hdr-green">COMMUNITY</h4><div class="gm-social-grid"><a href="https://github.com/cyberdudebivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-github" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg><span>GitHub</span></a><a href="https://www.linkedin.com/company/cyberdudebivash/" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-linkedin" title="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>LinkedIn</span></a><a href="https://x.com/cyberbivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-twitter" title="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>X</span></a><a href="https://www.youtube.com/@cyberdudebivash" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-youtube" title="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><span>YouTube</span></a><a href="https://www.patreon.com/c/CYBERDUDEBIVASH" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-patreon" title="Patreon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M0 .48v23.04h4.22V.48zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.623 8.641 8.623 4.75 0 8.615-3.868 8.615-8.623C24 4.36 20.136.48 15.385.48z"/></svg><span>Patreon</span></a><a href="https://www.instagram.com/cyberdudebivash_official/" target="_blank" rel="noopener noreferrer" class="gm-social-card gm-soc-instagram" title="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg><span>Instagram</span></a></div></div>
+    </div>
+    <div class="gm-footer-bottom"><div class="gm-footer-bottom-line"><span class="gm-fbl-glow"></span></div><div class="gm-footer-bottom-inner"><div class="gm-footer-copyright">&#169; 2026 CYBERDUDEBIVASH Pvt. Ltd. All rights reserved. <span class="gm-bottom-sep">|</span> <a href="privacy.html" class="gm-bottom-link">Privacy Policy</a> <span class="gm-bottom-sep">|</span> <a href="TERMS.md" class="gm-bottom-link">Terms</a> <span class="gm-bottom-sep">|</span> <a href="SECURITY.md" class="gm-bottom-link">Security</a></div><div class="gm-footer-trademark"><span class="gm-tm-badge">&#174;</span> CYBERDUDEBIVASH&#174; is a registered trademark. Unauthorized use is prohibited.</div></div></div>
+  </div>
 </footer>
-
-
-    <script src="./assets/js/matrix.js"></script>
-    <script src="./assets/js/main.js"></script>
-<script src="assets/js/layout-loader.js"></script><script src="assets/js/global-enterprise.js" defer></script>
+<div class="floating-cta" id="floatingCta">
+  <a href="contact.html" class="fcta-btn fcta-primary"><span class="fcta-icon">&#128172;</span><span class="fcta-text">Free Consultation</span></a>
+  <a href="tel:+918179881447" class="fcta-btn fcta-phone"><span class="fcta-icon">&#128222;</span><span class="fcta-text">+91 81798 81447</span></a>
+</div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">&#8593;</button>
+<script src="./assets/js/matrix.js" defer></script>
+<script src="./assets/js/main.js" defer></script>
+<script src="assets/js/godlevel.js" defer></script>
+<script src="assets/js/global-enterprise.js" defer></script>
+<script src="assets/js/sentinel-feed.js" defer></script>
 </body>
 </html>
