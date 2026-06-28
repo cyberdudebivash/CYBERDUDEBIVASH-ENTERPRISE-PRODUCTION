@@ -180,8 +180,11 @@ img, video, iframe, embed, svg {
     /* Handle both .active and .nav-open */
   }
   .nav-menu.active, #navMenu.active,
-  .nav-menu.nav-open, #navMenu.nav-open {
+  .nav-menu.nav-open, #navMenu.nav-open,
+  .nav-menu.open, #navMenu.open {
     left: 0 !important;
+    display: flex !important; /* override portal-evolution.css display:none !important */
+    flex-direction: column !important;
   }
 
   /* Nav drawer overlay backdrop */

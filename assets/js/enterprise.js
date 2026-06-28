@@ -186,7 +186,7 @@
 
   function closeNav() {
     if (!navMenu || !ham) return;
-    navMenu.classList.remove('active', 'nav-open');
+    navMenu.classList.remove('active', 'nav-open', 'open');
     ham.classList.remove('active');
     ham.setAttribute('aria-expanded', 'false');
     document.body.classList.remove('nav-open-overlay');
@@ -197,6 +197,7 @@
     ham.addEventListener('click', function () {
       var open = navMenu.classList.toggle('active');
       navMenu.classList.toggle('nav-open', open);
+      navMenu.classList.toggle('open', open); // portal-evolution.css requires .open
       ham.classList.toggle('active', open);
       ham.setAttribute('aria-expanded', String(open));
       document.body.classList.toggle('nav-open-overlay', open);
