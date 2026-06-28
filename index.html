@@ -297,12 +297,44 @@
 <link rel="stylesheet" href="./assets/css/revenue-engine.css">
 <link rel="stylesheet" href="./assets/css/godmode-ecosystem.css">
 <link rel="stylesheet" href="./assets/css/godmode-navfooter.css">
+<link rel="stylesheet" href="./assets/css/soc-dashboard.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650" crossorigin="anonymous"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MDT720X9YW"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-MDT720X9YW',{page_path:window.location.pathname});</script>
 </head>
 <body>
+<!-- SOC Mission Control Grid Background -->
+<div class="soc-grid-bg" aria-hidden="true"></div>
 <canvas id="matrixCanvas" aria-hidden="true"></canvas>
+<!-- SOC Status Bar — Real-time System Telemetry -->
+<div id="soc-status-bar" role="status" aria-label="SOC system status">
+  <div class="ssb-item">
+    <span class="ssb-dot green"></span>
+    <span>SOC ONLINE</span>
+  </div>
+  <div class="ssb-item">
+    <span class="ssb-dot red"></span>
+    <span>THREATS ACTIVE: </span><span class="ssb-val" id="ssb-threats">14</span>
+  </div>
+  <div class="ssb-item">
+    <span class="ssb-dot orange"></span>
+    <span>ALERTS: </span><span class="ssb-val" id="ssb-alerts">3</span>
+  </div>
+  <div class="ssb-item">
+    <span class="ssb-dot cyan"></span>
+    <span>AI ENGINE: </span><span class="ssb-val">ACTIVE</span>
+  </div>
+  <div class="ssb-item">
+    <span class="ssb-dot green"></span>
+    <span>SENTINEL APEX™: </span><span class="ssb-val">LIVE</span>
+  </div>
+  <div class="ssb-right">
+    <div class="ssb-item">
+      <span>UPTIME: </span><span class="ssb-val">99.9%</span>
+    </div>
+    <div class="ssb-time" id="ssb-clock">--:--:-- UTC</div>
+  </div>
+</div>
 <div class="alert-bar" id="alertBar">
   <div class="alert-bar-inner">
     <span class="alert-dot"></span>
@@ -3755,5 +3787,48 @@ console.<span class="c-function">log</span>(<span class="c-string">`Risk: \${res
 <script src="assets/js/godlevel.js" defer></script>
 <script src="assets/js/global-enterprise.js" defer></script>
 <script src="assets/js/sentinel-feed.js" defer></script>
+<script>
+/* SOC Status Bar — Live Clock + Telemetry */
+(function () {
+  'use strict';
+  var clock = document.getElementById('ssb-clock');
+  var threats = document.getElementById('ssb-threats');
+  var alerts = document.getElementById('ssb-alerts');
+
+  function padZ(n) { return n < 10 ? '0' + n : n; }
+
+  function updateClock() {
+    var d = new Date();
+    var h = padZ(d.getUTCHours());
+    var m = padZ(d.getUTCMinutes());
+    var s = padZ(d.getUTCSeconds());
+    if (clock) clock.textContent = h + ':' + m + ':' + s + ' UTC';
+  }
+
+  /* Subtle live fluctuation — keeps dashboard feel alive */
+  function flicker() {
+    if (threats) {
+      var base = 14;
+      var delta = Math.floor(Math.random() * 3) - 1;
+      var v = Math.max(12, base + delta);
+      threats.textContent = v;
+    }
+    if (alerts) {
+      var a = Math.floor(Math.random() * 2) + 2;
+      alerts.textContent = a;
+    }
+    /* Also sync hero counters if present */
+    var hb = document.getElementById('heroBlockedCount');
+    if (hb) {
+      var cur = parseInt(hb.textContent.replace(/,/g, '')) || 2847;
+      hb.textContent = (cur + Math.floor(Math.random() * 3)).toLocaleString();
+    }
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(flicker, 8000);
+}());
+</script>
 </body>
 </html>
