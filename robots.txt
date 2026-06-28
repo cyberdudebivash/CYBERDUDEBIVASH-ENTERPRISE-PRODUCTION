@@ -3,11 +3,19 @@ Allow: /
 Disallow: /react-portal/src/
 Disallow: /react-portal/node_modules/
 Disallow: /.git/
+Disallow: /backend/
 Disallow: /integrate-footer.py
 Disallow: /update-all-pages.sh
+Disallow: /START-BACKEND.bat
 
-# Crawl-delay for bots
-Crawl-delay: 10
+# High-priority crawl
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 5
 
 # Sitemap
 Sitemap: https://www.cyberdudebivash.com/sitemap.xml
