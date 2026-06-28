@@ -16,4 +16,7 @@
   <url><loc>https://www.cyberdudebivash.com/status.html</loc><changefreq>daily</changefreq><priority>0.65</priority><lastmod>2026-06-28</lastmod></url>
   <url><loc>https://www.cyberdudebivash.com/privacy.html</loc><changefreq>yearly</changefreq><priority>0.35</priority><lastmod>2026-06-28</lastmod></url>
   <url><loc>https://www.cyberdudebivash.com/portal/index.html</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>2026-06-28</lastmod></url>
+  <url><loc>https://www.cyberdudebivash.com/vciso.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
+  <url><loc>https://www.cyberdudebivash.com/compliance.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
+  <url><loc>https://www.cyberdudebivash.com/dark-web-monitor.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
 </urlset>
