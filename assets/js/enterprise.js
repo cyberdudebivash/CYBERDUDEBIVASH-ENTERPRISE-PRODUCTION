@@ -183,30 +183,77 @@
   /* ── HAMBURGER / MOBILE NAV ────────────────────────────────── */
   var ham = document.getElementById('hamburger');
   var navMenu = document.getElementById('navMenu');
+
+  function closeNav() {
+    if (!navMenu || !ham) return;
+    navMenu.classList.remove('active', 'nav-open');
+    ham.classList.remove('active');
+    ham.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('nav-open-overlay');
+    document.body.style.overflow = '';
+  }
+
   if (ham && navMenu) {
     ham.addEventListener('click', function () {
       var open = navMenu.classList.toggle('active');
+      navMenu.classList.toggle('nav-open', open);
       ham.classList.toggle('active', open);
-      ham.setAttribute('aria-expanded', open);
+      ham.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('nav-open-overlay', open);
       document.body.style.overflow = open ? 'hidden' : '';
     });
-    navMenu.querySelectorAll('.nav-link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        navMenu.classList.remove('active');
-        ham.classList.remove('active');
-        ham.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
+
+    // Mobile accordion dropdowns
+    document.querySelectorAll('.nav-dropdown').forEach(function (dd) {
+      var trigger = dd.querySelector('.nav-link, a:first-child');
+      var panel = dd.querySelector('.dropdown-panel');
+      if (!trigger || !panel) return;
+
+      // Desktop hover stays as-is via CSS
+      // Mobile: toggle on click
+      trigger.addEventListener('click', function (e) {
+        if (window.innerWidth > 1024) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var isOpen = dd.classList.contains('open');
+        // Close siblings
+        document.querySelectorAll('.nav-dropdown').forEach(function (d) {
+          d.classList.remove('open', 'mobile-open');
+        });
+        if (!isOpen) {
+          dd.classList.add('open', 'mobile-open');
+        }
+      });
+
+      // Sub-links close the whole nav on click
+      panel.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', function () {
+          if (window.innerWidth <= 1024) closeNav();
+        });
       });
     });
-    // Close on outside click
+
+    // Non-dropdown nav links close nav
+    navMenu.querySelectorAll('li:not(.nav-dropdown) .nav-link, li:not(.nav-dropdown) > a').forEach(function (link) {
+      link.addEventListener('click', function () { closeNav(); });
+    });
+
+    // Close on overlay click (outside drawer)
     document.addEventListener('click', function (e) {
       if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && !ham.contains(e.target)) {
-        navMenu.classList.remove('active');
-        ham.classList.remove('active');
-        ham.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
+        closeNav();
       }
     });
+
+    // Resize — close and reset if going desktop
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1024) {
+        closeNav();
+        document.querySelectorAll('.nav-dropdown').forEach(function (d) {
+          d.classList.remove('open', 'mobile-open');
+        });
+      }
+    }, { passive: true });
   }
 
   /* ── GA4 TRACKING ──────────────────────────────────────────── */

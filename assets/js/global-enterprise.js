@@ -23,6 +23,10 @@
     var existing = document.querySelector('nav.navbar, nav#navbar, .navbar');
     if (!existing) return;
 
+    // If the page already has the full godmode nav (gm-nav), don't replace it.
+    // enterprise.js already manages it with proper CSS + .active class.
+    if (existing.classList.contains('gm-nav')) return;
+
     var currentPage = window.location.pathname.split('/').pop() || 'index.html';
     function active(page) { return currentPage === page ? ' class="nav-link active"' : ' class="nav-link"'; }
 
