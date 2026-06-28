@@ -8,7 +8,7 @@
 /* ─── HERO OVERRIDE ─── */
 .hero-v5 {
   min-height:100vh; display:flex; align-items:center;
-  padding:140px 0 80px;
+  padding:96px 0 80px;
   background:linear-gradient(160deg,#020610 0%,#040c1a 40%,#060e20 100%);
   position:relative; overflow:hidden; z-index:1;
 }
