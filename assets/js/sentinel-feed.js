@@ -534,12 +534,14 @@
      BOOT
   ───────────────────────────────────────────────────────── */
   function boot() {
+    // CSS is now inline in <head> — no JS dependency for rendering
+    // buildTickerBar is still called as fallback for pages that don't have the pre-rendered HTML
     injectStyles();
     buildTickerBar();
-    // Show fallback immediately so ticker is never blank
+    // Show fallback data immediately — ticker is NEVER blank
     renderTicker(FALLBACK_THREATS.slice(0, 10));
     renderFeed(FALLBACK_THREATS);
-    // Then try live APIs
+    // Then try live APIs in background
     refresh();
     // Auto-refresh every 5 minutes
     setInterval(refresh, 5 * 60 * 1000);

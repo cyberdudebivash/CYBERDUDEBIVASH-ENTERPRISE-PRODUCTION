@@ -27,6 +27,53 @@
   <link rel="stylesheet" href="assets/css/godmode-enterprise.css">
   <link rel="stylesheet" href="assets/css/portal-evolution.css">
   <link rel="stylesheet" href="assets/css/godlevel.css">
+  <link rel="stylesheet" href="assets/css/mobile-responsive.css">
+<style>
+/* ── Sentinel Ticker critical styles — inline guarantees render before any JS ── */
+@keyframes stk-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
+@keyframes stk-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stk-dot{animation:stk-pulse 1.4s ease-in-out infinite}
+.stk-track{animation:stk-scroll 80s linear infinite;will-change:transform}
+.stk-track:hover{animation-play-state:paused}
+.stk-item{display:inline-flex!important;align-items:center!important;gap:7px;padding:0 18px;font-size:11px;white-space:nowrap}
+.stk-badge{font-size:9px;font-weight:800;letter-spacing:.1em;padding:2px 6px;border-radius:3px;border:1px solid;flex-shrink:0;text-transform:uppercase}
+.stk-cve{font-weight:700;font-size:11px;letter-spacing:.04em;color:#00e5ff}
+.stk-desc{color:#7a9ab0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stk-time{color:#445;font-size:10px;flex-shrink:0}
+.stk-divider{color:rgba(0,255,136,0.28);padding:0 6px;font-size:12px}
+/* Mobile ticker */
+@media(max-width:768px){
+  #sentinel-ticker{height:40px!important;min-height:40px!important}
+  .stk-desc{display:none!important}
+  .stk-label-full{display:none!important}
+  .stk-label{padding:0 10px!important;font-size:9px!important}
+}
+@media(max-width:480px){
+  #sentinel-ticker{height:36px!important;min-height:36px!important}
+  .stk-cta{display:none!important}
+  .stk-time{display:none!important}
+  .stk-label{padding:0 8px!important;font-size:8px!important}
+}
+/* Threat feed cards */
+.tf-spinner{width:18px;height:18px;border:2px solid rgba(0,255,136,0.15);border-top-color:#00ff88;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.tf-item{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background .2s}
+.tf-item:hover{background:rgba(0,255,136,0.04)}
+.tf-item-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.tf-sev-badge{font-size:9px;font-weight:800;letter-spacing:.1em;padding:2px 7px;border-radius:3px;flex-shrink:0}
+.tf-cve-id{font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#00e5ff}
+.tf-score{font-size:11px;font-weight:800;color:#fff;margin-left:2px}
+.tf-item-title{font-size:13px;font-weight:700;color:#dde;margin-bottom:4px;line-height:1.35}
+.tf-item-desc{font-size:11.5px;color:#778;line-height:1.5}
+.tf-vendor{display:inline-block;background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:6px}
+.tf-action{margin-top:6px;font-size:11px;color:#ffa040;line-height:1.4}
+.tf-detail-link{font-size:11px;color:#00e5ff;text-decoration:none;opacity:.7}
+.tf-detail-link:hover{opacity:1}
+.tfs-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;text-align:center}
+.tfs-num{font-size:28px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px}
+.tfs-lbl{font-size:11px;color:#556;letter-spacing:.06em;text-transform:uppercase}
+.gauge-fill{height:100%;border-radius:4px;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+</style>
 </head>
 <script type="application/ld+json">
 {
@@ -649,11 +696,19 @@
     <a href="status.html" style="font-family:'Inter',sans-serif;font-size:0.68rem;color:#8b9ab5;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#0cf2ff'" onmouseout="this.style.color='#8b9ab5'">Status Page →</a>
   </div>
 </div>
-<section class="threat-ticker-section" aria-label="Live threat ticker">
-  <div class="ticker-label">🔴 LIVE THREATS</div>
-  <div class="ticker-track"><div class="ticker-inner" id="tickerInner">Loading threat data...</div></div>
-  <div class="ticker-label-right"><a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer">Full Dashboard →</a></div>
-</section>
+<!-- SENTINEL APEX LIVE THREAT TICKER — pre-rendered, zero JS dependency for layout -->
+<div id="sentinel-ticker" aria-label="Live threat intelligence ticker" style="position:relative;z-index:1000;display:flex;flex-direction:row;align-items:center;width:100%;min-height:44px;height:44px;background:linear-gradient(90deg,#060d18 0%,#071a12 50%,#060d18 100%);border-top:1px solid rgba(0,255,136,0.18);border-bottom:2px solid rgba(0,255,136,0.4);overflow:hidden;font-family:'Courier New',monospace;box-shadow:0 4px 28px rgba(0,255,136,0.14);box-sizing:border-box;">
+  <div class="stk-label" style="flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:0 14px 0 16px;font-size:10px;font-weight:800;letter-spacing:.13em;color:#00ff88;text-transform:uppercase;border-right:1px solid rgba(0,255,136,0.22);height:100%;background:rgba(0,255,136,0.07);white-space:nowrap;">
+    <span class="stk-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;flex-shrink:0;"></span>
+    <span class="stk-label-full">SENTINEL&nbsp;APEX</span><span class="stk-sep stk-label-full" style="opacity:.35;">&nbsp;|&nbsp;</span><span>LIVE&nbsp;INTEL</span>
+  </div>
+  <div class="stk-track-wrap" style="flex:1 1 auto;overflow:hidden;height:100%;display:flex;align-items:center;position:relative;">
+    <div class="stk-track" id="stk-track" style="display:flex;flex-direction:row;align-items:center;white-space:nowrap;">
+      <span style="padding:0 20px;color:#00ff88;font-size:11px;opacity:.6;">&#8635;&nbsp;Fetching live threat intelligence&hellip;</span>
+    </div>
+  </div>
+  <a href="https://intel.cyberdudebivash.com/" target="_blank" rel="noopener noreferrer" class="stk-cta" style="flex:0 0 auto;padding:0 16px;font-size:9.5px;font-weight:800;letter-spacing:.14em;color:#00ff88;text-decoration:none;border-left:1px solid rgba(0,255,136,0.22);height:100%;display:flex;align-items:center;background:rgba(0,255,136,0.05);white-space:nowrap;">FULL&nbsp;INTEL&nbsp;&rarr;</a>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════
      LIVE METRICS BAR
