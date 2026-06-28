@@ -1,0 +1,51 @@
+{
+  "name": "CYBERDUDEBIVASH® Enterprise Security Platform",
+  "short_name": "CYBERDUDEBIVASH",
+  "description": "Global AI-powered cybersecurity platform — threat intelligence, SOC-as-a-Service, and enterprise security.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#03070f",
+  "theme_color": "#00FFFF",
+  "orientation": "any",
+  "lang": "en",
+  "scope": "/",
+  "categories": ["business", "security", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/images/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/images/logo.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "label": "CYBERDUDEBIVASH Enterprise Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Threat Intelligence",
+      "short_name": "Threat Intel",
+      "description": "Live threat intelligence feed",
+      "url": "/threat-intel.html",
+      "icons": [{"src": "/assets/images/logo.jpg", "sizes": "96x96"}]
+    },
+    {
+      "name": "Contact Sales",
+      "short_name": "Contact",
+      "description": "Get a free security assessment",
+      "url": "/contact.html",
+      "icons": [{"src": "/assets/images/logo.jpg", "sizes": "96x96"}]
+    }
+  ]
+}

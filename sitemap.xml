@@ -1,22 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-  <url><loc>https://www.cyberdudebivash.com/</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/services.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/soc-services.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/threat-intel.html</loc><changefreq>daily</changefreq><priority>0.9</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/platforms.html</loc><changefreq>monthly</changefreq><priority>0.9</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/pricing.html</loc><changefreq>monthly</changefreq><priority>0.88</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/research.html</loc><changefreq>weekly</changefreq><priority>0.85</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/apps.html</loc><changefreq>weekly</changefreq><priority>0.82</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/about.html</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/contact.html</loc><changefreq>monthly</changefreq><priority>0.75</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/bug-bounty.html</loc><changefreq>monthly</changefreq><priority>0.7</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/status.html</loc><changefreq>daily</changefreq><priority>0.65</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/privacy.html</loc><changefreq>yearly</changefreq><priority>0.35</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/portal/index.html</loc><changefreq>monthly</changefreq><priority>0.6</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/vciso.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/compliance.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
-  <url><loc>https://www.cyberdudebivash.com/dark-web-monitor.html</loc><changefreq>monthly</changefreq><priority>0.95</priority><lastmod>2026-06-28</lastmod></url>
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+          http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- HOME — highest priority, daily refresh -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/"/>
+    <xhtml:link rel="alternate" hreflang="en-in" href="https://www.cyberdudebivash.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>CYBERDUDEBIVASH® — Global AI Cybersecurity Platform</image:title>
+      <image:caption>Enterprise-grade AI-powered cybersecurity platform protecting global organizations</image:caption>
+    </image:image>
+  </url>
+
+  <!-- CORE SERVICES — priority 0.95 -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/vciso.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/vciso.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/vciso.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Virtual CISO (vCISO) Service — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/compliance.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/compliance.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/compliance.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Compliance Automation ISO 27001 SOC2 GDPR — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/dark-web-monitor.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/dark-web-monitor.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/dark-web-monitor.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Dark Web Monitoring Service — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/services.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.93</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/services.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/services.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Enterprise Cybersecurity Services — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/soc-services.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.93</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/soc-services.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/soc-services.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>SOC-as-a-Service 24/7 Threat Monitoring — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/threat-intel.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.92</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/threat-intel.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/threat-intel.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Live Threat Intelligence Platform — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <!-- PLATFORM & PRICING -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/platforms.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/platforms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/platforms.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>AI Enterprise Security Platform — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/pricing.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/pricing.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/pricing.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>Cybersecurity Pricing From $49/month — CYBERDUDEBIVASH</image:title>
+    </image:image>
+  </url>
+
+  <!-- RESEARCH & APPS -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/research.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/research.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/research.html"/>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/apps.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/apps.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/apps.html"/>
+  </url>
+
+  <!-- COMPANY -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/about.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.78</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/about.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/about.html"/>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/images/logo.jpg</image:loc>
+      <image:title>About CYBERDUDEBIVASH — Global AI Cybersecurity Company</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/contact.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.78</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/contact.html"/>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/bug-bounty.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.72</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/bug-bounty.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/bug-bounty.html"/>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/status.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/status.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/status.html"/>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/privacy.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.35</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/privacy.html"/>
+  </url>
+
 </urlset>

@@ -1,3 +1,7 @@
+# CYBERDUDEBIVASH® — robots.txt
+# https://www.cyberdudebivash.com
+
+# Allow all crawlers full access
 User-agent: *
 Allow: /
 Disallow: /react-portal/src/
@@ -7,15 +11,74 @@ Disallow: /backend/
 Disallow: /integrate-footer.py
 Disallow: /update-all-pages.sh
 Disallow: /START-BACKEND.bat
+Disallow: /debug-nav.mjs
+Disallow: /verify-mobile.mjs
+Disallow: /index-enhanced.html
+Disallow: /header.html
 
-# High-priority crawl
+# Google — priority crawl, optimized budget
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 2
+Crawl-delay: 1
 
+# Google Image Crawler
+User-agent: Googlebot-Image
+Allow: /assets/images/
+
+# Bing
 User-agent: Bingbot
+Allow: /
+Crawl-delay: 3
+
+# DuckDuckGo
+User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 5
 
-# Sitemap
+# LinkedIn
+User-agent: LinkedInBot
+Allow: /
+
+# Twitter/X
+User-agent: Twitterbot
+Allow: /
+
+# Facebook
+User-agent: facebookexternalhit
+Allow: /
+
+# WhatsApp
+User-agent: WhatsApp
+Allow: /
+
+# Semrush, Ahrefs, Moz (SEO crawlers)
+User-agent: SemrushBot
+Allow: /
+Crawl-delay: 10
+
+User-agent: AhrefsBot
+Allow: /
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Allow: /
+Crawl-delay: 10
+
+# Block AI scrapers that don't respect creative rights
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+# Sitemaps
 Sitemap: https://www.cyberdudebivash.com/sitemap.xml
