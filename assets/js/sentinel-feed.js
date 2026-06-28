@@ -221,9 +221,18 @@
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
   font-size: 10px; font-weight: 800; color: #fff; letter-spacing: .08em;
 }
-@media (max-width:640px) {
-  #sentinel-ticker { height: 38px !important; min-height: 38px !important; }
-  .stk-desc { display: none; }
+@media (max-width:768px) {
+  #sentinel-ticker { height: 40px !important; min-height: 40px !important; }
+  .stk-desc { display: none !important; }
+  .stk-label { padding: 0 10px !important; font-size: 9px !important; }
+  .stk-label-full { display: none !important; }
+}
+@media (max-width:480px) {
+  #sentinel-ticker { height: 36px !important; min-height: 36px !important; }
+  .stk-cta { display: none !important; }
+  .stk-time { display: none !important; }
+  .stk-badge { font-size: 8px !important; padding: 1px 4px !important; }
+  .stk-label { padding: 0 8px !important; font-size: 8px !important; }
 }`;
 
   /* ─────────────────────────────────────────────────────────
@@ -299,9 +308,9 @@
     bar.innerHTML =
       '<div class="stk-label">' +
         '<span class="stk-dot"></span>' +
-        '<span>SENTINEL&nbsp;APEX</span>' +
-        '<span class="stk-sep">&nbsp;|&nbsp;</span>' +
-        '<span>LIVE&nbsp;THREAT&nbsp;INTEL</span>' +
+        '<span class="stk-label-full">SENTINEL&nbsp;APEX</span>' +
+        '<span class="stk-sep stk-label-full">&nbsp;|&nbsp;</span>' +
+        '<span>LIVE&nbsp;INTEL</span>' +
       '</div>' +
       '<div class="stk-track-wrap">' +
         '<div class="stk-track" id="stk-track">' +

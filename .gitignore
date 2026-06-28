@@ -18,6 +18,9 @@ install-backend.ps1
 # Production builds
 react-portal/build/
 react-portal/dist/
+dist/
+dist/server.cjs
+dist/server.cjs.map
 
 # Logs
 *.log
