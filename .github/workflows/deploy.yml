@@ -98,7 +98,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    concurrency:
+      group: "pages-deploy"
+      cancel-in-progress: false
     steps:
+      - name: Wait for any in-progress Pages deployment to clear
+        run: sleep 20
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
