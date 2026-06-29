@@ -1,60 +1,179 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --animate-fade-in: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+  --animate-scan: scan 3s linear infinite;
+  --animate-radar: radar-sweep 4s linear infinite;
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 1; filter: drop-shadow(0 0 3px rgba(6,182,212,0.6)); }
+    50%       { opacity: 0.75; filter: drop-shadow(0 0 14px rgba(6,182,212,1)); }
+  }
+  @keyframes scan {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes radar-sweep {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
 }
 
-/* Custom glow animations for cyber theme */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    filter: drop-shadow(0 0 2px rgba(6, 182, 212, 0.5));
-  }
-  50% {
-    opacity: 0.7;
-    filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8));
-  }
+/* ─── GLOW UTILITIES ──────────────────────────────────────── */
+.glow-cyan    { animation: glow-pulse 2s infinite ease-in-out; }
+.glow-red     { box-shadow: 0 0 12px rgba(239,68,68,0.4), 0 0 4px rgba(239,68,68,0.2); }
+.glow-emerald { box-shadow: 0 0 12px rgba(52,211,153,0.3), 0 0 4px rgba(52,211,153,0.15); }
+
+/* ─── GRADIENT BORDERS ────────────────────────────────────── */
+.border-gradient-cyan {
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+.border-gradient-cyan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(6,182,212,0.4), rgba(6,182,212,0.05), rgba(6,182,212,0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-.glow-cyan {
-  animation: pulse-glow 2s infinite ease-in-out;
+/* ─── CYBER GRID BACKGROUND ───────────────────────────────── */
+.bg-cyber-grid {
+  background-image:
+    linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ─── SCANLINE OVERLAY ────────────────────────────────────── */
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+/* ─── TERMINAL SCAN SWEEP ─────────────────────────────────── */
+.terminal-scan::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(6,182,212,0.6), transparent);
+  animation: scan-h 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan-h {
+  0%   { transform: translateY(0); opacity: 0.8; }
+  95%  { transform: translateY(260px); opacity: 0.3; }
+  100% { transform: translateY(0); opacity: 0; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.5);
-  border-radius: 3px;
+/* ─── LOG LINE FADE-IN ────────────────────────────────────── */
+@keyframes log-appear {
+  from { opacity: 0; transform: translateX(-4px); background: rgba(6,182,212,0.04); }
+  to   { opacity: 1; transform: translateX(0); background: transparent; }
 }
+.log-line-new { animation: log-appear 0.4s ease forwards; }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(14, 165, 233, 0.5);
+/* ─── STAT CARD COUNTER SCALE ─────────────────────────────── */
+@keyframes counter-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
 }
+.counter-pop { animation: counter-pop 0.3s ease; }
 
+/* ─── PROGRESS BAR FILL ───────────────────────────────────── */
+@keyframes progress-fill {
+  from { width: 0%; }
+  to   { width: var(--target-w, 0%); }
+}
+.progress-bar-animate { animation: progress-fill 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── RISK RING DASH ANIMATION ────────────────────────────── */
+@keyframes risk-ring {
+  from { stroke-dashoffset: 264; }
+  to   { stroke-dashoffset: var(--dash-offset, 264); }
+}
+.risk-ring-animate { animation: risk-ring 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── CUSTOM SCROLLBARS ───────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(15,23,42,0.5); }
+::-webkit-scrollbar-thumb { background: rgba(51,65,85,0.6); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(14,165,233,0.5); }
+
+/* ─── ATTACK FLOW PATH ANIMATION ─────────────────────────── */
 @keyframes dash {
-  to {
-    stroke-dashoffset: -40;
-  }
+  to { stroke-dashoffset: -40; }
 }
+
+/* ─── RADAR SWEEP ─────────────────────────────────────────── */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── CRITICAL ALERT FLASH ────────────────────────────────── */
+@keyframes alert-flash {
+  0%, 100% { border-color: rgba(239,68,68,0.3); background: rgba(127,29,29,0.1); }
+  50%       { border-color: rgba(239,68,68,0.7); background: rgba(127,29,29,0.25); }
+}
+.alert-flash { animation: alert-flash 1.2s ease-in-out infinite; }
+
+/* ─── FLOATING NUMBER TICKER ──────────────────────────────── */
+@keyframes ticker-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.ticker-up { animation: ticker-up 0.25s ease-out forwards; }
+
+/* ─── GLASSMORPHISM CARD ──────────────────────────────────── */
+.glass-card {
+  background: rgba(12, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─── GRADIENT TEXT ───────────────────────────────────────── */
+.text-gradient-cyber {
+  background: linear-gradient(135deg, #22d3ee, #38bdf8, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── NODE PING RINGS ─────────────────────────────────────── */
+@keyframes ping-slow {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.ping-slow  { animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.ping-slow2 { animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) 0.8s infinite; }
