@@ -31,6 +31,7 @@ import {
 } from "./ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
+import CookieConsent from "./components/CookieConsent";
 
 
 // Interface definitions based on backend server capabilities
@@ -2500,6 +2501,7 @@ export default function App() {
         </div>
       )}
 
+      <CookieConsent />
     </div>
   );
 }

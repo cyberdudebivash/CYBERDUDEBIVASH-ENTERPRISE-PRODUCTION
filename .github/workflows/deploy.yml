@@ -33,33 +33,58 @@ jobs:
       - name: Install dependencies
         run: npm install --ignore-scripts
 
-      - name: Build Vite app
+      - name: Build Vite app from TypeScript source
         run: npx vite build
         env:
           NODE_ENV: production
 
-      - name: Sync root static assets for branch-based deployment
+      - name: Prepare dist and sync root assets
         run: |
-          JS_FILE=$(ls dist/assets/index-*.js | head -1 | xargs basename)
-          CSS_FILE=$(ls dist/assets/index-*.css | head -1 | xargs basename)
+          set -euo pipefail
+
+          JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1 | xargs basename)
+          CSS_FILE=$(ls dist/assets/index-*.css 2>/dev/null | head -1 | xargs basename)
           ICO_FILE=$(ls dist/assets/favicon-*.ico 2>/dev/null | head -1 | xargs basename 2>/dev/null || true)
 
+          if [ -z "$JS_FILE" ] || [ -z "$CSS_FILE" ]; then
+            echo "ERROR: Vite build did not produce expected JS/CSS assets"
+            ls dist/assets/ || true
+            exit 1
+          fi
+          echo "Built: $JS_FILE | $CSS_FILE"
+
+          # Generate dist/index.html from root index.html with correct built asset refs.
+          # Root index.html always keeps crossorigin format so sed reliably updates the hash.
+          cp index.html dist/index.html
+          sed -i '/<script type="module"/d' dist/index.html
+          sed -i '\|<link rel="stylesheet".*href="/assets/|d' dist/index.html
+          sed -i "s|  </head>|    <script type=\"module\" crossorigin src=\"/assets/$JS_FILE\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/$CSS_FILE\">\n  </head>|" dist/index.html
+          rm -f dist/_vite_entry.html
+
+          # Sync built assets to root assets/ for branch-based Pages serving
           cp "dist/assets/$JS_FILE" "assets/$JS_FILE"
           cp "dist/assets/$CSS_FILE" "assets/$CSS_FILE"
           [ -n "$ICO_FILE" ] && cp "dist/assets/$ICO_FILE" "assets/$ICO_FILE" || true
 
-          # Rewrite root index.html so branch-based Pages serves the correct built assets.
-          # Remove any <script type="module"> line (handles /src/main.tsx or old hashes).
-          sed -i '/<script type="module"/d' index.html
-          # Remove any stylesheet link pointing to /assets/
-          sed -i '\|<link rel="stylesheet".*href="/assets/|d' index.html
-          # Insert new built asset tags directly before </head>
-          sed -i "s|  </head>|    <script type=\"module\" crossorigin src=\"/assets/$JS_FILE\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/$CSS_FILE\">\n  </head>|" index.html
+          # Update root index.html asset hashes for branch-based Pages
+          sed -i "s|crossorigin src=\"/assets/index-[^\"]*\.js\"|crossorigin src=\"/assets/$JS_FILE\"|" index.html
+          sed -i "s|crossorigin href=\"/assets/index-[^\"]*\.css\"|crossorigin href=\"/assets/$CSS_FILE\"|" index.html
 
+          # Validate both index.html files have correct built refs before deploying
+          grep -q "crossorigin src=\"/assets/$JS_FILE\"" dist/index.html \
+            || { echo "FATAL: dist/index.html missing asset ref for $JS_FILE"; exit 1; }
+          grep -q "crossorigin href=\"/assets/$CSS_FILE\"" dist/index.html \
+            || { echo "FATAL: dist/index.html missing CSS ref for $CSS_FILE"; exit 1; }
+          grep -q "crossorigin src=\"/assets/$JS_FILE\"" index.html \
+            || { echo "FATAL: root index.html missing asset ref for $JS_FILE"; exit 1; }
+          echo "✅ Asset refs validated in dist/index.html and root index.html"
+
+          # Commit root changes for branch-based Pages (skip if nothing changed)
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
-          git diff --staged --quiet || git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
+          git diff --staged --quiet \
+            || git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
           git diff --staged --quiet || git push
 
       - name: Upload Pages artifact

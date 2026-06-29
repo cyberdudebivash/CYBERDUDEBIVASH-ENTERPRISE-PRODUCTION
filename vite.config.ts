@@ -14,6 +14,17 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
+      rollupOptions: {
+        input: '_vite_entry.html',
+        output: {
+          entryFileNames: 'assets/index-[hash].js',
+          chunkFileNames: 'assets/index-[hash].js',
+          assetFileNames: (info) =>
+            info.name?.endsWith('.css')
+              ? 'assets/index-[hash][extname]'
+              : 'assets/[name]-[hash][extname]',
+        },
+      },
     },
   };
 });

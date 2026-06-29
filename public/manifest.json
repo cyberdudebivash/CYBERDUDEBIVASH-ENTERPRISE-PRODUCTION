@@ -1,0 +1,56 @@
+{
+  "name": "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform",
+  "short_name": "CyberDudeBivash®",
+  "description": "Real-time AI threat intelligence, managed SOC, 100+ security tools, and DPDP/ISO 27001 compliance — enterprise cybersecurity from Odisha, India.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020810",
+  "theme_color": "#00d4ff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["security", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/favicon-D6GVHMFz.ico",
+      "sizes": "any",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/og-banner.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "CYBERDUDEBIVASH® Sentinel APEX™ Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sentinel APEX™ Threat Intel",
+      "short_name": "Threat Intel",
+      "description": "Real-time threat intelligence feed",
+      "url": "/?view=intel",
+      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+    },
+    {
+      "name": "AI Security Copilot",
+      "short_name": "AI Copilot",
+      "description": "AI-powered security analysis",
+      "url": "/?view=ai",
+      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+    },
+    {
+      "name": "ThreatCore™ Tools",
+      "short_name": "Tools",
+      "description": "100+ enterprise security tools",
+      "url": "/?view=tools",
+      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

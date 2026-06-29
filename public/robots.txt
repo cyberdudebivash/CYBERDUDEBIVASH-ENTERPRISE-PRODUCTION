@@ -1,22 +1,79 @@
 # CYBERDUDEBIVASH® Ecosystem — robots.txt
 # https://www.cyberdudebivash.com
 # Maintained by: CyberDudeBivash Private Limited
+# Contact: bivash@cyberdudebivash.com
+# Updated: 2026-06-29
 
+# ═══════════════════════════════════════════════════════════
+# GLOBAL RULES — ALLOW ALL LEGITIMATE CRAWLERS
+# ═══════════════════════════════════════════════════════════
 User-agent: *
 Allow: /
+Allow: /assets/og-banner.png
+Allow: /assets/favicon-D6GVHMFz.ico
+Allow: /manifest.json
+Allow: /sitemap.xml
+Allow: /ads.txt
+Allow: /404.html
 
-# Disallow internal API routes from indexing
-Disallow: /api/
+# Disallow internal build artifacts
 Disallow: /assets/index-*.js
 Disallow: /assets/index-*.css
+Disallow: /api/
+Disallow: /_vite_entry.html
+Disallow: /src/
 
-# Sitemap
-Sitemap: https://www.cyberdudebivash.com/sitemap.xml
-
-# Crawl rate
+# Crawl rate — respectful to server
 Crawl-delay: 1
 
-# AI training opt-out
+# ═══════════════════════════════════════════════════════════
+# GOOGLE — FULL ACCESS (ALL GOOGLE BOTS)
+# ═══════════════════════════════════════════════════════════
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /assets/og-banner.png
+Allow: /assets/favicon-D6GVHMFz.ico
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+# ═══════════════════════════════════════════════════════════
+# BING / MICROSOFT
+# ═══════════════════════════════════════════════════════════
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: msnbot
+Allow: /
+
+# ═══════════════════════════════════════════════════════════
+# SOCIAL MEDIA CRAWLERS
+# ═══════════════════════════════════════════════════════════
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# ═══════════════════════════════════════════════════════════
+# AI TRAINING OPT-OUT — UNAUTHORIZED AI SCRAPERS
+# ═══════════════════════════════════════════════════════════
 User-agent: GPTBot
 Disallow: /
 
@@ -26,5 +83,19 @@ Disallow: /
 User-agent: anthropic-ai
 Disallow: /
 
-User-agent: Google-Extended
-Allow: /
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+# ═══════════════════════════════════════════════════════════
+# SITEMAPS
+# ═══════════════════════════════════════════════════════════
+Sitemap: https://www.cyberdudebivash.com/sitemap.xml

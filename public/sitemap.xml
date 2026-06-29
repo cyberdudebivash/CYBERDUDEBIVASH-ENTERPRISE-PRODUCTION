@@ -1,29 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- CYBERDUDEBIVASH® Ecosystem Sitemap -->
+  <!-- CYBERDUDEBIVASH® Ecosystem Sitemap — Enhanced for Google Search -->
   <!-- Generated: 2026-06-29 | Maintained by: CyberDudeBivash Private Limited -->
 
-  <!-- Main Ecosystem Gateway -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MAIN ECOSYSTEM GATEWAY -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://www.cyberdudebivash.com/</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/og-banner.png</image:loc>
+      <image:title>CYBERDUDEBIVASH® AI-Powered Cybersecurity Platform Dashboard</image:title>
+      <image:caption>Real-time threat intelligence, managed SOC, 100+ security tools — enterprise cybersecurity from Odisha, India</image:caption>
+    </image:image>
   </url>
 
-  <!-- Sentinel APEX™ Threat Intelligence -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- PLATFORM SECTIONS (SPA HASH ROUTES) -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/#about</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/#privacy</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/#terms</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/#copyright</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- SENTINEL APEX™ THREAT INTELLIGENCE -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://intel.cyberdudebivash.com/</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.cyberdudebivash.com/assets/og-banner.png</image:loc>
+      <image:title>Sentinel APEX™ — Real-Time AI Threat Intelligence</image:title>
+      <image:caption>MITRE ATT&amp;CK mapped threat intelligence, IOC feeds, dark web monitoring</image:caption>
+    </image:image>
   </url>
 
-  <!-- AI Security Hub -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- AI SECURITY HUB -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://cyberdudebivash.in/</loc>
     <lastmod>2026-06-29</lastmod>
@@ -31,7 +80,9 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- ThreatCore™ Tools -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- THREATCORE™ TOOLS -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://tools.cyberdudebivash.com/</loc>
     <lastmod>2026-06-29</lastmod>
@@ -39,7 +90,9 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Research Blog & Academy -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- RESEARCH BLOG & ACADEMY -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://blog.cyberdudebivash.in/</loc>
     <lastmod>2026-06-29</lastmod>
@@ -47,7 +100,9 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Developer API Documentation -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- DEVELOPER API DOCUMENTATION -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://cyberdudebivash.in/api</loc>
     <lastmod>2026-06-29</lastmod>
@@ -55,7 +110,9 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Upgrade / Pricing -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- UPGRADE / PRICING -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://cyberdudebivash.in/upgrade.html</loc>
     <lastmod>2026-06-29</lastmod>
@@ -63,7 +120,9 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- API Feeds -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- LIVE THREAT INTELLIGENCE API FEEDS -->
+  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>https://intel.cyberdudebivash.com/api/v1/intel/latest.json</loc>
     <lastmod>2026-06-29</lastmod>

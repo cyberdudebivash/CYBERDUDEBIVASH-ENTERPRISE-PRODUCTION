@@ -1,0 +1,7 @@
+# CYBERDUDEBIVASH® — Google AdSense Authorized Sellers
+# https://www.cyberdudebivash.com/ads.txt
+# Updated: 2026-06-29
+# Contact: bivash@cyberdudebivash.com
+
+# Google AdSense — Replace XXXXXXXXXXXXXXXXX with your actual publisher ID from AdSense dashboard
+google.com, pub-XXXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
