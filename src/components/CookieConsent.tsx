@@ -9,8 +9,23 @@ export default function CookieConsent() {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(CONSENT_KEY);
-    if (!stored || JSON.parse(stored).version !== CONSENT_VERSION) {
+    let needsConsent = true;
+    try {
+      const raw = localStorage.getItem(CONSENT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.version === CONSENT_VERSION) {
+          needsConsent = false;
+        } else {
+          // Legacy or malformed value — clear it so we re-prompt
+          localStorage.removeItem(CONSENT_KEY);
+        }
+      }
+    } catch {
+      // Stored value is not valid JSON (e.g. old "accepted" string) — clear it
+      localStorage.removeItem(CONSENT_KEY);
+    }
+    if (needsConsent) {
       setTimeout(() => setVisible(true), 1500);
     }
   }, []);
