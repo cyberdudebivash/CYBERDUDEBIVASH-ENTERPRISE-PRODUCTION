@@ -32,6 +32,33 @@
   }
 }
 
+/* ─── ACCESSIBILITY: SKIP LINK & FOCUS STYLES ────────────── */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: #00d4ff;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0 0 4px 4px;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* ─── GLOW UTILITIES ──────────────────────────────────────── */
 .glow-cyan    { animation: glow-pulse 2s infinite ease-in-out; }
 .glow-red     { box-shadow: 0 0 12px rgba(239,68,68,0.4), 0 0 4px rgba(239,68,68,0.2); }

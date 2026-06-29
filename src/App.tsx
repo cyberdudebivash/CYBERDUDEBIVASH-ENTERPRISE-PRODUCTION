@@ -644,7 +644,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#06080a] text-slate-300 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
-      
+      {/* Skip to main content — accessibility */}
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
+
       {/* 1. SECURE ANNOUNCEMENT & UTILITY BAR */}
       <div className="bg-[#080d12] text-[11px] border-b border-slate-900 py-1.5 px-6 flex flex-wrap items-center justify-between gap-3 text-slate-400 font-mono">
         <div className="flex items-center gap-2">
