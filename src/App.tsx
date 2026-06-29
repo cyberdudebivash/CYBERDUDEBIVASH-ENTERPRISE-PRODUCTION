@@ -1997,127 +1997,425 @@ export default function App() {
 
       {/* ===== COMPLIANCE PAGES ===== */}
       {(currentView === "about" || currentView === "privacy" || currentView === "terms" || currentView === "copyright") && (
-        <div className="min-h-[60vh] bg-[#030912] border-t border-slate-800/60">
-          <div className="max-w-4xl mx-auto px-6 py-12">
-            <button onClick={() => setCurrentView("home")} className="mb-8 text-xs text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-2 font-mono">
-              ← Back to Gateway
+        <div className="min-h-screen bg-[#030912] border-t border-slate-800/60">
+          {/* Page hero accent */}
+          <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-500/70 to-transparent" />
+
+          <div className="max-w-5xl mx-auto px-6 py-12">
+            <button onClick={() => setCurrentView("home")} className="mb-10 text-xs text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-2 font-mono group">
+              <span className="group-hover:-translate-x-1 transition-transform inline-block">←</span> Back to Gateway
             </button>
 
+            {/* ===== ABOUT US ===== */}
             {currentView === "about" && (
-              <div className="space-y-8">
-                <div>
-                  <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-2">About</div>
-                  <h1 className="text-2xl font-bold text-white mb-4">About CyberDudeBivash<span className="text-cyan-400">®</span></h1>
-                  <p className="text-slate-300 leading-relaxed text-sm">CYBERDUDEBIVASH PRIVATE LIMITED is an India-based autonomous AI-powered cybersecurity defense company founded in 2020, headquartered in Ragadi, Jajpur Road, Odisha. We deliver real-time threat intelligence, managed SOC operations, AI security auditing, and 100+ production-grade security tools to enterprise teams globally.</p>
+              <div className="space-y-10">
+                {/* Hero */}
+                <div className="relative">
+                  <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                    Corporate Profile · Est. 2020
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                    About CyberDudeBivash<span className="text-cyan-400">®</span>
+                  </h1>
+                  <p className="text-slate-300 leading-relaxed text-sm md:text-base max-w-3xl font-sans">
+                    CYBERDUDEBIVASH PRIVATE LIMITED is India's autonomous AI-powered cybersecurity authority — delivering real-time threat intelligence, managed SOC operations, AI security auditing, and 100+ production-grade security tools to enterprise teams, government agencies, and security researchers globally. Founded in Odisha in 2020, we stand at the intersection of AI innovation and enterprise-grade cyber defense.
+                  </p>
                 </div>
-                <div className="grid md:grid-cols-2 gap-6">
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { title: "Mission", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale." },
-                    { title: "Vision", body: "To be India's premier global cybersecurity authority, setting the standard for AI-driven threat defense in the Asia-Pacific region and beyond." },
-                    { title: "Founded", body: "2020, Odisha, India. Registered under the Companies Act 2013. Government GSTIN: 21ARKPN8270G1ZP. PAN: ARKPN8270G." },
-                    { title: "Founder", body: "Bivasha Kumar Nayak — Cybersecurity Engineer, Threat Intelligence Specialist, and OWASP contributor based in Jajpur Road, Odisha, India." },
+                    { value: "500K+", label: "Threat IOCs Tracked", color: "text-cyan-400" },
+                    { value: "50+", label: "Countries Protected", color: "text-emerald-400" },
+                    { value: "100+", label: "AI Security Tools", color: "text-violet-400" },
+                    { value: "99.9%", label: "Platform SLA Uptime", color: "text-amber-400" },
+                  ].map(s => (
+                    <div key={s.label} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
+                      <div className={`text-2xl font-extrabold font-mono ${s.color}`}>{s.value}</div>
+                      <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Mission / Vision / Values */}
+                <div className="grid md:grid-cols-3 gap-5">
+                  {[
+                    {
+                      title: "Mission",
+                      color: "border-cyan-500/40 bg-cyan-950/10",
+                      label: "text-cyan-400",
+                      body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to global Fortune 500 enterprises.",
+                    },
+                    {
+                      title: "Vision",
+                      color: "border-violet-500/40 bg-violet-950/10",
+                      label: "text-violet-400",
+                      body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence.",
+                    },
+                    {
+                      title: "Core Values",
+                      color: "border-emerald-500/40 bg-emerald-950/10",
+                      label: "text-emerald-400",
+                      body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community.",
+                    },
                   ].map(c => (
-                    <div key={c.title} className="bg-slate-900/50 border border-slate-800 rounded-xl p-5">
-                      <h3 className="text-sm font-bold text-cyan-400 mb-2">{c.title}</h3>
+                    <div key={c.title} className={`border rounded-xl p-5 ${c.color}`}>
+                      <h3 className={`text-xs font-bold uppercase tracking-widest mb-2 ${c.label}`}>{c.title}</h3>
                       <p className="text-xs text-slate-400 leading-relaxed font-sans">{c.body}</p>
                     </div>
                   ))}
                 </div>
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-2">
-                  <h3 className="text-sm font-bold text-white mb-3">Corporate Identity</h3>
+
+                {/* Founder */}
+                <div className="bg-gradient-to-r from-slate-900/80 to-slate-900/40 border border-slate-800 rounded-xl p-6 flex flex-col md:flex-row gap-6">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-800 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-cyan-900/40">
+                    B
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Founder & CEO</div>
+                    <h3 className="text-lg font-bold text-white">Bivasha Kumar Nayak</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                      Cybersecurity Engineer, Threat Intelligence Specialist, and OWASP contributor based in Jajpur Road, Odisha, India. Bivasha founded CYBERDUDEBIVASH in 2020 with a singular mission: to bring autonomous AI-powered cyber defense to Indian enterprises at scale. With expertise spanning penetration testing, SIGMA rule engineering, incident response, and AI security auditing, he leads a platform trusted by security teams across 50+ nations.
+                    </p>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {["OWASP Contributor", "MITRE ATT&CK Expert", "India DPDP Specialist", "AI Red Team Lead", "ISO 27001 Practitioner"].map(tag => (
+                        <span key={tag} className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-900/40 px-2 py-0.5 rounded">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Services we deliver */}
+                <div className="space-y-4">
+                  <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">What We Deliver</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {[
+                      { title: "Managed SOC-as-a-Service", desc: "24×7 autonomous security operations center monitoring your infrastructure with AI-driven alert triage, threat hunting, and incident response playbooks." },
+                      { title: "Sentinel APEX™ Threat Intelligence", desc: "Real-time IOC feeds, CVE tracking, SIGMA detection rules, and geo-tagged attack maps covering 500K+ active threat indicators globally." },
+                      { title: "AI Security Audit Platform", desc: "Automated vulnerability scanning, OWASP LLM Top 10 assessments, code security reviews, and compliance gap analysis against NIST, ISO 27001, and DPDP Act." },
+                      { title: "ThreatCore™ Security Toolkits", desc: "100+ production-grade security tools for penetration testing, digital forensics, OSINT, network analysis, and malware reverse engineering." },
+                      { title: "India DPDP Act Compliance", desc: "End-to-end data protection compliance scanning, privacy impact assessments, DPO advisory, and breach notification readiness for Indian enterprises." },
+                      { title: "Enterprise REST API", desc: "Programmable threat intelligence API delivering IOC enrichment, malware hash lookups, CVE data, and geolocation threat data to your SIEM/SOAR in real time." },
+                    ].map(s => (
+                      <div key={s.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-200 mb-1">{s.title}</h4>
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{s.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Certifications & Compliance */}
+                <div className="space-y-4">
+                  <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Certifications & Compliance Framework</h2>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { label: "ISO/IEC 27001:2022", color: "text-cyan-400 bg-cyan-950/40 border-cyan-900/40" },
+                      { label: "SOC 2 Type II", color: "text-emerald-400 bg-emerald-950/40 border-emerald-900/40" },
+                      { label: "GDPR Compliant", color: "text-sky-400 bg-sky-950/40 border-sky-900/40" },
+                      { label: "PCI-DSS v4.0", color: "text-violet-400 bg-violet-950/40 border-violet-900/40" },
+                      { label: "India DPDP Act 2023", color: "text-amber-400 bg-amber-950/40 border-amber-900/40" },
+                      { label: "MITRE ATT&CK Mapped", color: "text-red-400 bg-red-950/40 border-red-900/40" },
+                      { label: "OWASP LLM Top 10", color: "text-pink-400 bg-pink-950/40 border-pink-900/40" },
+                      { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
+                      { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
+                    ].map(b => (
+                      <span key={b.label} className={`text-[11px] font-mono font-semibold px-3 py-1.5 rounded-lg border ${b.color}`}>{b.label}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Corporate Identity */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-3">
+                  <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest">Corporate Registration & Identity</h3>
                   {[
                     ["Legal Name", "CYBERDUDEBIVASH PRIVATE LIMITED"],
                     ["Brand", "CyberDudeBivash®"],
-                    ["Incorporation", "Companies Act 2013, India"],
+                    ["Incorporation", "Companies Act 2013, Republic of India"],
                     ["PAN", "ARKPN8270G"],
                     ["GSTIN", "21ARKPN8270G1ZP"],
-                    ["Address", "29, Korai-Sukinda Rd, Ragadi, JAJPUR ROAD, Odisha 755019, India"],
-                    ["Email", "bivash@cyberdudebivash.com"],
-                    ["Phone", "+91 81798 81447"],
-                    ["Hours", "Monday–Saturday, 9AM–7PM IST"],
+                    ["Registered Address", "29, Korai-Sukinda Rd, Ragadi, JAJPUR ROAD, Odisha 755019, India"],
+                    ["Operational Email", "bivash@cyberdudebivash.com"],
+                    ["Enterprise Hotline", "+91 81798 81447"],
+                    ["Business Hours", "Monday–Saturday, 9:00 AM – 7:00 PM IST"],
+                    ["Jurisdiction", "Odisha High Court, India"],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex gap-4 text-xs font-mono">
-                      <span className="text-slate-500 w-28 shrink-0">{k}</span>
-                      <span className="text-slate-300">{v}</span>
+                    <div key={k} className="flex gap-4 text-xs font-mono border-b border-slate-800/40 pb-2 last:border-0 last:pb-0">
+                      <span className="text-slate-500 w-36 shrink-0">{k}</span>
+                      <span className="text-slate-200">{v}</span>
                     </div>
                   ))}
                 </div>
+
+                {/* CTA */}
+                <div className="bg-gradient-to-r from-cyan-950/30 to-slate-900/60 border border-cyan-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-white mb-1">Ready to secure your enterprise?</h3>
+                    <p className="text-xs text-slate-400 font-sans">Contact our security coordinators for a free assessment and platform demo.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    className="shrink-0 px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors"
+                  >
+                    Request Enterprise Demo
+                  </button>
+                </div>
               </div>
             )}
 
+            {/* ===== PRIVACY POLICY ===== */}
             {currentView === "privacy" && (
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <div>
-                  <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-2">Legal</div>
-                  <h1 className="text-2xl font-bold text-white mb-2">Privacy Policy</h1>
-                  <p className="text-xs text-slate-500 font-mono">Last updated: June 2026 · Effective immediately · Compliant with India DPDP Act 2023 & GDPR</p>
+                  <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Legal Document
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Privacy Policy</h1>
+                  <div className="flex flex-wrap gap-3 text-[10px] font-mono">
+                    <span className="bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 px-2.5 py-1 rounded">Last updated: June 2026</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">DPDP Act 2023 Compliant</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">GDPR Compliant</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">Effective Immediately</span>
+                  </div>
                 </div>
+
+                <div className="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-5">
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                    This Privacy Policy describes how <strong className="text-white">CYBERDUDEBIVASH PRIVATE LIMITED</strong> ("CyberDudeBivash", "we", "our", "us") collects, uses, stores, and protects personal data in accordance with the <strong className="text-emerald-400">Digital Personal Data Protection Act 2023 (India)</strong>, the <strong className="text-sky-400">General Data Protection Regulation (EU) 2016/679</strong>, the Information Technology Act 2000, and applicable CERT-In guidelines.
+                  </p>
+                </div>
+
                 {[
-                  { title: "1. Data Controller", body: "CYBERDUDEBIVASH PRIVATE LIMITED (\"CyberDudeBivash\", \"we\", \"our\") is the Data Fiduciary under India's Digital Personal Data Protection Act 2023 and Data Controller under GDPR for all personal data processed through our platforms and services." },
-                  { title: "2. Data We Collect", body: "Contact information (name, email, phone) submitted through enterprise inquiry forms; usage analytics (page views, session duration) via privacy-respecting analytics; security telemetry data from opted-in SOC deployments; API usage metadata for rate limiting and billing. We do NOT collect sensitive personal data without explicit consent." },
-                  { title: "3. Purpose of Processing", body: "Delivering requested cybersecurity services; responding to enterprise inquiries and support requests; improving platform functionality; compliance monitoring and audit logging as required by our certifications (ISO 27001, SOC 2 Type II); sending transactional communications related to services you've subscribed to." },
-                  { title: "4. Data Localisation (DPDP Act)", body: "All personal data of Indian residents is stored on servers located within the Republic of India (Jajpur, Odisha). Cross-border transfers are conducted only to approved jurisdictions per the DPDP Act 2023 schedules and under appropriate safeguards." },
-                  { title: "5. Your Rights", body: "Under DPDP Act 2023 & GDPR: Right to access your personal data; right to correction of inaccurate data; right to erasure; right to withdraw consent; right to nominate a successor for data after death (DPDP-specific); right to grievance redressal. Submit requests to: bivash@cyberdudebivash.com" },
-                  { title: "6. Breach Notification", body: "In the event of a personal data breach affecting your data, we will notify the Data Protection Board of India and affected individuals within 72 hours of becoming aware, as mandated by the DPDP Act 2023 and CERT-In guidelines." },
-                  { title: "7. Cookies", body: "We use strictly necessary cookies for session management and security. No third-party tracking cookies. No advertising cookies. You may disable cookies via your browser settings, though this may affect platform functionality." },
-                  { title: "8. Contact", body: "Data Protection Officer: Bivasha Kumar Nayak · bivash@cyberdudebivash.com · CYBERDUDEBIVASH PRIVATE LIMITED, 29 Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India" },
+                  {
+                    num: "01", title: "Data Controller / Data Fiduciary", color: "border-emerald-500/50",
+                    body: "CYBERDUDEBIVASH PRIVATE LIMITED is the Data Fiduciary under India's DPDP Act 2023 and the Data Controller under GDPR for all personal data processed through our platforms, tools, APIs, and services. Our designated Data Protection Officer (DPO) is Bivasha Kumar Nayak, reachable at bivash@cyberdudebivash.com.",
+                  },
+                  {
+                    num: "02", title: "Personal Data We Collect", color: "border-sky-500/50",
+                    body: "We collect: (a) Identity data — full name, email address, phone number, company name when submitted via enterprise inquiry forms; (b) Usage analytics — page views, session duration, browser type, anonymized IP geolocation via privacy-respecting first-party analytics; (c) API access metadata — endpoint calls, rate limit counters, API key hashes for billing and abuse prevention; (d) Security telemetry — from opted-in managed SOC deployments under a signed Data Processing Agreement (DPA). We do NOT collect sensitive personal data (caste, religion, health, biometrics) without explicit written consent.",
+                  },
+                  {
+                    num: "03", title: "Purpose of Processing", color: "border-cyan-500/50",
+                    body: "Your personal data is processed exclusively for: delivering requested cybersecurity products and managed services; responding to enterprise inquiries within 1 business day; platform performance monitoring and improvement; compliance audit logging required by ISO 27001 and SOC 2 Type II certifications; sending transactional communications (invoices, SLA reports, security advisories) related to subscribed services. We do NOT sell, rent, or share personal data with third-party advertisers.",
+                  },
+                  {
+                    num: "04", title: "Data Localisation (DPDP Act 2023)", color: "border-amber-500/50",
+                    body: "Pursuant to Section 16 of the DPDP Act 2023 and MeitY guidelines, all personal data of Indian residents (Data Principals) is stored exclusively on servers physically located within the Republic of India (our primary data center: Odisha, India). Cross-border data transfers — where operationally required — are conducted only to jurisdictions approved under DPDP Act schedules, under Standard Contractual Clauses (SCCs) or equivalent mechanisms.",
+                  },
+                  {
+                    num: "05", title: "Your Rights as a Data Principal", color: "border-violet-500/50",
+                    body: "Under the DPDP Act 2023 and GDPR, you have the right to: (a) Access a summary of your personal data we hold; (b) Correct inaccurate or incomplete data; (c) Erasure ('Right to be forgotten') of your data upon request, subject to legal retention obligations; (d) Withdraw consent at any time without affecting prior processing; (e) Nominate a successor for your data upon death (DPDP-specific); (f) Grievance redressal within 30 days of complaint. Submit all data rights requests to: bivash@cyberdudebivash.com with subject 'Data Rights Request'.",
+                  },
+                  {
+                    num: "06", title: "Data Retention", color: "border-slate-500/50",
+                    body: "Contact and inquiry data: retained for 36 months from last interaction, then securely deleted. API usage logs: 12 months for billing/audit, then purged. Managed SOC telemetry: per DPA terms, typically 24 months. We apply data minimization — we do not retain data longer than necessary for the stated purpose.",
+                  },
+                  {
+                    num: "07", title: "Security Measures", color: "border-red-500/50",
+                    body: "We implement enterprise-grade security controls: AES-256 encryption at rest; TLS 1.3 for data in transit; SOC 2 Type II certified infrastructure; role-based access controls (RBAC); multi-factor authentication on all administrative access; regular penetration testing of our own systems; and CERT-In-compliant incident response procedures.",
+                  },
+                  {
+                    num: "08", title: "Personal Data Breach Notification", color: "border-orange-500/50",
+                    body: "In the event of a personal data breach materially affecting your data, CYBERDUDEBIVASH will: (1) Notify the Data Protection Board of India within 6 hours of becoming aware as per CERT-In Directions 2022; (2) Notify affected Data Principals within 72 hours; (3) Provide a detailed breach report including nature of breach, categories of data affected, and remediation measures taken.",
+                  },
+                  {
+                    num: "09", title: "Cookies & Tracking Technologies", color: "border-pink-500/50",
+                    body: "We use strictly necessary session cookies for platform security and authentication. Analytics cookies (Google Analytics 4) are used only with your explicit consent granted via our Cookie Consent banner. We do NOT use third-party advertising or cross-site tracking cookies. Cookie consent can be withdrawn at any time via browser settings — this does not affect platform security functionality.",
+                  },
+                  {
+                    num: "10", title: "Third-Party Services", color: "border-slate-600/50",
+                    body: "We use Google Analytics 4 (with IP anonymization enabled) for platform analytics, and Google AdSense for contextual advertising (consent-gated). We do not share personal data with these services beyond what is strictly necessary for service delivery. All third-party processors are bound by Data Processing Agreements.",
+                  },
+                  {
+                    num: "11", title: "Children's Privacy", color: "border-slate-600/50",
+                    body: "Our platforms are designed for enterprise security professionals (18+). We do not knowingly collect personal data from individuals under 18 years of age. If you believe a minor has submitted data to us, contact our DPO immediately for deletion.",
+                  },
+                  {
+                    num: "12", title: "Contact & Grievance Redressal", color: "border-emerald-500/50",
+                    body: "Data Protection Officer: Bivasha Kumar Nayak | Email: bivash@cyberdudebivash.com | Phone: +91 81798 81447 | Address: CYBERDUDEBIVASH PRIVATE LIMITED, 29 Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India. For unresolved grievances, you may escalate to the Data Protection Board of India (once constituted under DPDP Act 2023).",
+                  },
                 ].map(s => (
-                  <div key={s.title} className="border-l-2 border-slate-700 pl-4">
-                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                  <div key={s.num} className={`border-l-2 ${s.color} pl-5 space-y-1.5`}>
+                    <div className="text-[9px] font-mono text-slate-600 uppercase">Section {s.num}</div>
+                    <h3 className="text-sm font-bold text-slate-100">{s.title}</h3>
                     <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
                   </div>
                 ))}
               </div>
             )}
 
+            {/* ===== TERMS OF SERVICE ===== */}
             {currentView === "terms" && (
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <div>
-                  <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-2">Legal</div>
-                  <h1 className="text-2xl font-bold text-white mb-2">Terms of Service</h1>
-                  <p className="text-xs text-slate-500 font-mono">Last updated: June 2026 · Governing law: India (IT Act 2000, Companies Act 2013)</p>
+                  <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" /> Legal Document
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Terms of Service</h1>
+                  <div className="flex flex-wrap gap-3 text-[10px] font-mono">
+                    <span className="bg-violet-950/40 text-violet-400 border border-violet-900/40 px-2.5 py-1 rounded">Last updated: June 2026</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">Governing Law: India</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">IT Act 2000</span>
+                    <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">Companies Act 2013</span>
+                  </div>
                 </div>
+
+                <div className="bg-violet-950/20 border border-violet-800/30 rounded-xl p-5">
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                    These Terms of Service ("Terms") constitute a legally binding agreement between you ("User", "Client", "you") and <strong className="text-white">CYBERDUDEBIVASH PRIVATE LIMITED</strong> ("CyberDudeBivash", "we", "us") governing your access to and use of all platforms, tools, APIs, documentation, and services operated under the CYBERDUDEBIVASH® brand. By accessing or using any CYBERDUDEBIVASH service, you affirm that you have read, understood, and agree to be bound by these Terms.
+                  </p>
+                </div>
+
                 {[
-                  { title: "1. Acceptance", body: "By accessing any CYBERDUDEBIVASH platform, tool, or API, you agree to be bound by these Terms of Service. If you do not agree, you must discontinue use immediately." },
-                  { title: "2. Authorized Use", body: "Our platforms are for legitimate cybersecurity defense, threat intelligence, compliance, and educational purposes only. Any use for offensive operations against third parties, unauthorized access, or activities prohibited under the Indian IT Act 2000 Section 43/66 is strictly forbidden and will be reported to CERT-In and law enforcement." },
-                  { title: "3. Intellectual Property", body: "All content, trademarks, brand names (CyberDudeBivash®, Sentinel APEX™, ThreatCore™), logos, tools, APIs, SIGMA rules, playbooks, and documentation are the exclusive intellectual property of CYBERDUDEBIVASH PRIVATE LIMITED. Unauthorized reproduction, distribution, or commercial use is prohibited under the Copyright Act 1957 and Indian trademark law." },
-                  { title: "4. API Usage", body: "API access is subject to rate limits defined in your subscription tier. Abuse of rate limits, credential sharing, or reverse engineering of API endpoints constitutes a breach of these Terms and may result in immediate account suspension." },
-                  { title: "5. Security Research Disclosure", body: "We support responsible disclosure. Security researchers discovering vulnerabilities in our platforms should report via bivash@cyberdudebivash.com with a 90-day coordinated disclosure timeline. We do NOT authorize unauthorized penetration testing of our production systems." },
-                  { title: "6. Limitation of Liability", body: "CyberDudeBivash provides threat intelligence and security tooling on an 'as-is' basis. We are not liable for decisions made based on our intelligence outputs. Maximum aggregate liability shall not exceed the fees paid in the 3 months preceding the claim." },
-                  { title: "7. Governing Law", body: "These Terms are governed by the laws of India. Disputes shall be resolved by binding arbitration under the Arbitration and Conciliation Act 1996, with seat of arbitration at Bhubaneswar, Odisha, India." },
+                  {
+                    num: "01", title: "Acceptance of Terms", color: "border-violet-500/50",
+                    body: "By accessing any CYBERDUDEBIVASH platform, tool, API, or documentation, you agree to be bound by these Terms of Service, our Privacy Policy, and any additional guidelines applicable to specific services. If you access our services on behalf of an organization, you represent that you have authority to bind that organization to these Terms. If you do not agree, you must immediately discontinue use of all CYBERDUDEBIVASH services.",
+                  },
+                  {
+                    num: "02", title: "Authorized Use & Prohibited Activities", color: "border-red-500/50",
+                    body: "Our platforms are authorized exclusively for: legitimate cybersecurity defense operations, threat intelligence consumption, compliance monitoring, security research, and educational purposes within your own organization or authorized client environments. STRICTLY PROHIBITED: (a) Using our tools or intelligence against third-party systems without explicit written authorization from the target organization; (b) Any activity constituting unauthorized access under IT Act 2000 Sections 43, 66, 66B, 66C; (c) Reverse engineering, decompiling, or creating derivative works from our proprietary platform; (d) Reselling, sublicensing, or white-labeling our tools without a written Partner Agreement; (e) Uploading malware, exploit code, or harmful payloads to any CYBERDUDEBIVASH infrastructure. Violations will be reported to CERT-In, law enforcement, and may result in immediate account termination and legal action.",
+                  },
+                  {
+                    num: "03", title: "Intellectual Property Rights", color: "border-cyan-500/50",
+                    body: "All content, software code, brand names (CyberDudeBivash®, Sentinel APEX™, ThreatCore™, GE-Neural Architecture™), logos, threat intelligence reports, SIGMA detection rules, incident response playbooks, AI model weights, API schemas, and documentation are the exclusive intellectual property of CYBERDUDEBIVASH PRIVATE LIMITED, protected under: the Copyright Act 1957 (India); the Trade Marks Act 1999 (India); the Patents Act 1970 (India); and the Berne Convention for international protection. No license to our IP is granted beyond what is explicitly stated in your subscription agreement.",
+                  },
+                  {
+                    num: "04", title: "Platform Access & Subscription Tiers", color: "border-sky-500/50",
+                    body: "Platform access is provided under tiered subscription plans: Free Tier (public threat feeds, limited API calls), Professional Tier (extended API access, SIGMA rules, compliance reports), and Enterprise Tier (managed SOC, dedicated support, SLA guarantees, custom integrations). Subscription fees are non-refundable after the 7-day evaluation period unless the platform is materially non-functional due to our fault.",
+                  },
+                  {
+                    num: "05", title: "API Usage Terms", color: "border-amber-500/50",
+                    body: "API access is subject to rate limits defined in your subscription tier (Free: 100 calls/day; Professional: 10,000 calls/day; Enterprise: unlimited under fair use). Prohibited API uses: credential sharing between organizations; automated scraping of threat database beyond licensed volume; building competing intelligence products using our API data; exfiltrating our IOC database. Rate limit violations will trigger automatic suspension. Continued abuse will result in permanent ban and legal action for breach of contract.",
+                  },
+                  {
+                    num: "06", title: "Security Research & Responsible Disclosure", color: "border-emerald-500/50",
+                    body: "We actively support the global security research community. Security researchers discovering vulnerabilities in our platforms must: (1) Report exclusively via bivash@cyberdudebivash.com with subject 'Security Vulnerability Report'; (2) Provide detailed reproduction steps, impact assessment, and suggested mitigations; (3) Allow a 90-day coordinated disclosure timeline before public disclosure. We commit to: acknowledging receipt within 24 hours; providing updates every 14 days; crediting researchers in our security advisories (with their consent). We explicitly DO NOT authorize unauthorized penetration testing of CYBERDUDEBIVASH production systems.",
+                  },
+                  {
+                    num: "07", title: "Data Processing & Managed SOC Services", color: "border-pink-500/50",
+                    body: "Enterprise clients engaging Managed SOC-as-a-Service must execute a Data Processing Agreement (DPA) prior to service activation. Under the DPA: CYBERDUDEBIVASH processes your security telemetry solely for threat detection and incident response; we do not use your security data for product development, training AI models, or sharing with third parties; your security data is segregated in dedicated tenants; you retain full ownership of all security data at all times.",
+                  },
+                  {
+                    num: "08", title: "Service Availability & SLA", color: "border-slate-500/50",
+                    body: "We target 99.9% uptime for Professional and Enterprise tier services, measured monthly excluding scheduled maintenance windows (communicated 72 hours in advance via status.cyberdudebivash.com). In the event of SLA breach below 99.5% in a calendar month, Enterprise clients are eligible for service credits of 10% per each 0.1% below the SLA floor, up to 30% of monthly fees. Free Tier services are provided without SLA guarantees.",
+                  },
+                  {
+                    num: "09", title: "Limitation of Liability", color: "border-orange-500/50",
+                    body: "CyberDudeBivash provides threat intelligence, security tooling, and SOC services on a best-effort basis. We are not liable for: (a) security breaches that occur despite our services being deployed; (b) decisions made by your team based on our threat intelligence outputs; (c) third-party service outages affecting platform availability; (d) losses arising from unforeseeable or extraordinary events (force majeure). Maximum aggregate liability shall not exceed the total fees paid to CYBERDUDEBIVASH in the 3 calendar months immediately preceding the claim.",
+                  },
+                  {
+                    num: "10", title: "Indemnification", color: "border-red-500/50",
+                    body: "You agree to indemnify, defend, and hold harmless CYBERDUDEBIVASH PRIVATE LIMITED, its directors, officers, employees, and contractors from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising from: your violation of these Terms; your unauthorized use of our platforms; your use of our services in violation of applicable law; or any third-party claims resulting from your security operations conducted using our tools.",
+                  },
+                  {
+                    num: "11", title: "Modifications to Terms", color: "border-slate-600/50",
+                    body: "We reserve the right to modify these Terms at any time. Material changes will be communicated via email to registered users and displayed as a banner on the platform with a minimum 30-day notice period before taking effect. Continued use of CYBERDUDEBIVASH services after the effective date constitutes acceptance of the revised Terms.",
+                  },
+                  {
+                    num: "12", title: "Governing Law & Dispute Resolution", color: "border-violet-500/50",
+                    body: "These Terms are governed exclusively by the laws of the Republic of India. Any dispute, controversy, or claim arising out of or relating to these Terms or services shall be: (1) first submitted to good-faith negotiation between the parties for 30 days; (2) if unresolved, referred to binding arbitration under the Arbitration and Conciliation Act 1996 (India), with the seat of arbitration at Bhubaneswar, Odisha; (3) conducted in English before a sole arbitrator appointed by mutual agreement. Nothing in this clause prevents either party from seeking urgent injunctive relief from Indian courts.",
+                  },
                 ].map(s => (
-                  <div key={s.title} className="border-l-2 border-slate-700 pl-4">
-                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                  <div key={s.num} className={`border-l-2 ${s.color} pl-5 space-y-1.5`}>
+                    <div className="text-[9px] font-mono text-slate-600 uppercase">Section {s.num}</div>
+                    <h3 className="text-sm font-bold text-slate-100">{s.title}</h3>
                     <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
                   </div>
                 ))}
               </div>
             )}
 
+            {/* ===== COPYRIGHT & IP ===== */}
             {currentView === "copyright" && (
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <div>
-                  <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-2">Legal</div>
-                  <h1 className="text-2xl font-bold text-white mb-2">Copyright & Intellectual Property</h1>
-                  <p className="text-xs text-slate-500 font-mono">© {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved.</p>
+                  <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Legal Document
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Copyright &amp; Intellectual Property</h1>
+                  <p className="text-xs text-slate-500 font-mono">&copy; {new Date().getFullYear()} CYBERDUDEBIVASH PRIVATE LIMITED. All rights reserved worldwide.</p>
                 </div>
-                <div className="bg-amber-950/20 border border-amber-800/30 rounded-xl p-5">
-                  <h3 className="text-sm font-bold text-amber-400 mb-3">Copyright Notice</h3>
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">All content, software, tools, SIGMA rules, playbooks, AI models, threat intelligence feeds, documentation, graphics, brand assets, and other materials published across the CYBERDUDEBIVASH ecosystem are protected under the Copyright Act, 1957 (India) and applicable international copyright treaties including the Berne Convention.</p>
+
+                <div className="bg-amber-950/20 border border-amber-800/30 rounded-xl p-6 space-y-3">
+                  <h3 className="text-sm font-bold text-amber-400">Comprehensive Copyright Notice</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                    All content, software, source code, binary executables, AI model weights, SIGMA detection rules, incident response playbooks, threat intelligence feeds, CVE databases, API schemas, documentation, graphics, multimedia assets, brand elements, domain names, and other materials published across the entire CYBERDUDEBIVASH ecosystem are the exclusive intellectual property of <strong className="text-white">CYBERDUDEBIVASH PRIVATE LIMITED</strong>. All rights reserved under the <strong className="text-amber-400">Copyright Act, 1957 (India)</strong>, the Berne Convention for the Protection of Literary and Artistic Works, and applicable international copyright treaties.
+                  </p>
                 </div>
+
+                {/* Trademark registry */}
+                <div className="space-y-4">
+                  <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Trademark & Brand Registry</h2>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {[
+                      { mark: "CyberDudeBivash®", type: "Registered Trademark", desc: "Primary corporate brand and platform name. Protected under Trade Marks Act 1999, Class 42 (IT services)." },
+                      { mark: "Sentinel APEX™", type: "Common Law Trademark", desc: "Threat intelligence and SOC platform brand. TM protection under use in commerce since 2021." },
+                      { mark: "ThreatCore™", type: "Common Law Trademark", desc: "Security toolkits and penetration testing suite brand. Protected since 2022." },
+                      { mark: "GE-Neural Architecture™", type: "Common Law Trademark", desc: "Proprietary AI model architecture brand used in CDB's autonomous threat detection engine." },
+                      { mark: "CYBERDUDEBIVASH ECOSYSTEM V4", type: "Brand Identity", desc: "Platform suite branding for Version 4 of the unified CYBERDUDEBIVASH security ecosystem." },
+                      { mark: "CDB Shield Logo", type: "Artistic Work Copyright", desc: "The CyberDudeBivash shield/logo design is protected as an original artistic work under the Copyright Act 1957." },
+                    ].map(m => (
+                      <div key={m.mark} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-amber-400">{m.mark}</h4>
+                          <span className="text-[9px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded shrink-0">{m.type}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{m.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {[
-                  { title: "Trademarks", body: "CyberDudeBivash®, Sentinel APEX™, ThreatCore™, GE-Neural Architecture™, and the CyberDudeBivash shield logo are registered/common law trademarks of CYBERDUDEBIVASH PRIVATE LIMITED in India. Unauthorized use of these marks in commerce is prohibited under the Trade Marks Act, 1999." },
-                  { title: "Software License", body: "Platform software is proprietary. No part may be copied, modified, distributed, or reverse engineered without written permission. Security tools sold via Gumroad are licensed for single-organization use only and may not be resold or redistributed." },
-                  { title: "SIGMA Rules & Playbooks", body: "SIGMA detection rules and incident response playbooks produced by CyberDudeBivash are licensed for defensive use within your own organization only. Attribution required for public sharing: 'Source: CyberDudeBivash® (cyberdudebivash.com)'." },
-                  { title: "Permitted Uses", body: "Personal research and educational reference with attribution; linking to our public platforms; quoting brief excerpts for commentary with attribution; using our public API feeds per API Terms. All other uses require written permission." },
-                  { title: "DMCA / Takedown", body: "To report copyright infringement or submit a takedown request, contact: bivash@cyberdudebivash.com with subject 'IP Infringement Notice'. We will respond within 5 business days." },
-                  { title: "Recommended Attribution", body: "When citing CyberDudeBivash research or tools: 'CyberDudeBivash® (cyberdudebivash.com), [Year]. [Title/Resource]. CYBERDUDEBIVASH PRIVATE LIMITED, Jajpur Road, Odisha, India.'" },
+                  {
+                    num: "01", title: "Scope of Protection", color: "border-amber-500/50",
+                    body: "Copyright protection extends to all original works created by CYBERDUDEBIVASH PRIVATE LIMITED including: platform source code and compiled software; AI threat detection model architectures and trained weights; SIGMA rule sets and threat detection signatures; incident response playbooks and SOC procedures; threat intelligence reports and CVE analyses; API documentation, technical whitepapers, and blog articles; graphic design assets, UI/UX designs, and brand visuals; video content, tutorials, and recorded webinars. Protection subsists automatically upon creation under the Berne Convention without requirement for registration.",
+                  },
+                  {
+                    num: "02", title: "Software License Terms", color: "border-orange-500/50",
+                    body: "CYBERDUDEBIVASH platform software is proprietary. Unless explicitly licensed otherwise in a written subscription or API agreement: (a) You may NOT copy, modify, adapt, translate, or create derivative works; (b) You may NOT reverse engineer, decompile, disassemble, or attempt to derive source code; (c) You may NOT distribute, sublicense, lease, rent, loan, or otherwise transfer the software; (d) You may NOT use the software to build competing cybersecurity intelligence products. Security tools sold via Gumroad are licensed for single-organization internal use only and may not be resold, redistributed, or used for client service delivery without a Reseller Agreement.",
+                  },
+                  {
+                    num: "03", title: "SIGMA Rules & Detection Content License", color: "border-yellow-500/50",
+                    body: "SIGMA detection rules, YARA signatures, and threat hunting queries produced by CyberDudeBivash are licensed for: (a) PERMITTED — Internal defensive use within your own organization's SIEM/SOAR with attribution; (b) PERMITTED — Academic research with citation 'Source: CyberDudeBivash® (cyberdudebivash.com)'; (c) NOT PERMITTED — Commercial redistribution without a Data Reseller Agreement; (d) NOT PERMITTED — Rebranding or presenting as original work. Public sharing of CDB detection content requires attribution: 'Detection content by CyberDudeBivash® | cyberdudebivash.com'.",
+                  },
+                  {
+                    num: "04", title: "Threat Intelligence Data License", color: "border-emerald-500/50",
+                    body: "Threat intelligence data (IOC feeds, CVE enrichments, geolocation threat maps, malware hash databases) delivered via the CyberDudeBivash API is licensed for operational use within your organization only. Permitted uses: feeding your SIEM/SOAR, blocking IOCs in your firewall/EDR, correlating against your log data. Not permitted: bulk export, database mirroring, commercial redistribution, or creating derivative threat intelligence products.",
+                  },
+                  {
+                    num: "05", title: "Permitted Fair Uses", color: "border-sky-500/50",
+                    body: "The following uses are expressly permitted without prior written consent: (1) Linking to CYBERDUDEBIVASH public platforms with accurate brand representation; (2) Quoting brief excerpts (under 200 words) in journalistic, academic, or commentary contexts with full attribution; (3) Referencing CYBERDUDEBIVASH in CVE disclosures or security advisories with factual accuracy; (4) Using our public API within licensed call limits; (5) Citing our research in academic papers with proper bibliography entry. All other uses require written permission.",
+                  },
+                  {
+                    num: "06", title: "Press & Media Licensing", color: "border-pink-500/50",
+                    body: "Journalists and media organizations may use the CyberDudeBivash® name and factual descriptions of our services in news articles, reviews, and editorial content. For media kits, official logo files, authorized brand assets, and press contact: bivash@cyberdudebivash.com with subject 'Media Inquiry'. We respond to media requests within 2 business days. Unauthorized use of our logo in a way that implies endorsement or partnership is prohibited.",
+                  },
+                  {
+                    num: "07", title: "DMCA & Infringement Reporting", color: "border-red-500/50",
+                    body: "To report copyright infringement of CYBERDUDEBIVASH content by third parties, or to submit a DMCA counter-notification: Email: bivash@cyberdudebivash.com | Subject: 'IP Infringement Notice / DMCA' | Include: (1) Description of the copyrighted work infringed; (2) URL/location of the infringing content; (3) Your contact information and sworn statement of good faith belief. We investigate all reports and respond within 5 business days. False DMCA claims may result in liability under 17 U.S.C. § 512(f).",
+                  },
+                  {
+                    num: "08", title: "Recommended Citation Format", color: "border-slate-500/50",
+                    body: "When citing CYBERDUDEBIVASH research, threat reports, or security tools in academic or professional publications: CyberDudeBivash® (Year). [Title of Resource/Report]. CYBERDUDEBIVASH PRIVATE LIMITED, Jajpur Road, Odisha, India. Retrieved from: cyberdudebivash.com. For API data citations: 'Threat intelligence data sourced from CyberDudeBivash® Sentinel APEX™ API (cyberdudebivash.com)'.",
+                  },
                 ].map(s => (
-                  <div key={s.title} className="border-l-2 border-amber-800/50 pl-4">
-                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                  <div key={s.num} className={`border-l-2 ${s.color} pl-5 space-y-1.5`}>
+                    <div className="text-[9px] font-mono text-slate-600 uppercase">Section {s.num}</div>
+                    <h3 className="text-sm font-bold text-slate-100">{s.title}</h3>
                     <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
                   </div>
                 ))}
+
+                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 text-center space-y-2">
+                  <p className="text-[11px] text-slate-500 font-mono">&copy; {new Date().getFullYear()} CYBERDUDEBIVASH PRIVATE LIMITED. All Rights Reserved.</p>
+                  <p className="text-[10px] text-slate-600 font-sans">Registered in India · PAN: ARKPN8270G · GSTIN: 21ARKPN8270G1ZP</p>
+                  <p className="text-[10px] text-slate-600 font-sans">29, Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India</p>
+                </div>
               </div>
             )}
           </div>
@@ -2233,22 +2531,33 @@ export default function App() {
 
           {/* Enterprise & legal */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 border-b border-slate-800 pb-2">Enterprise</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 border-b border-slate-800 pb-2">Enterprise Services</h4>
             <ul className="space-y-2">
               {[
-                "Managed SOC-as-a-Service",
-                "DPDP Act Compliance Scans",
-                "OWASP LLM Red Team",
-                "Multi-Tenant MSSP Suite",
-                "vCISO Advisory",
-                "Penetration Testing",
+                { label: "Managed SOC-as-a-Service", desc: "24×7 AI-driven SOC monitoring" },
+                { label: "DPDP Act Compliance Scans", desc: "India data protection audits" },
+                { label: "OWASP LLM Red Team", desc: "AI/LLM adversarial testing" },
+                { label: "Multi-Tenant MSSP Suite", desc: "Enterprise MSSP platform" },
+                { label: "vCISO Advisory", desc: "Virtual CISO consulting" },
+                { label: "Penetration Testing", desc: "Full-spectrum pen test engagements" },
               ].map(s => (
-                <li key={s} className="text-[11px] text-slate-400 font-sans flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-violet-500/60 mt-1.5 shrink-0" />
-                  {s}
+                <li key={s.label}>
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    className="text-left w-full text-[11px] text-slate-400 hover:text-violet-300 font-sans flex items-start gap-2 group transition-colors"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-violet-500/60 group-hover:bg-violet-400 mt-1.5 shrink-0 transition-colors" />
+                    {s.label}
+                  </button>
                 </li>
               ))}
             </ul>
+            <button
+              onClick={() => setShowContactModal(true)}
+              className="w-full mt-1 py-1.5 bg-violet-950/40 hover:bg-violet-900/40 border border-violet-800/30 hover:border-violet-600/50 text-violet-400 hover:text-violet-300 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
+            >
+              Request Enterprise Demo →
+            </button>
             <div className="pt-2 space-y-1.5">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800/60 pb-2">Legal</h4>
               {[
@@ -2257,7 +2566,7 @@ export default function App() {
                 { label: "Terms of Service", view: "terms" as const },
                 { label: "Copyright & IP", view: "copyright" as const },
               ].map(l => (
-                <button key={l.label} onClick={() => setCurrentView(l.view)} className="block text-[11px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer text-left font-sans">
+                <button key={l.label} onClick={() => setCurrentView(l.view)} className="block text-[11px] text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer text-left font-sans">
                   {l.label}
                 </button>
               ))}
