@@ -437,7 +437,7 @@ async function startPayment(plan) {
       theme:{color:'#00FFFF'},
       handler:async function(resp){
         try {
-          const v=await api('/verify-payment','POST',{rayorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
+          const v=await api('/verify-payment','POST',{razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
           notify('🎉 Payment successful! Plan upgraded to '+v.plan,'success');
           USER.plan=v.plan; renderSidebar(); renderBilling(); renderPayments();
         } catch(e){notify('Verification failed: '+e.message,'error');}
