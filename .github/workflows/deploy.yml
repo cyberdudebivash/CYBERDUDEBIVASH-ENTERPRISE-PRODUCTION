@@ -40,34 +40,22 @@ jobs:
 
       - name: Sync root static assets for branch-based deployment
         run: |
-          # Extract built asset filenames
           JS_FILE=$(ls dist/assets/index-*.js | head -1 | xargs basename)
           CSS_FILE=$(ls dist/assets/index-*.css | head -1 | xargs basename)
           ICO_FILE=$(ls dist/assets/favicon-*.ico 2>/dev/null | head -1 | xargs basename 2>/dev/null || true)
 
-          # Copy to root assets/
           cp "dist/assets/$JS_FILE" "assets/$JS_FILE"
           cp "dist/assets/$CSS_FILE" "assets/$CSS_FILE"
           [ -n "$ICO_FILE" ] && cp "dist/assets/$ICO_FILE" "assets/$ICO_FILE" || true
 
-          # Rewrite root index.html: strip any existing module script / stylesheet lines,
-          # then inject the freshly built asset tags. Works for /src/main.tsx or old hashes.
-          cat > /tmp/fix_html.py << 'PYEOF'
-import re, sys
-js, css = sys.argv[1], sys.argv[2]
-with open('index.html') as f:
-    html = f.read()
-html = re.sub(r'[ \t]*<script type="module"[^>]*></script>\n?', '', html)
-html = re.sub(r'[ \t]*<link rel="stylesheet"[^>]*href="/assets/[^"]*"[^>]*>\n?', '', html)
-tags = '    <script type="module" crossorigin src="/assets/{j}"></script>\n    <link rel="stylesheet" crossorigin href="/assets/{c}">\n'.format(j=js, c=css)
-html = html.replace('  </head>', tags + '  </head>', 1)
-with open('index.html', 'w') as f:
-    f.write(html)
-print('index.html updated:', js, css)
-PYEOF
-          python3 /tmp/fix_html.py "$JS_FILE" "$CSS_FILE"
+          # Rewrite root index.html so branch-based Pages serves the correct built assets.
+          # Remove any <script type="module"> line (handles /src/main.tsx or old hashes).
+          sed -i '/<script type="module"/d' index.html
+          # Remove any stylesheet link pointing to /assets/
+          sed -i '\|<link rel="stylesheet".*href="/assets/|d' index.html
+          # Insert new built asset tags directly before </head>
+          sed -i "s|  </head>|    <script type=\"module\" crossorigin src=\"/assets/$JS_FILE\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/$CSS_FILE\">\n  </head>|" index.html
 
-          # Commit only if there are changes
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
