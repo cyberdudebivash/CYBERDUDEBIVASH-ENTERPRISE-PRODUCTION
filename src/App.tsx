@@ -990,7 +990,7 @@ export default function App() {
                           rel="noopener noreferrer" 
                           className="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 py-1.5 rounded text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all text-center"
                         >
-                          Visit Live <ExternalLink className="w-3 h-3 text-cyan-400" />
+                          Visit Live <ExternalLink className="w-3 h-3 text-cyan-400" aria-hidden="true" />
                         </a>
                         <button
                           onClick={() => triggerPortalPing(portal.id, portal.name, portal.url)}
@@ -1089,7 +1089,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="w-full bg-[#0c1117] hover:bg-cyan-500 hover:text-black border border-slate-800 hover:border-cyan-500 text-slate-400 text-[9px] font-mono py-1 rounded uppercase text-center transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      {prof.actionText} <ExternalLink className="w-2.5 h-2.5" />
+                      {prof.actionText} <ExternalLink className="w-2.5 h-2.5" aria-hidden="true" />
                     </a>
                   </div>
                 ))}
@@ -2625,6 +2625,7 @@ export default function App() {
                 { label: "GitHub", url: "https://github.com/cyberdudebivash", color: "hover:text-violet-400" },
               ].map(s => (
                 <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                  aria-label={`CYBERDUDEBIVASH® on ${s.label} (opens in new tab)`}
                   className={`text-[11px] text-slate-500 ${s.color} transition-colors font-sans`}>
                   {s.label}
                 </a>
