@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,6 +37,29 @@ jobs:
         run: npx vite build
         env:
           NODE_ENV: production
+
+      - name: Sync root static assets for branch-based deployment
+        run: |
+          # Extract built asset filenames
+          JS_FILE=$(ls dist/assets/index-*.js | head -1 | xargs basename)
+          CSS_FILE=$(ls dist/assets/index-*.css | head -1 | xargs basename)
+          ICO_FILE=$(ls dist/assets/favicon-*.ico 2>/dev/null | head -1 | xargs basename 2>/dev/null || true)
+
+          # Copy to root assets/
+          cp "dist/assets/$JS_FILE" "assets/$JS_FILE"
+          cp "dist/assets/$CSS_FILE" "assets/$CSS_FILE"
+          [ -n "$ICO_FILE" ] && cp "dist/assets/$ICO_FILE" "assets/$ICO_FILE" || true
+
+          # Update index.html with new asset references
+          sed -i "s|crossorigin src=\"/assets/index-[^\"]*\.js\"|crossorigin src=\"/assets/$JS_FILE\"|g" index.html
+          sed -i "s|crossorigin href=\"/assets/index-[^\"]*\.css\"|crossorigin href=\"/assets/$CSS_FILE\"|g" index.html
+
+          # Commit only if there are changes
+          git config --local user.email "ci@cyberdudebivash.com"
+          git config --local user.name "CDB Build Bot"
+          git add assets/ index.html
+          git diff --staged --quiet || git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
+          git diff --staged --quiet || git push
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
