@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
+// Load .env.local first (takes priority), then .env
+dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 const app = express();
@@ -139,7 +141,41 @@ app.get("/api/security/threat-feed", (req, res) => {
   });
 });
 
-// 2. AI Cybersecurity Agent Analyzer (Calls Gemini server-side)
+// Helper: call OpenAI-compatible API (Groq, DeepSeek, OpenRouter all share this format)
+async function callOpenAICompatible(
+  baseURL: string,
+  apiKey: string,
+  model: string,
+  systemInstruction: string,
+  content: string,
+  providerName: string
+): Promise<string> {
+  const response = await fetch(`${baseURL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://cyberdudebivash.com",
+      "X-Title": "CyberDudeBivash AI Security Hub",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content }
+      ],
+      temperature: 0.2,
+      max_tokens: 2048,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`${providerName} API error: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json() as any;
+  return data.choices?.[0]?.message?.content || "";
+}
+
+// 2. AI Cybersecurity Agent Analyzer — Multi-provider with fallback chain
 app.post("/api/security/analyze", async (req, res) => {
   const { type, content } = req.body;
 
@@ -148,11 +184,9 @@ app.post("/api/security/analyze", async (req, res) => {
   }
 
   try {
-    const ai = getGeminiClient();
-    
-    // Choose appropriate prompt context based on analysis type
+    // Build system prompt based on analysis type
     let systemInstruction = "You are the CyberDude AI Security Architect, a premium cyber incident response and audit engine from the CyberDudeBivash® Ecosystem. Based in Ragadi, Odisha, India, CyberDudeBivash Private Limited is ISO 27001 certified, SOC 2 Type II compliant, and DPDP aligned.";
-    
+
     if (type === "log") {
       systemInstruction += " Your task is to analyze the provided raw log file, security event, or dump. Identify if there is a threat, explain the attack vector (if any), categorize the severity (Critical, High, Medium, Low, or Info), and detail immediate remediation actions in clean Markdown with clear headings.";
     } else if (type === "code") {
@@ -165,50 +199,89 @@ app.post("/api/security/analyze", async (req, res) => {
       systemInstruction += " Act as an elite security advisory chatbot. Answer the user's cybersecurity query with deep technical authority, structural clarity, and actionable steps.";
     }
 
-    // Implement model fallback and retry loops for robust resilience against high demand (503) or rate limits (429)
-    const modelsToTry = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
     let report = "";
-    let apiError: any = null;
+    let lastError: any = null;
 
-    for (const currentModel of modelsToTry) {
-      let attempts = 3;
-      for (let attempt = 1; attempt <= attempts; attempt++) {
-        try {
-          console.log(`[CyberDude AI Hub] Attempt ${attempt} on model: ${currentModel}`);
-          const response = await ai.models.generateContent({
-            model: currentModel,
-            contents: content,
-            config: {
-              systemInstruction,
-              temperature: 0.2,
-            },
-          });
-          if (response && response.text) {
-            report = response.text;
-            break; // Succeeded! Break the retry loop
-          }
-        } catch (error: any) {
-          apiError = error;
-          const status = error.status || (error.error && error.error.code) || 500;
-          console.warn(`[CyberDude AI Hub] Model ${currentModel} failed (attempt ${attempt}/${attempts}): Status ${status}. Msg: ${error.message}`);
-          
-          // Wait if it's a transient 503/429 error and we have remaining attempts
-          if ((status === 503 || status === 429 || error.message?.includes("503") || error.message?.includes("demand")) && attempt < attempts) {
-            const backoffDelay = 1000 * attempt;
-            console.log(`[CyberDude AI Hub] Transient error. Waiting ${backoffDelay}ms before retry...`);
-            await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-          } else {
-            break; // Move to the next fallback model or terminate
+    // ── PROVIDER 1: Google Gemini (primary) ─────────────────────────────────
+    if (!report && process.env.GEMINI_API_KEY) {
+      try {
+        const ai = getGeminiClient();
+        for (const model of ["gemini-2.5-flash", "gemini-1.5-flash"]) {
+          try {
+            console.log(`[CyberDude AI] Trying Gemini model: ${model}`);
+            const response = await ai.models.generateContent({
+              model,
+              contents: content,
+              config: { systemInstruction, temperature: 0.2 },
+            });
+            if (response?.text) { report = response.text; break; }
+          } catch (e: any) {
+            lastError = e;
+            console.warn(`[CyberDude AI] Gemini ${model} failed: ${e.message}`);
           }
         }
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`[CyberDude AI] Gemini client init failed: ${e.message}`);
       }
-      if (report) {
-        break; // We got a report! Exit model loop
+    }
+
+    // ── PROVIDER 2: Groq (ultra-fast, free tier) ─────────────────────────────
+    if (!report && process.env.GROQ_API_KEY) {
+      try {
+        console.log("[CyberDude AI] Trying Groq: llama-3.3-70b-versatile");
+        report = await callOpenAICompatible(
+          "https://api.groq.com/openai/v1",
+          process.env.GROQ_API_KEY,
+          "llama-3.3-70b-versatile",
+          systemInstruction,
+          content,
+          "Groq"
+        );
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`[CyberDude AI] Groq failed: ${e.message}`);
+      }
+    }
+
+    // ── PROVIDER 3: DeepSeek ─────────────────────────────────────────────────
+    if (!report && process.env.DEEPSEEK_API_KEY) {
+      try {
+        console.log("[CyberDude AI] Trying DeepSeek: deepseek-chat");
+        report = await callOpenAICompatible(
+          "https://api.deepseek.com/v1",
+          process.env.DEEPSEEK_API_KEY,
+          "deepseek-chat",
+          systemInstruction,
+          content,
+          "DeepSeek"
+        );
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`[CyberDude AI] DeepSeek failed: ${e.message}`);
+      }
+    }
+
+    // ── PROVIDER 4: OpenRouter (broadest model selection) ───────────────────
+    if (!report && process.env.OPENROUTER_API_KEY) {
+      try {
+        console.log("[CyberDude AI] Trying OpenRouter: google/gemini-flash-1.5");
+        report = await callOpenAICompatible(
+          "https://openrouter.ai/api/v1",
+          process.env.OPENROUTER_API_KEY,
+          "google/gemini-flash-1.5",
+          systemInstruction,
+          content,
+          "OpenRouter"
+        );
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`[CyberDude AI] OpenRouter failed: ${e.message}`);
       }
     }
 
     if (!report) {
-      throw apiError || new Error("All configured models returned empty responses.");
+      throw lastError || new Error("All configured AI providers returned empty responses.");
     }
 
     res.json({ report });
