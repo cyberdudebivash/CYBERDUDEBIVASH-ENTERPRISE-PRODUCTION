@@ -11,10 +11,21 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "paths": {
       "@/*": ["./*"]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
+    "noEmit": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  },
+  "include": ["src", "server.ts", "vite.config.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "react-portal",
+    "backend"
+  ]
 }

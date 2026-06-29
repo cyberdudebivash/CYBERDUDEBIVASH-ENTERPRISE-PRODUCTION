@@ -144,7 +144,8 @@ app.post("/api/security/analyze", async (req, res) => {
   const { type, content } = req.body;
 
   if (!content || !content.trim()) {
-    return res.status(400).json({ error: "Content is required for AI security analysis." });
+    res.status(400).json({ error: "Content is required for AI security analysis." });
+    return;
   }
 
   try {
