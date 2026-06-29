@@ -71,6 +71,29 @@ export default function App() {
   // Top-level navigation tab: home (Official Website Gateway), intel (Sentinel APEX), ai (AI Security Hub), tools (ThreatCore Tools), blog (Advisories & Academy), api (Ecosystem REST APIs)
   const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright" | "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest">("home");
 
+  // Dynamic page title per view
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform",
+      intel: "Sentinel APEX™ Threat Intelligence | CYBERDUDEBIVASH®",
+      ai: "AI Security Hub & Audit | CYBERDUDEBIVASH®",
+      tools: "ThreatCore™ Security Tools | CYBERDUDEBIVASH®",
+      blog: "Research Blog & Advisories | CYBERDUDEBIVASH®",
+      api: "REST API Documentation | CYBERDUDEBIVASH®",
+      about: "About Us | CYBERDUDEBIVASH®",
+      privacy: "Privacy Policy | CYBERDUDEBIVASH®",
+      terms: "Terms of Service | CYBERDUDEBIVASH®",
+      copyright: "Copyright & IP | CYBERDUDEBIVASH®",
+      soc: "Managed SOC-as-a-Service | CYBERDUDEBIVASH®",
+      dpdp: "DPDP Act Compliance | CYBERDUDEBIVASH®",
+      owasp: "OWASP LLM Red Team | CYBERDUDEBIVASH®",
+      mssp: "Multi-Tenant MSSP Suite | CYBERDUDEBIVASH®",
+      vciso: "vCISO Advisory | CYBERDUDEBIVASH®",
+      pentest: "Penetration Testing | CYBERDUDEBIVASH®",
+    };
+    document.title = titles[currentView] ?? "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform";
+  }, [currentView]);
+
   // Core App states carrying forward from our baseline
   const [activeAiTab, setActiveAiTab] = useState<"log" | "code" | "domain" | "compliance" | "chat">("log");
   const [loadingFeed, setLoadingFeed] = useState(false);
@@ -644,7 +667,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#06080a] text-slate-300 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
-      
+      {/* Skip to main content — accessibility */}
+      <a href="#main-content" className="skip-to-content">Skip to main content</a>
+
       {/* 1. SECURE ANNOUNCEMENT & UTILITY BAR */}
       <div className="bg-[#080d12] text-[11px] border-b border-slate-900 py-1.5 px-6 flex flex-wrap items-center justify-between gap-3 text-slate-400 font-mono">
         <div className="flex items-center gap-2">
@@ -665,13 +690,14 @@ export default function App() {
       {/* 2. UNIFIED ENTERPRISE NAVIGATION HEADER */}
       <header className="flex items-center justify-between px-6 h-16 border-b border-slate-800 bg-[#0c1117] shrink-0 sticky top-0 z-40 shadow-lg shadow-black/40">
         <div className="flex items-center gap-4">
-          <div 
+          <button
             onClick={() => setCurrentView("home")}
+            aria-label="CyberDudeBivash Home"
             className="w-10 h-10 bg-cyan-500 rounded flex items-center justify-center text-black font-extrabold text-xl shadow-lg shadow-cyan-500/20 glow-cyan cursor-pointer"
           >
             C
-          </div>
-          <div className="flex flex-col cursor-pointer" onClick={() => setCurrentView("home")}>
+          </button>
+          <button className="flex flex-col cursor-pointer text-left" onClick={() => setCurrentView("home")} aria-label="Go to Gateway home">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold tracking-tight text-slate-100">
                 CyberDudeBivash<span className="text-cyan-500 font-semibold text-xs ml-0.5">®</span> 
@@ -681,58 +707,64 @@ export default function App() {
             <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
               ISO/IEC 27001 &bull; SOC 2 Type II &bull; DPDP 2023 Compliant
             </span>
-          </div>
+          </button>
         </div>
 
         {/* Global Tabs Navigation Selector */}
-        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button 
+        <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-900">
+          <button
             onClick={() => setCurrentView("home")}
+            aria-current={currentView === "home" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "home" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Globe className="w-3.5 h-3.5" /> Gateway
+            <Globe className="w-3.5 h-3.5" aria-hidden="true" /> Gateway
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("intel")}
+            aria-current={currentView === "intel" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "intel" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Activity className="w-3.5 h-3.5" /> Sentinel APEX™
+            <Activity className="w-3.5 h-3.5" aria-hidden="true" /> Sentinel APEX™
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("ai")}
+            aria-current={currentView === "ai" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "ai" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Shield className="w-3.5 h-3.5" /> AI Hub &amp; Audit
+            <Shield className="w-3.5 h-3.5" aria-hidden="true" /> AI Hub &amp; Audit
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("tools")}
+            aria-current={currentView === "tools" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "tools" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Cpu className="w-3.5 h-3.5" /> ThreatCore™ Tools
+            <Cpu className="w-3.5 h-3.5" aria-hidden="true" /> ThreatCore™ Tools
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("blog")}
+            aria-current={currentView === "blog" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "blog" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5" /> Blog &amp; Academy
+            <BookOpen className="w-3.5 h-3.5" aria-hidden="true" /> Blog &amp; Academy
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("api")}
+            aria-current={currentView === "api" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "api" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Key className="w-3.5 h-3.5" /> REST API
+            <Key className="w-3.5 h-3.5" aria-hidden="true" /> REST API
           </button>
         </nav>
 
@@ -787,47 +819,53 @@ export default function App() {
       </div>
 
       {/* 3. MOBILE MENU BAR */}
-      <div className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
-        <button 
+      <nav aria-label="Mobile navigation" className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
+        <button
           onClick={() => setCurrentView("home")}
+          aria-current={currentView === "home" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "home" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Gateway
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("intel")}
+          aria-current={currentView === "intel" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "intel" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Sentinel APEX
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("ai")}
+          aria-current={currentView === "ai" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "ai" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           AI Audit
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("tools")}
+          aria-current={currentView === "tools" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "tools" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           ThreatCore Tools
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("blog")}
+          aria-current={currentView === "blog" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "blog" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Blog
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("api")}
+          aria-current={currentView === "api" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "api" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           API
         </button>
-      </div>
+      </nav>
 
       {/* 4. MAIN WORKSPACE VIEW ROUTER */}
-      <div className="flex-1">
+      <main id="main-content" className="flex-1">
 
         {/* ================= VIEW 1: HOME / OFFICIAL GATEWAY (Image 4 copy) ================= */}
         {currentView === "home" && (
@@ -952,7 +990,7 @@ export default function App() {
                           rel="noopener noreferrer" 
                           className="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 py-1.5 rounded text-[10px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all text-center"
                         >
-                          Visit Live <ExternalLink className="w-3 h-3 text-cyan-400" />
+                          Visit Live <ExternalLink className="w-3 h-3 text-cyan-400" aria-hidden="true" />
                         </a>
                         <button
                           onClick={() => triggerPortalPing(portal.id, portal.name, portal.url)}
@@ -1051,7 +1089,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="w-full bg-[#0c1117] hover:bg-cyan-500 hover:text-black border border-slate-800 hover:border-cyan-500 text-slate-400 text-[9px] font-mono py-1 rounded uppercase text-center transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      {prof.actionText} <ExternalLink className="w-2.5 h-2.5" />
+                      {prof.actionText} <ExternalLink className="w-2.5 h-2.5" aria-hidden="true" />
                     </a>
                   </div>
                 ))}
@@ -1993,7 +2031,7 @@ export default function App() {
           </div>
         )}
 
-      </div>
+      </main>
 
       {/* ===== COMPLIANCE PAGES ===== */}
       {(currentView === "about" || currentView === "privacy" || currentView === "terms" || currentView === "copyright") && (
@@ -3130,6 +3168,7 @@ export default function App() {
                 { label: "GitHub", url: "https://github.com/cyberdudebivash", color: "hover:text-violet-400" },
               ].map(s => (
                 <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                  aria-label={`CYBERDUDEBIVASH® on ${s.label} (opens in new tab)`}
                   className={`text-[11px] text-slate-500 ${s.color} transition-colors font-sans`}>
                   {s.label}
                 </a>
@@ -3161,15 +3200,23 @@ export default function App() {
 
       {/* 6. GENERAL REQUEST ENTRY / LEAD MODAL */}
       {showContactModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-modal-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowContactModal(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowContactModal(false); }}
+        >
           <div className="bg-[#0c1117] border border-slate-800 rounded-lg max-w-md w-full overflow-hidden shadow-2xl">
             <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <Briefcase className="w-4.5 h-4.5 text-cyan-500" />
+              <h3 id="contact-modal-title" className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <Briefcase className="w-4.5 h-4.5 text-cyan-500" aria-hidden="true" />
                 CyberDudeBivash® Enterprise Request
               </h3>
-              <button 
+              <button
                 onClick={() => setShowContactModal(false)}
+                aria-label="Close enterprise request dialog"
                 className="text-slate-500 hover:text-slate-300 font-mono text-sm p-1"
               >
                 [X]
@@ -3246,15 +3293,23 @@ export default function App() {
 
       {/* 7. INTERACTIVE CHECKOUT MODAL (Gumroad simulator) */}
       {checkoutModalOpen && checkingOutProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="checkout-modal-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setCheckoutModalOpen(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setCheckoutModalOpen(false); }}
+        >
           <div className="bg-[#0c1117] border border-slate-800 rounded-lg max-w-md w-full overflow-hidden shadow-2xl animate-fade-in">
             <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <Download className="w-4 h-4 text-emerald-400" />
+              <h3 id="checkout-modal-title" className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <Download className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                 Gumroad Checkout Core
               </h3>
-              <button 
+              <button
                 onClick={() => setCheckoutModalOpen(false)}
+                aria-label="Close checkout dialog"
                 className="text-slate-500 hover:text-slate-300 font-mono text-sm p-1"
               >
                 [X]
