@@ -665,13 +665,14 @@ export default function App() {
       {/* 2. UNIFIED ENTERPRISE NAVIGATION HEADER */}
       <header className="flex items-center justify-between px-6 h-16 border-b border-slate-800 bg-[#0c1117] shrink-0 sticky top-0 z-40 shadow-lg shadow-black/40">
         <div className="flex items-center gap-4">
-          <div 
+          <button
             onClick={() => setCurrentView("home")}
+            aria-label="CyberDudeBivash Home"
             className="w-10 h-10 bg-cyan-500 rounded flex items-center justify-center text-black font-extrabold text-xl shadow-lg shadow-cyan-500/20 glow-cyan cursor-pointer"
           >
             C
-          </div>
-          <div className="flex flex-col cursor-pointer" onClick={() => setCurrentView("home")}>
+          </button>
+          <button className="flex flex-col cursor-pointer text-left" onClick={() => setCurrentView("home")} aria-label="Go to Gateway home">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold tracking-tight text-slate-100">
                 CyberDudeBivash<span className="text-cyan-500 font-semibold text-xs ml-0.5">®</span> 
@@ -681,58 +682,64 @@ export default function App() {
             <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
               ISO/IEC 27001 &bull; SOC 2 Type II &bull; DPDP 2023 Compliant
             </span>
-          </div>
+          </button>
         </div>
 
         {/* Global Tabs Navigation Selector */}
-        <nav className="hidden lg:flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button 
+        <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-900">
+          <button
             onClick={() => setCurrentView("home")}
+            aria-current={currentView === "home" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "home" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Globe className="w-3.5 h-3.5" /> Gateway
+            <Globe className="w-3.5 h-3.5" aria-hidden="true" /> Gateway
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("intel")}
+            aria-current={currentView === "intel" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "intel" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Activity className="w-3.5 h-3.5" /> Sentinel APEX™
+            <Activity className="w-3.5 h-3.5" aria-hidden="true" /> Sentinel APEX™
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("ai")}
+            aria-current={currentView === "ai" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "ai" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Shield className="w-3.5 h-3.5" /> AI Hub &amp; Audit
+            <Shield className="w-3.5 h-3.5" aria-hidden="true" /> AI Hub &amp; Audit
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("tools")}
+            aria-current={currentView === "tools" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "tools" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Cpu className="w-3.5 h-3.5" /> ThreatCore™ Tools
+            <Cpu className="w-3.5 h-3.5" aria-hidden="true" /> ThreatCore™ Tools
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("blog")}
+            aria-current={currentView === "blog" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "blog" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5" /> Blog &amp; Academy
+            <BookOpen className="w-3.5 h-3.5" aria-hidden="true" /> Blog &amp; Academy
           </button>
-          <button 
+          <button
             onClick={() => setCurrentView("api")}
+            aria-current={currentView === "api" ? "page" : undefined}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               currentView === "api" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Key className="w-3.5 h-3.5" /> REST API
+            <Key className="w-3.5 h-3.5" aria-hidden="true" /> REST API
           </button>
         </nav>
 
@@ -787,47 +794,53 @@ export default function App() {
       </div>
 
       {/* 3. MOBILE MENU BAR */}
-      <div className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
-        <button 
+      <nav aria-label="Mobile navigation" className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
+        <button
           onClick={() => setCurrentView("home")}
+          aria-current={currentView === "home" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "home" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Gateway
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("intel")}
+          aria-current={currentView === "intel" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "intel" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Sentinel APEX
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("ai")}
+          aria-current={currentView === "ai" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "ai" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           AI Audit
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("tools")}
+          aria-current={currentView === "tools" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "tools" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           ThreatCore Tools
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("blog")}
+          aria-current={currentView === "blog" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "blog" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           Blog
         </button>
-        <button 
+        <button
           onClick={() => setCurrentView("api")}
+          aria-current={currentView === "api" ? "page" : undefined}
           className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "api" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
         >
           API
         </button>
-      </div>
+      </nav>
 
       {/* 4. MAIN WORKSPACE VIEW ROUTER */}
-      <div className="flex-1">
+      <main id="main-content" className="flex-1">
 
         {/* ================= VIEW 1: HOME / OFFICIAL GATEWAY (Image 4 copy) ================= */}
         {currentView === "home" && (
@@ -1993,7 +2006,7 @@ export default function App() {
           </div>
         )}
 
-      </div>
+      </main>
 
       {/* ===== COMPLIANCE PAGES ===== */}
       {(currentView === "about" || currentView === "privacy" || currentView === "terms" || currentView === "copyright") && (
