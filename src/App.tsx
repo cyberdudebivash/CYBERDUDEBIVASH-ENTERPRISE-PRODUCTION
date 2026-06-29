@@ -70,6 +70,13 @@ interface CveItem {
 export default function App() {
   // Top-level navigation tab: home (Official Website Gateway), intel (Sentinel APEX), ai (AI Security Hub), tools (ThreatCore Tools), blog (Advisories & Academy), api (Ecosystem REST APIs)
   const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright" | "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest">("home");
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [solutionsDropdownOpen, setSolutionsDropdownOpen] = useState(false);
+
+  // In-app ROI Calculator States
+  const [roiStaff, setRoiStaff] = useState(3);
+  const [roiEndpoints, setRoiEndpoints] = useState(250);
+  const [roiBreach, setRoiBreach] = useState(150000);
 
   // Dynamic page title per view
   useEffect(() => {
@@ -290,6 +297,32 @@ export default function App() {
 
   // Initial load and ticker simulators
   useEffect(() => {
+    // Handle redirect routing from 404.html
+    const params = new URLSearchParams(window.location.search);
+    const redirectPath = params.get("redirect");
+    if (redirectPath) {
+      // Clean up search parameters in URL bar without refreshing
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      // Extract the filename (e.g. /about.html or /soc-services.html)
+      const page = redirectPath.split("/").pop();
+      if (page) {
+        if (page === "about.html" || page === "about") setCurrentView("about");
+        else if (page === "privacy.html" || page === "privacy") setCurrentView("privacy");
+        else if (page === "terms.html" || page === "terms" || page === "TERMS.md") setCurrentView("terms");
+        else if (page === "copyright.html" || page === "copyright") setCurrentView("copyright");
+        else if (page === "soc-services.html" || page === "soc") setCurrentView("soc");
+        else if (page === "compliance.html" || page === "dpdp") setCurrentView("dpdp");
+        else if (page === "bug-bounty.html" || page === "owasp") setCurrentView("owasp");
+        else if (page === "vciso.html" || page === "vciso") setCurrentView("vciso");
+        else if (page === "services.html" || page === "pentest") setCurrentView("pentest");
+        else if (page === "platforms.html" || page === "platforms") setCurrentView("home");
+        else if (page === "apps.html" || page === "tools") setCurrentView("tools");
+        else if (page === "research.html" || page === "blog") setCurrentView("blog");
+      }
+    }
+
     fetchThreatFeed();
 
     // Live sync ticker for logs
@@ -623,6 +656,19 @@ export default function App() {
   const handleCheckoutSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setCheckoutSubmitted(true);
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "purchase", {
+        transaction_id: "T_" + Date.now(),
+        value: checkingOutProduct ? parseFloat(checkingOutProduct.cost.replace(/[^\d.-]/g, "")) || 0 : 0,
+        currency: "INR",
+        items: [{
+          item_id: checkingOutProduct?.id || "unknown",
+          item_name: checkingOutProduct?.title || "Security Guide",
+          price: checkingOutProduct ? parseFloat(checkingOutProduct.cost.replace(/[^\d.-]/g, "")) || 0 : 0,
+          quantity: 1
+        }]
+      });
+    }
     setTimeout(() => {
       setPurchasedProduct(checkingOutProduct.id);
       setCheckoutModalOpen(false);
@@ -634,6 +680,14 @@ export default function App() {
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setContactSubmitted(true);
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "generate_lead", {
+        event_category: "engagement",
+        event_label: "contact_inquiry",
+        company_name: contactForm.company,
+        client_name: contactForm.name
+      });
+    }
     setTimeout(() => {
       setShowContactModal(false);
       setContactSubmitted(false);
@@ -715,16 +769,100 @@ export default function App() {
           <button
             onClick={() => setCurrentView("home")}
             aria-current={currentView === "home" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "home" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
             <Globe className="w-3.5 h-3.5" aria-hidden="true" /> Gateway
           </button>
+
+          {/* Services Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setServicesDropdownOpen(true)}
+            onMouseLeave={() => setServicesDropdownOpen(false)}
+          >
+            <button
+              aria-haspopup="true"
+              aria-expanded={servicesDropdownOpen}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                ["soc", "dpdp", "owasp", "mssp", "vciso", "pentest"].includes(currentView)
+                  ? "bg-cyan-900/40 text-cyan-400 border border-cyan-800"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5 text-cyan-550" aria-hidden="true" /> Services <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
+            </button>
+            {servicesDropdownOpen && (
+              <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
+                {[
+                  { label: "Managed SOC-as-a-Service", view: "soc" as const, desc: "24/7 autonomous monitoring" },
+                  { label: "DPDP Act Compliance Scans", view: "dpdp" as const, desc: "India data protection audits" },
+                  { label: "OWASP LLM Red Team Testing", view: "owasp" as const, desc: "Adversarial AI validation" },
+                  { label: "Multi-Tenant MSSP Suite", view: "mssp" as const, desc: "Client partner command center" },
+                  { label: "vCISO Advisory Services", view: "vciso" as const, desc: "Executive security governance" },
+                  { label: "Professional Penetration Testing", view: "pentest" as const, desc: "Full-spectrum pentests" },
+                ].map((s) => (
+                  <button
+                    key={s.view}
+                    role="menuitem"
+                    aria-current={currentView === s.view ? "page" : undefined}
+                    onClick={() => {
+                      setCurrentView(s.view);
+                      setServicesDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
+                  >
+                    <span className="text-xs font-bold font-mono">{s.label}</span>
+                    <span className="text-[9px] text-slate-550 leading-none mt-0.5">{s.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Solutions Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setSolutionsDropdownOpen(true)}
+            onMouseLeave={() => setSolutionsDropdownOpen(false)}
+          >
+            <button
+              aria-haspopup="true"
+              aria-expanded={solutionsDropdownOpen}
+              className="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
+            >
+              <Cpu className="w-3.5 h-3.5 text-purple-450" aria-hidden="true" /> Solutions <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
+            </button>
+            {solutionsDropdownOpen && (
+              <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
+                {[
+                  { label: "AI Security Governance", action: () => { setCurrentView("ai"); setActiveAiTab("compliance"); }, desc: "OWASP LLM & AI compliance audits" },
+                  { label: "Threat Intelligence Feeds", action: () => { setCurrentView("intel"); }, desc: "Sentinel APEX IOC feed telemetry" },
+                  { label: "Zero Trust Architecture", action: () => { setCurrentView("tools"); runHashCheck(); }, desc: "NIST 800-207 design frameworks" },
+                  { label: "DevSecOps Integration", action: () => { setCurrentView("ai"); setActiveAiTab("code"); }, desc: "SAST vulnerability scanners" },
+                ].map((sol, idx) => (
+                  <button
+                    key={idx}
+                    role="menuitem"
+                    onClick={() => {
+                      sol.action();
+                      setSolutionsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
+                  >
+                    <span className="text-xs font-bold font-mono">{sol.label}</span>
+                    <span className="text-[9px] text-slate-555 leading-none mt-0.5">{sol.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setCurrentView("intel")}
             aria-current={currentView === "intel" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "intel" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
@@ -733,7 +871,7 @@ export default function App() {
           <button
             onClick={() => setCurrentView("ai")}
             aria-current={currentView === "ai" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "ai" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
@@ -742,7 +880,7 @@ export default function App() {
           <button
             onClick={() => setCurrentView("tools")}
             aria-current={currentView === "tools" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "tools" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
@@ -751,7 +889,7 @@ export default function App() {
           <button
             onClick={() => setCurrentView("blog")}
             aria-current={currentView === "blog" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "blog" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
@@ -760,7 +898,7 @@ export default function App() {
           <button
             onClick={() => setCurrentView("api")}
             aria-current={currentView === "api" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               currentView === "api" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
@@ -2189,6 +2327,38 @@ export default function App() {
                   ))}
                 </div>
 
+                {/* Trust Center & Responsible Disclosure */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 space-y-4">
+                  <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> Trust Center &amp; Security Disclosures
+                  </h3>
+                  <p className="text-xs text-slate-350 leading-relaxed font-sans">
+                    At CYBERDUDEBIVASH®, security is our product and our foundation. We maintain a transparent Trust Center to provide visibility into our security policies, compliance alignments, and responsible vulnerability disclosure process.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-slate-950/40 border border-slate-900 rounded-lg p-4 space-y-2">
+                      <h4 className="text-xs font-bold text-slate-200">Compliance &amp; Certifications</h4>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        Our operations are built on ISO/IEC 27001:2022 standards and SOC 2 Type II controls. We comply fully with the India Digital Personal Data Protection (DPDP) Act 2023 and EU GDPR, storing all local resident data within servers in Odisha, India.
+                      </p>
+                    </div>
+                    <div className="bg-slate-950/40 border border-slate-900 rounded-lg p-4 space-y-2">
+                      <h4 className="text-xs font-bold text-slate-200">Vulnerability Disclosure (RFC 9116)</h4>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        We welcome reports from ethical hackers. Vulnerabilities in our systems should be reported to <strong className="text-cyan-400">security@cyberdudebivash.com</strong>. We commit to a 24-hour initial response SLA and follow a safe harbor framework for cooperative disclosures.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-2 text-center">
+                    <a 
+                      href="/bug-bounty.html" 
+                      className="inline-block text-[11px] font-mono text-cyan-400 hover:underline"
+                    >
+                      View Bug Bounty Program &amp; Scope Details →
+                    </a>
+                  </div>
+                </div>
+
                 {/* CTA */}
                 <div className="bg-gradient-to-r from-cyan-950/30 to-slate-900/60 border border-cyan-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
@@ -2555,6 +2725,97 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+
+                {/* SOC Operations ROI Calculator */}
+                <div className="bg-slate-950/40 border border-slate-900 rounded-xl p-6 space-y-6">
+                  <div>
+                    <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">SOC Operations Cost &amp; ROI Calculator</h2>
+                    <p className="text-[11px] text-slate-500 font-sans mt-2">Compare the financial investment of building an in-house Security Operations Center versus subscribing to our autonomous managed SOC services.</p>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-8 items-center">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                          <span>Security Analysts (In-House Team)</span>
+                          <span className="text-emerald-400 font-mono">{roiStaff} Analysts</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="15" 
+                          value={roiStaff} 
+                          onChange={(e) => setRoiStaff(parseInt(e.target.value))} 
+                          className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                        />
+                        <div className="flex justify-between text-[9px] text-slate-600 mt-1">
+                          <span>1 Analyst</span>
+                          <span>15 Analysts</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                          <span>Endpoints / Active Cloud Workloads</span>
+                          <span className="text-cyan-400 font-mono">{roiEndpoints} Nodes</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="2000" 
+                          step="10"
+                          value={roiEndpoints} 
+                          onChange={(e) => setRoiEndpoints(parseInt(e.target.value))} 
+                          className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                        />
+                        <div className="flex justify-between text-[9px] text-slate-600 mt-1">
+                          <span>10 Nodes</span>
+                          <span>2,000 Nodes</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                          <span>Est. Breach Event Liability Exposure</span>
+                          <span className="text-red-400 font-mono">${roiBreach.toLocaleString()}</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="25000" 
+                          max="1000000" 
+                          step="25000"
+                          value={roiBreach} 
+                          onChange={(e) => setRoiBreach(parseInt(e.target.value))} 
+                          className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-400"
+                        />
+                        <div className="flex justify-between text-[9px] text-slate-600 mt-1">
+                          <span>$25,000</span>
+                          <span>$1,000,000</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#040810] border border-slate-800/40 rounded-xl p-5 space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="bg-slate-900/35 border border-slate-900 rounded-lg p-2.5">
+                          <div className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">In-House Cost</div>
+                          <div className="text-lg font-bold text-red-500 mt-1 font-mono">${((roiStaff * 85000) + (roiEndpoints * 120) + 15000).toLocaleString()}<span className="text-[9px] text-slate-600 font-normal">/yr</span></div>
+                        </div>
+                        <div className="bg-slate-900/35 border border-slate-900 rounded-lg p-2.5">
+                          <div className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Managed SOC</div>
+                          <div className="text-lg font-bold text-emerald-400 mt-1 font-mono">${((999 * 12) + (roiEndpoints * 24)).toLocaleString()}<span className="text-[9px] text-slate-600 font-normal">/yr</span></div>
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-900 pt-3 text-center">
+                        <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Est. Annual SOC Cost Savings</div>
+                        <div className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mt-1 font-mono">
+                          ${(((roiStaff * 85000) + (roiEndpoints * 120) + 15000) - ((999 * 12) + (roiEndpoints * 24))).toLocaleString()}
+                        </div>
+                        <div className="text-[9px] text-slate-500 mt-1 font-sans">Includes 24/7 coverage, endpoint licenses &amp; 97.4% risk reduction</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-gradient-to-r from-violet-950/30 to-slate-900/60 border border-violet-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-sm font-bold text-white mb-1">Ready to activate your SOC in 72 hours?</h3>

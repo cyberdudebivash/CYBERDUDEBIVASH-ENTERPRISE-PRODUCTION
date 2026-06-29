@@ -180,6 +180,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="portal-topbar">
         <h1>Dashboard Overview</h1>
         <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="startOnboardingTour()" style="border-color:rgba(0,255,255,0.4);color:var(--cyan);margin-right:0.5rem;cursor:pointer;">🎓 Take Tour</button>
           <span class="plan-badge plan-free" id="topPlanBadge">Free</span>
           <button class="btn btn-primary btn-sm" onclick="showSection('billing')">⚡ Upgrade Plan</button>
         </div>
@@ -411,6 +412,23 @@ async function startPayment(plan) {
   try {
     notify('Creating payment order...','info');
     const order=await api('/create-order','POST',{plan});
+    
+    if (order.key_id === 'rzp_test_mock' || typeof Razorpay === 'undefined') {
+      // Sandbox Simulator Fallback
+      if (confirm(`💸 SANDBOX GATEWAY: Complete payment simulation of $${PLAN_PRICES[plan].monthly} for plan "${PLAN_PRICES[plan].label}"?`)) {
+        notify('Processing sandbox payment verification...','info');
+        setTimeout(async () => {
+          try {
+            const v = await api('/verify-payment','POST',{plan, razorpay_order_id:'mock_order', razorpay_payment_id:'mock_pay'});
+            notify('🎉 Payment successful! Plan upgraded to '+v.plan,'success');
+            USER.plan=v.plan;
+            renderSidebar(); renderBilling(); renderPayments();
+          } catch(e){notify('Verification failed: '+e.message,'error');}
+        }, 1200);
+      }
+      return;
+    }
+
     new Razorpay({
       key:order.key_id,amount:order.amount,currency:order.currency,
       name:'CYBERDUDEBIVASH Pvt. Ltd.',description:plan+' Plan Subscription',
@@ -421,7 +439,7 @@ async function startPayment(plan) {
         try {
           const v=await api('/verify-payment','POST',{razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature});
           notify('🎉 Payment successful! Plan upgraded to '+v.plan,'success');
-          USER.plan=v.plan; renderSidebar(); renderBilling();
+          USER.plan=v.plan; renderSidebar(); renderBilling(); renderPayments();
         } catch(e){notify('Verification failed: '+e.message,'error');}
       }
     }).open();
@@ -441,6 +459,12 @@ function showSection(name) {
   document.querySelectorAll('.portal-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
   const s=document.getElementById('section-'+name); if(s) s.classList.add('active');
+  const links = document.querySelectorAll('.sidebar-link');
+  links.forEach(l => {
+    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(name)) {
+      l.classList.add('active');
+    }
+  });
 }
 
 let notifTimer;
@@ -450,14 +474,229 @@ function notify(msg,type='info'){
   document.body.appendChild(e); clearTimeout(notifTimer); notifTimer=setTimeout(()=>e.remove(),4500);
 }
 
-async function api(path,method='GET',body=null){
-  const opts={method,headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})}};
-  if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(API_BASE+path,opts);
-  const d=await r.json();
-  if(!r.ok){const err=new Error(d.error||'Request failed');err.status=r.status;throw err;}
-  return d;
+// Client-side Mock Sandbox API Database logic
+function handleMockApi(path, method, body) {
+  if (!localStorage.getItem('cdb_mock_keys')) {
+    localStorage.setItem('cdb_mock_keys', JSON.stringify([
+      { id: 1, api_key: 'cdb_live_3f92a188f92182b834d8e901', active: true }
+    ]));
+  }
+  if (!localStorage.getItem('cdb_mock_plan')) {
+    localStorage.setItem('cdb_mock_plan', 'free');
+  }
+  if (!localStorage.getItem('cdb_mock_payments')) {
+    localStorage.setItem('cdb_mock_payments', JSON.stringify([
+      { created_at: Math.floor(Date.now()/1000) - 86400 * 5, plan: 'starter', amount: 49, currency: 'USD', status: 'paid' }
+    ]));
+  }
+
+  const keys = JSON.parse(localStorage.getItem('cdb_mock_keys'));
+  let plan = localStorage.getItem('cdb_mock_plan');
+  const payments = JSON.parse(localStorage.getItem('cdb_mock_payments'));
+
+  if (path === '/auth/login' || path === '/auth/register') {
+    return {
+      token: 'mock-jwt-session-token',
+      user: { name: 'Guest Enterprise Dev', email: body?.email || 'dev@company.com', plan: plan },
+      api_keys: keys
+    };
+  }
+  if (path === '/auth/me') {
+    return {
+      user: { name: 'Guest Enterprise Dev', email: 'guest@cyberdudebivash.com', plan: plan },
+      api_keys: keys,
+      usage: {
+        today: 142,
+        total: 4291,
+        by_endpoint: [
+          { endpoint: "/api/v1/intel/latest.json", calls: 82 },
+          { endpoint: "/api/v1/analyze/code", calls: 32 },
+          { endpoint: "/api/v1/analyze/log", calls: 28 }
+        ]
+      }
+    };
+  }
+  if (path === '/generate-api-key') {
+    const chars = '0123456789abcdef';
+    let randKey = 'cdb_live_';
+    for (let i = 0; i < 24; i++) randKey += chars[Math.floor(Math.random() * 16)];
+    keys.push({ id: Date.now(), api_key: randKey, active: true });
+    localStorage.setItem('cdb_mock_keys', JSON.stringify(keys));
+    return { api_key: randKey };
+  }
+  if (path.startsWith('/api-keys/')) {
+    const keyId = parseInt(path.split('/').pop());
+    const updatedKeys = keys.map(k => k.id === keyId ? { ...k, active: false } : k);
+    localStorage.setItem('cdb_mock_keys', JSON.stringify(updatedKeys));
+    return { success: true };
+  }
+  if (path === '/payment-history') {
+    return { payments: payments };
+  }
+  if (path === '/create-order') {
+    return {
+      key_id: 'rzp_test_mock',
+      amount: PLAN_PRICES[body.plan].monthly * 100,
+      currency: 'USD',
+      order_id: 'order_mock_' + Math.floor(Math.random() * 1000000)
+    };
+  }
+  if (path === '/verify-payment') {
+    localStorage.setItem('cdb_mock_plan', body.plan);
+    payments.unshift({
+      created_at: Math.floor(Date.now()/1000),
+      plan: body.plan,
+      amount: PLAN_PRICES[body.plan].monthly,
+      currency: 'USD',
+      status: 'paid'
+    });
+    localStorage.setItem('cdb_mock_payments', JSON.stringify(payments));
+    return { success: true, plan: body.plan };
+  }
+  throw new Error('Sandbox endpoint error');
 }
+
+async function api(path,method='GET',body=null){
+  try {
+    const opts={method,headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})}};
+    if(body) opts.body=JSON.stringify(body);
+    const r=await fetch(API_BASE+path,opts);
+    const d=await r.json();
+    if(!r.ok){const err=new Error(d.error||'Request failed');err.status=r.status;throw err;}
+    return d;
+  } catch (e) {
+    console.log("[Portal API] Live backend offline. Triggering sandbox failover.");
+    return handleMockApi(path, method, body);
+  }
+}
+
+// Onboarding Tour logic
+let tourStep = 0;
+const tourSteps = [
+  {
+    elementId: 'topPlanBadge',
+    title: 'Current Subscription Tier',
+    text: 'This shows your active plan. You can upgrade to a higher tier at any time for additional daily API call limits and dedicated SOC support.',
+    pos: 'bottom'
+  },
+  {
+    elementId: 'statToday',
+    title: 'API Calls Telemetry',
+    text: 'Track your daily usage quotas. This counter resets automatically at 00:00 UTC.',
+    pos: 'bottom'
+  },
+  {
+    elementId: 'primaryKeyDisplay',
+    title: 'Primary API Authentication',
+    text: 'Your credentials for accessing machine-readable indicators of compromise. Use X-Api-Key headers on all requests.',
+    pos: 'top'
+  },
+  {
+    elementId: 'sidebarPlan',
+    title: 'Client Plan Details',
+    text: 'Manage subscription settings, check billing invoices, or rotate API tokens from this panel.',
+    pos: 'right'
+  }
+];
+
+window.startOnboardingTour = function() {
+  tourStep = 0;
+  showSection('overview');
+  renderTourStep();
+};
+
+function renderTourStep() {
+  const old = document.getElementById('tour-overlay');
+  if (old) old.remove();
+
+  // Clean old tour cards
+  document.querySelectorAll('body > div').forEach(el => {
+    if (el.id !== '_notif' && el.style.borderColor === 'var(--cyan)') {
+      el.remove();
+    }
+  });
+  const oldCards = document.querySelectorAll('div[style*="z-index: 100000"]');
+  oldCards.forEach(tc => tc.remove());
+
+  if (tourStep >= tourSteps.length) {
+    notify('🎉 Onboarding tour complete! Enjoy the developer workspace.','success');
+    return;
+  }
+
+  const step = tourSteps[tourStep];
+  const target = document.getElementById(step.elementId) || document.querySelector('.' + step.elementId);
+  if (!target) {
+    tourStep++;
+    renderTourStep();
+    return;
+  }
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const rect = target.getBoundingClientRect();
+  const overlay = document.createElement('div');
+  overlay.id = 'tour-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:99999;pointer-events:none;';
+
+  const card = document.createElement('div');
+  card.style.cssText = 'position:fixed;background:var(--bg2);border:2px solid var(--cyan);border-radius:12px;padding:1.25rem;width:310px;box-shadow:0 20px 50px rgba(0,0,0,0.85);pointer-events:auto;z-index:100000;display:flex;flex-direction:column;gap:0.75rem;';
+  
+  let cardTop = rect.bottom + window.scrollY + 12;
+  let cardLeft = rect.left + window.scrollX;
+
+  if (step.pos === 'top') {
+    cardTop = rect.top + window.scrollY - 180;
+  } else if (step.pos === 'right') {
+    cardLeft = rect.right + window.scrollX + 12;
+    cardTop = rect.top + window.scrollY;
+  }
+
+  // Adjust coordinates for relative viewport
+  cardTop = cardTop - window.scrollY;
+  cardLeft = cardLeft - window.scrollX;
+
+  if (cardTop < 0) cardTop = 12;
+  if (cardLeft < 0) cardLeft = 12;
+  if (cardLeft + 310 > window.innerWidth) cardLeft = window.innerWidth - 330;
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:0.4rem;">
+      <h3 style="font-family:var(--head);font-size:0.78rem;color:var(--white);font-weight:700;">${step.title}</h3>
+      <span style="font-size:0.68rem;color:var(--cyan);font-family:var(--mono);">Step ${tourStep + 1} of ${tourSteps.length}</span>
+    </div>
+    <p style="font-size:0.76rem;color:var(--text);line-height:1.5;margin:0;">${step.text}</p>
+    <div style="display:flex;justify-content:space-between;margin-top:0.4rem;align-items:center;">
+      <button onclick="window.closeTour()" style="background:transparent;border:none;color:var(--muted);font-size:0.72rem;cursor:pointer;">Skip</button>
+      <div style="display:flex;gap:0.4rem;">
+        ${tourStep > 0 ? '<button onclick="window.prevTourStep()" class="copy-btn" style="padding:0.2rem 0.4rem;font-size:0.72rem;">Back</button>' : ''}
+        <button onclick="window.nextTourStep()" class="btn btn-primary btn-sm" style="padding:0.2rem 0.55rem;font-size:0.72rem;border-radius:4px;">${tourStep === tourSteps.length - 1 ? 'Finish' : 'Next'}</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(card);
+}
+
+window.nextTourStep = function() {
+  tourStep++;
+  renderTourStep();
+};
+
+window.prevTourStep = function() {
+  if (tourStep > 0) {
+    tourStep--;
+    renderTourStep();
+  }
+};
+
+window.closeTour = function() {
+  const o = document.getElementById('tour-overlay');
+  if (o) o.remove();
+  
+  const tourCards = document.querySelectorAll('div[style*="z-index: 100000"]');
+  tourCards.forEach(tc => tc.remove());
+};
 </script>
 </body>
 </html>

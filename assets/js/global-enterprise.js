@@ -50,13 +50,15 @@
       </li>\
       <li class="nav-dropdown" style="position:relative;">\
         <a href="services.html"' + active('services.html') + ' style="display:flex;align-items:center;gap:4px;padding:0 0.8rem;height:60px;font-family:Inter,sans-serif;font-size:0.79rem;font-weight:500;color:#8b9ab5;text-decoration:none;border-bottom:2px solid transparent;transition:all 0.15s;">Solutions ▾</a>\
-        <div class="dropdown-panel" style="position:absolute;top:100%;left:0;min-width:210px;background:#0a1829;border:1px solid rgba(255,255,255,0.07);border-top:2px solid #0cf2ff;border-radius:0 0 12px 12px;padding:0.5rem 0;box-shadow:0 4px 24px rgba(0,0,0,0.4);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all 0.15s;z-index:9999;">\
+        <div class="dropdown-panel" style="position:absolute;top:100%;left:0;min-width:235px;background:#0a1829;border:1px solid rgba(255,255,255,0.07);border-top:2px solid #0cf2ff;border-radius:0 0 12px 12px;padding:0.5rem 0;box-shadow:0 4px 24px rgba(0,0,0,0.4);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all 0.15s;z-index:9999;">\
           <a href="soc-services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🔍</span>SOC-as-a-Service</a>\
           <a href="services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🗡️</span>Penetration Testing</a>\
+          <a href="vciso.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🛡️</span>vCISO Advisory Services</a>\
+          <a href="compliance.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>⚖️</span>Compliance Automation</a>\
+          <a href="dark-web-monitor.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>👁️</span>Dark Web Monitoring</a>\
           <a href="services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🚨</span>Incident Response</a>\
           <a href="services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🏢</span>Enterprise Consulting</a>\
           <a href="services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🛡️</span>Zero-Trust Architecture</a>\
-          <a href="services.html" style="display:flex;align-items:center;gap:10px;padding:0.6rem 1.2rem;font-size:0.81rem;color:#8b9ab5;text-decoration:none;"><span>🎓</span>Security Training</a>\
         </div>\
       </li>\
       <li><a href="research.html"' + active('research.html') + ' style="display:flex;align-items:center;padding:0 0.8rem;height:60px;font-family:Inter,sans-serif;font-size:0.79rem;font-weight:500;color:#8b9ab5;text-decoration:none;border-bottom:2px solid transparent;transition:all 0.15s;">Research</a></li>\

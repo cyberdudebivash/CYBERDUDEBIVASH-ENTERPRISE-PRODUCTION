@@ -2,7 +2,7 @@ try {
   require('express');
   require('bcryptjs');
   require('jsonwebtoken');
-  require('better-sqlite3');
+  require('lowdb');
   require('razorpay');
   require('uuid');
   require('helmet');
