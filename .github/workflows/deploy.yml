@@ -52,17 +52,20 @@ jobs:
 
           # Rewrite root index.html: strip any existing module script / stylesheet lines,
           # then inject the freshly built asset tags. Works for /src/main.tsx or old hashes.
-          python3 -c "
-import re
-js='$JS_FILE'; css='$CSS_FILE'
-with open('index.html') as f: html=f.read()
-html=re.sub(r'\s*<script type=\"module\"[^>]*></script>','',html)
-html=re.sub(r'\s*<link rel=\"stylesheet\"[^>]*href=\"/assets/[^\"]*\"[^>]*>','',html)
-tag=f'    <script type=\"module\" crossorigin src=\"/assets/{js}\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/{css}\">\n  </head>'
-html=html.replace('  </head>',tag,1)
-with open('index.html','w') as f: f.write(html)
+          cat > /tmp/fix_html.py << 'PYEOF'
+import re, sys
+js, css = sys.argv[1], sys.argv[2]
+with open('index.html') as f:
+    html = f.read()
+html = re.sub(r'[ \t]*<script type="module"[^>]*></script>\n?', '', html)
+html = re.sub(r'[ \t]*<link rel="stylesheet"[^>]*href="/assets/[^"]*"[^>]*>\n?', '', html)
+tags = '    <script type="module" crossorigin src="/assets/{j}"></script>\n    <link rel="stylesheet" crossorigin href="/assets/{c}">\n'.format(j=js, c=css)
+html = html.replace('  </head>', tags + '  </head>', 1)
+with open('index.html', 'w') as f:
+    f.write(html)
 print('index.html updated:', js, css)
-"
+PYEOF
+          python3 /tmp/fix_html.py "$JS_FILE" "$CSS_FILE"
 
           # Commit only if there are changes
           git config --local user.email "ci@cyberdudebivash.com"
