@@ -69,7 +69,30 @@ interface CveItem {
 
 export default function App() {
   // Top-level navigation tab: home (Official Website Gateway), intel (Sentinel APEX), ai (AI Security Hub), tools (ThreatCore Tools), blog (Advisories & Academy), api (Ecosystem REST APIs)
-  const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright">("home");
+  const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright" | "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest">("home");
+
+  // Dynamic page title per view
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform",
+      intel: "Sentinel APEX™ Threat Intelligence | CYBERDUDEBIVASH®",
+      ai: "AI Security Hub & Audit | CYBERDUDEBIVASH®",
+      tools: "ThreatCore™ Security Tools | CYBERDUDEBIVASH®",
+      blog: "Research Blog & Advisories | CYBERDUDEBIVASH®",
+      api: "REST API Documentation | CYBERDUDEBIVASH®",
+      about: "About Us | CYBERDUDEBIVASH®",
+      privacy: "Privacy Policy | CYBERDUDEBIVASH®",
+      terms: "Terms of Service | CYBERDUDEBIVASH®",
+      copyright: "Copyright & IP | CYBERDUDEBIVASH®",
+      soc: "Managed SOC-as-a-Service | CYBERDUDEBIVASH®",
+      dpdp: "DPDP Act Compliance | CYBERDUDEBIVASH®",
+      owasp: "OWASP LLM Red Team | CYBERDUDEBIVASH®",
+      mssp: "Multi-Tenant MSSP Suite | CYBERDUDEBIVASH®",
+      vciso: "vCISO Advisory | CYBERDUDEBIVASH®",
+      pentest: "Penetration Testing | CYBERDUDEBIVASH®",
+    };
+    document.title = titles[currentView] ?? "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform";
+  }, [currentView]);
 
   // Core App states carrying forward from our baseline
   const [activeAiTab, setActiveAiTab] = useState<"log" | "code" | "domain" | "compliance" | "chat">("log");
