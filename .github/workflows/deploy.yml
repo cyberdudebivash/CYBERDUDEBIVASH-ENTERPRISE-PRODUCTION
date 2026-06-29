@@ -50,9 +50,19 @@ jobs:
           cp "dist/assets/$CSS_FILE" "assets/$CSS_FILE"
           [ -n "$ICO_FILE" ] && cp "dist/assets/$ICO_FILE" "assets/$ICO_FILE" || true
 
-          # Update index.html with new asset references
-          sed -i "s|crossorigin src=\"/assets/index-[^\"]*\.js\"|crossorigin src=\"/assets/$JS_FILE\"|g" index.html
-          sed -i "s|crossorigin href=\"/assets/index-[^\"]*\.css\"|crossorigin href=\"/assets/$CSS_FILE\"|g" index.html
+          # Rewrite root index.html: strip any existing module script / stylesheet lines,
+          # then inject the freshly built asset tags. Works for /src/main.tsx or old hashes.
+          python3 -c "
+import re
+js='$JS_FILE'; css='$CSS_FILE'
+with open('index.html') as f: html=f.read()
+html=re.sub(r'\s*<script type=\"module\"[^>]*></script>','',html)
+html=re.sub(r'\s*<link rel=\"stylesheet\"[^>]*href=\"/assets/[^\"]*\"[^>]*>','',html)
+tag=f'    <script type=\"module\" crossorigin src=\"/assets/{js}\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/{css}\">\n  </head>'
+html=html.replace('  </head>',tag,1)
+with open('index.html','w') as f: f.write(html)
+print('index.html updated:', js, css)
+"
 
           # Commit only if there are changes
           git config --local user.email "ci@cyberdudebivash.com"
