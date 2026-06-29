@@ -1,0 +1,8 @@
+Contact: mailto:security@cyberdudebivash.com
+Contact: tel:+91-81798-81447
+Acknowledgments: https://www.cyberdudebivash.com/bug-bounty.html
+Policy: https://www.cyberdudebivash.com/bug-bounty.html
+Preferred-Languages: en
+Canonical: https://www.cyberdudebivash.com/.well-known/security.txt
+Expires: 2027-06-29T22:00:00.000Z
+# CYBERDUDEBIVASH® Enterprise Trust Operations

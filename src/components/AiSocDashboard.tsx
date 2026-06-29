@@ -74,7 +74,7 @@ function StatCard({
   label, value, sub, icon, accent, barPct
 }: {
   label: string; value: string; sub: string;
-  icon: React.ReactNode; accent: string; barPct: number;
+  icon: any; accent: string; barPct: number;
 }) {
   const barColors: Record<string, string> = {
     cyan:   "bg-cyan-500",

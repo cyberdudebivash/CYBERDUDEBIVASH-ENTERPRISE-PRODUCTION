@@ -1,12 +1,15 @@
-import { StrictMode, Component, ErrorInfo, ReactNode } from 'react';
+import React from 'react';
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+const ReactComponent = (React as any).Component;
+
+class ErrorBoundary extends ReactComponent {
   state = { error: null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  static getDerivedStateFromError(error: any) { return { error }; }
+  componentDidCatch(error: any, info: any) {
     console.error('[CDB ErrorBoundary]', error, info);
   }
   render() {
@@ -28,7 +31,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
         </div>
       );
     }
-    return this.props.children;
+    return (this.props as any).children;
   }
 }
 

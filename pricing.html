@@ -432,6 +432,57 @@ input:checked + .toggle-slider::before{transform:translateX(24px);}
     </div>
   </div>
 
+  <!-- ROI CALCULATOR -->
+  <h2 class="section-heading" style="text-align:center;margin-bottom:10px;">Calculate Your <span>Security ROI</span></h2>
+  <p style="text-align:center;color:#6b7fa3;margin-bottom:40px;font-size:.92rem;">Compare the cost of an in-house Security Operations Center (SOC) vs. CYBERDUDEBIVASH® Managed SOC.</p>
+  
+  <div class="card-glass" style="max-width:900px;margin:0 auto 80px;padding:40px;">
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;" class="roi-grid-responsive">
+      <!-- Inputs -->
+      <div>
+        <div style="margin-bottom: 24px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#cdd4e0;font-weight:600;margin-bottom:8px;">
+            <span>Security Analysts Needed (In-House)</span>
+            <span id="roi-staff-val" style="color:#00ff88;font-family:Orbitron,sans-serif;font-weight:700;">3</span>
+          </div>
+          <input type="range" id="roi-staff" min="1" max="15" value="3" style="width:100%;accent-color:#00ff88;cursor:pointer;">
+          <p style="font-size:0.72rem;color:#4a5a6a;margin-top:4px;">Typical 24/7 coverage requires a minimum of 4-5 analysts.</p>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#cdd4e0;font-weight:600;margin-bottom:8px;">
+            <span>Number of Endpoints / Servers</span>
+            <span id="roi-endpoints-val" style="color:#00e5ff;font-family:Orbitron,sans-serif;font-weight:700;">250</span>
+          </div>
+          <input type="range" id="roi-endpoints" min="10" max="2000" step="10" value="250" style="width:100%;accent-color:#00e5ff;cursor:pointer;">
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#cdd4e0;font-weight:600;margin-bottom:8px;">
+            <span>Annual Data Breach Risk Value</span>
+            <span id="roi-breach-val" style="color:#ff4d6d;font-family:Orbitron,sans-serif;font-weight:700;">$150,000</span>
+          </div>
+          <input type="range" id="roi-breach" min="25000" max="1000000" step="25000" value="150000" style="width:100%;accent-color:#ff4d6d;cursor:pointer;">
+        </div>
+      </div>
+
+      <!-- Results Display -->
+      <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:30px;text-align:center;">
+        <div style="font-family:Orbitron,sans-serif;font-size:0.75rem;color:#6b7fa3;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Annual In-House Cost</div>
+        <div id="roi-inhouse" style="font-family:Orbitron,sans-serif;font-size:2rem;font-weight:800;color:#ff4d6d;margin-bottom:20px;">$295,000</div>
+
+        <div style="font-family:Orbitron,sans-serif;font-size:0.75rem;color:#6b7fa3;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">CYBERDUDEBIVASH Cost</div>
+        <div id="roi-cyberdude" style="font-family:Orbitron,sans-serif;font-size:2rem;font-weight:800;color:#00ff88;margin-bottom:20px;">$11,988</div>
+
+        <div style="height:1px;background:rgba(255,255,255,0.08);margin:20px 0;"></div>
+
+        <div style="font-family:Orbitron,sans-serif;font-size:0.8rem;color:#00e5ff;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;font-weight:700;">Estimated Annual Savings</div>
+        <div id="roi-savings" style="font-family:Orbitron,sans-serif;font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,#00ff88,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;">$283,012</div>
+        <div style="font-size:0.75rem;color:#6b7fa3;">+ 97.4% reduction in breach probability</div>
+      </div>
+    </div>
+  </div>
+
   <!-- FAQ -->
   <h2 class="section-heading" style="text-align:center;margin-bottom:40px;">Frequently Asked <span>Questions</span></h2>
   <div class="faq-wrap">
@@ -542,6 +593,49 @@ input:checked + .toggle-slider::before{transform:translateX(24px);}
     document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open');});
     if(!wasOpen) item.classList.add('open');
   };
+
+  // ROI Calculator reactivity
+  const staffInput = document.getElementById('roi-staff');
+  const endpointsInput = document.getElementById('roi-endpoints');
+  const breachInput = document.getElementById('roi-breach');
+
+  const staffVal = document.getElementById('roi-staff-val');
+  const endpointsVal = document.getElementById('roi-endpoints-val');
+  const breachVal = document.getElementById('roi-breach-val');
+
+  const inhouseVal = document.getElementById('roi-inhouse');
+  const cyberdudeVal = document.getElementById('roi-cyberdude');
+  const savingsVal = document.getElementById('roi-savings');
+
+  function calculateROI() {
+    if (!staffInput) return;
+    const staff = parseInt(staffInput.value);
+    const endpoints = parseInt(endpointsInput.value);
+    const breach = parseInt(breachInput.value);
+
+    staffVal.textContent = staff;
+    endpointsVal.textContent = endpoints;
+    breachVal.textContent = '$' + breach.toLocaleString();
+
+    // In-house cost: salary ($85,000/yr per analyst) + tools licenses ($120/endpoint/yr) + overhead
+    const inhouseCost = (staff * 85000) + (endpoints * 120) + 15000;
+    
+    // CYBERDUDEBIVASH: Enterprise SOC tier ($999/mo) + endpoints license ($24/endpoint/yr)
+    const cyberdudeCost = (999 * 12) + (endpoints * 24);
+
+    inhouseVal.textContent = '$' + inhouseCost.toLocaleString();
+    cyberdudeVal.textContent = '$' + cyberdudeCost.toLocaleString();
+    
+    const savings = inhouseCost - cyberdudeCost;
+    savingsVal.textContent = '$' + savings.toLocaleString();
+  }
+
+  if (staffInput) {
+    staffInput.addEventListener('input', calculateROI);
+    endpointsInput.addEventListener('input', calculateROI);
+    breachInput.addEventListener('input', calculateROI);
+    calculateROI();
+  }
 })();
 </script>
 </body>

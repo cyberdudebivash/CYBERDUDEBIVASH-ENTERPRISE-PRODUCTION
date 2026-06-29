@@ -12,7 +12,7 @@ interface EcosystemPlatform {
   url: string;
   category: string;
   categoryColor: string;
-  icon: React.ReactNode;
+  icon: any;
   purpose: string;
   capabilities: string[];
   audience: string;
@@ -26,7 +26,7 @@ interface EcosystemPlatform {
 }
 
 interface CommercialService {
-  icon: React.ReactNode;
+  icon: any;
   title: string;
   description: string;
   category: string;
