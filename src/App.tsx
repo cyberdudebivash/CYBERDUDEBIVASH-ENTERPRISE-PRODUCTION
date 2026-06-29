@@ -68,7 +68,7 @@ interface CveItem {
 
 export default function App() {
   // Top-level navigation tab: home (Official Website Gateway), intel (Sentinel APEX), ai (AI Security Hub), tools (ThreatCore Tools), blog (Advisories & Academy), api (Ecosystem REST APIs)
-  const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api">("home");
+  const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright">("home");
 
   // Core App states carrying forward from our baseline
   const [activeAiTab, setActiveAiTab] = useState<"log" | "code" | "domain" | "compliance" | "chat">("log");
@@ -1994,79 +1994,314 @@ export default function App() {
 
       </div>
 
+      {/* ===== COMPLIANCE PAGES ===== */}
+      {(currentView === "about" || currentView === "privacy" || currentView === "terms" || currentView === "copyright") && (
+        <div className="min-h-[60vh] bg-[#030912] border-t border-slate-800/60">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <button onClick={() => setCurrentView("home")} className="mb-8 text-xs text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-2 font-mono">
+              ← Back to Gateway
+            </button>
+
+            {currentView === "about" && (
+              <div className="space-y-8">
+                <div>
+                  <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-2">About</div>
+                  <h1 className="text-2xl font-bold text-white mb-4">About CyberDudeBivash<span className="text-cyan-400">®</span></h1>
+                  <p className="text-slate-300 leading-relaxed text-sm">CYBERDUDEBIVASH PRIVATE LIMITED is an India-based autonomous AI-powered cybersecurity defense company founded in 2020, headquartered in Ragadi, Jajpur Road, Odisha. We deliver real-time threat intelligence, managed SOC operations, AI security auditing, and 100+ production-grade security tools to enterprise teams globally.</p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {[
+                    { title: "Mission", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale." },
+                    { title: "Vision", body: "To be India's premier global cybersecurity authority, setting the standard for AI-driven threat defense in the Asia-Pacific region and beyond." },
+                    { title: "Founded", body: "2020, Odisha, India. Registered under the Companies Act 2013. Government GSTIN: 21ARKPN8270G1ZP. PAN: ARKPN8270G." },
+                    { title: "Founder", body: "Bivasha Kumar Nayak — Cybersecurity Engineer, Threat Intelligence Specialist, and OWASP contributor based in Jajpur Road, Odisha, India." },
+                  ].map(c => (
+                    <div key={c.title} className="bg-slate-900/50 border border-slate-800 rounded-xl p-5">
+                      <h3 className="text-sm font-bold text-cyan-400 mb-2">{c.title}</h3>
+                      <p className="text-xs text-slate-400 leading-relaxed font-sans">{c.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-2">
+                  <h3 className="text-sm font-bold text-white mb-3">Corporate Identity</h3>
+                  {[
+                    ["Legal Name", "CYBERDUDEBIVASH PRIVATE LIMITED"],
+                    ["Brand", "CyberDudeBivash®"],
+                    ["Incorporation", "Companies Act 2013, India"],
+                    ["PAN", "ARKPN8270G"],
+                    ["GSTIN", "21ARKPN8270G1ZP"],
+                    ["Address", "29, Korai-Sukinda Rd, Ragadi, JAJPUR ROAD, Odisha 755019, India"],
+                    ["Email", "bivash@cyberdudebivash.com"],
+                    ["Phone", "+91 81798 81447"],
+                    ["Hours", "Monday–Saturday, 9AM–7PM IST"],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex gap-4 text-xs font-mono">
+                      <span className="text-slate-500 w-28 shrink-0">{k}</span>
+                      <span className="text-slate-300">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {currentView === "privacy" && (
+              <div className="space-y-8">
+                <div>
+                  <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-2">Legal</div>
+                  <h1 className="text-2xl font-bold text-white mb-2">Privacy Policy</h1>
+                  <p className="text-xs text-slate-500 font-mono">Last updated: June 2026 · Effective immediately · Compliant with India DPDP Act 2023 & GDPR</p>
+                </div>
+                {[
+                  { title: "1. Data Controller", body: "CYBERDUDEBIVASH PRIVATE LIMITED (\"CyberDudeBivash\", \"we\", \"our\") is the Data Fiduciary under India's Digital Personal Data Protection Act 2023 and Data Controller under GDPR for all personal data processed through our platforms and services." },
+                  { title: "2. Data We Collect", body: "Contact information (name, email, phone) submitted through enterprise inquiry forms; usage analytics (page views, session duration) via privacy-respecting analytics; security telemetry data from opted-in SOC deployments; API usage metadata for rate limiting and billing. We do NOT collect sensitive personal data without explicit consent." },
+                  { title: "3. Purpose of Processing", body: "Delivering requested cybersecurity services; responding to enterprise inquiries and support requests; improving platform functionality; compliance monitoring and audit logging as required by our certifications (ISO 27001, SOC 2 Type II); sending transactional communications related to services you've subscribed to." },
+                  { title: "4. Data Localisation (DPDP Act)", body: "All personal data of Indian residents is stored on servers located within the Republic of India (Jajpur, Odisha). Cross-border transfers are conducted only to approved jurisdictions per the DPDP Act 2023 schedules and under appropriate safeguards." },
+                  { title: "5. Your Rights", body: "Under DPDP Act 2023 & GDPR: Right to access your personal data; right to correction of inaccurate data; right to erasure; right to withdraw consent; right to nominate a successor for data after death (DPDP-specific); right to grievance redressal. Submit requests to: bivash@cyberdudebivash.com" },
+                  { title: "6. Breach Notification", body: "In the event of a personal data breach affecting your data, we will notify the Data Protection Board of India and affected individuals within 72 hours of becoming aware, as mandated by the DPDP Act 2023 and CERT-In guidelines." },
+                  { title: "7. Cookies", body: "We use strictly necessary cookies for session management and security. No third-party tracking cookies. No advertising cookies. You may disable cookies via your browser settings, though this may affect platform functionality." },
+                  { title: "8. Contact", body: "Data Protection Officer: Bivasha Kumar Nayak · bivash@cyberdudebivash.com · CYBERDUDEBIVASH PRIVATE LIMITED, 29 Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India" },
+                ].map(s => (
+                  <div key={s.title} className="border-l-2 border-slate-700 pl-4">
+                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {currentView === "terms" && (
+              <div className="space-y-8">
+                <div>
+                  <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-2">Legal</div>
+                  <h1 className="text-2xl font-bold text-white mb-2">Terms of Service</h1>
+                  <p className="text-xs text-slate-500 font-mono">Last updated: June 2026 · Governing law: India (IT Act 2000, Companies Act 2013)</p>
+                </div>
+                {[
+                  { title: "1. Acceptance", body: "By accessing any CYBERDUDEBIVASH platform, tool, or API, you agree to be bound by these Terms of Service. If you do not agree, you must discontinue use immediately." },
+                  { title: "2. Authorized Use", body: "Our platforms are for legitimate cybersecurity defense, threat intelligence, compliance, and educational purposes only. Any use for offensive operations against third parties, unauthorized access, or activities prohibited under the Indian IT Act 2000 Section 43/66 is strictly forbidden and will be reported to CERT-In and law enforcement." },
+                  { title: "3. Intellectual Property", body: "All content, trademarks, brand names (CyberDudeBivash®, Sentinel APEX™, ThreatCore™), logos, tools, APIs, SIGMA rules, playbooks, and documentation are the exclusive intellectual property of CYBERDUDEBIVASH PRIVATE LIMITED. Unauthorized reproduction, distribution, or commercial use is prohibited under the Copyright Act 1957 and Indian trademark law." },
+                  { title: "4. API Usage", body: "API access is subject to rate limits defined in your subscription tier. Abuse of rate limits, credential sharing, or reverse engineering of API endpoints constitutes a breach of these Terms and may result in immediate account suspension." },
+                  { title: "5. Security Research Disclosure", body: "We support responsible disclosure. Security researchers discovering vulnerabilities in our platforms should report via bivash@cyberdudebivash.com with a 90-day coordinated disclosure timeline. We do NOT authorize unauthorized penetration testing of our production systems." },
+                  { title: "6. Limitation of Liability", body: "CyberDudeBivash provides threat intelligence and security tooling on an 'as-is' basis. We are not liable for decisions made based on our intelligence outputs. Maximum aggregate liability shall not exceed the fees paid in the 3 months preceding the claim." },
+                  { title: "7. Governing Law", body: "These Terms are governed by the laws of India. Disputes shall be resolved by binding arbitration under the Arbitration and Conciliation Act 1996, with seat of arbitration at Bhubaneswar, Odisha, India." },
+                ].map(s => (
+                  <div key={s.title} className="border-l-2 border-slate-700 pl-4">
+                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {currentView === "copyright" && (
+              <div className="space-y-8">
+                <div>
+                  <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-2">Legal</div>
+                  <h1 className="text-2xl font-bold text-white mb-2">Copyright & Intellectual Property</h1>
+                  <p className="text-xs text-slate-500 font-mono">© {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved.</p>
+                </div>
+                <div className="bg-amber-950/20 border border-amber-800/30 rounded-xl p-5">
+                  <h3 className="text-sm font-bold text-amber-400 mb-3">Copyright Notice</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">All content, software, tools, SIGMA rules, playbooks, AI models, threat intelligence feeds, documentation, graphics, brand assets, and other materials published across the CYBERDUDEBIVASH ecosystem are protected under the Copyright Act, 1957 (India) and applicable international copyright treaties including the Berne Convention.</p>
+                </div>
+                {[
+                  { title: "Trademarks", body: "CyberDudeBivash®, Sentinel APEX™, ThreatCore™, GE-Neural Architecture™, and the CyberDudeBivash shield logo are registered/common law trademarks of CYBERDUDEBIVASH PRIVATE LIMITED in India. Unauthorized use of these marks in commerce is prohibited under the Trade Marks Act, 1999." },
+                  { title: "Software License", body: "Platform software is proprietary. No part may be copied, modified, distributed, or reverse engineered without written permission. Security tools sold via Gumroad are licensed for single-organization use only and may not be resold or redistributed." },
+                  { title: "SIGMA Rules & Playbooks", body: "SIGMA detection rules and incident response playbooks produced by CyberDudeBivash are licensed for defensive use within your own organization only. Attribution required for public sharing: 'Source: CyberDudeBivash® (cyberdudebivash.com)'." },
+                  { title: "Permitted Uses", body: "Personal research and educational reference with attribution; linking to our public platforms; quoting brief excerpts for commentary with attribution; using our public API feeds per API Terms. All other uses require written permission." },
+                  { title: "DMCA / Takedown", body: "To report copyright infringement or submit a takedown request, contact: bivash@cyberdudebivash.com with subject 'IP Infringement Notice'. We will respond within 5 business days." },
+                  { title: "Recommended Attribution", body: "When citing CyberDudeBivash research or tools: 'CyberDudeBivash® (cyberdudebivash.com), [Year]. [Title/Resource]. CYBERDUDEBIVASH PRIVATE LIMITED, Jajpur Road, Odisha, India.'" },
+                ].map(s => (
+                  <div key={s.title} className="border-l-2 border-amber-800/50 pl-4">
+                    <h3 className="text-sm font-bold text-slate-200 mb-1.5">{s.title}</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans">{s.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 5. BOTTOM ECOSYSTEM FOOTER BAR */}
-      <footer className="bg-black border-t border-slate-800/80 py-8 px-6 space-y-6">
-        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-6 text-xs text-slate-400 font-mono">
-          
-          <div className="space-y-3">
-            <h4 className="text-sm font-bold text-slate-200">CyberDudeBivash®</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-              Autonomous AI-powered cybersecurity defense platform delivering threat intelligence feeds, managed SOC auditing, and security tools globally since 2020.
-            </p>
-            <div className="text-[10px] text-slate-600">
-              PAN: ARKPN8270G &bull; GSTIN: 21ARKPN8270G1ZP
-            </div>
-          </div>
+      <footer className="relative bg-[#020810] border-t-0 overflow-hidden">
+        {/* Top gradient accent border */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-900/40 to-transparent mb-0" />
 
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300">Ecosystem Links</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <span className="text-[9px] font-bold text-slate-600 block uppercase tracking-wider">Workspace</span>
-                <ul className="space-y-1 text-[11px] text-slate-500">
-                  <li><button onClick={() => setCurrentView("home")} className="hover:text-cyan-400 transition-colors cursor-pointer text-left">Gateway</button></li>
-                  <li><button onClick={() => setCurrentView("intel")} className="hover:text-cyan-400 transition-colors cursor-pointer text-left">APEX Intel</button></li>
-                  <li><button onClick={() => setCurrentView("ai")} className="hover:text-cyan-400 transition-colors cursor-pointer text-left">AI Hub</button></li>
-                  <li><button onClick={() => setCurrentView("tools")} className="hover:text-cyan-400 transition-colors cursor-pointer text-left">Tools Portal</button></li>
-                  <li><button onClick={() => setCurrentView("blog")} className="hover:text-cyan-400 transition-colors cursor-pointer text-left">Research Blog</button></li>
-                </ul>
-              </div>
-              <div className="space-y-1.5">
-                <span className="text-[9px] font-bold text-slate-600 block uppercase tracking-wider">Live Web</span>
-                <ul className="space-y-1 text-[11px] text-slate-500">
-                  <li><a href="https://www.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">Official Site</a></li>
-                  <li><a href="https://intel.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">Sentinel APEX</a></li>
-                  <li><a href="https://cyberdudebivash.in" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">AI Hub Live</a></li>
-                  <li><a href="https://tools.cyberdudebivash.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">Tools Live</a></li>
-                  <li><a href="https://blog.cyberdudebivash.in" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">Blog Live</a></li>
-                </ul>
-              </div>
-            </div>
+        {/* Trust badge strip */}
+        <div className="bg-[#050c14] border-b border-slate-800/60 py-3 px-6">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            {[
+              { label: "ISO/IEC 27001:2022", color: "text-cyan-400" },
+              { label: "SOC 2 Type II", color: "text-emerald-400" },
+              { label: "GDPR Compliant", color: "text-sky-400" },
+              { label: "PCI-DSS v4.0", color: "text-violet-400" },
+              { label: "India DPDP Act 2023", color: "text-amber-400" },
+              { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
+              { label: "OWASP LLM Top 10", color: "text-pink-400" },
+            ].map(b => (
+              <span key={b.label} className={`text-[10px] font-mono font-semibold ${b.color} flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${b.color.replace("text-", "bg-")} opacity-80`} />
+                {b.label}
+              </span>
+            ))}
           </div>
-
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300">Enterprise Services</h4>
-            <ul className="space-y-1.5 text-[11px] text-slate-500 leading-normal font-sans">
-              <li>&bull; Managed SOC-as-a-Service (CDB SOC-X)</li>
-              <li>&bull; India DPDP Act Compliance Scans</li>
-              <li>&bull; OWASP LLM Red Team engagements</li>
-              <li>&bull; Multi-Tenant MSSP Partner Suite</li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300">Office Coordinates</h4>
-            <ul className="space-y-1 text-[11px] text-slate-500 leading-normal font-sans">
-              <li>CYBERDUDEBIVASH PRIVATE LIMITED</li>
-              <li>29, Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India</li>
-              <li className="pt-2 text-[10px] font-mono text-cyan-500 flex items-center gap-1.5">
-                <Phone className="w-3 h-3" /> +91 81798 81447
-              </li>
-            </ul>
-          </div>
-
         </div>
 
-        <div className="max-w-7xl mx-auto w-full pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
-          <div className="text-[10px] text-slate-500 font-mono">
-            &copy; {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved &bull; TLP classification per active Traffic Light Protocol.
+        {/* Main footer grid */}
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+
+          {/* Brand column */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center shadow-lg shadow-cyan-900/50">
+                <span className="text-white font-black text-sm">C</span>
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white tracking-wide">CyberDudeBivash<span className="text-cyan-400">®</span></div>
+                <div className="text-[9px] text-slate-500 font-mono tracking-widest uppercase">ECOSYSTEM V4 · EST. 2020</div>
+              </div>
+            </div>
+            <p className="text-[12px] text-slate-400 leading-relaxed font-sans max-w-xs">
+              Autonomous AI-powered cybersecurity defense platform delivering real-time threat intelligence, managed SOC auditing, and 100+ security tools to enterprise teams globally.
+            </p>
+            {/* Legal registration */}
+            <div className="bg-slate-900/60 border border-slate-800/80 rounded-lg p-3 space-y-1.5">
+              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Legal Registration</div>
+              <div className="text-[11px] text-slate-300 font-mono">CYBERDUDEBIVASH PRIVATE LIMITED</div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <span className="text-[10px] text-slate-500 font-mono">PAN: <span className="text-cyan-400">ARKPN8270G</span></span>
+                <span className="text-[10px] text-slate-500 font-mono">GSTIN: <span className="text-cyan-400">21ARKPN8270G1ZP</span></span>
+              </div>
+              <div className="text-[10px] text-slate-500 font-sans leading-relaxed">
+                29, Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India
+              </div>
+              <a href="tel:+918179881447" className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 pt-0.5">
+                <Phone className="w-3 h-3" /> +91 81798 81447
+              </a>
+              <a href="mailto:bivash@cyberdudebivash.com" className="text-[11px] font-mono text-cyan-400/80 hover:text-cyan-300 transition-colors block">
+                bivash@cyberdudebivash.com
+              </a>
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-[10px] text-slate-400 font-mono">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Secure Engine v4.1 (Stable)
-            </span>
-            <span>SESSION_ID: APEX-9922-BIVASH</span>
+
+          {/* Workspace links */}
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-cyan-500 border-b border-slate-800 pb-2">Workspace</h4>
+            <ul className="space-y-2">
+              {[
+                { label: "Gateway", view: "home" as const },
+                { label: "Sentinel APEX™", view: "intel" as const },
+                { label: "AI Hub & Audit", view: "ai" as const },
+                { label: "ThreatCore™ Tools", view: "tools" as const },
+                { label: "Blog & Academy", view: "blog" as const },
+                { label: "REST API", view: "api" as const },
+              ].map(l => (
+                <li key={l.view}>
+                  <button onClick={() => setCurrentView(l.view)} className="text-[12px] text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer text-left font-sans flex items-center gap-2 group">
+                    <span className="w-1 h-1 rounded-full bg-slate-700 group-hover:bg-cyan-400 transition-colors" />
+                    {l.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Live platforms */}
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 border-b border-slate-800 pb-2">Live Platforms</h4>
+            <ul className="space-y-2">
+              {[
+                { label: "Official Gateway", url: "https://www.cyberdudebivash.com" },
+                { label: "Sentinel APEX™", url: "https://intel.cyberdudebivash.com" },
+                { label: "AI Security Hub", url: "https://cyberdudebivash.in" },
+                { label: "ThreatCore™ Tools", url: "https://tools.cyberdudebivash.com" },
+                { label: "Research Blog", url: "https://blog.cyberdudebivash.in" },
+                { label: "Developer APIs", url: "https://cyberdudebivash.in/api" },
+              ].map(l => (
+                <li key={l.url}>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-[12px] text-slate-400 hover:text-emerald-400 transition-colors font-sans flex items-center gap-2 group">
+                    <span className="w-1 h-1 rounded-full bg-slate-700 group-hover:bg-emerald-400 transition-colors" />
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Enterprise & legal */}
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 border-b border-slate-800 pb-2">Enterprise</h4>
+            <ul className="space-y-2">
+              {[
+                "Managed SOC-as-a-Service",
+                "DPDP Act Compliance Scans",
+                "OWASP LLM Red Team",
+                "Multi-Tenant MSSP Suite",
+                "vCISO Advisory",
+                "Penetration Testing",
+              ].map(s => (
+                <li key={s} className="text-[11px] text-slate-400 font-sans flex items-start gap-2">
+                  <span className="w-1 h-1 rounded-full bg-violet-500/60 mt-1.5 shrink-0" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+            <div className="pt-2 space-y-1.5">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800/60 pb-2">Legal</h4>
+              {[
+                { label: "About Us", view: "about" as const },
+                { label: "Privacy Policy", view: "privacy" as const },
+                { label: "Terms of Service", view: "terms" as const },
+                { label: "Copyright & IP", view: "copyright" as const },
+              ].map(l => (
+                <button key={l.label} onClick={() => setCurrentView(l.view)} className="block text-[11px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer text-left font-sans">
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Social row */}
+        <div className="border-t border-slate-800/60 bg-[#030912]">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap gap-3">
+              {[
+                { label: "LinkedIn", url: "https://linkedin.com/company/cyberdudebivash", color: "hover:text-sky-400" },
+                { label: "X / Twitter", url: "https://twitter.com/CDBSENTINELAPEX", color: "hover:text-slate-200" },
+                { label: "Instagram", url: "https://instagram.com/cyberdudebivash_official", color: "hover:text-pink-400" },
+                { label: "YouTube", url: "https://youtube.com/@CYBERDUDEBIVASHSentinelAPEX", color: "hover:text-red-400" },
+                { label: "Medium", url: "https://medium.com/@cyberdudebivash", color: "hover:text-emerald-400" },
+                { label: "GitHub", url: "https://github.com/cyberdudebivash", color: "hover:text-violet-400" },
+              ].map(s => (
+                <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
+                  className={`text-[11px] text-slate-500 ${s.color} transition-colors font-sans`}>
+                  {s.label}
+                </a>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-slate-600 font-mono">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Secure Engine v4.1
+              </span>
+              <span className="text-slate-700">|</span>
+              <span>NODE: 103.142.12.98</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="bg-black border-t border-slate-900">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
+            <div className="text-[10px] text-slate-600 font-mono">
+              &copy; {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved.
+              &nbsp;&bull;&nbsp;TLP:CLEAR unless otherwise marked.
+              &nbsp;&bull;&nbsp;Registered in India under Companies Act 2013.
+            </div>
+            <div className="text-[10px] text-slate-700 font-mono">SESSION: APEX-9922-BIVASH</div>
           </div>
         </div>
       </footer>

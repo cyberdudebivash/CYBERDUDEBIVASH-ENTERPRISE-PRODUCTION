@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- CYBERDUDEBIVASH® Ecosystem Sitemap -->
+  <!-- Generated: 2026-06-29 | Maintained by: CyberDudeBivash Private Limited -->
+
+  <!-- Main Ecosystem Gateway -->
+  <url>
+    <loc>https://www.cyberdudebivash.com/</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Sentinel APEX™ Threat Intelligence -->
+  <url>
+    <loc>https://intel.cyberdudebivash.com/</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- AI Security Hub -->
+  <url>
+    <loc>https://cyberdudebivash.in/</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ThreatCore™ Tools -->
+  <url>
+    <loc>https://tools.cyberdudebivash.com/</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Research Blog & Academy -->
+  <url>
+    <loc>https://blog.cyberdudebivash.in/</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Developer API Documentation -->
+  <url>
+    <loc>https://cyberdudebivash.in/api</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Upgrade / Pricing -->
+  <url>
+    <loc>https://cyberdudebivash.in/upgrade.html</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- API Feeds -->
+  <url>
+    <loc>https://intel.cyberdudebivash.com/api/v1/intel/latest.json</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

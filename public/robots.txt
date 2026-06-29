@@ -1,0 +1,30 @@
+# CYBERDUDEBIVASH® Ecosystem — robots.txt
+# https://www.cyberdudebivash.com
+# Maintained by: CyberDudeBivash Private Limited
+
+User-agent: *
+Allow: /
+
+# Disallow internal API routes from indexing
+Disallow: /api/
+Disallow: /assets/index-*.js
+Disallow: /assets/index-*.css
+
+# Sitemap
+Sitemap: https://www.cyberdudebivash.com/sitemap.xml
+
+# Crawl rate
+Crawl-delay: 1
+
+# AI training opt-out
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Allow: /
