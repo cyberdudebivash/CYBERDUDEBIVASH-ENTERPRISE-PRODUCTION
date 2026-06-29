@@ -2656,15 +2656,23 @@ export default function App() {
 
       {/* 6. GENERAL REQUEST ENTRY / LEAD MODAL */}
       {showContactModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-modal-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowContactModal(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowContactModal(false); }}
+        >
           <div className="bg-[#0c1117] border border-slate-800 rounded-lg max-w-md w-full overflow-hidden shadow-2xl">
             <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <Briefcase className="w-4.5 h-4.5 text-cyan-500" />
+              <h3 id="contact-modal-title" className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <Briefcase className="w-4.5 h-4.5 text-cyan-500" aria-hidden="true" />
                 CyberDudeBivash® Enterprise Request
               </h3>
-              <button 
+              <button
                 onClick={() => setShowContactModal(false)}
+                aria-label="Close enterprise request dialog"
                 className="text-slate-500 hover:text-slate-300 font-mono text-sm p-1"
               >
                 [X]
@@ -2741,15 +2749,23 @@ export default function App() {
 
       {/* 7. INTERACTIVE CHECKOUT MODAL (Gumroad simulator) */}
       {checkoutModalOpen && checkingOutProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="checkout-modal-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setCheckoutModalOpen(false); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setCheckoutModalOpen(false); }}
+        >
           <div className="bg-[#0c1117] border border-slate-800 rounded-lg max-w-md w-full overflow-hidden shadow-2xl animate-fade-in">
             <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <Download className="w-4 h-4 text-emerald-400" />
+              <h3 id="checkout-modal-title" className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                <Download className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                 Gumroad Checkout Core
               </h3>
-              <button 
+              <button
                 onClick={() => setCheckoutModalOpen(false)}
+                aria-label="Close checkout dialog"
                 className="text-slate-500 hover:text-slate-300 font-mono text-sm p-1"
               >
                 [X]
