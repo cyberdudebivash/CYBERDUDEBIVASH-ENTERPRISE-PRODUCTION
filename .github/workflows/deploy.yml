@@ -42,6 +42,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Copy static subpages and folders to dist for production serving
+          cp *.html dist/
+          cp -r portal dist/
+          cp -r react-portal dist/
+          mkdir -p dist/assets/images dist/assets/css dist/assets/js
+          cp -r assets/images/* dist/assets/images/ 2>/dev/null || true
+          cp -r assets/css/* dist/assets/css/ 2>/dev/null || true
+          cp -r assets/js/* dist/assets/js/ 2>/dev/null || true
+
           JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1 | xargs basename)
           CSS_FILE=$(ls dist/assets/index-*.css 2>/dev/null | head -1 | xargs basename)
           ICO_FILE=$(ls dist/assets/favicon-*.ico 2>/dev/null | head -1 | xargs basename 2>/dev/null || true)
