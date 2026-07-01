@@ -4564,6 +4564,47 @@ body {
     </div>
 </div>
 
+<!-- B2B LIVE ASSISTANT CHAT WIDGET -->
+<div class="live-chat-widget" id="live-chat-assist-widget">
+    <button class="chat-trigger-btn" id="chat-trigger-button" onclick="toggleLiveChatAssist()">
+        <span class="chat-trigger-icon">💬</span>
+        <span class="chat-online-dot"></span>
+    </button>
+
+    <div class="chat-window-panel" id="chat-assist-window">
+        <div class="chat-window-header">
+            <div class="chat-header-avatar">
+                <div class="chat-avatar-img">👤</div>
+                <span class="chat-header-status-dot"></span>
+            </div>
+            <div class="chat-header-info">
+                <div class="chat-header-name">Bivash Kumar Nayak</div>
+                <div class="chat-header-role">Founder &amp; Lead Analyst</div>
+            </div>
+            <button class="btn-close-chat" onclick="toggleLiveChatAssist()">×</button>
+        </div>
+
+        <div class="chat-messages-container" id="chat-messages-box">
+            <div class="chat-msg system">
+                <div class="chat-msg-content">
+                    Hey there! 👋 I am Bivash. Need help securing your perimeters, auditing smart contracts, or setting up threat feeds? Choose an action below or message me!
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-quick-actions">
+            <button class="btn-chat-action" onclick="handleChatAction('audit')">⚡ Request B2B Audit</button>
+            <button class="btn-chat-action" onclick="handleChatAction('api')">🔑 Get API Feeds</button>
+            <button class="btn-chat-action" onclick="handleChatAction('contact')">📞 Direct Contact</button>
+        </div>
+
+        <div class="chat-input-row">
+            <input class="chat-input-field" id="chat-message-input" onkeydown="handleChatInputKey(event)" placeholder="Type your security question..." type="text"/>
+            <button class="btn-send-chat" onclick="sendChatMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
 <!-- CONSULTATION LEAD CAPTURE FORM -->
 <div class="consult-form-section" id="consultation-inquiry-anchor">
     <div class="consult-container">
