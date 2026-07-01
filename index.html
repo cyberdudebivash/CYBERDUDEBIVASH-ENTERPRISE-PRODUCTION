@@ -6273,67 +6273,113 @@ body {
         };
         
         window.triggerCyberBrain = function() {
-            const inputVal = document.getElementById('sim-domain-input').value.trim();
-            simDomain = inputVal || "enterprise-node.net";
-            
-            // Reset states
-            document.getElementById('sim-monetization-block').style.display = 'none';
-            document.getElementById('step-recon').className = 'kill-chain-step inactive';
-            document.getElementById('step-access').className = 'kill-chain-step inactive';
-            document.getElementById('step-exec').className = 'kill-chain-step inactive';
-            document.getElementById('step-lat').className = 'kill-chain-step inactive';
-            
-            const narrativeBox = document.getElementById('sim-narrative-text-box');
-            const scenarioBox = document.getElementById('sim-scenario-text-box');
-            const remediationBox = document.getElementById('sim-remediation-text-box');
-            const forecastBox = document.getElementById('sim-forecast-text-box');
-            
-            narrativeBox.innerText = `[+] Initiating threat audit profiling for ${simDomain}...`;
-            scenarioBox.innerText = `[+] Scanning threat routes for ${simDomain}...`;
-            remediationBox.innerText = `[+] Building playbook for ${simDomain}...`;
-            forecastBox.innerText = `[+] Computing attack vectors probability for ${simDomain}...`;
-            
-            // Step 1: Recon
-            setTimeout(() => {
-                const step = document.getElementById('step-recon');
-                step.className = 'kill-chain-step active';
-                narrativeBox.innerText = `[+] Reconnaissance Node ACTIVE: Identified subdomains and DNS registry data of ${simDomain}. Finding gaps in mail gateways.`;
-            }, 800);
-            
-            // Step 2: Access
-            setTimeout(() => {
-                const step = document.getElementById('step-access');
-                step.className = 'kill-chain-step active';
-                narrativeBox.innerText = `[+] Initial Access Node ACTIVE: Identified vulnerability on perimeter node SSL handshake routing. Port 443 probes running.`;
-            }, 1600);
-            
-            // Step 3: Exec
-            setTimeout(() => {
-                const step = document.getElementById('step-exec');
-                step.className = 'kill-chain-step active';
-                narrativeBox.innerText = `[+] Execution Node ACTIVE: Payload injection test compiled. Shell access verified on simulated boundary endpoint.`;
-            }, 2400);
-            
-            // Step 4: Lateral
-            setTimeout(() => {
-                const step = document.getElementById('step-lat');
-                step.className = 'kill-chain-step active';
-                
-                // Populate content tabs
-                narrativeBox.innerHTML = `<strong>Threat Actor Profile:</strong> APT28 (Fancy Bear), Lazarus Group, FIN7, Scattered Spider.<br/><br/>A profiling audit of <strong>${simDomain}</strong> indicates missing DNSSEC validation protocols. Gaps in boundary perimeter configurations make it highly susceptible to DNS spoofing campaigns and session routing interception.`;
-                
-                scenarioBox.innerHTML = `<strong>Adversary Emulation Strategy:</strong><br/>1. <strong>Reconnaissance:</strong> Scan active subdomains and DNS routing nodes of ${simDomain}.<br/>2. <strong>Initial Access:</strong> Attempt entry utilizing unpatched edge gateway components.<br/>3. <strong>Execution:</strong> Inject memory buffer script loader.<br/>4. <strong>Lateral Movement:</strong> Pivot to internal database nodes using stolen credential hashes.`;
-                
-                remediationBox.innerHTML = `<strong>Zero-Day Mitigation Actions:</strong><br/>1. Force cryptographic hardware keys (MFA) on all administrative portal endpoints.<br/>2. Deploy DNSSEC validation on all primary domains and zones of ${simDomain}.<br/>3. Configure ingress security policies to block lateral SMB/RPC sweeps.`;
-                
-                forecastBox.innerHTML = `<strong>Risk Projection Matrix:</strong><br/>1. <strong>Attack Probability:</strong> 85% (Elevated risk index).<br/>2. <strong>Business Impact:</strong> High (Data confidentiality breach risks).<br/>3. <strong>Containment SLA:</strong> 15 minutes recommended.`;
-                
-                // Unlock monetization card
-                document.getElementById('sim-monetization-block').style.display = 'block';
-            }, 3200);
-        };
+    const inputVal = document.getElementById('sim-domain-input').value.trim();
+    simDomain = inputVal || "enterprise-node.net";
+    
+    // Reset states
+    document.getElementById('sim-monetization-block').style.display = 'none';
+    document.getElementById('step-recon').className = 'kill-chain-step inactive';
+    document.getElementById('step-access').className = 'kill-chain-step inactive';
+    document.getElementById('step-exec').className = 'kill-chain-step inactive';
+    document.getElementById('step-lat').className = 'kill-chain-step inactive';
+    
+    const narrativeBox = document.getElementById('sim-narrative-text-box');
+    const scenarioBox = document.getElementById('sim-scenario-text-box');
+    const remediationBox = document.getElementById('sim-remediation-text-box');
+    const forecastBox = document.getElementById('sim-forecast-text-box');
+    
+    narrativeBox.innerHTML = `<span style="color:var(--accent);">[+] [21:24:01] INITIATING PROACTIVE SCAN FOR ${simDomain}...</span><br/>[+] Resolving DNS targets...<br/>[+] Loading MITRE mapping tables...`;
+    scenarioBox.innerHTML = `<span style="color:var(--accent);">[+] [21:24:01] ENROLLING ATTACK AGENTS FOR ${simDomain}...</span><br/>[+] Simulating exploit avenues...`;
+    remediationBox.innerHTML = `<span style="color:var(--accent);">[+] [21:24:01] ANALYZING SECURITY BASELINES FOR ${simDomain}...</span><br/>[+] Compiling baseline rules...`;
+    forecastBox.innerHTML = `<span style="color:var(--accent);">[+] [21:24:01] COMPUTING ATTACK VECTORS FOR ${simDomain}...</span><br/>[+] Analyzing probability models...`;
+    
+    // Step 1: Recon
+    setTimeout(() => {
+        const step = document.getElementById('step-recon');
+        if (step) step.className = 'kill-chain-step active';
+        narrativeBox.innerHTML += `<br/><span style="color:var(--safe);">[+] Reconnaissance Complete: Identified subdomains and open ports.</span>`;
+    }, 800);
+    
+    // Step 2: Access
+    setTimeout(() => {
+        const step = document.getElementById('step-access');
+        if (step) step.className = 'kill-chain-step active';
+        scenarioBox.innerHTML += `<br/><span style="color:var(--safe);">[+] Access Vector Found: Outdated TLS configuration path detected on target.</span>`;
+    }, 1600);
+    
+    // Step 3: Exec
+    setTimeout(() => {
+        const step = document.getElementById('step-exec');
+        if (step) step.className = 'kill-chain-step active';
+        remediationBox.innerHTML += `<br/><span style="color:var(--safe);">[+] Containment Active: Identified mitigations for TLS session hijack threat.</span>`;
+    }, 2400);
+    
+    // Step 4: Lateral
+    setTimeout(() => {
+        const step = document.getElementById('step-lat');
+        if (step) step.className = 'kill-chain-step active';
+        
+        narrativeBox.innerHTML = `
+            <strong>VULNERABILITY AUDIT REPORT: ${simDomain}</strong><br/><br/>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="width:50px; height:50px; border-radius:50%; border:3px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--accent); font-size:1.1rem; box-shadow:0 0 10px rgba(16, 185, 129, 0.2);">87%</div>
+                <div>
+                    <div style="font-weight:600; color:#fff;">Risk Level: CRITICAL (CVSS 8.7)</div>
+                    <div style="font-size:0.8rem; color:#a3a3a3;">Target presents significant perimeter exposure.</div>
+                </div>
+            </div>
+            <strong>Threat Profile:</strong> Lazarus Group, Scattered Spider, FIN7 target profiles match port indicators.<br/>
+            <strong>Identified Exposure:</strong> Deserialization paths and TLS cipher suites require immediate hardening.
+        `;
+        
+        scenarioBox.innerHTML = `
+            <strong>Adversary Emulation Strategy:</strong><br/>
+            1. <strong>Reconnaissance:</strong> Map open services, SSL parameters, and external routing subnets.<br/>
+            2. <strong>Initial Access:</strong> Exploit missing secure headers on SSL endpoints.<br/>
+            3. <strong>Execution:</strong> Inject arbitrary parameters payload into vulnerability gateway.<br/>
+            4. <strong>Command & Control:</strong> Trigger outbound reverse shell connection.
+        `;
+        
+        remediationBox.innerHTML = `
+            <strong>Zero-Day Mitigation Actions:</strong><br/>
+            1. Deploy cryptographic hardware-backed Multi-Factor Authentication.<br/>
+            2. Disable legacy SSL/TLS ciphers and configure secure TLS 1.3 suites.<br/>
+            3. Restrict administrative port exposure and validate input parameters.
+        `;
+        
+        forecastBox.innerHTML = `
+            <strong>Risk Projection Matrix:</strong><br/>
+            1. <strong>Exploit Probability:</strong> 87% within 30 days if left unmitigated.<br/>
+            2. <strong>Business Impact:</strong> HIGH (Loss of system integrity and token database disclosure risk).<br/>
+            3. <strong>Mitigation Complexity:</strong> LOW (Resolvable via configuration review & vulnerability patching).
+        `;
+        
+        document.getElementById('sim-monetization-block').style.display = 'block';
+    }, 3200);
+};
 
-        window.loadLiveAdvisories = function(categoryKey) {
+window.remediateScannedDomain = function() {
+    const domainInput = document.getElementById('sim-domain-input');
+    const domainVal = domainInput ? domainInput.value.trim() : "";
+    
+    const formAnchor = document.getElementById('consultation-inquiry-anchor');
+    if (formAnchor) {
+        formAnchor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    const selectEl = document.getElementById('inq-service');
+    const domainEl = document.getElementById('inq-domain');
+    
+    if (selectEl) {
+        selectEl.value = "Vulnerability Assessment - ₹9,999";
+        calculateDynamicCost();
+    }
+    if (domainEl && domainVal) {
+        domainEl.value = domainVal;
+    }
+};
+
+window.loadLiveAdvisories = function(categoryKey) {
             const loading = document.getElementById('cisa-feed-loading');
             const list = document.getElementById('cisa-feed-list');
             if (!loading || !list) return;
