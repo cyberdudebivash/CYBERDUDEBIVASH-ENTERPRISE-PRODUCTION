@@ -4426,6 +4426,283 @@ body {
     color: #000;
     box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
+
+/* ADVISORY & CONSULTATION SERVICES STYLES */
+.advisory-services-section {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.advisory-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.advisory-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #06b6d4;
+    background: rgba(6, 182, 212, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+.advisory-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.advisory-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.advisory-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+.advisory-service-card {
+    background: rgba(2, 4, 6, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.advisory-service-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Card Glow Accent Classes */
+.advisory-service-card.csc {
+    border-color: rgba(6, 182, 212, 0.3);
+}
+.advisory-service-card.csc:hover {
+    border-color: #06b6d4;
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.15);
+}
+.advisory-service-card.aisc {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.advisory-service-card.aisc:hover {
+    border-color: #a855f7;
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+}
+.advisory-service-card.tias {
+    border-color: rgba(225, 29, 72, 0.3);
+}
+.advisory-service-card.tias:hover {
+    border-color: #e11d48;
+    box-shadow: 0 4px 20px rgba(225, 29, 72, 0.15);
+}
+.advisory-service-card.casc {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.advisory-service-card.casc:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+.advisory-service-card.pib {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+.advisory-service-card.pib:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+}
+
+.advisory-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.advisory-ref {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.advisory-promo-badge {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+.advisory-promo-badge.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.advisory-promo-badge.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.advisory-promo-badge.crimson { background: rgba(225, 29, 72, 0.1); color: #e11d48; }
+.advisory-promo-badge.gold { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.advisory-promo-badge.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+.advisory-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.advisory-card-price {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+.original-price {
+    text-decoration: line-through;
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-right: 8px;
+}
+.promo-price {
+    color: #06b6d4;
+}
+
+.advisory-service-card.csc .promo-price { color: #67e8f9; }
+.advisory-service-card.aisc .flagship-card-price { color: #d8b4fe; }
+.advisory-service-card.tias .flagship-card-price { color: #fda4af; }
+.advisory-service-card.casc .flagship-card-price { color: #fde047; }
+.advisory-service-card.pib .flagship-card-price { color: #6ee7b7; }
+
+.advisory-card-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 16px;
+    flex-grow: 1;
+}
+
+.advisory-ideal-header,
+.advisory-deliverables-header {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.advisory-ideal-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.advisory-ideal-grid span {
+    font-size: 10px;
+    color: var(--text-secondary);
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.advisory-deliverables-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+.advisory-deliverables-list li {
+    font-size: 11px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    position: relative;
+    padding-left: 12px;
+}
+.advisory-deliverables-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+.advisory-service-card.csc li::before { background: #06b6d4; }
+.advisory-service-card.aisc li::before { background: #a855f7; }
+.advisory-service-card.tias li::before { background: #e11d48; }
+.advisory-service-card.casc li::before { background: #f59e0b; }
+.advisory-service-card.pib li::before { background: #10b981; }
+
+.btn-advisory-order {
+    display: block;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.advisory-service-card.csc .btn-advisory-order {
+    background: rgba(6, 182, 212, 0.1);
+    color: #06b6d4;
+    border-color: rgba(6, 182, 212, 0.3);
+}
+.advisory-service-card.csc .btn-advisory-order:hover {
+    background: #06b6d4;
+    color: #000;
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.advisory-service-card.aisc .btn-advisory-order {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.advisory-service-card.aisc .btn-advisory-order:hover {
+    background: #a855f7;
+    color: #000;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.advisory-service-card.tias .btn-advisory-order {
+    background: rgba(225, 29, 72, 0.1);
+    color: #e11d48;
+    border-color: rgba(225, 29, 72, 0.3);
+}
+.advisory-service-card.tias .btn-advisory-order:hover {
+    background: #e11d48;
+    color: #000;
+    box-shadow: 0 0 10px rgba(225, 29, 72, 0.5);
+}
+
+.advisory-service-card.casc .btn-advisory-order {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.advisory-service-card.casc .btn-advisory-order:hover {
+    background: #f59e0b;
+    color: #000;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.advisory-service-card.pib .btn-advisory-order {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+.advisory-service-card.pib .btn-advisory-order:hover {
+    background: #10b981;
+    color: #000;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
 ]]></b:skin>
 </head>
 
@@ -4816,6 +5093,161 @@ body {
                     </div>
                 </div>
 
+                <!-- ADVISORY & CONSULTATION SERVICES MATRIX -->
+                <div class='advisory-services-section'>
+                    <div class='advisory-header'>
+                        <div class='advisory-badge'>ADVISORY &amp; CONSULTATION</div>
+                        <h2 class='advisory-title'>Interactive Advisory &amp; Consultation Hub</h2>
+                        <p class='advisory-desc'>Access one-on-one expert consultations, threat advisory briefings, and premium intelligence briefs.</p>
+                    </div>
+                    <div class='advisory-services-grid'>
+
+                        <!-- Card 1: Cybersecurity Strategy Consultation -->
+                        <div class='advisory-service-card csc'>
+                            <div class='advisory-card-meta'>
+                                <span class='advisory-ref'>CDB-CSC-001</span>
+                                <span class='advisory-promo-badge red'>80% OFF</span>
+                            </div>
+                            <h3 class='advisory-card-title'>Cybersecurity Strategy Consultation</h3>
+                            <div class='advisory-card-price'>
+                                <span class='original-price'>₹4,999</span>
+                                <span class='promo-price'>₹999 / session</span>
+                            </div>
+                            <p class='advisory-card-desc'>Book a premium one-on-one strategy review to build a resilient, custom roadmap mapped to your enterprise architecture.</p>
+                            
+                            <div class='advisory-ideal-header'>PERFECT FOR:</div>
+                            <div class='advisory-ideal-grid'>
+                                <span>🗺️ Security Roadmaps</span>
+                                <span>🤖 AI Security</span>
+                                <span>📋 Compliance Audit</span>
+                                <span>🛡️ SOC &amp; MSSP Planning</span>
+                            </div>
+
+                            <div class='advisory-deliverables-header'>WHAT YOU GET:</div>
+                            <ul class='advisory-deliverables-list'>
+                                <li>Expert-Led 1:1 Session</li>
+                                <li>Custom Security Roadmap</li>
+                                <li>Risk-Based Action Plan</li>
+                            </ul>
+                            
+                            <a class='btn-advisory-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Cybersecurity Strategy Consultation - ₹999")'>Book Consultation Today!</a>
+                        </div>
+
+                        <!-- Card 2: AI Security Consultation -->
+                        <div class='advisory-service-card aisc'>
+                            <div class='advisory-card-meta'>
+                                <span class='advisory-ref'>CDB-AISC-001</span>
+                                <span class='advisory-promo-badge purple'>AI NATIVE</span>
+                            </div>
+                            <h3 class='advisory-card-title'>AI Security Consultation</h3>
+                            <div class='advisory-card-price'>₹1,999 / consultation</div>
+                            <p class='advisory-card-desc'>Secure your autonomous LLMs, pipeline configurations, and agent frameworks. Prevent prompt injections and data leaks.</p>
+                            
+                            <div class='advisory-ideal-header'>PERFECT FOR:</div>
+                            <div class='advisory-ideal-grid'>
+                                <span>🚀 AI Startups</span>
+                                <span>💻 SaaS Developers</span>
+                                <span>🛠️ Model Builders</span>
+                                <span>⚖️ AI Governance Teams</span>
+                            </div>
+
+                            <div class='advisory-deliverables-header'>WHAT YOU GET:</div>
+                            <ul class='advisory-deliverables-list'>
+                                <li>30-45 min Expert Session</li>
+                                <li>Prompt Injection Review</li>
+                                <li>AI Data Exposure Analysis</li>
+                            </ul>
+                            
+                            <a class='btn-advisory-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security Consultation - ₹1,999")'>Book Your Consultation Now!</a>
+                        </div>
+
+                        <!-- Card 3: Threat Intelligence Advisory Services -->
+                        <div class='advisory-service-card tias'>
+                            <div class='advisory-card-meta'>
+                                <span class='advisory-ref'>CDB-TI-001</span>
+                                <span class='advisory-promo-badge crimson'>ELITE INTEL</span>
+                            </div>
+                            <h3 class='advisory-card-title'>Threat Intelligence Advisory Services</h3>
+                            <div class='advisory-card-price'>₹2,999 / brief</div>
+                            <p class='advisory-card-desc'>Anticipate emerging cyber threats. Receive strategic, expert-driven briefing feeds tracking advanced adversary groups.</p>
+                            
+                            <div class='advisory-ideal-header'>PERFECT FOR:</div>
+                            <div class='advisory-ideal-grid'>
+                                <span>🏢 Large Enterprises</span>
+                                <span>📡 SOC Teams</span>
+                                <span>👮 CISO Advisory</span>
+                                <span>📈 Risk Leaders</span>
+                            </div>
+
+                            <div class='advisory-deliverables-header'>WHAT YOU GET:</div>
+                            <ul class='advisory-deliverables-list'>
+                                <li>Threat Landscape Briefing</li>
+                                <li>Attack Trend Analysis</li>
+                                <li>Threat Actor TTP Overview</li>
+                            </ul>
+                            
+                            <a class='btn-advisory-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Threat Intelligence Advisory Services - ₹2,999")'>Book Your Advisory Now!</a>
+                        </div>
+
+                        <!-- Card 4: Cybersecurity & AI Security Consultation -->
+                        <div class='advisory-service-card casc'>
+                            <div class='advisory-card-meta'>
+                                <span class='advisory-ref'>CDB-CAIC-001</span>
+                                <span class='advisory-promo-badge gold'>BEST VALUE</span>
+                            </div>
+                            <h3 class='advisory-card-title'>Cybersecurity &amp; AI Security Consultation</h3>
+                            <div class='advisory-card-price'>₹999 / session</div>
+                            <p class='advisory-card-desc'>Get consolidated guidance to secure your digital future. Assess vulnerabilities across both web apps and AI model layers.</p>
+                            
+                            <div class='advisory-ideal-header'>PERFECT FOR:</div>
+                            <div class='advisory-ideal-grid'>
+                                <span>👤 Founders &amp; SMBs</span>
+                                <span>🎓 Tech Students</span>
+                                <span>💼 Career Professionals</span>
+                                <span>🖥️ App Developers</span>
+                            </div>
+
+                            <div class='advisory-deliverables-header'>WHAT YOU GET:</div>
+                            <ul class='advisory-deliverables-list'>
+                                <li>30-minute Consultation</li>
+                                <li>Strategy &amp; AI Guidance</li>
+                                <li>Action Plan PDF Report</li>
+                            </ul>
+                            
+                            <a class='btn-advisory-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Cybersecurity &amp; AI Security Consultation - ₹999")'>Book Consultation Now!</a>
+                        </div>
+
+                        <!-- Card 5: Premium CTI Intelligence Brief -->
+                        <div class='advisory-service-card pib'>
+                            <div class='advisory-card-meta'>
+                                <span class='advisory-ref'>CDB-CTI-PRO-001</span>
+                                <span class='advisory-promo-badge green'>CTI PRO</span>
+                            </div>
+                            <h3 class='advisory-card-title'>Premium CTI Intelligence Brief</h3>
+                            <div class='advisory-card-price'>₹999 / brief</div>
+                            <p class='advisory-card-desc'>Receive instant, one-time access to high-value actionable cyber threat intelligence designed to shield your endpoints.</p>
+                            
+                            <div class='advisory-ideal-header'>PERFECT FOR:</div>
+                            <div class='advisory-ideal-grid'>
+                                <span>🏢 Infrastructure Operators</span>
+                                <span>💻 DevSecOps Pipelines</span>
+                                <span>👥 Security Analysts</span>
+                                <span>🛡️ SOC Teams</span>
+                            </div>
+
+                            <div class='advisory-deliverables-header'>WHAT YOU GET:</div>
+                            <ul class='advisory-deliverables-list'>
+                                <li>PDF Target Threat Report</li>
+                                <li>IOC Curated CSV Summary</li>
+                                <li>Industry Risk Analysis</li>
+                            </ul>
+                            
+                            <a class='btn-advisory-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Premium CTI Intelligence Brief - ₹999")'>Get Your Intelligence Now!</a>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- SERVICE CATALOG & COMMERCIAL PRICING -->
                 <div class='pricing-catalog-section'>
                     <div class='catalog-header'>
@@ -5012,9 +5444,11 @@ body {
                                     <div class='form-group'>
                                         <label for='inq-service'>Security Assessment Type *</label>
                                         <select id='inq-service' onchange='calculateDynamicCost()'>
-                                            <option value='Cybersecurity Consultation - ₹999'>Cybersecurity Consultation — ₹999</option>
-                                            <option value='Premium AI Security Call - ₹1,999'>Premium AI Security Call — ₹1,999</option>
-                                            <option value='CTI Intelligence Brief - ₹999'>CTI Intelligence Brief — ₹999</option>
+                                            <option value='Cybersecurity Strategy Consultation - ₹999'>Cybersecurity Strategy Consultation — ₹999 (Special 80% Off)</option>
+                                            <option value='AI Security Consultation - ₹1,999'>AI Security Consultation — ₹1,999</option>
+                                            <option value='Threat Intelligence Advisory Services - ₹2,999'>Threat Intelligence Advisory Services — ₹2,999</option>
+                                            <option value='Cybersecurity &amp; AI Security Consultation - ₹999'>Cybersecurity &amp; AI Security Consultation — ₹999</option>
+                                            <option value='Premium CTI Intelligence Brief - ₹999'>Premium CTI Intelligence Brief — ₹999</option>
                                             <option value='Threat Intelligence Report - ₹4,999'>Threat Intelligence Report — ₹4,999</option>
                                             <option value='Threat Hunting Readiness Review - ₹14,999'>Threat Hunting Readiness Review — ₹14,999</option>
                                             <option value='AI Security Scanner Audit - ₹7,999'>AI Security Scanner Audit — ₹7,999</option>
