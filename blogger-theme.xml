@@ -10,7 +10,8 @@
     
     <!-- ADVANCED TECHNICAL SEO METATAGS -->
     <meta content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' name='robots'/>
-    <meta expr:content='data:blog.metaDescription ? data:blog.metaDescription : &quot;CYBERDUDEBIVASH&#174; SENTINEL APEX | Live AI-Powered Threat Intelligence Platform, SOC, &amp; AI Security Hub.&quot;' name='description'/>
+    <meta expr:content='data:blog.metaDescription ? data:blog.metaDescription : &quot;CYBERDUDEBIVASH&#174; SENTINEL APEX | Threat Intelligence Platform &amp; AI Security Hub. Ingesting real-time IOCs and mitigation playbooks.&quot;' name='description'/>
+    <meta content='cybersecurity, AI, security, ethical hacking, information security, threat intel, ai soc, soc, malware analysis, pentesting, network security, system security, application security, reverse engineering, devsecops, cloud security, SOC II, AI consulting, AI services, AI development, AI implementation, software development, CYBERSECURITY Services, CYBERSECURITY Products, CYBERSECURITY tools, CYBERSECURITY Solutions, CYBERSECURITY CUSTOMERS, cybersecurity companies, cybersecurity firms, cybersecurity experts, cybersecurity news, cyber incidents, soc analysis, soc analyst, CYBERDUDEBIVASH, CYBERDUDEBIVASH SENTINEL APEX, CYBERDUDEBIVASH AI SECURITY HUB, CYBERDUDEBIVASH SENTINEL APEX BLOG, CYBERDUDEBIVASH CYBERLAB' name='keywords'/>
     
     <!-- PWA ENTERPRISE METADATA -->
     <meta content='yes' name='apple-mobile-web-app-capable'/>
@@ -36,6 +37,77 @@
     
     <!-- Google AdSense Auto-Ads Verification -->
     <script async='async' crossorigin='anonymous' src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8343951291888650'/>
+
+    <!-- ADVANCED ENTERPRISE SEO SCHEMA (JSON-LD Graph) -->
+    <script type='application/ld+json'>
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://cyberbivash.blogspot.com/#organization",
+          "name": "CYBERDUDEBIVASH PRIVATE LIMITED",
+          "alternateName": ["CYBERDUDEBIVASH", "CYBERDUDEBIVASH SENTINEL APEX", "CYBERDUDEBIVASH AI SECURITY HUB", "CYBERDUDEBIVASH CYBERLAB", "CYBERDUDEBIVASH SENTINEL APEX BLOG"],
+          "url": "https://cyberbivash.blogspot.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://cyberdudebivash.com/logo.png",
+            "caption": "CYBERDUDEBIVASH Corporate Logo"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+91-8179881447",
+            "contactType": "security operations center hotline",
+            "email": "bivash@cyberdudebivash.com",
+            "areaServed": "Worldwide",
+            "availableLanguage": ["English", "Hindi"]
+          },
+          "sameAs": [
+            "https://intel.cyberdudebivash.com/",
+            "https://cyberdudebivash.in/",
+            "https://blog.cyberdudebivash.in/",
+            "https://tools.cyberdudebivash.com/",
+            "https://www.cyberdudebivash.com/",
+            "https://intel.cyberdudebivash.com/api-docs",
+            "https://intel.cyberdudebivash.com/upgrade.html",
+            "https://intel.cyberdudebivash.com/api/health",
+            "https://intel.cyberdudebivash.com/api/v1/intel/latest.json",
+            "https://intel.cyberdudebivash.com/api/v1/intel/apex.json",
+            "https://intel.cyberdudebivash.com/api/v1/intel/ai_summary.json",
+            "https://intel.cyberdudebivash.com/api/feed.json",
+            "https://intel.cyberdudebivash.com/api/reports/latest.json",
+            "https://www.linkedin.com/company/cyberdudebivash/",
+            "https://www.instagram.com/cyberdudebivash_official/",
+            "https://www.facebook.com/profile.php?id=61583373732736",
+            "https://x.com/CDBSENTINELAPEX",
+            "https://www.fiverr.com/bivashkumar007/",
+            "https://www.upwork.com/freelancers/~010d4dde1657fa5619",
+            "https://in.pinterest.com/CYBERDUDEBIVASH_Official/",
+            "https://medium.com/@cyberdudebivash",
+            "https://www.threads.com/@cyberdudebivash_official",
+            "https://www.youtube.com/@CYBERDUDEBIVASHSentinelAPEX",
+            "https://cyberdudebivash-news.blogspot.com/",
+            "https://cyberbivash.blogspot.com/"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://cyberbivash.blogspot.com/#website",
+          "url": "https://cyberbivash.blogspot.com/",
+          "name": "CYBERDUDEBIVASH SENTINEL APEX | AI Security Hub",
+          "description": "Enterprise AI-powered Threat Intelligence Portal, Automated SOC, and AI Security Hub. Ingesting real-time IOCs, vulnerability databases, and security playbooks.",
+          "publisher": {
+            "@id": "https://cyberbivash.blogspot.com/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://cyberbivash.blogspot.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   <script type='application/ld+json'>
 //<![CDATA[
 {
