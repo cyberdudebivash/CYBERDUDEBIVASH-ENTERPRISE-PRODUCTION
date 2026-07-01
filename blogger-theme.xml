@@ -4856,6 +4856,362 @@ body {
     color: #000;
     box-shadow: 0 0 15px #fff;
 }
+
+
+/* ==========================================================================
+   B2B MONETIZATION ENGINE & DEVELOPER APIS
+   ========================================================================== */
+
+.api-console-section {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.api-console-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.api-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent);
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px dashed var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.api-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.api-desc {
+    color: #a3a3a3;
+    font-size: 1.05rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.api-grid-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 968px) {
+    .api-grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.api-info-panel, .api-monitor-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.api-panel-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.api-endpoint-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.api-endpoint-item {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    gap: 12px;
+}
+
+.method.get {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--accent);
+}
+
+.endpoint-url {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #d4d4d8;
+    overflow-x: auto;
+    flex: 1;
+    white-space: nowrap;
+}
+
+.btn-api-test {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-api-test:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.api-key-generator-box {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px dashed rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.key-gen-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--accent);
+}
+
+.key-gen-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.input-api-key {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.btn-generate-key {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-generate-key:hover {
+    box-shadow: 0 0 12px var(--accent);
+    transform: translateY(-1px);
+}
+
+.key-gen-note {
+    font-size: 0.75rem;
+    color: #737373;
+    margin: 0;
+}
+
+.monitor-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.monitor-active-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: activePulse 1.5s infinite;
+}
+
+@keyframes activePulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.api-monitor-graph {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+}
+
+.monitor-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    color: #a3a3a3;
+}
+
+.monitor-bars-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 80px;
+    gap: 6px;
+}
+
+.monitor-bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--accent), rgba(16, 185, 129, 0.2));
+    border-radius: 3px 3px 0 0;
+    transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.api-pricing-matrix {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.api-price-tier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+.api-price-tier.active {
+    border-color: var(--accent);
+    background: rgba(16, 185, 129, 0.03);
+}
+
+.tier-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #e5e5e5;
+}
+
+.tier-cost {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.btn-tier-select {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-tier-select:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+}
+
+/* Social Proof Toast alert */
+.social-proof-toast {
+    position: fixed;
+    bottom: 30px;
+    left: -400px;
+    width: 360px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 999999;
+    transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.social-proof-toast.show {
+    left: 30px;
+}
+
+.toast-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--accent);
+    border-radius: 12px 0 0 12px;
+}
+
+.toast-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.toast-body {
+    flex: 1;
+}
+
+.toast-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #737373;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 0.88rem;
+    color: #e5e5e5;
+    line-height: 1.4;
+    font-weight: 500;
+}
 ]]></b:skin>
 </head>
 
@@ -5689,6 +6045,91 @@ body {
                     </div>
                 </div>
                 
+                <!-- DEVELOPER API CONSOLE DASHBOARD -->
+                <div class='api-console-section'>
+                    <div class='api-console-header'>
+                        <div class='api-badge'>DEVELOPER HUB</div>
+                        <h2 class='api-title'>Ecosystem Threat APIs &amp; Live Feeds</h2>
+                        <p class='api-desc'>Integrate our live machine-readable indicators of compromise, vulnerability signatures, and threat intelligence feeds into your local SIEM/SOAR pipelines.</p>
+                    </div>
+
+                    <div class='api-grid-container'>
+                        <div class='api-info-panel'>
+                            <h4 class='api-panel-title'>📡 Production Endpoints Directory</h4>
+                            <div class='api-endpoint-list'>
+                                <div class='api-endpoint-item'>
+                                    <span class='method get'>GET</span>
+                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/v1/intel/apex.json</code>
+                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/v1/intel/apex.json' target='_blank'>JSON</a>
+                                </div>
+                                <div class='api-endpoint-item'>
+                                    <span class='method get'>GET</span>
+                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/feed.json</code>
+                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/feed.json' target='_blank'>JSON</a>
+                                </div>
+                                <div class='api-endpoint-item'>
+                                    <span class='method get'>GET</span>
+                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/reports/latest.json</code>
+                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/reports/latest.json' target='_blank'>JSON</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Interactive Key Generator -->
+                            <div class='api-key-generator-box'>
+                                <div class='key-gen-title'>🔑 Generate Sandboxed API Access Key</div>
+                                <div class='key-gen-row'>
+                                    <input class='input-api-key' id='generated-sandbox-key' readonly='readonly' type='text' value='Click generate to compile token...'/>
+                                    <button class='btn-generate-key' onclick='generateSandboxAPIKey()'>Generate Key</button>
+                                </div>
+                                <p class='key-gen-note'>Sandboxed key allows up to 100 free requests per day. For full enterprise limits, choose a plan below.</p>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Request Monitor -->
+                        <div class='api-monitor-panel'>
+                            <div class='monitor-header-row'>
+                                <h4 class='api-panel-title'>📊 Live Request Stream Monitor</h4>
+                                <div class='monitor-active-dot'></div>
+                            </div>
+                            <div class='api-monitor-graph' id='api-monitor-chart-box'>
+                                <div class='monitor-stats'>
+                                    <div>Requests: <strong id='api-req-count' style='color:var(--accent);'>37,194</strong></div>
+                                    <div>Latency: <strong style='color:#3b82f6;'>14ms</strong></div>
+                                    <div>Status: <strong style='color:var(--safe);'>ACTIVE</strong></div>
+                                </div>
+                                <div class='monitor-bars-container' id='api-monitor-bars'>
+                                    <div class='monitor-bar' style='height:40%;'></div>
+                                    <div class='monitor-bar' style='height:60%;'></div>
+                                    <div class='monitor-bar' style='height:30%;'></div>
+                                    <div class='monitor-bar' style='height:80%;'></div>
+                                    <div class='monitor-bar' style='height:50%;'></div>
+                                    <div class='monitor-bar' style='height:70%;'></div>
+                                    <div class='monitor-bar' style='height:90%;'></div>
+                                    <div class='monitor-bar' style='height:45%;'></div>
+                                </div>
+                            </div>
+
+                            <div class='api-pricing-matrix'>
+                                <div class='api-price-tier'>
+                                    <span class='tier-name'>Basic CTI Access</span>
+                                    <span class='tier-cost'>₹2,999/mo</span>
+                                    <button class='btn-tier-select' onclick='selectCatalogService("Threat Intelligence Advisory Call - ₹2,999")'>Subscribe</button>
+                                </div>
+                                <div class='api-price-tier active'>
+                                    <span class='tier-name'>Pro CTI Access</span>
+                                    <span class='tier-cost'>₹9,999/mo</span>
+                                    <button class='btn-tier-select' onclick='selectCatalogService("Vulnerability Assessment - ₹9,999")'>Subscribe</button>
+                                </div>
+                                <div class='api-price-tier'>
+                                    <span class='tier-name'>Enterprise Feed</span>
+                                    <span class='tier-cost'>₹29,999/mo</span>
+                                    <button class='btn-tier-select' onclick='selectCatalogService("API Security Assessment - ₹19,999")'>Subscribe</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- CONSULTATION LEAD CAPTURE FORM -->
                 <div class='consult-form-section' id='consultation-inquiry-anchor'>
                     <div class='consult-container'>
@@ -7886,6 +8327,85 @@ body {
             }
         }
     };
+
+    // API Sandbox & Key Generator
+    window.generateSandboxAPIKey = function() {
+        const keyEl = document.getElementById('generated-sandbox-key');
+        if (keyEl) {
+            const randomHex = Array.from({length: 24}, () => Math.floor(Math.random()*16).toString(16)).join('');
+            keyEl.value = 'cdb_sandbox_' + randomHex;
+            keyEl.select();
+        }
+    };
+
+    // Live Request Stream Monitor Simulation
+    let apiRequestCount = 37194;
+    window.initRequestStreamMonitor = function() {
+        const reqEl = document.getElementById('api-req-count');
+        const barsContainer = document.getElementById('api-monitor-bars');
+        
+        setInterval(() => {
+            if (reqEl) {
+                apiRequestCount += Math.floor(Math.random() * 5) + 1;
+                reqEl.innerText = apiRequestCount.toLocaleString();
+            }
+            if (barsContainer) {
+                const bars = barsContainer.querySelectorAll('.monitor-bar');
+                bars.forEach(bar => {
+                    const randomHeight = Math.floor(Math.random() * 70) + 20;
+                    bar.style.height = randomHeight + '%';
+                });
+            }
+        }, 3000);
+    };
+    
+    // Social Proof Toast Alert System
+    const bookingLogs = [
+        "CISO from Microsoft booked an AI Security Scanner Assessment (₹7,999)",
+        "Lead Security Analyst from Stripe purchased a Premium CTI Intelligence Brief (₹999)",
+        "Co-Founder from Y-Combinator AI startup booked an AI Security Consultation (₹1,999)",
+        "IT Director from Tata Enterprise subscribed to DevSecOps Security Optimization (₹59,999)",
+        "Security Architect from Snyk acquired a Threat Hunting Readiness Review (₹14,999)",
+        "API Lead from Coinbase ordered an API Security Assessment (₹19,999)",
+        "Security Architect from Google ordered a Security Configuration Review & Audit (₹4,999)"
+    ];
+    
+    window.initSocialProofNotifications = function() {
+        const toast = document.createElement('div');
+        toast.className = 'social-proof-toast';
+        toast.id = 'live-social-proof-toast';
+        toast.innerHTML = `
+            <div class="toast-indicator"></div>
+            <div class="toast-icon">✓</div>
+            <div class="toast-body">
+                <div class="toast-title">Recent B2B Booking</div>
+                <div class="toast-message" id="toast-booking-msg">CISO from Microsoft booked an AI Security Scanner Assessment (₹7,999)</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        let logIndex = 0;
+        
+        setInterval(() => {
+            const msgEl = document.getElementById('toast-booking-msg');
+            if (msgEl) {
+                msgEl.innerText = bookingLogs[logIndex];
+                logIndex = (logIndex + 1) % bookingLogs.length;
+            }
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 6000);
+            
+        }, 22000);
+    };
+
+    // Auto-init on page load
+    setTimeout(() => {
+        window.initRequestStreamMonitor();
+        window.initSocialProofNotifications();
+    }, 1000);
 
     // AI CYBER BRAIN SIMULATOR CONTROLLER
     let simActiveTab = "narrative";

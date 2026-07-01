@@ -4479,7 +4479,92 @@ body {
         </div>
     </div>
 </div>
-<!-- SERVICE CATALOG & COMMERCIAL PRICING --><!-- CONSULTATION LEAD CAPTURE FORM -->
+<!-- SERVICE CATALOG & COMMERCIAL PRICING --><!-- DEVELOPER API CONSOLE DASHBOARD -->
+<div class="api-console-section">
+    <div class="api-console-header">
+        <div class="api-badge">DEVELOPER HUB</div>
+        <h2 class="api-title">Ecosystem Threat APIs &amp; Live Feeds</h2>
+        <p class="api-desc">Integrate our live machine-readable indicators of compromise, vulnerability signatures, and threat intelligence feeds into your local SIEM/SOAR pipelines.</p>
+    </div>
+
+    <div class="api-grid-container">
+        <div class="api-info-panel">
+            <h4 class="api-panel-title">📡 Production Endpoints Directory</h4>
+            <div class="api-endpoint-list">
+                <div class="api-endpoint-item">
+                    <span class="method get">GET</span>
+                    <code class="endpoint-url">https://intel.cyberdudebivash.com/api/v1/intel/apex.json</code>
+                    <a class="btn-api-test" href="https://intel.cyberdudebivash.com/api/v1/intel/apex.json" target="_blank">JSON</a>
+                </div>
+                <div class="api-endpoint-item">
+                    <span class="method get">GET</span>
+                    <code class="endpoint-url">https://intel.cyberdudebivash.com/api/feed.json</code>
+                    <a class="btn-api-test" href="https://intel.cyberdudebivash.com/api/feed.json" target="_blank">JSON</a>
+                </div>
+                <div class="api-endpoint-item">
+                    <span class="method get">GET</span>
+                    <code class="endpoint-url">https://intel.cyberdudebivash.com/api/reports/latest.json</code>
+                    <a class="btn-api-test" href="https://intel.cyberdudebivash.com/api/reports/latest.json" target="_blank">JSON</a>
+                </div>
+            </div>
+            
+            <!-- Interactive Key Generator -->
+            <div class="api-key-generator-box">
+                <div class="key-gen-title">🔑 Generate Sandboxed API Access Key</div>
+                <div class="key-gen-row">
+                    <input class="input-api-key" id="generated-sandbox-key" readonly="readonly" type="text" value="Click generate to compile token..."/>
+                    <button class="btn-generate-key" onclick="generateSandboxAPIKey()">Generate Key</button>
+                </div>
+                <p class="key-gen-note">Sandboxed key allows up to 100 free requests per day. For full enterprise limits, choose a plan below.</p>
+            </div>
+        </div>
+
+        <!-- Real-time Request Monitor -->
+        <div class="api-monitor-panel">
+            <div class="monitor-header-row">
+                <h4 class="api-panel-title">📊 Live Request Stream Monitor</h4>
+                <div class="monitor-active-dot"></div>
+            </div>
+            <div class="api-monitor-graph" id="api-monitor-chart-box">
+                <div class="monitor-stats">
+                    <div>Requests: <strong id="api-req-count" style="color:var(--accent);">37,194</strong></div>
+                    <div>Latency: <strong style="color:#3b82f6;">14ms</strong></div>
+                    <div>Status: <strong style="color:var(--safe);">ACTIVE</strong></div>
+                </div>
+                <div class="monitor-bars-container" id="api-monitor-bars">
+                    <div class="monitor-bar" style="height:40%;"></div>
+                    <div class="monitor-bar" style="height:60%;"></div>
+                    <div class="monitor-bar" style="height:30%;"></div>
+                    <div class="monitor-bar" style="height:80%;"></div>
+                    <div class="monitor-bar" style="height:50%;"></div>
+                    <div class="monitor-bar" style="height:70%;"></div>
+                    <div class="monitor-bar" style="height:90%;"></div>
+                    <div class="monitor-bar" style="height:45%;"></div>
+                </div>
+            </div>
+
+            <div class="api-pricing-matrix">
+                <div class="api-price-tier">
+                    <span class="tier-name">Basic CTI Access</span>
+                    <span class="tier-cost">₹2,999/mo</span>
+                    <button class="btn-tier-select" onclick="selectCatalogService('Threat Intelligence Advisory Call - ₹2,999')">Subscribe</button>
+                </div>
+                <div class="api-price-tier active">
+                    <span class="tier-name">Pro CTI Access</span>
+                    <span class="tier-cost">₹9,999/mo</span>
+                    <button class="btn-tier-select" onclick="selectCatalogService('Vulnerability Assessment - ₹9,999')">Subscribe</button>
+                </div>
+                <div class="api-price-tier">
+                    <span class="tier-name">Enterprise Feed</span>
+                    <span class="tier-cost">₹29,999/mo</span>
+                    <button class="btn-tier-select" onclick="selectCatalogService('API Security Assessment - ₹19,999')">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONSULTATION LEAD CAPTURE FORM -->
 <div class="consult-form-section" id="consultation-inquiry-anchor">
     <div class="consult-container">
         <div class="consult-form-col">
