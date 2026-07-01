@@ -9128,10 +9128,9 @@ body {
             const timeStr = new Date().toLocaleTimeString();
             const entry = document.createElement('div');
             entry.className = 'radar-entry';
-            entry.innerHTML = `
-                <div class='radar-time'>[${timeStr}] [!] ${log.severity}</div>
-                <div class='radar-msg'><a href='https://cyberdudebivash-news.blogspot.com/' style='color:inherit; text-decoration:none;'>${log.desc}</a></div>
-            `;
+            entry.innerHTML = 
+                "<div class='radar-time'>[" + timeStr + "] [!] " + log.severity + "</div>" +
+                "<div class='radar-msg'><a href='https://cyberdudebivash-news.blogspot.com/' style='color:inherit; text-decoration:none;'>" + log.desc + "</a></div>";
             radar.prepend(entry);
             if (radar.children.length > 25) radar.lastChild.remove();
         }
@@ -11420,12 +11419,12 @@ function withdraw(uint amount) public {
         const fw = select.value;
         const controls = frameworkControls[fw] || [];
         
-        area.innerHTML = controls.map((ctrl, idx) => `
-            <div class='comp-check-item' onclick='toggleCompItem(this, \${idx})'>
-                <div class='comp-check-box'></div>
-                <div class='comp-check-text'>\${ctrl}</div>
-            </div>
-        `).join('');
+        area.innerHTML = controls.map(function(ctrl, idx) {
+            return "<div class='comp-check-item' onclick='toggleCompItem(this, " + idx + ")'>" +
+                "<div class='comp-check-box'></div>" +
+                "<div class='comp-check-text'>" + ctrl + "</div>" +
+            "</div>";
+        }).join('');
         
         updateComplianceScore();
     }
@@ -11496,7 +11495,7 @@ function withdraw(uint amount) public {
         const input = document.getElementById('api-key-input');
         if(!input) return;
         const randomHex = Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join('');
-        input.value = `cdb_sandbox_\${randomHex}`;
+        input.value = 'cdb_sandbox_' + randomHex;
     }
 
     const mockAPIResponses = {
@@ -11530,7 +11529,10 @@ function withdraw(uint amount) public {
         sandboxRequestCount++;
         output.style.display = 'block';
         output.style.color = '#33ffdd';
-        output.innerText = `Sending authenticated request to Sentinel APEX Gateway...\nUsing Token: \${key}\n\nLoading payload response...`;
+        output.innerText = 'Sending authenticated request to Sentinel APEX Gateway...
+Using Token: ' + key + '
+
+Loading payload response...';
         
         setTimeout(() => {
             output.innerText = mockAPIResponses[endpoint] || '{}';
@@ -11548,7 +11550,7 @@ function withdraw(uint amount) public {
         activeSnippetTab = tab;
         const tabs = document.querySelectorAll('.api-snippet-tab');
         tabs.forEach(t => {
-            if (t.id === `snippet-btn-\${tab}`) {
+            if (t.id === 'snippet-btn-' + tab) {
                 t.style.background = 'rgba(255,255,255,0.05)';
                 t.style.color = '#fff';
             } else {
@@ -11567,22 +11569,22 @@ function withdraw(uint amount) public {
 
         let code = '';
         if (activeSnippetTab === 'curl') {
-            code = `curl -H "Authorization: Bearer \${key}" \
-  https://intel.cyberdudebivash.com/api/v1/intel/\${endpoint}.json`;
+            code = 'curl -H "Authorization: Bearer ' + key + '" \
+  https://intel.cyberdudebivash.com/api/v1/intel/' + endpoint + '.json';
         } else if (activeSnippetTab === 'py') {
-            code = `import requests
+            code = 'import requests
 
 headers = {
-    "Authorization": "Bearer \${key}"
+    "Authorization": "Bearer ' + key + '"
 }
 
 response = requests.get(
-    "https://intel.cyberdudebivash.com/api/v1/intel/\${endpoint}.json", 
+    "https://intel.cyberdudebivash.com/api/v1/intel/' + endpoint + '.json", 
     headers=headers
 )
-print(response.json())`;
+print(response.json())';
         } else {
-            code = `package main
+            code = 'package main
 
 import (
     "fmt"
@@ -11591,12 +11593,12 @@ import (
 )
 
 func main() {
-    req, _ := http.NewRequest("GET", "https://intel.cyberdudebivash.com/api/v1/intel/\${endpoint}.json", nil)
-    req.Header.Set("Authorization", "Bearer \${key}")
+    req, _ := http.NewRequest("GET", "https://intel.cyberdudebivash.com/api/v1/intel/' + endpoint + '.json", nil)
+    req.Header.Set("Authorization", "Bearer ' + key + '")
     resp, _ := http.DefaultClient.Do(req)
     body, _ := io.ReadAll(resp.Body)
     fmt.Println(string(body))
-}`;
+}';
         }
         codeBox.innerText = code;
     }
@@ -11728,7 +11730,7 @@ func main() {
         
         header.innerText = query.toUpperCase();
         badge.innerText = data.score;
-        badge.className = `cve-score-badge \${data.badgeClass}`;
+        badge.className = 'cve-score-badge ' + data.badgeClass;
         
         details.innerHTML = `
             <strong>Exploit Probability (EPSS):</strong> \${data.epss}<br/>
