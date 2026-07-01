@@ -3042,6 +3042,525 @@ body {
     text-shadow: 0 0 5px var(--accent);
 }
 
+    
+/* B2B TRANSFORMATION SHOWCASE STYLES */
+
+/* 1. AI Engine Showcase Grid */
+.engine-showcase-grid {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.engine-showcase-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.showcase-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--accent-glow-strong);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+.showcase-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.showcase-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.showcase-capabilities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+.cap-card {
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cap-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+.cap-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+.cap-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.cap-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* 2. AI Cyber Brain Simulator App */
+.cyber-brain-simulator {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.simulator-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+}
+.sim-avatar {
+    font-size: 32px;
+    animation: brainPulse 2s infinite ease-in-out;
+}
+@keyframes brainPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent)); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 8px var(--accent)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent)); }
+}
+.sim-title-group {
+    display: flex;
+    flex-direction: column;
+}
+.sim-app-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.sim-app-version {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+}
+.simulator-domain-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.sim-prompt-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+#sim-domain-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex: 1;
+    min-width: 150px;
+}
+#sim-run-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #020406;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px var(--accent-glow-strong);
+}
+#sim-run-btn:hover {
+    transform: scale(1.03);
+    background: #fff;
+    box-shadow: 0 0 15px #fff;
+}
+.simulator-panel-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 768px) {
+    .simulator-panel-layout {
+        grid-template-columns: 1fr;
+    }
+}
+.simulator-left-col {
+    display: flex;
+    flex-direction: column;
+}
+.sim-tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    gap: 8px;
+    overflow-x: auto;
+}
+.sim-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+.sim-tab:hover {
+    color: var(--text-primary);
+}
+.sim-tab.active {
+    color: var(--accent);
+}
+.sim-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 5px var(--accent);
+}
+.sim-tab-content-container {
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 160px;
+}
+.sim-tab-content {
+    display: none;
+}
+.sim-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.sim-content-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.sim-narrative-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+.simulator-right-col {
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+}
+.sim-kill-chain-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+.sim-kill-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.kill-chain-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+.kill-chain-step.inactive {
+    opacity: 0.3;
+}
+.kill-chain-step.active {
+    opacity: 1;
+    background: rgba(0, 255, 204, 0.05);
+    box-shadow: inset 0 0 5px rgba(0, 255, 204, 0.1);
+}
+.step-marker {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    background: #090d16;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.kill-chain-step.active .step-marker {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow-strong);
+}
+.step-info {
+    display: flex;
+    flex-direction: column;
+}
+.step-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.step-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+.simulator-monetization {
+    margin-top: 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    border-radius: 6px;
+    padding: 16px;
+    animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.sim-money-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.sim-risk-badge-box {
+    flex: 1.5;
+    min-width: 250px;
+}
+.sim-risk-level-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    background: #ef4444;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.sim-risk-brief {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.sim-money-actions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+.btn-unlock-report {
+    display: block;
+    text-align: center;
+    background: #ef4444;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+.btn-unlock-report:hover {
+    transform: scale(1.02);
+    background: #f87171;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+.btn-buy-defense {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-decoration: none;
+    padding: 6px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.btn-buy-defense:hover {
+    background: var(--accent-glow);
+    color: #fff;
+}
+
+/* 3. AI Governance Consulting Widget */
+.ai-gov-widget {
+    margin-top: 16px;
+    background: #fffdf9;
+    border: 2px solid #ea580c;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+.ai-gov-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(234, 88, 12, 0.2);
+    margin-bottom: 8px;
+}
+.ai-gov-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+.ai-gov-subtitle {
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+.ai-gov-price {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ea580c;
+    margin-bottom: 12px;
+}
+.btn-gov-cta {
+    display: block;
+    text-align: center;
+    background: #ea580c;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.btn-gov-cta:hover {
+    background: #f97316;
+    transform: scale(1.02);
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+}
+
+/* 4. AI Security Crisis Info Matrix */
+.ai-crisis-matrix {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.crisis-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.crisis-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+.crisis-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.crisis-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.crisis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+.crisis-card {
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.crisis-card:hover {
+    border-color: #ef4444;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
+}
+.crisis-num {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: rgba(239, 68, 68, 0.15);
+    position: absolute;
+    top: 6px;
+    right: 12px;
+}
+.crisis-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    padding-right: 32px;
+}
+.crisis-card-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
     </style>
 </head>
 <body>
@@ -3108,6 +3627,15 @@ body {
             <a class="eco-link" href="index.html?p=owasp">📚 OWASP Web3 Top 10</a>
             <a class="eco-link" href="index.html?p=nist">🛡️ NIST Threat Modeling</a>
             <a class="eco-link" href="index.html?p=cisa">📡 CISA Shield Playbook</a>
+
+            <!-- AI Governance Consulting CDB-AIGOV-001 -->
+            <div class="ai-gov-widget">
+                <div class="ai-gov-badge">CDB-AIGOV-001</div>
+                <div class="ai-gov-title">AI Governance Consulting</div>
+                <div class="ai-gov-subtitle">Establish robust governance, align with global regulations, and secure enterprise AI model pipelines.</div>
+                <div class="ai-gov-price">Special Rate: ₹19,999 / engagement</div>
+                <a class="btn-gov-cta" href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank">Book Consultation</a>
+            </div>
         </aside>
 
         <main id="main-content-column">

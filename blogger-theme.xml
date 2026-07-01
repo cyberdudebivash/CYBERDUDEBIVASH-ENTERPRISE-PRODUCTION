@@ -3102,6 +3102,524 @@ body {
     color: #fff;
     text-shadow: 0 0 5px var(--accent);
 }
+
+/* B2B TRANSFORMATION SHOWCASE STYLES */
+
+/* 1. AI Engine Showcase Grid */
+.engine-showcase-grid {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.engine-showcase-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.showcase-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--accent-glow-strong);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+.showcase-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.showcase-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.showcase-capabilities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+.cap-card {
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cap-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+.cap-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+.cap-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.cap-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* 2. AI Cyber Brain Simulator App */
+.cyber-brain-simulator {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.simulator-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+}
+.sim-avatar {
+    font-size: 32px;
+    animation: brainPulse 2s infinite ease-in-out;
+}
+@keyframes brainPulse {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent)); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 8px var(--accent)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent)); }
+}
+.sim-title-group {
+    display: flex;
+    flex-direction: column;
+}
+.sim-app-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.sim-app-version {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+}
+.simulator-domain-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.sim-prompt-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+#sim-domain-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex: 1;
+    min-width: 150px;
+}
+#sim-run-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #020406;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px var(--accent-glow-strong);
+}
+#sim-run-btn:hover {
+    transform: scale(1.03);
+    background: #fff;
+    box-shadow: 0 0 15px #fff;
+}
+.simulator-panel-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 768px) {
+    .simulator-panel-layout {
+        grid-template-columns: 1fr;
+    }
+}
+.simulator-left-col {
+    display: flex;
+    flex-direction: column;
+}
+.sim-tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    gap: 8px;
+    overflow-x: auto;
+}
+.sim-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+.sim-tab:hover {
+    color: var(--text-primary);
+}
+.sim-tab.active {
+    color: var(--accent);
+}
+.sim-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 5px var(--accent);
+}
+.sim-tab-content-container {
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    min-height: 160px;
+}
+.sim-tab-content {
+    display: none;
+}
+.sim-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.sim-content-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.sim-narrative-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+.simulator-right-col {
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+}
+.sim-kill-chain-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+.sim-kill-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.kill-chain-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+.kill-chain-step.inactive {
+    opacity: 0.3;
+}
+.kill-chain-step.active {
+    opacity: 1;
+    background: rgba(0, 255, 204, 0.05);
+    box-shadow: inset 0 0 5px rgba(0, 255, 204, 0.1);
+}
+.step-marker {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    background: #090d16;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.kill-chain-step.active .step-marker {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow-strong);
+}
+.step-info {
+    display: flex;
+    flex-direction: column;
+}
+.step-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.step-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+.simulator-monetization {
+    margin-top: 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    border-radius: 6px;
+    padding: 16px;
+    animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.sim-money-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.sim-risk-badge-box {
+    flex: 1.5;
+    min-width: 250px;
+}
+.sim-risk-level-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    background: #ef4444;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.sim-risk-brief {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.sim-money-actions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+.btn-unlock-report {
+    display: block;
+    text-align: center;
+    background: #ef4444;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+.btn-unlock-report:hover {
+    transform: scale(1.02);
+    background: #f87171;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+.btn-buy-defense {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-decoration: none;
+    padding: 6px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.btn-buy-defense:hover {
+    background: var(--accent-glow);
+    color: #fff;
+}
+
+/* 3. AI Governance Consulting Widget */
+.ai-gov-widget {
+    margin-top: 16px;
+    background: #fffdf9;
+    border: 2px solid #ea580c;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+.ai-gov-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(234, 88, 12, 0.2);
+    margin-bottom: 8px;
+}
+.ai-gov-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+.ai-gov-subtitle {
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+.ai-gov-price {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ea580c;
+    margin-bottom: 12px;
+}
+.btn-gov-cta {
+    display: block;
+    text-align: center;
+    background: #ea580c;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.btn-gov-cta:hover {
+    background: #f97316;
+    transform: scale(1.02);
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+}
+
+/* 4. AI Security Crisis Info Matrix */
+.ai-crisis-matrix {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.crisis-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.crisis-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+.crisis-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.crisis-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.crisis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+.crisis-card {
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.crisis-card:hover {
+    border-color: #ef4444;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
+}
+.crisis-num {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: rgba(239, 68, 68, 0.15);
+    position: absolute;
+    top: 6px;
+    right: 12px;
+}
+.crisis-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    padding-right: 32px;
+}
+.crisis-card-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
 ]]></b:skin>
 </head>
 
@@ -3169,6 +3687,15 @@ body {
             <a class='eco-link' href='/p/owasp.html'>📚 OWASP Web3 Top 10</a>
             <a class='eco-link' href='/p/nist.html'>🛡️ NIST Threat Modeling</a>
             <a class='eco-link' href='/p/cisa.html'>📡 CISA Shield Playbook</a>
+
+            <!-- AI Governance Consulting CDB-AIGOV-001 -->
+            <div class='ai-gov-widget'>
+                <div class='ai-gov-badge'>CDB-AIGOV-001</div>
+                <div class='ai-gov-title'>AI Governance Consulting</div>
+                <div class='ai-gov-subtitle'>Establish robust governance, align with global regulations, and secure enterprise AI model pipelines.</div>
+                <div class='ai-gov-price'>Special Rate: ₹19,999 / engagement</div>
+                <a class='btn-gov-cta' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>Book Consultation</a>
+            </div>
         </aside>
 
         <main>
@@ -3201,6 +3728,186 @@ body {
                     <div class='hero-ctas'>
                         <a class='btn-primary' href='https://intel.cyberdudebivash.com/upgrade.html'>Get Enterprise Access</a>
                         <a class='btn-secondary' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619'>Request Security Audit</a>
+                    </div>
+                </div>
+
+                <!-- AI ENGINE v9.0 SHOWCASE GRID -->
+                <div class='engine-showcase-grid'>
+                    <div class='engine-showcase-header'>
+                        <div class='showcase-badge'>v9.0 APEX ENGINE</div>
+                        <h2 class='showcase-title'>Announcing CYBERDUDEBIVASH<sup>&#174;</sup> AI Engine v9.0</h2>
+                        <p class='showcase-subtitle'>Smarter Intelligence. Faster Detection. Stronger Defense. Built for the modern enterprise threat landscape.</p>
+                    </div>
+                    <div class='showcase-capabilities'>
+                        <div class='cap-card'>
+                            <div class='cap-icon'>🎯</div>
+                            <div class='cap-name'>AI Threat Hunting</div>
+                            <div class='cap-desc'>Proactive, continuous incident indicators correlation and discovery engine.</div>
+                        </div>
+                        <div class='cap-card'>
+                            <div class='cap-icon'>🛡️</div>
+                            <div class='cap-name'>MITRE ATT&amp;CK Mapping</div>
+                            <div class='cap-desc'>Automated mapping of detected adversary tactics and mitigation rule sweeps.</div>
+                        </div>
+                        <div class='cap-card'>
+                            <div class='cap-icon'>🦠</div>
+                            <div class='cap-name'>Malware &amp; IOC Intel</div>
+                            <div class='cap-desc'>Dynamic threat signature analysis and firewall packet rules compile loops.</div>
+                        </div>
+                        <div class='cap-card'>
+                            <div class='cap-icon'>🔒</div>
+                            <div class='cap-name'>AI Security &amp; Governance</div>
+                            <div class='cap-desc'>Risk mapping and LLM defense controls tracking.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI CYBER BRAIN SIMULATOR -->
+                <div class='cyber-brain-simulator'>
+                    <div class='simulator-header'>
+                        <div class='sim-avatar'>🧠</div>
+                        <div class='sim-title-group'>
+                            <div class='sim-app-title'>AI CYBER BRAIN — Security Intelligence</div>
+                            <div class='sim-app-version'>Powered by CYBERDUDEBIVASH AI Engine v9.0</div>
+                        </div>
+                    </div>
+                    
+                    <div class='simulator-domain-bar'>
+                        <span class='sim-prompt-label'>secops@cyberdudebivash:~$ run cyber_brain --domain</span>
+                        <input id='sim-domain-input' placeholder='Enter target domain (e.g. github.com)...' type='text' value='github.com'/>
+                        <button id='sim-run-btn' onclick='triggerCyberBrain()'>RUN SIMULATION</button>
+                    </div>
+
+                    <div class='simulator-panel-layout'>
+                        <div class='simulator-left-col'>
+                            <div class='sim-tab-bar'>
+                                <button class='sim-tab active' id='sim-tab-narrative-btn' onclick='switchSimTab("narrative")'>Threat Narrative</button>
+                                <button class='sim-tab' id='sim-tab-scenario-btn' onclick='switchSimTab("scenario")'>Attack Scenario</button>
+                                <button class='sim-tab' id='sim-tab-remediation-btn' onclick='switchSimTab("remediation")'>Remediation Plan</button>
+                                <button class='sim-tab' id='sim-tab-forecast-btn' onclick='switchSimTab("forecast")'>Risk Forecast</button>
+                            </div>
+                            
+                            <div class='sim-tab-content-container'>
+                                <div class='sim-tab-content active' id='sim-content-narrative'>
+                                    <h4 class='sim-content-title'>Real-World Threat Summary</h4>
+                                    <p class='sim-narrative-text' id='sim-narrative-text-box'>
+                                        Analyzing target assets. Enter a domain above and click 'RUN SIMULATION' to query active DNS registry status, SSL parameters, and subdomains...
+                                    </p>
+                                </div>
+                                <div class='sim-tab-content' id='sim-content-scenario'>
+                                    <h4 class='sim-content-title'>Adversary Emulation Strategy</h4>
+                                    <p class='sim-narrative-text' id='sim-scenario-text-box'>
+                                        Click 'RUN SIMULATION' to analyze adversary behaviors.
+                                    </p>
+                                </div>
+                                <div class='sim-tab-content' id='sim-content-remediation'>
+                                    <h4 class='sim-content-title'>Zero-Day Remediation Playbook</h4>
+                                    <p class='sim-narrative-text' id='sim-remediation-text-box'>
+                                        Click 'RUN SIMULATION' to list containment steps.
+                                    </p>
+                                </div>
+                                <div class='sim-tab-content' id='sim-content-forecast'>
+                                    <h4 class='sim-content-title'>Risk Vector Forecasting</h4>
+                                    <p class='sim-narrative-text' id='sim-forecast-text-box'>
+                                        Click 'RUN SIMULATION' to run risk projection model.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='simulator-right-col'>
+                            <div class='sim-kill-chain-title'>⚔️ Attack Kill Chain Map</div>
+                            <div class='sim-kill-chain'>
+                                <div class='kill-chain-step inactive' id='step-recon'>
+                                    <div class='step-marker'>🔍</div>
+                                    <div class='step-info'>
+                                        <div class='step-name'>Reconnaissance</div>
+                                        <div class='step-detail' id='step-recon-detail'>DNS validation, port scans</div>
+                                    </div>
+                                </div>
+                                <div class='kill-chain-step inactive' id='step-access'>
+                                    <div class='step-marker'>🔑</div>
+                                    <div class='step-info'>
+                                        <div class='step-name'>Initial Access</div>
+                                        <div class='step-detail' id='step-access-detail'>Vulnerable endpoint entry</div>
+                                    </div>
+                                </div>
+                                <div class='kill-chain-step inactive' id='step-exec'>
+                                    <div class='step-marker'>⚙️</div>
+                                    <div class='step-info'>
+                                        <div class='step-name'>Execution</div>
+                                        <div class='step-detail' id='step-exec-detail'>Payload script activation</div>
+                                    </div>
+                                </div>
+                                <div class='kill-chain-step inactive' id='step-lat'>
+                                    <div class='step-marker'>📡</div>
+                                    <div class='step-info'>
+                                        <div class='step-name'>Lateral Movement</div>
+                                        <div class='step-detail' id='step-lat-detail'>Internal pivots &amp; domain escalation</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Monetization & Conversion Card -->
+                    <div class='simulator-monetization' id='sim-monetization-block' style='display:none;'>
+                        <div class='sim-money-grid'>
+                            <div class='sim-risk-badge-box'>
+                                <div class='sim-risk-level-badge critical'>⚠️ CRITICAL RISK IDENTIFIED</div>
+                                <p class='sim-risk-brief'>Vulnerabilities detected. Proactive mitigation is recommended immediately to prevent breach incidents.</p>
+                            </div>
+                            <div class='sim-money-actions'>
+                                <a class='btn-unlock-report' href='https://tools.cyberdudebivash.com/' target='_blank'>🔓 Unlock Full Audited PDF Report — ₹999</a>
+                                <a class='btn-buy-defense' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🛡️ Order Remediation Engineering Audit</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI SECURITY CRISIS OF 2026 INFO MATRIX -->
+                <div class='ai-crisis-matrix'>
+                    <div class='crisis-header'>
+                        <div class='crisis-badge'>2026 INTEL BRIEFING</div>
+                        <h2 class='crisis-title'>The AI Security Crisis of 2026</h2>
+                        <p class='crisis-desc'>Critical vulnerabilities actively exploited across autonomous agents, LLM pipelines, and AI-native stacks.</p>
+                    </div>
+                    <div class='crisis-grid'>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>01</div>
+                            <div class='crisis-card-title'>Prompt Injection</div>
+                            <div class='crisis-card-desc'>Attackers manipulate input prompt headers to bypass safety guards and extract base model training weight logs.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>02</div>
+                            <div class='crisis-card-title'>AI Data Leakage</div>
+                            <div class='crisis-card-desc'>Sensitive operational data exposed via unsecured chatbot configurations and unencrypted model feedback channels.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>03</div>
+                            <div class='crisis-card-title'>Shadow AI</div>
+                            <div class='crisis-card-desc'>Unapproved AI tools running inside network zones, creating unmonitored security gateways and credential targets.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>04</div>
+                            <div class='crisis-card-title'>Model Manipulation</div>
+                            <div class='crisis-card-desc'>Adversaries poison training datasets or inject weights parameters anomalies to produce biased outputs.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>05</div>
+                            <div class='crisis-card-title'>AI Supply Chain Risk</div>
+                            <div class='crisis-card-desc'>Vulnerabilities introduced through compromised models, untrusted API integrations, and base libraries dependencies.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>06</div>
+                            <div class='crisis-card-title'>Agentic AI Risks</div>
+                            <div class='crisis-card-desc'>Autonomous agents executing actions without correct limits checks, triggering loops or unauthorized API commands.</div>
+                        </div>
+                        <div class='crisis-card'>
+                            <div class='crisis-num'>07</div>
+                            <div class='crisis-card-title'>Identity &amp; Access Risks</div>
+                            <div class='crisis-card-desc'>AI models granted excessive system tokens and role keys, leading to privilege escalation vectors.</div>
+                        </div>
                     </div>
                 </div>
               </b:if>
@@ -5164,6 +5871,90 @@ body {
     // Set Footer Copyright Year
     const yearEl = document.getElementById('current-year');
     if (yearEl) yearEl.innerText = new Date().getFullYear();
+
+    // AI CYBER BRAIN SIMULATOR CONTROLLER
+    let simActiveTab = "narrative";
+    let simDomain = "github.com";
+    
+    window.switchSimTab = function(tabName) {
+        simActiveTab = tabName;
+        
+        // Remove active class from buttons & contents
+        document.getElementById('sim-tab-narrative-btn').classList.remove('active');
+        document.getElementById('sim-tab-scenario-btn').classList.remove('active');
+        document.getElementById('sim-tab-remediation-btn').classList.remove('active');
+        document.getElementById('sim-tab-forecast-btn').classList.remove('active');
+        
+        document.getElementById('sim-content-narrative').classList.remove('active');
+        document.getElementById('sim-content-scenario').classList.remove('active');
+        document.getElementById('sim-content-remediation').classList.remove('active');
+        document.getElementById('sim-content-forecast').classList.remove('active');
+        
+        // Add active classes
+        document.getElementById('sim-tab-' + tabName + '-btn').classList.add('active');
+        document.getElementById('sim-content-' + tabName).classList.add('active');
+    };
+    
+    window.triggerCyberBrain = function() {
+        const inputVal = document.getElementById('sim-domain-input').value.trim();
+        simDomain = inputVal || "enterprise-node.net";
+        
+        // Reset states
+        document.getElementById('sim-monetization-block').style.display = 'none';
+        document.getElementById('step-recon').className = 'kill-chain-step inactive';
+        document.getElementById('step-access').className = 'kill-chain-step inactive';
+        document.getElementById('step-exec').className = 'kill-chain-step inactive';
+        document.getElementById('step-lat').className = 'kill-chain-step inactive';
+        
+        const narrativeBox = document.getElementById('sim-narrative-text-box');
+        const scenarioBox = document.getElementById('sim-scenario-text-box');
+        const remediationBox = document.getElementById('sim-remediation-text-box');
+        const forecastBox = document.getElementById('sim-forecast-text-box');
+        
+        narrativeBox.innerText = `[+] Initiating threat audit profiling for ${simDomain}...`;
+        scenarioBox.innerText = `[+] Scanning threat routes for ${simDomain}...`;
+        remediationBox.innerText = `[+] Building playbook for ${simDomain}...`;
+        forecastBox.innerText = `[+] Computing attack vectors probability for ${simDomain}...`;
+        
+        // Step 1: Recon
+        setTimeout(() => {
+            const step = document.getElementById('step-recon');
+            step.className = 'kill-chain-step active';
+            narrativeBox.innerText = `[+] Reconnaissance Node ACTIVE: Identified subdomains and DNS registry data of ${simDomain}. Finding gaps in mail gateways.`;
+        }, 800);
+        
+        // Step 2: Access
+        setTimeout(() => {
+            const step = document.getElementById('step-access');
+            step.className = 'kill-chain-step active';
+            narrativeBox.innerText = `[+] Initial Access Node ACTIVE: Identified vulnerability on perimeter node SSL handshake routing. Port 443 probes running.`;
+        }, 1600);
+        
+        // Step 3: Exec
+        setTimeout(() => {
+            const step = document.getElementById('step-exec');
+            step.className = 'kill-chain-step active';
+            narrativeBox.innerText = `[+] Execution Node ACTIVE: Payload injection test compiled. Shell access verified on simulated boundary endpoint.`;
+        }, 2400);
+        
+        // Step 4: Lateral
+        setTimeout(() => {
+            const step = document.getElementById('step-lat');
+            step.className = 'kill-chain-step active';
+            
+            // Populate content tabs
+            narrativeBox.innerHTML = `<strong>Threat Actor Profile:</strong> APT28 (Fancy Bear), Lazarus Group, FIN7, Scattered Spider.<br/><br/>A profiling audit of <strong>${simDomain}</strong> indicates missing DNSSEC validation protocols. Gaps in boundary perimeter configurations make it highly susceptible to DNS spoofing campaigns and session routing interception.`;
+            
+            scenarioBox.innerHTML = `<strong>Adversary Emulation Strategy:</strong><br/>1. <strong>Reconnaissance:</strong> Scan active subdomains and DNS routing nodes of ${simDomain}.<br/>2. <strong>Initial Access:</strong> Attempt entry utilizing unpatched edge gateway components.<br/>3. <strong>Execution:</strong> Inject memory buffer script loader.<br/>4. <strong>Lateral Movement:</strong> Pivot to internal database nodes using stolen credential hashes.`;
+            
+            remediationBox.innerHTML = `<strong>Zero-Day Mitigation Actions:</strong><br/>1. Force cryptographic hardware keys (MFA) on all administrative portal endpoints.<br/>2. Deploy DNSSEC validation on all primary domains and zones of ${simDomain}.<br/>3. Configure ingress security policies to block lateral SMB/RPC sweeps.`;
+            
+            forecastBox.innerHTML = `<strong>Risk Projection Matrix:</strong><br/>1. <strong>Attack Probability:</strong> 85% (Elevated risk index).<br/>2. <strong>Business Impact:</strong> High (Data confidentiality breach risks).<br/>3. <strong>Containment SLA:</strong> 15 minutes recommended.`;
+            
+            // Unlock monetization card
+            document.getElementById('sim-monetization-block').style.display = 'block';
+        }, 3200);
+    };
 
     window.loadLiveAdvisories = function(categoryKey) {
         const loading = document.getElementById('cisa-feed-loading');
