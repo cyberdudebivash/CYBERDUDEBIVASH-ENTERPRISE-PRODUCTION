@@ -5623,6 +5623,231 @@ body {
     line-height: 1.5;
     white-space: pre-wrap;
 }
+
+
+/* ==========================================================================
+   B2B MITRE ATT&CK COVERAGE MATRIX
+   ========================================================================== */
+
+.mitre-matrix-section {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+    position: relative;
+}
+
+.mitre-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.mitre-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent);
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px dashed var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.mitre-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.mitre-desc {
+    color: #a3a3a3;
+    font-size: 1.05rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.mitre-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+.mitre-column {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mitre-column:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.05);
+}
+
+.mitre-column-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+.mitre-col-icon {
+    font-size: 1.1rem;
+}
+
+.mitre-col-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mitre-col-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.mitre-tech-item {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #a3a3a3;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.mitre-status-indicator {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-top: auto;
+    letter-spacing: 0.02em;
+}
+
+.mitre-status-indicator.critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--crit);
+    border: 1px solid var(--crit);
+}
+
+.mitre-status-indicator.safe {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--safe);
+    border: 1px solid var(--safe);
+}
+
+.mitre-status-indicator.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+/* Popover Panel Overlay */
+.mitre-overlay-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--accent);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    padding: 24px;
+    z-index: 10000;
+}
+
+@media (max-width: 480px) {
+    .mitre-overlay-panel {
+        width: calc(100% - 40px);
+    }
+}
+
+.mitre-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.overlay-tactic-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.overlay-close-btn {
+    background: transparent;
+    border: none;
+    color: #737373;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.overlay-close-btn:hover {
+    color: #fff;
+}
+
+.overlay-desc {
+    font-size: 0.88rem;
+    color: #a3a3a3;
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+
+.overlay-mitigation-box {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.85rem;
+    color: #e5e5e5;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-overlay-remediate {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-overlay-remediate:hover {
+    box-shadow: 0 0 12px var(--accent);
+}
 ]]></b:skin>
 </head>
 
@@ -5913,6 +6138,131 @@ body {
                             <div class='pillar-card-title'>AI Threat Intel</div>
                             <div class='pillar-card-subtitle'>Sentinel APEX Ingestion</div>
                             <p class='pillar-card-desc'>Real-time feeds containing Indicators of Compromise, malicious prompt injection strings, and model threat vectors.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MITRE ATT&CK MATRIX NAVIGATOR -->
+                <div class='mitre-matrix-section'>
+                    <div class='mitre-header'>
+                        <div class='mitre-badge'>ATT&amp;CK COVERAGE MATRIX</div>
+                        <h2 class='mitre-title'>MITRE ATT&amp;CK® Security Mapping</h2>
+                        <p class='mitre-desc'>Identify your organizational security posture across key adversary tactics and map mitigations to our flagship products.</p>
+                    </div>
+
+                    <div class='mitre-matrix-grid'>
+                        <div class='mitre-column' onclick='showMitreOverlay("access")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>🔍</span>
+                                <div class='mitre-col-title'>Initial Access</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1190 Exploit Application</div>
+                                <div class='mitre-tech-item'>T1566 Phishing Campaign</div>
+                                <div class='mitre-status-indicator critical'>GAP DETECTED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("execution")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>⚙️</span>
+                                <div class='mitre-col-title'>Execution</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1059 Command Interpreter</div>
+                                <div class='mitre-tech-item'>T1204 User Execution</div>
+                                <div class='mitre-status-indicator safe'>MITIGATED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("persistence")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>🔒</span>
+                                <div class='mitre-col-title'>Persistence</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1136 Create Account</div>
+                                <div class='mitre-tech-item'>T1543 Scheduled Tasks</div>
+                                <div class='mitre-status-indicator safe'>MITIGATED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("credentials")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>🔑</span>
+                                <div class='mitre-col-title'>Cred Access</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1003 OS Cred dumping</div>
+                                <div class='mitre-tech-item'>T1555 Credentials store</div>
+                                <div class='mitre-status-indicator critical'>GAP DETECTED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("evasion")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>🛡️</span>
+                                <div class='mitre-col-title'>Defense Evasion</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1562 Impair Defenses</div>
+                                <div class='mitre-tech-item'>T1070 Indicator Removal</div>
+                                <div class='mitre-status-indicator warning'>MONITORED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("lateral")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>📡</span>
+                                <div class='mitre-col-title'>Lateral Move</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1021 Remote Services</div>
+                                <div class='mitre-tech-item'>T1570 Lateral Tool Transfer</div>
+                                <div class='mitre-status-indicator safe'>MITIGATED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("c2")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>💻</span>
+                                <div class='mitre-col-title'>Command &amp; Control</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1071 Web Protocols</div>
+                                <div class='mitre-tech-item'>T1573 Encrypted Channel</div>
+                                <div class='mitre-status-indicator critical'>GAP DETECTED</div>
+                            </div>
+                        </div>
+
+                        <div class='mitre-column' onclick='showMitreOverlay("exfil")'>
+                            <div class='mitre-column-header'>
+                                <span class='mitre-col-icon'>📤</span>
+                                <div class='mitre-col-title'>Exfiltration</div>
+                            </div>
+                            <div class='mitre-col-body'>
+                                <div class='mitre-tech-item'>T1567 Cloud Exfiltration</div>
+                                <div class='mitre-tech-item'>T1048 Exfil over protocol</div>
+                                <div class='mitre-status-indicator warning'>MONITORED</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popover dialog window -->
+                    <div class='mitre-overlay-panel' id='mitre-overlay-box' style='display:none;'>
+                        <div class='mitre-overlay-header'>
+                            <span class='overlay-tactic-name' id='overlay-mitre-tactic-title'>Initial Access</span>
+                            <button class='overlay-close-btn' onclick='closeMitreOverlay()'>×</button>
+                        </div>
+                        <div class='mitre-overlay-content'>
+                            <p class='overlay-desc' id='overlay-mitre-desc'>Description of tactic threat vectors.</p>
+                            <div class='overlay-mitigation-box'>
+                                <strong>Recommended Mitigation Scope:</strong>
+                                <span id='overlay-mitre-scope-val' style='color:var(--accent); font-weight:bold;'>Vulnerability Assessment</span>
+                            </div>
+                            <div class='overlay-actions'>
+                                <button class='btn-overlay-remediate' onclick='remediateMitreTactic()'>🛡️ Book Gap Remediation Audit</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -8994,6 +9344,94 @@ level: high`,
     setTimeout(() => {
         window.generateThreatSignature();
     }, 1500);
+
+    // MITRE ATT&CK Matrix Overlay Controller
+    const mitreDatabase = {
+        access: {
+            title: "Initial Access (TA0001)",
+            desc: "Adversaries try to get into your network. Techniques include exploiting public-facing applications (T1190) and phishing emails (T1566) to deploy initial footholds.",
+            scope: "Vulnerability Assessment - ₹9,999"
+        },
+        execution: {
+            title: "Execution (TA0002)",
+            desc: "Adversaries run malicious code. Techniques include command and scripting interpreters (T1059) and user execution (T1204) of payload binaries.",
+            scope: "DevSecOps Security Optimization - ₹59,999"
+        },
+        persistence: {
+            title: "Persistence (TA0003)",
+            desc: "Adversaries try to maintain their foothold. Techniques include creating accounts (T1136) and scheduling tasks (T1543) to persist access.",
+            scope: "Security Configuration Review & Audit - ₹4,999"
+        },
+        credentials: {
+            title: "Credential Access (TA0006)",
+            desc: "Adversaries try to steal account names and passwords. Techniques include OS credential dumping (T1003) and reading credentials from web browsers stores.",
+            scope: "Vulnerability Assessment - ₹9,999"
+        },
+        evasion: {
+            title: "Defense Evasion (TA0005)",
+            desc: "Adversaries try to avoid detection. Techniques include impairing defense scanners (T1562) and indicator removal on hosts (T1070).",
+            scope: "AI Security Scanner Assessment - ₹7,999"
+        },
+        lateral: {
+            title: "Lateral Movement (TA0008)",
+            desc: "Adversaries enter and control remote systems on your network. Techniques include remote services (T1021) and lateral tool transfers (T1570).",
+            scope: "Threat Hunting Readiness Review - ₹14,999"
+        },
+        c2: {
+            title: "Command & Control (TA0011)",
+            desc: "Adversaries talk to compromised systems to control them. Techniques include application layer web protocols (T1071) and encrypted channels (T1573).",
+            scope: "API Security Assessment - ₹19,999"
+        },
+        exfil: {
+            title: "Exfiltration (TA0010)",
+            desc: "Adversaries steal data from your network. Techniques include exfiltration over web service (T1567) and alternative protocols.",
+            scope: "SaaS Security Assessment - ₹12,999"
+        }
+    };
+    
+    let activeMitreTactic = "access";
+    window.showMitreOverlay = function(tacticKey) {
+        activeMitreTactic = tacticKey;
+        const box = document.getElementById('mitre-overlay-box');
+        const titleEl = document.getElementById('overlay-mitre-tactic-title');
+        const descEl = document.getElementById('overlay-mitre-desc');
+        const scopeEl = document.getElementById('overlay-mitre-scope-val');
+        
+        if (!box || !titleEl || !descEl || !scopeEl) return;
+        
+        const data = mitreDatabase[tacticKey];
+        titleEl.innerText = data.title;
+        descEl.innerText = data.desc;
+        scopeEl.innerText = data.scope.split(' - ')[0];
+        
+        box.style.display = 'block';
+    };
+    
+    window.closeMitreOverlay = function() {
+        const box = document.getElementById('mitre-overlay-box');
+        if (box) box.style.display = 'none';
+    };
+    
+    window.remediateMitreTactic = function() {
+        const data = mitreDatabase[activeMitreTactic];
+        
+        const formAnchor = document.getElementById('consultation-inquiry-anchor');
+        if (formAnchor) {
+            formAnchor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        const selectEl = document.getElementById('inq-service');
+        const descEl = document.getElementById('inq-desc');
+        if (selectEl) {
+            selectEl.value = data.scope;
+            calculateDynamicCost();
+        }
+        if (descEl) {
+            descEl.value = `Remediation scoping request for MITRE ATT&CK tactic gap: ${data.title}. Please provide audit schedule and pricing.`;
+        }
+        
+        closeMitreOverlay();
+    };
 
     // Live Chat Assistant Controllers
     let isChatOpen = false;

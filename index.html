@@ -3941,6 +3941,131 @@ body {
     </div>
 </div>
 
+<!-- MITRE ATT&CK MATRIX NAVIGATOR -->
+<div class="mitre-matrix-section">
+    <div class="mitre-header">
+        <div class="mitre-badge">ATT&amp;CK COVERAGE MATRIX</div>
+        <h2 class="mitre-title">MITRE ATT&amp;CK® Security Mapping</h2>
+        <p class="mitre-desc">Identify your organizational security posture across key adversary tactics and map mitigations to our flagship products.</p>
+    </div>
+
+    <div class="mitre-matrix-grid">
+        <div class="mitre-column" onclick="showMitreOverlay('access')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">🔍</span>
+                <div class="mitre-col-title">Initial Access</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1190 Exploit Application</div>
+                <div class="mitre-tech-item">T1566 Phishing Campaign</div>
+                <div class="mitre-status-indicator critical">GAP DETECTED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('execution')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">⚙️</span>
+                <div class="mitre-col-title">Execution</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1059 Command Interpreter</div>
+                <div class="mitre-tech-item">T1204 User Execution</div>
+                <div class="mitre-status-indicator safe">MITIGATED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('persistence')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">🔒</span>
+                <div class="mitre-col-title">Persistence</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1136 Create Account</div>
+                <div class="mitre-tech-item">T1543 Scheduled Tasks</div>
+                <div class="mitre-status-indicator safe">MITIGATED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('credentials')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">🔑</span>
+                <div class="mitre-col-title">Cred Access</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1003 OS Cred dumping</div>
+                <div class="mitre-tech-item">T1555 Credentials store</div>
+                <div class="mitre-status-indicator critical">GAP DETECTED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('evasion')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">🛡️</span>
+                <div class="mitre-col-title">Defense Evasion</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1562 Impair Defenses</div>
+                <div class="mitre-tech-item">T1070 Indicator Removal</div>
+                <div class="mitre-status-indicator warning">MONITORED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('lateral')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">📡</span>
+                <div class="mitre-col-title">Lateral Move</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1021 Remote Services</div>
+                <div class="mitre-tech-item">T1570 Lateral Tool Transfer</div>
+                <div class="mitre-status-indicator safe">MITIGATED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('c2')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">💻</span>
+                <div class="mitre-col-title">Command &amp; Control</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1071 Web Protocols</div>
+                <div class="mitre-tech-item">T1573 Encrypted Channel</div>
+                <div class="mitre-status-indicator critical">GAP DETECTED</div>
+            </div>
+        </div>
+
+        <div class="mitre-column" onclick="showMitreOverlay('exfil')">
+            <div class="mitre-column-header">
+                <span class="mitre-col-icon">📤</span>
+                <div class="mitre-col-title">Exfiltration</div>
+            </div>
+            <div class="mitre-col-body">
+                <div class="mitre-tech-item">T1567 Cloud Exfiltration</div>
+                <div class="mitre-tech-item">T1048 Exfil over protocol</div>
+                <div class="mitre-status-indicator warning">MONITORED</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popover dialog window -->
+    <div class="mitre-overlay-panel" id="mitre-overlay-box" style="display:none;">
+        <div class="mitre-overlay-header">
+            <span class="overlay-tactic-name" id="overlay-mitre-tactic-title">Initial Access</span>
+            <button class="overlay-close-btn" onclick="closeMitreOverlay()">×</button>
+        </div>
+        <div class="mitre-overlay-content">
+            <p class="overlay-desc" id="overlay-mitre-desc">Description of tactic threat vectors.</p>
+            <div class="overlay-mitigation-box">
+                <strong>Recommended Mitigation Scope:</strong>
+                <span id="overlay-mitre-scope-val" style="color:var(--accent); font-weight:bold;">Vulnerability Assessment</span>
+            </div>
+            <div class="overlay-actions">
+                <button class="btn-overlay-remediate" onclick="remediateMitreTactic()">🛡️ Book Gap Remediation Audit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- FLAGSHIP PREMIUM SERVICES OPERATIONS DASHBOARD -->
 <div class="flagship-services-section">
     <div class="flagship-header">
