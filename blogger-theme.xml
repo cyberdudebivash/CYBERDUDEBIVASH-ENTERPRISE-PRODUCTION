@@ -5421,7 +5421,7 @@ body {
                             <div class='catalog-grid-row'>
                                 <div class='catalog-pricing-card'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>Cybersecurity Consultation</div>
+                                        <div class='pricing-title'>Cybersecurity Strategy Consultation</div>
                                         <div class='pricing-cost'>₹999 / session</div>
                                     </div>
                                     <div class='pricing-card-body'>
@@ -5430,12 +5430,12 @@ body {
                                             <li>SecOps architecture check</li>
                                             <li>Basic recommendations summary</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Cybersecurity Consultation - ₹999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Cybersecurity Strategy Consultation - ₹999")'>Select Service →</a>
                                     </div>
                                 </div>
                                 <div class='catalog-pricing-card featured'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>Premium AI Security Call</div>
+                                        <div class='pricing-title'>AI Security Consultation (Premium)</div>
                                         <div class='pricing-cost'>₹1,999 / session</div>
                                     </div>
                                     <div class='pricing-card-body'>
@@ -5444,13 +5444,13 @@ body {
                                             <li>Prompt engineering guidelines</li>
                                             <li>Detailed remediation steps</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Premium AI Security Call - ₹1,999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security Consultation (Premium) - ₹1,999")'>Select Service →</a>
                                     </div>
                                 </div>
                                 <div class='catalog-pricing-card'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>CTI Intelligence Brief</div>
-                                        <div class='pricing-cost'>₹999 / brief</div>
+                                        <div class='pricing-title'>Threat Intelligence Advisory Call</div>
+                                        <div class='pricing-cost'>₹2,999 / brief</div>
                                     </div>
                                     <div class='pricing-card-body'>
                                         <ul class='pricing-features'>
@@ -5458,7 +5458,49 @@ body {
                                             <li>Known actor mapping log</li>
                                             <li>Sigma/YARA alert rules bundle</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("CTI Intelligence Brief - ₹999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Threat Intelligence Advisory Call - ₹2,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Security Hiring &amp; Career Guidance</div>
+                                        <div class='pricing-cost'>₹999 / session</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>Cybersecurity job search plan</li>
+                                            <li>SME CV and resume review</li>
+                                            <li>Target industry certifications list</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Security Hiring &amp; Careers Guidance - ₹999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Website Security Health Check</div>
+                                        <div class='pricing-cost'>₹1,499 / asset</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>SSL configuration scan check</li>
+                                            <li>HTTP secure headers assessment</li>
+                                            <li>Common security vulnerabilities check</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("SSL &amp; Website Security Health Check - ₹1,499")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Premium CTI Intelligence Brief</div>
+                                        <div class='pricing-cost'>₹999 / brief</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>PDF Target threat report logs</li>
+                                            <li>IOC curated summary list</li>
+                                            <li>Industry risk threat indicators</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Premium CTI Intelligence Brief - ₹999")'>Select Service →</a>
                                     </div>
                                 </div>
                             </div>
@@ -5483,8 +5525,7 @@ body {
                                 </div>
                                 <div class='catalog-pricing-card featured'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-badge-popular'>POPULAR ASSESSMENT</div>
-                                        <div class='pricing-title'>AI Security Scanner Audit</div>
+                                        <div class='pricing-title'>AI Security Scanner Assessment</div>
                                         <div class='pricing-cost'>₹7,999 / assessment</div>
                                     </div>
                                     <div class='pricing-card-body'>
@@ -5494,7 +5535,7 @@ body {
                                             <li>Model permissions &amp; weights audit</li>
                                             <li>Actionable risk report (PDF)</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security Scanner Audit - ₹7,999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security Scanner Assessment - ₹7,999")'>Select Service →</a>
                                     </div>
                                 </div>
                                 <div class='catalog-pricing-card'>
@@ -5513,16 +5554,16 @@ body {
                                 </div>
                                 <div class='catalog-pricing-card'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>Security Configuration Review</div>
-                                        <div class='pricing-cost'>₹4,999 / review</div>
+                                        <div class='pricing-title'>Threat Hunting Readiness Review</div>
+                                        <div class='pricing-cost'>₹14,999 / review</div>
                                     </div>
                                     <div class='pricing-card-body'>
                                         <ul class='pricing-features'>
-                                            <li>Detailed configuration audit</li>
-                                            <li>Security hardening checklist</li>
-                                            <li>Audited exposure report (PDF)</li>
+                                            <li>Log source coverage review</li>
+                                            <li>Detection gap analysis logs</li>
+                                            <li>MITRE ATT&amp;CK Matrix mapping</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Security Configuration Review &amp; Audit - ₹4,999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Threat Hunting Readiness Review - ₹14,999")'>Select Service →</a>
                                     </div>
                                 </div>
                                 <div class='catalog-pricing-card'>
@@ -5537,6 +5578,20 @@ body {
                                             <li>Access control risk PDF report</li>
                                         </ul>
                                         <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("SaaS Security Assessment - ₹12,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Security Configuration Review &amp; Audit</div>
+                                        <div class='pricing-cost'>₹4,999 / review</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>Detailed configuration audit</li>
+                                            <li>Security hardening checklist</li>
+                                            <li>Audited exposure report (PDF)</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Security Configuration Review &amp; Audit - ₹4,999")'>Select Service →</a>
                                     </div>
                                 </div>
                             </div>
@@ -5561,7 +5616,49 @@ body {
                                 </div>
                                 <div class='catalog-pricing-card featured'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>AI Security (Enterprise)</div>
+                                        <div class='pricing-title'>AI Governance Consulting</div>
+                                        <div class='pricing-cost'>₹19,999 / engagement</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>ISO 42001 compliance scoping</li>
+                                            <li>EU AI Act conformity verification</li>
+                                            <li>Internal auditing controls reports</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Governance Consulting - ₹19,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Cloud Security Audit</div>
+                                        <div class='pricing-cost'>₹9,999 / environment</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>AWS/GCP infrastructure sweeps</li>
+                                            <li>IAM policies &amp; roles validation</li>
+                                            <li>Secure Docker configuration logs</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Cloud Security Audit - ₹9,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Compliance Readiness Assessment</div>
+                                        <div class='pricing-cost'>₹24,999 / audit</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>SOC 2 / ISO 27001 mappings</li>
+                                            <li>Policy gaps documentation logs</li>
+                                            <li>Compliance audit roadmap</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Compliance Readiness Assessment - ₹24,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>AI Security Assessment (Enterprise)</div>
                                         <div class='pricing-cost'>₹39,999 / suite</div>
                                     </div>
                                     <div class='pricing-card-body'>
@@ -5570,12 +5667,12 @@ body {
                                             <li>Enterprise LLM Red Teaming</li>
                                             <li>SLA support integrations</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security (Enterprise) - ₹39,999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security Assessment (Enterprise) - ₹39,999")'>Select Service →</a>
                                     </div>
                                 </div>
                                 <div class='catalog-pricing-card'>
                                     <div class='pricing-card-header'>
-                                        <div class='pricing-title'>DevSecOps Optimization</div>
+                                        <div class='pricing-title'>DevSecOps Security Optimization</div>
                                         <div class='pricing-cost'>₹59,999 / pipeline</div>
                                     </div>
                                     <div class='pricing-card-body'>
@@ -5584,14 +5681,14 @@ body {
                                             <li>GitHub Actions security lock</li>
                                             <li>Snyk/Trivy pipeline rules setup</li>
                                         </ul>
-                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("DevSecOps Optimization - ₹59,999")'>Select Service →</a>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("DevSecOps Security Optimization - ₹59,999")'>Select Service →</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- CONSULTATION LEAD CAPTURE FORM -->
                 <div class='consult-form-section' id='consultation-inquiry-anchor'>
                     <div class='consult-container'>
@@ -5625,20 +5722,27 @@ body {
                                     <div class='form-group'>
                                         <label for='inq-service'>Security Assessment Type *</label>
                                         <select id='inq-service' onchange='calculateDynamicCost()'>
+                                            <!-- Tier 1 options -->
                                             <option value='Cybersecurity Strategy Consultation - ₹999'>Cybersecurity Strategy Consultation — ₹999 (Special 80% Off)</option>
-                                            <option value='AI Security Consultation - ₹1,999'>AI Security Consultation — ₹1,999</option>
-                                            <option value='Threat Intelligence Advisory Services - ₹2,999'>Threat Intelligence Advisory Services — ₹2,999</option>
-                                            <option value='Cybersecurity &amp; AI Security Consultation - ₹999'>Cybersecurity &amp; AI Security Consultation — ₹999</option>
+                                            <option value='AI Security Consultation (Premium) - ₹1,999'>AI Security Consultation (Premium) — ₹1,999</option>
+                                            <option value='Threat Intelligence Advisory Call - ₹2,999'>Threat Intelligence Advisory Call — ₹2,999</option>
+                                            <option value='Security Hiring &amp; Careers Guidance - ₹999'>Security Hiring &amp; Careers Guidance — ₹999</option>
+                                            <option value='SSL &amp; Website Security Health Check - ₹1,499'>SSL &amp; Website Security Health Check — ₹1,499</option>
                                             <option value='Premium CTI Intelligence Brief - ₹999'>Premium CTI Intelligence Brief — ₹999</option>
+                                            <!-- Tier 2 options -->
                                             <option value='Threat Intelligence Report - ₹4,999'>Threat Intelligence Report — ₹4,999</option>
-                                            <option value='Security Configuration Review &amp; Audit - ₹4,999'>Security Configuration Review &amp; Audit — ₹4,999</option>
-                                            <option value='SaaS Security Assessment - ₹12,999'>SaaS Security Assessment — ₹12,999</option>
-                                            <option value='Threat Hunting Readiness Review - ₹14,999'>Threat Hunting Readiness Review — ₹14,999</option>
-                                            <option value='AI Security Scanner Audit - ₹7,999'>AI Security Scanner Audit — ₹7,999</option>
+                                            <option value='AI Security Scanner Assessment - ₹7,999'>AI Security Scanner Assessment — ₹7,999</option>
                                             <option value='Vulnerability Assessment - ₹9,999'>Vulnerability Assessment — ₹9,999</option>
+                                            <option value='Threat Hunting Readiness Review - ₹14,999'>Threat Hunting Readiness Review — ₹14,999</option>
+                                            <option value='SaaS Security Assessment - ₹12,999'>SaaS Security Assessment — ₹12,999</option>
+                                            <option value='Security Configuration Review &amp; Audit - ₹4,999'>Security Configuration Review &amp; Audit — ₹4,999</option>
+                                            <!-- Tier 3 options -->
                                             <option value='API Security Assessment - ₹19,999'>API Security Assessment — ₹19,999</option>
-                                            <option value='AI Security (Enterprise) - ₹39,999'>AI Security (Enterprise) — ₹39,999</option>
-                                            <option value='DevSecOps Optimization - ₹59,999'>DevSecOps Optimization — ₹59,999</option>
+                                            <option value='AI Governance Consulting - ₹19,999'>AI Governance Consulting — ₹19,999</option>
+                                            <option value='Cloud Security Audit - ₹9,999'>Cloud Security Audit — ₹9,999</option>
+                                            <option value='Compliance Readiness Assessment - ₹24,999'>Compliance Readiness Assessment — ₹24,999</option>
+                                            <option value='AI Security Assessment (Enterprise) - ₹39,999'>AI Security Assessment (Enterprise) — ₹39,999</option>
+                                            <option value='DevSecOps Security Optimization - ₹59,999'>DevSecOps Security Optimization — ₹59,999</option>
                                         </select>
                                     </div>
                                     <div class='form-group'>
