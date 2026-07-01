@@ -5454,6 +5454,175 @@ body {
 .btn-send-chat:hover {
     box-shadow: 0 0 10px var(--accent);
 }
+
+
+/* ==========================================================================
+   INTERACTIVE PLAYBOOK CONFIGURATOR
+   ========================================================================== */
+
+.playbook-generator-section {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.generator-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.gen-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent);
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px dashed var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+}
+
+.gen-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gen-desc {
+    color: #a3a3a3;
+    font-size: 1.05rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.gen-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 30px;
+}
+
+@media (max-width: 968px) {
+    .gen-grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gen-control-panel, .gen-output-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.gen-panel-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.gen-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.gen-form-group label {
+    font-size: 0.85rem;
+    color: #a3a3a3;
+    font-weight: 500;
+}
+
+.gen-form-group select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.gen-cta-box {
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+.btn-gen-download {
+    display: block;
+    text-align: center;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.btn-gen-download:hover {
+    box-shadow: 0 0 15px var(--accent);
+    transform: translateY(-1px);
+}
+
+.gen-output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    margin: -25px -25px 20px -25px;
+}
+
+.gen-output-file-title {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #a3a3a3;
+}
+
+.gen-copy-badge {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.gen-copy-badge:hover {
+    background: var(--accent);
+    color: #000;
+}
+
+.gen-code-box {
+    margin: 0;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #33ffdd;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
 ]]></b:skin>
 </head>
 
@@ -6287,6 +6456,55 @@ body {
                     </div>
                 </div>
                 
+                <!-- INTERACTIVE PLAYBOOK CONFIGURATOR -->
+                <div class='playbook-generator-section'>
+                    <div class='generator-header'>
+                        <div class='gen-badge'>THREAT PLAYBOOKS</div>
+                        <h2 class='gen-title'>Interactive Threat Hunter Playbook Generator</h2>
+                        <p class='gen-desc'>Select an active threat profile and your SIEM pipeline to dynamically compile production-ready mitigation signatures.</p>
+                    </div>
+
+                    <div class='gen-grid-container'>
+                        <div class='gen-control-panel'>
+                            <h4 class='gen-panel-title'>⚙️ Configure Threat Signature Parameters</h4>
+                            
+                            <div class='gen-form-group'>
+                                <label for='gen-threat-type'>Target Threat Vector</label>
+                                <select id='gen-threat-type' onchange='generateThreatSignature()'>
+                                    <option value='rce'>Gateway Remote Code Execution (CVE-2026-4410)</option>
+                                    <option value='ransomware'>Ransomware Volume Shadow Copy Deletion</option>
+                                    <option value='reentrancy'>Web3 Reentrancy Loop Vulnerability</option>
+                                    <option value='credentials'>LSASS Memory Dumping Probe</option>
+                                </select>
+                            </div>
+
+                            <div class='gen-form-group'>
+                                <label for='gen-siem-type'>Target SIEM / Pipeline</label>
+                                <select id='gen-siem-type' onchange='generateThreatSignature()'>
+                                    <option value='sigma'>Sigma Generic Detection Rule (YAML)</option>
+                                    <option value='yara'>YARA Forensic Signature File (LARA)</option>
+                                    <option value='splunk'>Splunk Enterprise Search Query (SPL)</option>
+                                    <option value='sentinel'>Microsoft Sentinel Kusto Query (KQL)</option>
+                                </select>
+                            </div>
+
+                            <div class='gen-cta-box'>
+                                <a class='btn-gen-download' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Premium CTI Intelligence Brief - ₹999")'>
+                                    🔓 Download Complete Playbook Bundle — ₹999
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class='gen-output-panel'>
+                            <div class='gen-output-header'>
+                                <span class='gen-output-file-title' id='gen-output-filename'>detection_rule.yml</span>
+                                <div class='gen-copy-badge' onclick='copyGenSignature()'>Copy Code</div>
+                            </div>
+                            <pre class='gen-code-box'><code id='gen-code-output'># Select threat parameters on left to compile rule...</code></pre>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- DEVELOPER API CONSOLE DASHBOARD -->
                 <div class='api-console-section'>
                     <div class='api-console-header'>
@@ -8610,6 +8828,172 @@ body {
             }
         }
     };
+
+    // Interactive Playbook Configurator Database
+    const signatureDatabase = {
+        rce: {
+            sigma: `title: Gateway Deserialization Remote Code Execution (CVE-2026-4410)
+id: cdb-cve-2026-4410-rce
+status: experimental
+description: Detects suspicious deserialization payloads on HTTP request bodies targeting CVE-2026-4410.
+logsource:
+    category: webserver
+detection:
+    selection:
+        c-uri|contains: '/gateway/api/v1/deserializer'
+        c-body|contains:
+            - 'org.apache.commons.collections.functors.InvokerTransformer'
+            - 'java.lang.Runtime'
+    condition: selection
+level: critical`,
+            yara: `rule cdb_cve_2026_4410_rce_payload {
+    meta:
+        description = "Detects serializable Java transformers for CVE-2026-4410"
+        author = "Bivash Kumar Nayak"
+        severity = "CRITICAL"
+    strings:
+        $transformer = "InvokerTransformer"
+        $runtime = "java.lang.Runtime"
+    condition:
+        all of them
+}`,
+            splunk: `index=webserver sourcetype=access_combined uri="/gateway/api/v1/deserializer" 
+| search ("InvokerTransformer" OR "java.lang.Runtime") 
+| eval alert_level="CRITICAL"`,
+            sentinel: `W3CIISLog
+| where csUriStem == "/gateway/api/v1/deserializer"
+| where csBody has "InvokerTransformer" or csBody has "java.lang.Runtime"
+| extend AlertLevel = "CRITICAL"`
+        },
+        ransomware: {
+            sigma: `title: Volume Shadow Copy Deletion via Vssadmin
+id: cdb-ransomware-vssadmin
+status: stable
+description: Detects ransomware executing shadow copy deletion commands.
+logsource:
+    product: windows
+    service: security
+detection:
+    selection:
+        EventID: 4688
+        CommandLine|contains:
+            - 'vssadmin'
+            - 'delete'
+            - 'shadows'
+            - '/all'
+    condition: selection
+level: critical`,
+            yara: `rule cdb_ransomware_shadow_deletion {
+    meta:
+        description = "Detects Volume Shadow Copy Deletion attempts"
+        author = "Bivash Kumar Nayak"
+        severity = "HIGH"
+    strings:
+        $vss = "vssadmin" nocase
+        $del = "delete shadows" nocase
+    condition:
+        all of them
+}`,
+            splunk: `index=windows_logs EventCode=4688 (vssadmin AND delete AND shadows)
+| table _time Hostname CommandLine Account`,
+            sentinel: `SecurityEvent
+| where EventID == 4688
+| where CommandLine has "vssadmin" and CommandLine has "delete" and CommandLine has "shadows"`
+        },
+        reentrancy: {
+            sigma: `title: Suspicious Smart Contract Call Loop (Reentrancy)
+id: cdb-web3-reentrancy
+status: experimental
+description: Detects excessive transaction loop backchecks within EVM transaction logs.
+logsource:
+    category: evm_node
+detection:
+    selection:
+        method: 'call'
+        call_depth|gt: 50
+    condition: selection
+level: critical`,
+            yara: `rule cdb_web3_reentrancy_bytecode {
+    meta:
+        description = "Detects smart contract bytecode containing loop locks"
+        author = "Bivash Kumar Nayak"
+    strings:
+        $call_op = { F1 } // CALL opcode
+        $reentrant_lock = { 60 00 80 54 } // State lock validation
+    condition:
+        all of them
+}`,
+            splunk: `index=web3_node sourcetype=evm_transactions method="call" call_depth > 50
+| stats count by tx_hash`,
+            sentinel: `EVMTransactionLog
+| where Method == "call" and CallDepth > 50
+| summarize CallCount = count() by TxHash`
+        },
+        credentials: {
+            sigma: `title: LSASS Memory Dumping via Procdump
+id: cdb-lsass-memory-dump
+status: stable
+description: Detects LSASS process dump tools access.
+logsource:
+    product: windows
+    service: security
+detection:
+    selection:
+        EventID: 4688
+        CommandLine|contains:
+            - 'procdump'
+            - 'lsass'
+    condition: selection
+level: high`,
+            yara: `rule cdb_lsass_procdump {
+    meta:
+        description = "Detects procdump targeting lsass memory"
+        author = "Bivash Kumar Nayak"
+    strings:
+        $proc = "procdump" nocase
+        $lsass = "lsass" nocase
+    condition:
+        all of them
+}`,
+            splunk: `index=windows_logs EventCode=4688 procdump lsass
+| eval alert_severity="HIGH"`,
+            sentinel: `SecurityEvent
+| where EventID == 4688
+| where CommandLine has "procdump" and CommandLine has "lsass"`
+        }
+    };
+    
+    window.generateThreatSignature = function() {
+        const threat = document.getElementById('gen-threat-type').value;
+        const siem = document.getElementById('gen-siem-type').value;
+        const filenameEl = document.getElementById('gen-output-filename');
+        const codeEl = document.getElementById('gen-code-output');
+        
+        if (!filenameEl || !codeEl) return;
+        
+        const ext = { sigma: '.yml', yara: '.yar', splunk: '.spl', sentinel: '.kql' }[siem];
+        filenameEl.innerText = threat + '_mitigation' + ext;
+        
+        const signature = signatureDatabase[threat][siem];
+        codeEl.innerText = signature;
+    };
+    
+    window.copyGenSignature = function() {
+        const codeEl = document.getElementById('gen-code-output');
+        if (codeEl) {
+            navigator.clipboard.writeText(codeEl.innerText);
+            const badge = document.querySelector('.gen-copy-badge');
+            if (badge) {
+                badge.innerText = 'Copied!';
+                setTimeout(() => { badge.innerText = 'Copy Code'; }, 2000);
+            }
+        }
+    };
+    
+    // Auto-init on page load
+    setTimeout(() => {
+        window.generateThreatSignature();
+    }, 1500);
 
     // Live Chat Assistant Controllers
     let isChatOpen = false;

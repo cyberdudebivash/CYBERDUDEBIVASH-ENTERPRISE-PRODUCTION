@@ -4479,7 +4479,56 @@ body {
         </div>
     </div>
 </div>
-<!-- SERVICE CATALOG & COMMERCIAL PRICING --><!-- DEVELOPER API CONSOLE DASHBOARD -->
+<!-- SERVICE CATALOG & COMMERCIAL PRICING --><!-- INTERACTIVE PLAYBOOK CONFIGURATOR -->
+<div class="playbook-generator-section">
+    <div class="generator-header">
+        <div class="gen-badge">THREAT PLAYBOOKS</div>
+        <h2 class="gen-title">Interactive Threat Hunter Playbook Generator</h2>
+        <p class="gen-desc">Select an active threat profile and your SIEM pipeline to dynamically compile production-ready mitigation signatures.</p>
+    </div>
+
+    <div class="gen-grid-container">
+        <div class="gen-control-panel">
+            <h4 class="gen-panel-title">⚙️ Configure Threat Signature Parameters</h4>
+            
+            <div class="gen-form-group">
+                <label for="gen-threat-type">Target Threat Vector</label>
+                <select id="gen-threat-type" onchange="generateThreatSignature()">
+                    <option value="rce">Gateway Remote Code Execution (CVE-2026-4410)</option>
+                    <option value="ransomware">Ransomware Volume Shadow Copy Deletion</option>
+                    <option value="reentrancy">Web3 Reentrancy Loop Vulnerability</option>
+                    <option value="credentials">LSASS Memory Dumping Probe</option>
+                </select>
+            </div>
+
+            <div class="gen-form-group">
+                <label for="gen-siem-type">Target SIEM / Pipeline</label>
+                <select id="gen-siem-type" onchange="generateThreatSignature()">
+                    <option value="sigma">Sigma Generic Detection Rule (YAML)</option>
+                    <option value="yara">YARA Forensic Signature File (LARA)</option>
+                    <option value="splunk">Splunk Enterprise Search Query (SPL)</option>
+                    <option value="sentinel">Microsoft Sentinel Kusto Query (KQL)</option>
+                </select>
+            </div>
+
+            <div class="gen-cta-box">
+                <a class="btn-gen-download" href="#consultation-inquiry-anchor" onclick="selectCatalogService('Premium CTI Intelligence Brief - ₹999')">
+                    🔓 Download Complete Playbook Bundle — ₹999
+                </a>
+            </div>
+        </div>
+
+        <div class="gen-output-panel">
+            <div class="gen-output-header">
+                <span class="gen-output-file-title" id="gen-output-filename">detection_rule.yml</span>
+                <div class="gen-copy-badge" onclick="copyGenSignature()">Copy Code</div>
+            </div>
+            <pre class="gen-code-box"><code id="gen-code-output"># Select threat parameters on left to compile rule...</code></pre>
+        </div>
+    </div>
+</div>
+
+<!-- DEVELOPER API CONSOLE DASHBOARD -->
 <div class="api-console-section">
     <div class="api-console-header">
         <div class="api-badge">DEVELOPER HUB</div>
