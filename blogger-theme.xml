@@ -4703,6 +4703,159 @@ body {
     color: #000;
     box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
+
+/* SENTINEL APEX THREAT INTELLIGENCE BULLETIN STYLES */
+.threat-bulletin-panel {
+    margin: 24px 0;
+    background: rgba(9, 13, 22, 0.6);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+}
+.bulletin-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.bulletin-blink-beacon {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ef4444;
+    animation: beaconPulse 1.2s infinite ease-in-out;
+}
+@keyframes beaconPulse {
+    0% { transform: scale(0.9); opacity: 0.4; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.4; }
+}
+.bulletin-header-title {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: #ef4444;
+    letter-spacing: 1px;
+}
+.bulletin-meta-tagline {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+}
+.threat-matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.threat-badge {
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+.threat-badge:hover {
+    transform: translateY(-2px);
+}
+.threat-badge.critical {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.1);
+}
+.threat-badge.critical:hover {
+    border-color: #ef4444;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+.threat-badge.high {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.1);
+}
+.threat-badge.high:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+.threat-badge.medium-high {
+    border-color: rgba(234, 179, 8, 0.4);
+    box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.1);
+}
+.threat-badge.medium-high:hover {
+    border-color: #eab308;
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2);
+}
+.threat-badge-icon {
+    font-size: 20px;
+}
+.threat-badge-info {
+    display: flex;
+    flex-direction: column;
+}
+.threat-badge-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.threat-badge-severity {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+}
+.threat-badge.critical .threat-badge-severity { color: #ef4444; }
+.threat-badge.high .threat-badge-severity { color: #f59e0b; }
+.threat-badge.medium-high .threat-badge-severity { color: #eab308; }
+
+.bulletin-footer-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+}
+@media (max-width: 600px) {
+    .bulletin-footer-grid {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+.bulletin-features-row {
+    display: flex;
+    gap: 12px;
+}
+.bulletin-features-row span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.btn-bulletin-checkout {
+    display: inline-block;
+    text-align: center;
+    background: #ef4444;
+    color: #020406;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+.btn-bulletin-checkout:hover {
+    transform: scale(1.02);
+    background: #fff;
+    color: #000;
+    box-shadow: 0 0 15px #fff;
+}
 ]]></b:skin>
 </head>
 
@@ -5358,6 +5511,34 @@ body {
                                         <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Vulnerability Assessment - ₹9,999")'>Select Service →</a>
                                     </div>
                                 </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>Security Configuration Review</div>
+                                        <div class='pricing-cost'>₹4,999 / review</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>Detailed configuration audit</li>
+                                            <li>Security hardening checklist</li>
+                                            <li>Audited exposure report (PDF)</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Security Configuration Review &amp; Audit - ₹4,999")'>Select Service →</a>
+                                    </div>
+                                </div>
+                                <div class='catalog-pricing-card'>
+                                    <div class='pricing-card-header'>
+                                        <div class='pricing-title'>SaaS Security Assessment</div>
+                                        <div class='pricing-cost'>₹12,999 / audit</div>
+                                    </div>
+                                    <div class='pricing-card-body'>
+                                        <ul class='pricing-features'>
+                                            <li>SaaS configurations &amp; IAM audit</li>
+                                            <li>Access controls authorization check</li>
+                                            <li>Access control risk PDF report</li>
+                                        </ul>
+                                        <a class='btn-pricing-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("SaaS Security Assessment - ₹12,999")'>Select Service →</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -5450,6 +5631,8 @@ body {
                                             <option value='Cybersecurity &amp; AI Security Consultation - ₹999'>Cybersecurity &amp; AI Security Consultation — ₹999</option>
                                             <option value='Premium CTI Intelligence Brief - ₹999'>Premium CTI Intelligence Brief — ₹999</option>
                                             <option value='Threat Intelligence Report - ₹4,999'>Threat Intelligence Report — ₹4,999</option>
+                                            <option value='Security Configuration Review &amp; Audit - ₹4,999'>Security Configuration Review &amp; Audit — ₹4,999</option>
+                                            <option value='SaaS Security Assessment - ₹12,999'>SaaS Security Assessment — ₹12,999</option>
                                             <option value='Threat Hunting Readiness Review - ₹14,999'>Threat Hunting Readiness Review — ₹14,999</option>
                                             <option value='AI Security Scanner Audit - ₹7,999'>AI Security Scanner Audit — ₹7,999</option>
                                             <option value='Vulnerability Assessment - ₹9,999'>Vulnerability Assessment — ₹9,999</option>
