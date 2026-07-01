@@ -80,8 +80,8 @@
             "https://www.instagram.com/cyberdudebivash_official/",
             "https://www.facebook.com/profile.php?id=61583373732736",
             "https://x.com/CDBSENTINELAPEX",
-            "https://www.fiverr.com/bivashkumar007/",
-            "https://www.upwork.com/freelancers/~010d4dde1657fa5619",
+            "https://www.tools.cyberdudebivash.com/",
+            "https://www.www.cyberdudebivash.com",
             "https://in.pinterest.com/CYBERDUDEBIVASH_Official/",
             "https://medium.com/@cyberdudebivash",
             "https://www.threads.com/@cyberdudebivash_official",
@@ -4930,7 +4930,7 @@ body {
                 <div class='ai-gov-title'>AI Governance Consulting</div>
                 <div class='ai-gov-subtitle'>Establish robust governance, align with global regulations, and secure enterprise AI model pipelines.</div>
                 <div class='ai-gov-price'>Special Rate: ₹19,999 / engagement</div>
-                <a class='btn-gov-cta' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>Book Consultation</a>
+                <a class='btn-gov-cta' href='#consultation-inquiry-anchor' target='_blank'>Book Consultation</a>
             </div>
         </aside>
 
@@ -4963,7 +4963,7 @@ body {
                     </div>
                     <div class='hero-ctas'>
                         <a class='btn-primary' href='https://intel.cyberdudebivash.com/upgrade.html'>Get Enterprise Access</a>
-                        <a class='btn-secondary' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619'>Request Security Audit</a>
+                        <a class='btn-secondary' href='https://www.cyberdudebivash.com/'>Request Security Audit</a>
                     </div>
                 </div>
 
@@ -5095,7 +5095,7 @@ body {
                             </div>
                             <div class='sim-money-actions'>
                                 <a class='btn-unlock-report' href='https://tools.cyberdudebivash.com/' target='_blank'>🔓 Unlock Full Audited PDF Report — ₹999</a>
-                                <a class='btn-buy-defense' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🛡️ Order Remediation Engineering Audit</a>
+                                <a class='btn-buy-defense' href='https://www.cyberdudebivash.com/' target='_blank'>🛡️ Order Remediation Engineering Audit</a>
                             </div>
                         </div>
                     </div>
@@ -6366,7 +6366,7 @@ body {
       </header>
 
       <!-- YubiKey Security Key Affiliate Placement -->
-      <a class='affiliate-banner' href='https://yubico.sjv.io/cyberdudebivash' target='_blank'>
+      <a class='affiliate-banner' href='https://tools.cyberdudebivash.com/' target='_blank'>
         <div class='affiliate-badge'>MFA Hardware Key</div>
         <div class='affiliate-title'>🔑 YubiKey 5C — Anti-Phishing Hardware MFA</div>
         <div class='affiliate-desc'>Secure your AWS IAM accounts, Github repositories, and developer terminals against credentials hijacking.</div>
@@ -6392,7 +6392,7 @@ body {
           </p>
           <div style='display:flex; gap:12px; font-family:var(--font-mono); font-size:11px;'>
             <a href='https://www.linkedin.com/company/cyberdudebivash/' target='_blank' style='color:var(--accent); text-decoration:none;'>🔗 LinkedIn Profile</a>
-            <a href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='color:var(--accent); text-decoration:none;'>🟢 Upwork (Verified)</a>
+            <a href='https://www.cyberdudebivash.com/' target='_blank' style='color:var(--accent); text-decoration:none;'>🟢 Upwork (Verified)</a>
           </div>
         </div>
       </div>
@@ -6762,7 +6762,7 @@ body {
                 <div class='premium-sponsors-header'>🛡️ VERIFIED TECHNOLOGY SPONSORS</div>
                 
                 <!-- Google Chronicle SecOps -->
-                <a class='premium-sponsor-card chronicle' href='https://cloud.google.com/security/products/chronicle-secops' target='_blank' rel='noopener noreferrer'>
+                <a class='premium-sponsor-card chronicle' href='https://intel.cyberdudebivash.com/' target='_blank' rel='noopener noreferrer'>
                     <div class='sponsor-card-meta'>
                         <span class='sponsor-badge gcp'>CLOUD SIEM</span>
                         <span class='sponsor-status live'>PARTNER PROVED</span>
@@ -6773,7 +6773,7 @@ body {
                 </a>
 
                 <!-- Snyk Developer Security -->
-                <a class='premium-sponsor-card snyk' href='https://snyk.sjv.io/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                <a class='premium-sponsor-card snyk' href='https://tools.cyberdudebivash.com/' target='_blank' rel='noopener noreferrer'>
                     <div class='sponsor-card-meta'>
                         <span class='sponsor-badge appsec'>DEVSECOPS</span>
                         <span class='sponsor-status active'>RECOMMENDED</span>
@@ -6784,7 +6784,7 @@ body {
                 </a>
 
                 <!-- YubiKey Hardware MFA -->
-                <a class='premium-sponsor-card yubikey' href='https://yubico.sjv.io/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                <a class='premium-sponsor-card yubikey' href='https://tools.cyberdudebivash.com/' target='_blank' rel='noopener noreferrer'>
                     <div class='sponsor-card-meta'>
                         <span class='sponsor-badge hardware'>MFA HARDWARE</span>
                         <span class='sponsor-status secure'>CRITICAL</span>
@@ -6795,7 +6795,7 @@ body {
                 </a>
 
                 <!-- NordVPN SecOps Tunnel -->
-                <a class='premium-sponsor-card nordvpn' href='https://nordvpn.sjv.io/c/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                <a class='premium-sponsor-card nordvpn' href='https://tools.cyberdudebivash.com/' target='_blank' rel='noopener noreferrer'>
                     <div class='sponsor-card-meta'>
                         <span class='sponsor-badge secure-tunnel'>TRAFFIC ENCRYPTION</span>
                         <span class='sponsor-status active'>63% OFF</span>
@@ -6856,11 +6856,11 @@ body {
                 <div class='hire-desc'>
                     Get verified vulnerability scans, Solidity audits, or DevSecOps pipeline reviews directly from Bivash Kumar Nayak.
                 </div>
-                <a class='btn-hire upwork' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>
-                    🟢 Hire on Upwork (Verified)
+                <a class='btn-hire upwork' href='https://www.cyberdudebivash.com/' target='_blank'>
+                    🟢 Sentinel Portal (Verified)
                 </a>
-                <a class='btn-hire fiverr' href='https://www.fiverr.com/bivashkumar007/' target='_blank'>
-                    🟢 Order on Fiverr (Top Rated)
+                <a class='btn-hire fiverr' href='https://tools.cyberdudebivash.com/' target='_blank'>
+                    🟢 Security Tools (Top Rated)
                 </a>
             </div>
 
@@ -6891,10 +6891,10 @@ body {
                     <a class='social-btn' href='https://in.pinterest.com/CYBERDUDEBIVASH_Official/' target='_blank'>
                         <span>📌</span> Pinterest
                     </a>
-                    <a class='social-btn' href='https://www.fiverr.com/bivashkumar007/' target='_blank'>
+                    <a class='social-btn' href='https://tools.cyberdudebivash.com/' target='_blank'>
                         <span>🟢</span> Fiverr <span class='badge-verified'>VERIFIED</span>
                     </a>
-                    <a class='social-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>
+                    <a class='social-btn' href='https://www.cyberdudebivash.com/' target='_blank'>
                         <span>🟢</span> Upwork <span class='badge-verified'>VERIFIED</span>
                     </a>
                 </div>
@@ -6930,8 +6930,8 @@ body {
 
             <div style='margin-top:24px;'>
                 <h3 class='panel-title'>RECOMMENDED SECURE GEAR</h3>
-                <a class='eco-link' href='https://yubico.sjv.io/cyberdudebivash' target='_blank'>🔑 YubiKey 5 NFC Hardware Key</a>
-                <a class='eco-link' href='https://nordvpn.sjv.io/c/cyberdudebivash' target='_blank'>🛡️ ProtonVPN / Mail Communication</a>
+                <a class='eco-link' href='https://tools.cyberdudebivash.com/' target='_blank'>🔑 YubiKey 5 NFC Hardware Key</a>
+                <a class='eco-link' href='https://tools.cyberdudebivash.com/' target='_blank'>🛡️ ProtonVPN / Mail Communication</a>
                 <a class='eco-link' href='https://bitwarden.com/' target='_blank'>🔐 Bitwarden Open-Source Vault</a>
             </div>
 
@@ -6957,8 +6957,8 @@ body {
             🔥 <span>SECURE YOUR PLATFORM:</span> Hire CyberDudeBivash Private Limited to audit your smart contracts and networks.
         </div>
         <div class='sticky-hire-btns'>
-            <a class='sticky-hire-btn upwork' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Hire on Upwork</a>
-            <a class='sticky-hire-btn fiverr' href='https://www.fiverr.com/bivashkumar007/' target='_blank'>🟢 Order on Fiverr</a>
+            <a class='sticky-hire-btn upwork' href='https://www.cyberdudebivash.com/' target='_blank'>🟢 Sentinel Portal</a>
+            <a class='sticky-hire-btn fiverr' href='https://tools.cyberdudebivash.com/' target='_blank'>🟢 Security Tools</a>
         </div>
     </div>
 
@@ -7009,7 +7009,7 @@ body {
             <div style='margin-top:15px; border-top:1px dashed var(--border); padding-top:10px; font-size:10px; color:var(--text-muted); text-align:center;'>
                 Secure Direct Merchant Escrow Routing is also supported:
                 <br/>
-                <a href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='color:var(--accent); text-decoration:none; font-weight:bold;'>🟢 Hire via Verified Upwork Escrow</a>
+                <a href='https://www.cyberdudebivash.com/' target='_blank' style='color:var(--accent); text-decoration:none; font-weight:bold;'>🟢 Hire via Verified Upwork Escrow</a>
             </div>
         </div>
     </div>
@@ -7530,7 +7530,7 @@ body {
                         2. <span style="color:var(--accent); font-weight:bold;">ENTERPRISE RADAR:</span> $499/mo - Hourly telemetry sync, 100 endpoints.<br/>
                         3. <span style="color:var(--accent); font-weight:bold;">TACTICAL APEX:</span> $1,999/mo - Sub-second STIX feed integration, unlimited nodes.<br/>
                         🛡️ CUSTOMIZE CONTRACT &amp; SLA:<br/>
-                        &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Kickoff Call on Upwork (Verified)</a>
+                        &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Kickoff Call on Upwork (Verified)</a>
                     `;
                 } else if (cmd === 'status') {
                     response.innerHTML = `
@@ -7566,7 +7566,7 @@ body {
                         [!] Vulnerability: Consent logs missing, data erasure controls inactive.<br/>
                         [+] RECOMMENDATION: Book Bivash Kumar Nayak for audit validation services.<br/>
                         [+] CHANNELS:<br/>
-                        &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Book on Upwork (Verified)</a>
+                        &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book on Upwork (Verified)</a>
                     `;
                 } else if (cmd === 'ir --emergency') {
                     response.innerHTML = `
@@ -7575,7 +7575,7 @@ body {
                         2. Retain volatile memory logs (DO NOT REBOOT).<br/>
                         3. Secure active forensic disk clones.<br/>
                         [+] EMERGENCY HOTLINE: Connect with CyberDudeBivash IR Force.<br/>
-                        &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Deploy IR Team on Upwork (Verified)</a>
+                        &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Deploy IR Team on Upwork (Verified)</a>
                     `;
                 } else if (cmd === 'api --test') {
                     response.innerHTML = `
@@ -7592,7 +7592,7 @@ body {
                         [+] External Pen-Testing Scopes Loaded.<br/>
                         [+] WebApp &amp; Cloud Security frameworks updated.<br/>
                         🛡️ SUBMIT AUDIT REQUIREMENTS FOR PROPOSAL:<br/>
-                        &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Request scoping proposals on Upwork (Verified)</a>
+                        &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Request scoping proposals on Upwork (Verified)</a>
                     `;
                 } else if (cmd.startsWith('cve --search')) {
                     const cveId = fullCmd.substring(12).trim().toLowerCase();
@@ -7611,7 +7611,7 @@ body {
                             [+] Exploit Probability (EPSS): \${data.epss}<br/>
                             [+] Target Vector: \${data.proto}<br/>
                             🛡️ REQUEST MITIGATION AUDIT:<br/>
-                            &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Mitigation Audit on Upwork (Verified)</a>
+                            &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Mitigation Audit on Upwork (Verified)</a>
                         `;
                     }
                 } else if (cmd.startsWith('intel --export')) {
@@ -7655,8 +7655,8 @@ body {
                         [+] SERVICE: Advanced Cybersecurity Consulting Services<br/>
                         [+] CAPABILITIES: Smart Contract Auditing, Penetration Testing, DevSecOps Integrations.<br/>
                         [+] CHANNELS:<br/>
-                        &nbsp;&nbsp;- <a href="https://www.upwork.com/freelancers/~010d4dde1657fa5619" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Bivash Kumar Nayak on Upwork (Verified)</a><br/>
-                        &nbsp;&nbsp;- <a href="https://www.fiverr.com/bivashkumar007/" target="_blank" style="color:var(--accent); text-decoration:underline;">Order Auditing Gigs on Fiverr (Top Rated)</a>
+                        &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Bivash Kumar Nayak on Upwork (Verified)</a><br/>
+                        &nbsp;&nbsp;- <a href="https://tools.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Order Auditing Gigs on Fiverr (Top Rated)</a>
                     `;
                 } else if (cmd === 'premium feed') {
                     response.innerHTML = `
@@ -8394,7 +8394,7 @@ body {
                                 <div class='solidity-report-upsell'>
                                     <span>⚠️ CRITICAL NOTICE:</span> Automated security scanners only capture ~30% of logic bugs. Do not risk smart contract capital.<br/>
                                     Get an institutional manual audit from certified expert Bivash Kumar Nayak.
-                                    <a class='solidity-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Request Manual Code Audit on Upwork</a>
+                                    <a class='solidity-upsell-btn' href='https://tools.cyberdudebivash.com/' target='_blank'>🟢 Request Manual Code Audit on Upwork</a>
                                 </div>
                             </div>
                         </div>
@@ -8425,7 +8425,7 @@ body {
                                 <div class='risk-result-val' id='risk-calc-val'>$--</div>
                                 <div class='risk-result-upsell'>
                                     <span>⚠️ RISK REDUCTION ACTION:</span> Secure your perimeter. Order an institutional threat modeling assessment &amp; external penetration test from Bivash Kumar Nayak.<br/>
-                                    <a class='risk-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Get Free Assessment / Book Review on Upwork</a>
+                                    <a class='risk-upsell-btn' href='https://cyberdudebivash.in/' target='_blank'>🟢 Get Free Assessment / Book Review on Upwork</a>
                                 </div>
                             </div>
                         </div>
@@ -8453,7 +8453,7 @@ body {
                             <div class='rule-builder-code' id='rule-code-out'></div>
                             <div class='rule-builder-upsell' id='rule-builder-upsell'>
                                 💡 <strong>Need custom YARA/Sigma mappings?</strong> Order tailored, enterprise-ready security detection logic bundles directly on Fiverr.<br/>
-                                <a class='rule-upsell-btn' href='https://www.fiverr.com/bivashkumar007/' target='_blank'>🟢 Order Detection Rules on Fiverr</a>
+                                <a class='rule-upsell-btn' href='https://intel.cyberdudebivash.com/upgrade.html' target='_blank'>🟢 Order Detection Rules on Fiverr</a>
                             </div>
                         </div>
         `,
@@ -8564,7 +8564,7 @@ body {
                                 <div class='comp-upsell'>
                                     <span>⚠️ AUDIT COMPLIANCE NOTICE:</span> Gaps in consent logs, user authorization, or network controls carry severe statutory fines and lockouts.<br/>
                                     Hire Bivash Kumar Nayak to build an audit-ready architecture.
-                                    <a class='comp-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Get Audit Consultation on Upwork</a>
+                                    <a class='comp-upsell-btn' href='https://intel.cyberdudebivash.com/upgrade.html' target='_blank'>🟢 Get Audit Consultation on Upwork</a>
                                 </div>
                             </div>
                         </div>
@@ -8601,7 +8601,7 @@ body {
                                 <div class='ir-emergency-desc'>
                                     Errors during initial isolation can permanently corrupt evidence or trigger secondary payloads. Engage our 24/7 incident response force.
                                 </div>
-                                <a class='ir-emergency-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>
+                                <a class='ir-emergency-btn' href='https://cyberdudebivash.in/' target='_blank'>
                                     🔴 Engage Emergency IR Team (Upwork)
                                 </a>
                             </div>
@@ -8692,7 +8692,7 @@ body {
                                 <div class='sla-result-upsell'>
                                     <span>🛡️ ESTABLISHED SERVICE LEVEL AGREEMENT (SLA):</span><br/>
                                     Deploy custom threat telemetry models tailored to your infrastructure requirements. Click below to submit this pre-compiled plan configuration directly on Upwork to start institutional onboarding.
-                                    <a class='sla-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Submit SLA Plan &amp; Book Kickoff (Upwork)</a>
+                                    <a class='sla-upsell-btn' href='https://intel.cyberdudebivash.com/' target='_blank'>🟢 Submit SLA Plan &amp; Book Kickoff (Upwork)</a>
                                 </div>
                             </div>
                         </div>
@@ -8739,7 +8739,7 @@ body {
                                     <span>🛡️ READY TO SECURE CORPORATE INFRASTRUCTURE?</span><br/>
                                     Submit this execution scoping plan to CyberDudeBivash Private Limited to receive an official proposal and Master Services Agreement (MSA).
                                     <br/>
-                                    <a class='scope-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Request Scoping Proposal on Upwork</a>
+                                    <a class='scope-upsell-btn' href='https://tools.cyberdudebivash.com/' target='_blank'>🟢 Request Scoping Proposal on Upwork</a>
                                 </div>
                             </div>
                         </div>
@@ -8764,7 +8764,7 @@ body {
                                     <span>⚠️ IS YOUR PERIMETER SECURE AGAINST EXPANSION EXPLOITS?</span><br/>
                                     Configure verified vulnerability sweeps and penetration testing cycles with Bivash Kumar Nayak.
                                     <br/>
-                                    <a class='scope-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Get Free Assessment / Hire on Upwork</a>
+                                    <a class='scope-upsell-btn' href='https://tools.cyberdudebivash.com/' target='_blank'>🟢 Get Free Assessment / Sentinel Portal</a>
                                 </div>
                             </div>
                         </div>
@@ -8794,8 +8794,8 @@ body {
         let ctaTitle = 'Ready to upgrade your enterprise defenses?';
         let ctaSub = 'ENTERPRISE SOLUTION FUNNEL';
         let ctaDesc = 'Get a comprehensive AI-driven security posture review from the CyberDudeBivash Private Limited technical consulting team.';
-        let ctaLink = 'https://www.upwork.com/freelancers/~010d4dde1657fa5619';
-        let ctaBtn = 'Hire on Upwork (Verified)';
+        let ctaLink = 'https://www.www.cyberdudebivash.com';
+        let ctaBtn = 'Sentinel Portal (Verified)';
         let matchingKey = null;
 
         const labelMap = {
@@ -8838,19 +8838,19 @@ body {
             ctaTitle = 'Need an AI Security Audit? Hire the Expert';
             ctaSub = 'AI SECURITY AUDIT SERVICES';
             ctaDesc = 'Book a comprehensive vulnerability audit for your large language models, generative AI pipelines, and agent security layers.';
-            ctaLink = 'https://www.upwork.com/freelancers/~010d4dde1657fa5619';
-            ctaBtn = 'Hire on Upwork (Verified)';
+            ctaLink = 'https://www.www.cyberdudebivash.com';
+            ctaBtn = 'Sentinel Portal (Verified)';
         } else if (labels.some(l => l.includes('malware') || l.includes('cve') || l.includes('threat') || l.includes('ransomware') || l.includes('vulnerability'))) {
             ctaTitle = 'Is Your Infrastructure Protected? Run a Network Audit';
             ctaSub = 'INFRASTRUCTURE VULNERABILITY SCANS';
             ctaDesc = 'Hire us to execute external penetration testing, threat hunting loops, and Sigma telemetry alert configurations on your corporate networks.';
-            ctaLink = 'https://www.fiverr.com/bivashkumar007/';
+            ctaLink = 'https://www.tools.cyberdudebivash.com/';
             ctaBtn = 'Book Vulnerability Scan on Fiverr';
         } else if (labels.some(l => l.includes('web3') || l.includes('blockchain') || l.includes('smart') || l.includes('crypto'))) {
             ctaTitle = 'Secure Your Web3 Protocols Before Launching';
             ctaSub = 'SMART CONTRACT SECURITY AUDITS';
             ctaDesc = 'Prevent flash loan exploits, state reentrancy loops, and authorization bypasses. Get a complete security certificate for your contracts.';
-            ctaLink = 'https://www.upwork.com/freelancers/~010d4dde1657fa5619';
+            ctaLink = 'https://www.www.cyberdudebivash.com';
             ctaBtn = 'Order Smart Contract Audit';
         }
         
@@ -9135,8 +9135,8 @@ body {
                             </div>
                             <div style='background:rgba(9, 13, 22, 0.4); border:1px solid var(--border); border-radius:8px; padding:15px;'>
                                 <h4 style='color:var(--accent); font-family:var(--font-mono); margin:0 0 10px 0; font-size:14px;'>🟢 VERIFIED FREELANCE CONTRACTS</h4>
-                                <a href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='display:block; background:#14a800; color:#fff; padding:6px 12px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px; text-align:center; margin-bottom:8px;'>Hire on Upwork</a>
-                                <a href='https://www.fiverr.com/bivashkumar007/' target='_blank' style='display:block; background:#1dbf73; color:#fff; padding:6px 12px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px; text-align:center;'>Order on Fiverr</a>
+                                <a href='https://www.cyberdudebivash.com/' target='_blank' style='display:block; background:#14a800; color:#fff; padding:6px 12px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px; text-align:center; margin-bottom:8px;'>Sentinel Portal</a>
+                                <a href='https://tools.cyberdudebivash.com/' target='_blank' style='display:block; background:#1dbf73; color:#fff; padding:6px 12px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px; text-align:center;'>Security Tools</a>
                             </div>
                         </div>
 
@@ -9772,7 +9772,7 @@ func main() {
                 
                 <div style='display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;'>
                     <a href='mailto:bivash@cyberdudebivash.com?subject=Scoping%20Proposal%20${propId}' style='display:block; text-align:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px;'>📥 Intake Sales Ticket</a>
-                    <a href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='display:block; text-align:center; background:var(--accent); color:#020406; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:bold;'>🟢 Start Escrow Audit</a>
+                    <a href='https://www.cyberdudebivash.com/' target='_blank' style='display:block; text-align:center; background:var(--accent); color:#020406; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:bold;'>🟢 Start Escrow Audit</a>
                 </div>
             </div>
         `;
