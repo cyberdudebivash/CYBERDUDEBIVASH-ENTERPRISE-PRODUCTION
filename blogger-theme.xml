@@ -58,7 +58,7 @@
             "@type": "ContactPoint",
             "telephone": "+91-8179881447",
             "contactType": "security operations center hotline",
-            "email": "bivash@cyberdudebivash.com",
+            "email": "contact@cyberdudebivash.in",
             "areaServed": "Worldwide",
             "availableLanguage": ["English", "Hindi"]
           },
@@ -7069,7 +7069,7 @@ body {
                                 </p>
                                 <div class='success-contact-box'>
                                     <strong>Direct Escalation Contact Channels:</strong><br/>
-                                    📧 Email: <a href='mailto:bivash@cyberdudebivash.com' style='color:var(--accent); text-decoration:underline;'>bivash@cyberdudebivash.com</a><br/>
+                                    📧 Email: <a href='mailto:contact@cyberdudebivash.in' style='color:var(--accent); text-decoration:underline;'>contact@cyberdudebivash.in</a><br/>
                                     📞 Phone: +91 8179881447<br/>
                                     💬 Discord: cybercoder127001
                                 </div>
@@ -8897,14 +8897,13 @@ body {
                             proto: "Generic service endpoint mapping",
                             mitigation: "Apply general firewall rules"
                         };
-                        response.innerHTML = `
-                            [+] RETRIEVING CVE DATA FOR \${cveId.toUpperCase()}...<br/>
-                            [+] CVSS Severity Score: \${data.score}<br/>
-                            [+] Exploit Probability (EPSS): \${data.epss}<br/>
-                            [+] Target Vector: \${data.proto}<br/>
-                            🛡️ REQUEST MITIGATION AUDIT:<br/>
-                            &nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Mitigation Audit on Upwork (Verified)</a>
-                        `;
+                        response.innerHTML = 
+                            '[+] RETRIEVING CVE DATA FOR ' + cveId.toUpperCase() + '...<br/>' +
+                            '[+] CVSS Severity Score: ' + data.score + '<br/>' +
+                            '[+] Exploit Probability (EPSS): ' + data.epss + '<br/>' +
+                            '[+] Target Vector: ' + data.proto + '<br/>' +
+                            '🛡️ REQUEST MITIGATION AUDIT:<br/>' +
+                            '&nbsp;&nbsp;- <a href="https://www.cyberdudebivash.com/" target="_blank" style="color:var(--accent); text-decoration:underline;">Book Mitigation Audit on Upwork (Verified)</a>';
                     }
                 } else if (cmd.startsWith('intel --export')) {
                     const exportType = fullCmd.substring(14).trim().toLowerCase();
@@ -8919,12 +8918,11 @@ body {
                         } else {
                             text = "sha256_hash,severity\na4b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8,HIGH";
                         }
-                        response.innerHTML = `
-                            [+] GENERATING INDICATORS STREAM FOR \${exportType.toUpperCase()}...<br/>
-                            <pre style="background:#010204; border:1px solid var(--border); padding:8px; color:#33ffdd; margin:6px 0;">\${text}</pre>
-                            🔑 CAPPED PREVIEW FEED. UPGRADE TO COMPLETE DATA STREAM:<br/>
-                            &nbsp;&nbsp;- <a href="https://intel.cyberdudebivash.com/upgrade.html" target="_blank" style="color:var(--accent); text-decoration:underline;">Upgrade Threat Feed API Key ($99/mo)</a>
-                        `;
+                        response.innerHTML = 
+                            '[+] GENERATING INDICATORS STREAM FOR ' + exportType.toUpperCase() + '...<br/>' +
+                            '<pre style="background:#010204; border:1px solid var(--border); padding:8px; color:#33ffdd; margin:6px 0;">' + text + '</pre>' +
+                            '🔑 CAPPED PREVIEW FEED. UPGRADE TO COMPLETE DATA STREAM:<br/>' +
+                            '&nbsp;&nbsp;- <a href="https://intel.cyberdudebivash.com/upgrade.html" target="_blank" style="color:var(--accent); text-decoration:underline;">Upgrade Threat Feed API Key ($99/mo)</a>';
                     }
                 } else if (cmd === 'threats') {
                     response.innerHTML = `
@@ -9135,7 +9133,7 @@ body {
         if (selectEl && estimateEl) {
             const val = selectEl.value;
             const price = val.split(' - ').pop();
-            estimateEl.innerHTML = `Estimated Project Cost: <span style="color:var(--accent); font-weight:bold;">\${price}</span>`;
+            estimateEl.innerHTML = 'Estimated Project Cost: <span style="color:var(--accent); font-weight:bold;">' + price + '</span>';
         }
     };
     
@@ -9169,7 +9167,7 @@ body {
         const consoleEl = document.querySelector('.hero-terminal');
         
         if (termInput) {
-            termInput.value = `scan --\${scanType.toLowerCase().replace(' ', '_')} \${domain}`;
+            termInput.value = 'scan --' + scanType.toLowerCase().replace(' ', '_') + ' ' + domain;
             const event = new KeyboardEvent('keydown', { key: 'Enter' });
             termInput.dispatchEvent(event);
             if (consoleEl) {
@@ -9471,7 +9469,7 @@ level: high`,
             }, 1500);
         } else {
             clientMsg = "How do I contact you directly?";
-            replyMsg = "You can email me at bivash@cyberdudebivash.com, call +91 8179881447, or message Discord cybercoder127001. Direct responses are tracked within 4 hours.";
+            replyMsg = "You can email me at contact@cyberdudebivash.in, call +91 8179881447, or message Discord cybercoder127001. Direct responses are tracked within 4 hours.";
         }
         
         appendChatMessage(clientMsg, 'user');
@@ -9504,7 +9502,7 @@ level: high`,
         } else if (cleanMsg.includes('solidity') || cleanMsg.includes('contract') || cleanMsg.includes('web3')) {
             responseText = "Solidity audits start at ₹19,999 under API Security Assessment, or you can order custom auditing via our consultation options.";
         } else if (cleanMsg.includes('phone') || cleanMsg.includes('email') || cleanMsg.includes('discord')) {
-            responseText = "Direct channels: bivash@cyberdudebivash.com, +91 8179881447, Discord: cybercoder127001.";
+            responseText = "Direct channels: contact@cyberdudebivash.in, +91 8179881447, Discord: cybercoder127001.";
         }
         
         setTimeout(() => {
@@ -9518,7 +9516,7 @@ level: high`,
         
         const newMsg = document.createElement('div');
         newMsg.className = 'chat-msg ' + sender;
-        newMsg.innerHTML = `<div class="chat-msg-content">\${text}</div>`;
+        newMsg.innerHTML = '<div class="chat-msg-content">' + text + '</div>';
         msgBox.appendChild(newMsg);
         
         // Auto scroll to bottom
@@ -9782,20 +9780,18 @@ window.loadLiveAdvisories = function(categoryKey) {
                     const pubDate = new Date(item.pubDate).toLocaleDateString();
                     // Clean descriptions
                     let cleanDesc = item.description.replace(/<[^>]*>/g, '').substring(0, 140) + '...';
-                    return `
-                        <div class='live-advisory-card'>
-                            <div class='live-advisory-meta'>
-                                <span>CISA AGENCY THREAT ADVISORY</span>
-                                <span>\${pubDate}</span>
-                            </div>
-                            <div class='live-advisory-name'>\${item.title}</div>
-                            <div class='live-advisory-desc'>\${cleanDesc}</div>
-                            <div style='display:flex; justify-content:space-between; align-items:center;'>
-                                <a class='live-advisory-link' href='\${item.link}' target='_blank'>View Advisory Source →</a>
-                                <span class='badge-verified' style='background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); padding:2px 6px; border-radius:3px; font-size:9px;'>CDB VERIFIED</span>
-                            </div>
-                        </div>
-                    `;
+                    return "<div class='live-advisory-card'>" +
+                            "<div class='live-advisory-meta'>" +
+                                "<span>CISA AGENCY THREAT ADVISORY</span>" +
+                                "<span>" + pubDate + "</span>" +
+                            "</div>" +
+                            "<div class='live-advisory-name'>" + item.title + "</div>" +
+                            "<div class='live-advisory-desc'>" + cleanDesc + "</div>" +
+                            "<div style='display:flex; justify-content:space-between; align-items:center;'>" +
+                                "<a class='live-advisory-link' href='" + item.link + "' target='_blank'>View Advisory Source →</a>" +
+                                "<span class='badge-verified' style='background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); padding:2px 6px; border-radius:3px; font-size:9px;'>CDB VERIFIED</span>" +
+                            "</div>" +
+                        "</div>";
                 }).join('');
                 list.style.display = 'block';
             })
@@ -10893,7 +10889,7 @@ window.loadLiveAdvisories = function(categoryKey) {
                             <div style='background:rgba(9, 13, 22, 0.4); border:1px solid var(--border); border-radius:8px; padding:15px;'>
                                 <h4 style='color:var(--accent); font-family:var(--font-mono); margin:0 0 10px 0; font-size:14px;'>🚨 EMERGENCY OPERATION HOTLINE</h4>
                                 <p style='margin:5px 0;'><strong>Phone:</strong> <a href='tel:+918179881447' style='color:#fff; text-decoration:none;'>+91 81798 81447</a></p>
-                                <p style='margin:5px 0;'><strong>Enterprise Email:</strong> <a href='mailto:bivash@cyberdudebivash.com' style='color:#fff; text-decoration:none;'>bivash@cyberdudebivash.com</a></p>
+                                <p style='margin:5px 0;'><strong>Enterprise Email:</strong> <a href='mailto:contact@cyberdudebivash.in' style='color:#fff; text-decoration:none;'>contact@cyberdudebivash.in</a></p>
                                 <p style='margin:5px 0;'><strong>Support Desk:</strong> <a href='mailto:contact@cyberdudebivash.in' style='color:#fff; text-decoration:none;'>contact@cyberdudebivash.in</a></p>
                             </div>
                             <div style='background:rgba(9, 13, 22, 0.4); border:1px solid var(--border); border-radius:8px; padding:15px;'>
@@ -11534,7 +11530,7 @@ func main() {
                 </table>
                 
                 <div style='display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;'>
-                    <a href='mailto:bivash@cyberdudebivash.com?subject=Scoping%20Proposal%20${propId}' style='display:block; text-align:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px;'>📥 Intake Sales Ticket</a>
+                    <a href='mailto:contact@cyberdudebivash.in?subject=Scoping%20Proposal%20` + propId + `' style='display:block; text-align:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px;'>📥 Intake Sales Ticket</a>
                     <a href='https://www.cyberdudebivash.com/' target='_blank' style='display:block; text-align:center; background:var(--accent); color:#020406; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:bold;'>🟢 Start Escrow Audit</a>
                 </div>
             </div>
