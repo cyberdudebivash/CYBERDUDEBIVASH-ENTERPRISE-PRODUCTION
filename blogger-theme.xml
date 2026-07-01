@@ -4191,6 +4191,241 @@ body {
     margin-bottom: 8px;
     line-height: 1.4;
 }
+
+/* FLAGSHIP PREMIUM SERVICES STYLES */
+.flagship-services-section {
+    margin-bottom: 40px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+.flagship-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.flagship-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+}
+.flagship-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.flagship-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+.flagship-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+.flagship-service-card {
+    background: rgba(2, 4, 6, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.flagship-service-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Card Glow Accent Classes */
+.flagship-service-card.tir {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.flagship-service-card.tir:hover {
+    border-color: #ef4444;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
+}
+.flagship-service-card.aisa {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.flagship-service-card.aisa:hover {
+    border-color: #a855f7;
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+}
+.flagship-service-card.thr {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.flagship-service-card.thr:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+.flagship-service-card.va {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+.flagship-service-card.va:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+}
+
+.flagship-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.flagship-ref {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.flagship-status {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+.flagship-status.active {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+.flagship-status.live {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+.flagship-status.secure {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.flagship-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.flagship-card-price {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+}
+.flagship-service-card.tir .flagship-card-price { color: #fca5a5; }
+.flagship-service-card.aisa .flagship-card-price { color: #d8b4fe; }
+.flagship-service-card.thr .flagship-card-price { color: #fde047; }
+.flagship-service-card.va .flagship-card-price { color: #6ee7b7; }
+
+.flagship-card-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 16px;
+    flex-grow: 1;
+}
+.flagship-deliverables-header {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.flagship-deliverables-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+.flagship-deliverables-list li {
+    font-size: 10.5px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    position: relative;
+    padding-left: 12px;
+}
+.flagship-deliverables-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+.flagship-service-card.tir li::before { background: #ef4444; }
+.flagship-service-card.aisa li::before { background: #a855f7; }
+.flagship-service-card.thr li::before { background: #f59e0b; }
+.flagship-service-card.va li::before { background: #10b981; }
+
+.btn-flagship-order {
+    display: block;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.flagship-service-card.tir .btn-flagship-order {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.flagship-service-card.tir .btn-flagship-order:hover {
+    background: #ef4444;
+    color: #000;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.flagship-service-card.aisa .btn-flagship-order {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+.flagship-service-card.aisa .btn-flagship-order:hover {
+    background: #a855f7;
+    color: #000;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+.flagship-service-card.thr .btn-flagship-order {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.flagship-service-card.thr .btn-flagship-order:hover {
+    background: #f59e0b;
+    color: #000;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.flagship-service-card.va .btn-flagship-order {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+.flagship-service-card.va .btn-flagship-order:hover {
+    background: #10b981;
+    color: #000;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
 ]]></b:skin>
 </head>
 
@@ -4485,6 +4720,102 @@ body {
                     </div>
                 </div>
 
+                <!-- FLAGSHIP PREMIUM SERVICES OPERATIONS DASHBOARD -->
+                <div class='flagship-services-section'>
+                    <div class='flagship-header'>
+                        <div class='flagship-badge'>FLAGSHIP SERVICES</div>
+                        <h2 class='flagship-title'>Premium Security Offerings</h2>
+                        <p class='flagship-desc'>Deploy our highest-grade threat reports, AI surface audits, readiness assessments, and vulnerability scans.</p>
+                    </div>
+                    <div class='flagship-services-grid'>
+                        
+                        <!-- Card 1: Threat Intelligence Report -->
+                        <div class='flagship-service-card tir'>
+                            <div class='flagship-card-meta'>
+                                <span class='flagship-ref'>CDB-TIR-001</span>
+                                <span class='flagship-status active'>POPULAR</span>
+                            </div>
+                            <h3 class='flagship-card-title'>Threat Intelligence Report</h3>
+                            <div class='flagship-card-price'>₹4,999 / report</div>
+                            <p class='flagship-card-desc'>Get a comprehensive, analyst-driven threat intelligence report tailored to your business, industry, and perimeter vulnerability landscape.</p>
+                            
+                            <div class='flagship-deliverables-header'>DELIVERABLES:</div>
+                            <ul class='flagship-deliverables-list'>
+                                <li>Custom Intelligence Report</li>
+                                <li>IOC (Indicators of Compromise) Collection</li>
+                                <li>Threat Landscape Analysis</li>
+                                <li>PDF Executive Brief</li>
+                            </ul>
+                            
+                            <a class='btn-flagship-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Threat Intelligence Report - ₹4,999")'>Get Your Report Now!</a>
+                        </div>
+
+                        <!-- Card 2: AI Security Assessment -->
+                        <div class='flagship-service-card aisa'>
+                            <div class='flagship-card-meta'>
+                                <span class='flagship-ref'>CDB-AISA-001</span>
+                                <span class='flagship-status live'>ENTERPRISE</span>
+                            </div>
+                            <h3 class='flagship-card-title'>AI Security Assessment</h3>
+                            <div class='flagship-card-price'>₹39,999 / engagement</div>
+                            <p class='flagship-card-desc'>Identify AI-specific vulnerability threats, exposures, and governance gaps in your models, data flows, and autonomous agent systems.</p>
+                            
+                            <div class='flagship-deliverables-header'>DELIVERABLES:</div>
+                            <ul class='flagship-deliverables-list'>
+                                <li>Enterprise AI Risk Assessment</li>
+                                <li>AI Attack Surface Analysis</li>
+                                <li>Governance Review (ISO 42001)</li>
+                                <li>Actionable Security Roadmap</li>
+                            </ul>
+                            
+                            <a class='btn-flagship-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("AI Security (Enterprise) - ₹39,999")'>Request Assessment Now!</a>
+                        </div>
+
+                        <!-- Card 3: Threat Hunting Readiness Review -->
+                        <div class='flagship-service-card thr'>
+                            <div class='flagship-card-meta'>
+                                <span class='flagship-ref'>CDB-THR-001</span>
+                                <span class='flagship-status active'>CRITICAL</span>
+                            </div>
+                            <h3 class='flagship-card-title'>Threat Hunting Readiness Review</h3>
+                            <div class='flagship-card-price'>₹14,999 / review</div>
+                            <p class='flagship-card-desc'>A proactive operational review to evaluate your environment log coverage, identify visibility gaps, and build a MITRE ATT&amp;CK roadmap.</p>
+                            
+                            <div class='flagship-deliverables-header'>DELIVERABLES:</div>
+                            <ul class='flagship-deliverables-list'>
+                                <li>Log Source Coverage Review</li>
+                                <li>Detection Gap Analysis</li>
+                                <li>MITRE ATT&amp;CK Matrix Mapping</li>
+                                <li>Threat Hunting Roadmap</li>
+                            </ul>
+                            
+                            <a class='btn-flagship-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Threat Hunting Readiness Review - ₹14,999")'>Get Your Readiness Review Now!</a>
+                        </div>
+
+                        <!-- Card 4: Vulnerability Assessment -->
+                        <div class='flagship-service-card va'>
+                            <div class='flagship-card-meta'>
+                                <span class='flagship-ref'>CDB-VA-001</span>
+                                <span class='flagship-status secure'>RECOMMENDED</span>
+                            </div>
+                            <h3 class='flagship-card-title'>Vulnerability Assessment</h3>
+                            <div class='flagship-card-price'>₹9,999 / assessment</div>
+                            <p class='flagship-card-desc'>Identify security vulnerabilities in your web applications, APIs, databases, and perimeter hardware nodes before threat actors exploit them.</p>
+                            
+                            <div class='flagship-deliverables-header'>DELIVERABLES:</div>
+                            <ul class='flagship-deliverables-list'>
+                                <li>Website Assessment &amp; Discovery</li>
+                                <li>Vulnerability Discovery Scans</li>
+                                <li>Risk Classification &amp; Severity</li>
+                                <li>Remediation Action Report</li>
+                            </ul>
+                            
+                            <a class='btn-flagship-order' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Vulnerability Assessment - ₹9,999")'>Get Your Assessment Now!</a>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- SERVICE CATALOG & COMMERCIAL PRICING -->
                 <div class='pricing-catalog-section'>
                     <div class='catalog-header'>
@@ -4685,6 +5016,7 @@ body {
                                             <option value='Premium AI Security Call - ₹1,999'>Premium AI Security Call — ₹1,999</option>
                                             <option value='CTI Intelligence Brief - ₹999'>CTI Intelligence Brief — ₹999</option>
                                             <option value='Threat Intelligence Report - ₹4,999'>Threat Intelligence Report — ₹4,999</option>
+                                            <option value='Threat Hunting Readiness Review - ₹14,999'>Threat Hunting Readiness Review — ₹14,999</option>
                                             <option value='AI Security Scanner Audit - ₹7,999'>AI Security Scanner Audit — ₹7,999</option>
                                             <option value='Vulnerability Assessment - ₹9,999'>Vulnerability Assessment — ₹9,999</option>
                                             <option value='API Security Assessment - ₹19,999'>API Security Assessment — ₹19,999</option>
