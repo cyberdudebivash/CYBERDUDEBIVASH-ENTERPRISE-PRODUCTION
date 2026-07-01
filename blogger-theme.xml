@@ -310,7 +310,7 @@ body {
 /* LAYOUT CONTAINER */
 .lab-container {
     display: grid;
-    grid-template-columns: 280px 1fr 340px;
+    grid-template-columns: 280px minmax(0, 1fr) 340px;
     gap: 24px;
     padding: 24px 32px;
     max-width: 1750px;
@@ -1340,7 +1340,7 @@ main {
 /* RESPONSIVE BREAKPOINTS */
 @media (max-width: 1300px) {
     .lab-container {
-        grid-template-columns: 280px 1fr;
+        grid-template-columns: 280px minmax(0, 1fr);
     }
     .lab-container aside:last-of-type {
         grid-column: span 2;
