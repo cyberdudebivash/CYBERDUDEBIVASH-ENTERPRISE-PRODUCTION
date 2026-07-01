@@ -5848,6 +5848,76 @@ body {
 .btn-overlay-remediate:hover {
     box-shadow: 0 0 12px var(--accent);
 }
+
+
+/* ==========================================================================
+   B2B API SANDBOX TESTER CONSOLE
+   ========================================================================== */
+
+.api-actions-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-api-sandbox-run {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-api-sandbox-run:hover {
+    background: var(--accent);
+    color: #000;
+}
+
+.api-sandbox-console {
+    background: #010204;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+}
+
+.console-status {
+    color: var(--safe);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+.console-latency {
+    color: #3b82f6;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+}
+
+.console-output-code {
+    margin: 0;
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: #33ffdd;
+    line-height: 1.5;
+    max-height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
 ]]></b:skin>
 </head>
 
@@ -6869,19 +6939,37 @@ body {
                             <div class='api-endpoint-list'>
                                 <div class='api-endpoint-item'>
                                     <span class='method get'>GET</span>
-                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/v1/intel/apex.json</code>
-                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/v1/intel/apex.json' target='_blank'>JSON</a>
+                                    <code class='endpoint-url'>/api/v1/intel/apex.json</code>
+                                    <div class='api-actions-row'>
+                                        <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/v1/intel/apex.json' target='_blank'>JSON</a>
+                                        <button class='btn-api-sandbox-run' onclick='runSandboxEndpoint("apex")'>⚡ Run Test</button>
+                                    </div>
                                 </div>
                                 <div class='api-endpoint-item'>
                                     <span class='method get'>GET</span>
-                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/feed.json</code>
-                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/feed.json' target='_blank'>JSON</a>
+                                    <code class='endpoint-url'>/api/feed.json</code>
+                                    <div class='api-actions-row'>
+                                        <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/feed.json' target='_blank'>JSON</a>
+                                        <button class='btn-api-sandbox-run' onclick='runSandboxEndpoint("feed")'>⚡ Run Test</button>
+                                    </div>
                                 </div>
                                 <div class='api-endpoint-item'>
                                     <span class='method get'>GET</span>
-                                    <code class='endpoint-url'>https://intel.cyberdudebivash.com/api/reports/latest.json</code>
-                                    <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/reports/latest.json' target='_blank'>JSON</a>
+                                    <code class='endpoint-url'>/api/reports/latest.json</code>
+                                    <div class='api-actions-row'>
+                                        <a class='btn-api-test' href='https://intel.cyberdudebivash.com/api/reports/latest.json' target='_blank'>JSON</a>
+                                        <button class='btn-api-sandbox-run' onclick='runSandboxEndpoint("reports")'>⚡ Run Test</button>
+                                    </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Interactive Sandbox Output Console -->
+                            <div class='api-sandbox-console' id='api-sandbox-console-box' style='display:none;'>
+                                <div class='console-header'>
+                                    <span class='console-status'>HTTP/1.1 200 OK</span>
+                                    <span class='console-latency' id='api-sandbox-latency'>Latency: 12ms</span>
+                                </div>
+                                <pre class='console-output-code'><code id='api-sandbox-output-text'>{ "status": "simulating response..." }</code></pre>
                             </div>
                             
                             <!-- Interactive Key Generator -->
@@ -9342,6 +9430,62 @@ level: high`,
     setTimeout(() => {
         window.generateThreatSignature();
     }, 1500);
+
+    // B2B API Sandbox Tester Controller
+    const apiMockPayloads = {
+        apex: {
+            feed_metadata: {
+                title: "CYBERDUDEBIVASH Sentinel APEX Threat Feed",
+                version: "v9.0",
+                status: "ACTIVE",
+                ingested_iocs: 37315
+            },
+            indicators: [
+                { type: "ip_address", value: "185.220.101.4", threat: "Brute Force Attacker", severity: "HIGH" },
+                { type: "c2_domain", value: "sec-ops-relay.net", threat: "APT-41 command control", severity: "CRITICAL" }
+            ]
+        },
+        feed: {
+            status: "success",
+            data: {
+                timestamp: new Date().toISOString(),
+                iocs_count: 5,
+                threat_level: "ELEVATED"
+            }
+        },
+        reports: {
+            report_id: "CDB-TIR-001-LATEST",
+            title: "The AI Security Crisis of 2026",
+            published: "2026-07-01",
+            executive_summary: "Critical vulnerabilities actively exploited across autonomous agents and model pipelines..."
+        }
+    };
+    
+    window.runSandboxEndpoint = function(endpoint) {
+        const keyInput = document.getElementById('generated-sandbox-key');
+        const consoleBox = document.getElementById('api-sandbox-console-box');
+        const outputText = document.getElementById('api-sandbox-output-text');
+        const latencyEl = document.getElementById('api-sandbox-latency');
+        
+        if (!consoleBox || !outputText || !latencyEl) return;
+        
+        if (!keyInput || keyInput.value.includes('Click generate')) {
+            alert("Please generate a Sandboxed API Access Key first!");
+            return;
+        }
+        
+        consoleBox.style.display = 'block';
+        outputText.innerText = "Connecting to API gateway...
+Authorizing access key...
+GETting target endpoint...";
+        
+        setTimeout(() => {
+            const payload = apiMockPayloads[endpoint];
+            outputText.innerText = JSON.stringify(payload, null, 4);
+            latencyEl.innerText = 'Latency: ' + Math.floor(8 + Math.random() * 12) + 'ms';
+            consoleBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 800);
+    };
 
     // MITRE ATT&CK Matrix Overlay Controller
     const mitreDatabase = {
