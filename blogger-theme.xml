@@ -2982,6 +2982,126 @@ body {
         box-shadow: 0 0 2px var(--accent);
     }
 }
+
+/* PREMIUM SPONSOR CARDS STYLES */
+.premium-sponsors-section {
+    margin-top: 24px;
+    background: rgba(9, 13, 22, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+.premium-sponsors-header {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 6px;
+}
+.premium-sponsor-card {
+    display: block;
+    background: rgba(2, 4, 6, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.premium-sponsor-card:last-child {
+    margin-bottom: 0;
+}
+.premium-sponsor-card:hover {
+    border-color: var(--accent);
+    transform: scale(1.02);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+.premium-sponsor-card.chronicle:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+.premium-sponsor-card.snyk:hover {
+    border-color: #ec4899;
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+}
+.premium-sponsor-card.yubikey:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+.sponsor-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.sponsor-badge {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+.sponsor-badge.gcp {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.sponsor-badge.appsec {
+    background: rgba(236, 72, 153, 0.1);
+    color: #ec4899;
+    border: 1px solid rgba(236, 72, 153, 0.2);
+}
+.sponsor-badge.hardware {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.sponsor-badge.secure-tunnel {
+    background: rgba(0, 255, 204, 0.1);
+    color: var(--accent);
+    border: 1px solid var(--accent-glow-strong);
+}
+.sponsor-status {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-muted);
+}
+.sponsor-status.live {
+    color: var(--safe);
+}
+.sponsor-status.active {
+    color: var(--info);
+}
+.sponsor-status.secure {
+    color: var(--crit);
+}
+.sponsor-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.sponsor-card-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+.sponsor-card-cta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: bold;
+    color: var(--accent);
+    text-align: right;
+    transition: all 0.2s ease;
+}
+.premium-sponsor-card:hover .sponsor-card-cta {
+    color: #fff;
+    text-shadow: 0 0 5px var(--accent);
+}
 ]]></b:skin>
 </head>
 
@@ -3987,13 +4107,54 @@ body {
                 </b:widget>
             </b:section>
 
-            <!-- VPN Affiliate Banner -->
-            <a class='affiliate-banner' href='https://nordvpn.sjv.io/c/cyberdudebivash' target='_blank' style='margin-top: 0;'>
-                <div class='affiliate-badge'>VPN Recommendation</div>
-                <div class='affiliate-title'>🛡️ NordVPN — SecOps Tunnel</div>
-                <div class='affiliate-desc'>Protect your IP routing logs from analysis. Get 63% off.</div>
-                <div class='affiliate-cta'>Protect Traffic Now →</div>
-            </a>
+            <!-- Premium B2B Technology & Security Sponsors -->
+            <div class='premium-sponsors-section'>
+                <div class='premium-sponsors-header'>🛡️ VERIFIED TECHNOLOGY SPONSORS</div>
+                
+                <!-- Google Chronicle SecOps -->
+                <a class='premium-sponsor-card chronicle' href='https://cloud.google.com/security/products/chronicle-secops' target='_blank' rel='noopener noreferrer'>
+                    <div class='sponsor-card-meta'>
+                        <span class='sponsor-badge gcp'>CLOUD SIEM</span>
+                        <span class='sponsor-status live'>PARTNER PROVED</span>
+                    </div>
+                    <div class='sponsor-card-title'>Google Chronicle SecOps</div>
+                    <div class='sponsor-card-desc'>Automate threat detection, ingestion, and response with cloud-scale telemetry logs and analysis speed.</div>
+                    <div class='sponsor-card-cta'>Ingest Cloud Probes →</div>
+                </a>
+
+                <!-- Snyk Developer Security -->
+                <a class='premium-sponsor-card snyk' href='https://snyk.sjv.io/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                    <div class='sponsor-card-meta'>
+                        <span class='sponsor-badge appsec'>DEVSECOPS</span>
+                        <span class='sponsor-status active'>RECOMMENDED</span>
+                    </div>
+                    <div class='sponsor-card-title'>Snyk AppSec Platform</div>
+                    <div class='sponsor-card-desc'>Find and automatically patch vulnerabilities in application code, dependencies, and container base layers.</div>
+                    <div class='sponsor-card-cta'>Scan Repository Free →</div>
+                </a>
+
+                <!-- YubiKey Hardware MFA -->
+                <a class='premium-sponsor-card yubikey' href='https://yubico.sjv.io/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                    <div class='sponsor-card-meta'>
+                        <span class='sponsor-badge hardware'>MFA HARDWARE</span>
+                        <span class='sponsor-status secure'>CRITICAL</span>
+                    </div>
+                    <div class='sponsor-card-title'>YubiKey 5 NFC Hardware Key</div>
+                    <div class='sponsor-card-desc'>Force cryptographic, hardware-backed multi-factor authentication on developer terminals to eliminate account takeover.</div>
+                    <div class='sponsor-card-cta'>Secure Terminals Now →</div>
+                </a>
+
+                <!-- NordVPN SecOps Tunnel -->
+                <a class='premium-sponsor-card nordvpn' href='https://nordvpn.sjv.io/c/cyberdudebivash' target='_blank' rel='noopener noreferrer'>
+                    <div class='sponsor-card-meta'>
+                        <span class='sponsor-badge secure-tunnel'>TRAFFIC ENCRYPTION</span>
+                        <span class='sponsor-status active'>63% OFF</span>
+                    </div>
+                    <div class='sponsor-card-title'>NordVPN Dedicated SecOps Tunnel</div>
+                    <div class='sponsor-card-desc'>Establish secure operational routing for remote threat hunting and incident response. Protect your gateway connections.</div>
+                    <div class='sponsor-card-cta'>Conceal Routing Node →</div>
+                </a>
+            </div>
 
             <div class='risk-gauge'>
                 <div class='risk-label'>GLOBAL RISK LEVEL</div>
@@ -5097,6 +5258,7 @@ body {
                   
                   const aliasMap = {
                       "%23cybersecurity": "all security",
+                      "cybersecurity": "all security",
                       "all security": "all security",
                       "breaking threats": "breaking threats",
                       "ai security": "ai security",
@@ -5831,6 +5993,7 @@ body {
         let matchingKey = null;
 
         const labelMap = {
+            "cybersecurity": "All Security",
             "all security": "All Security",
             "breaking threats": "Breaking Threats",
             "ai security": "AI Security",
@@ -5921,6 +6084,7 @@ body {
         const labelName = decodeURIComponent(rawLabel).replace(/^#/, '');
         
         const labelMap = {
+            "cybersecurity": "All Security",
             "all security": "All Security",
             "breaking threats": "Breaking Threats",
             "ai security": "AI Security",
@@ -6054,6 +6218,9 @@ body {
                 });
                 
                 initializeWidget(key);
+                if (typeof window.loadLiveAdvisories === 'function') {
+                    window.loadLiveAdvisories(key);
+                }
             }
         }
     }
