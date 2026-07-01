@@ -11909,7 +11909,7 @@ func main() {
             hours = size === 'small' ? 24 : (size === 'medium' ? 72 : 160);
             checks = 'Firewall segment checks, egress filters, network directory configuration dumps';
         } else if (type === 'webapp') {
-            methodology = 'OWASP Top 10 Application Security verification Standard (ASVS)';
+            methodology = 'OWASP Top 10 Application Security Verification Standard (ASVS)';
             hours = size === 'small' ? 40 : (size === 'medium' ? 96 : 220);
             checks = 'XSS/SQLi scans, logical bypass checks, authentication endpoints security reviews';
         } else {
@@ -11929,47 +11929,43 @@ func main() {
         } else {
             price = size === 'small' ? 1500 : (size === 'medium' ? 4000 : 9000);
         }
-
+        
         const propId = 'CDB-PROP-' + Math.floor(100000 + Math.random() * 900000);
         
-        text.innerHTML = `
-            <div style='border:1px solid rgba(0, 255, 204, 0.4); background:rgba(0, 255, 204, 0.02); border-radius:6px; padding:16px; font-family:var(--font-sans); margin-bottom:15px; text-align:left;'>
-                <div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--border); padding-bottom:8px; margin-bottom:12px;'>
-                    <span style='font-family:var(--font-mono); font-size:10px; color:var(--accent); font-weight:bold;'>PROPOSAL REF: ${propId}</span>
-                    <span class='badge-verified' style='background:var(--accent-glow); color:var(--accent); padding:2px 6px; font-size:8px;'>SLA READY</span>
-                </div>
-                <h4 style='color:#fff; margin:0 0 10px 0; font-size:15px; font-family:var(--font-mono);'>CYBERDUDEBIVASH® CORPORATE AUDIT SERVICES</h4>
-                
-                <table style='width:100%; border-collapse:collapse; font-size:12px; line-height:1.6; color:var(--text-secondary); margin-bottom:12px;'>
-                    <tr>
-                        <td style='padding:4px 0; font-weight:bold;'>Methodology:</td>
-                        <td style='padding:4px 0; text-align:right; color:#fff;'>\${methodology}</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:4px 0; font-weight:bold;'>Framework Alignment:</td>
-                        <td style='padding:4px 0; text-align:right; color:#fff;'>\${fwName} Compliance Standards</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:4px 0; font-weight:bold;'>Scoping Scope:</td>
-                        <td style='padding:4px 0; text-align:right; color:#fff; font-size:11px; max-width:240px;'>\${checks}</td>
-                    </tr>
-                    <tr>
-                        <td style='padding:4px 0; font-weight:bold;'>Execution Window:</td>
-                        <td style='padding:4px 0; text-align:right; color:#fff;'>\${hours} Technical Assessment Hours</td>
-                    </tr>
-                    <tr style='border-top:1px dashed var(--border);'>
-                        <td style='padding:8px 0; font-weight:bold; font-size:14px; color:var(--accent);'>Estimated Pricing:</td>
-                        <td style='padding:8px 0; text-align:right; font-size:16px; font-weight:bold; color:#fff;'>\$\${price.toLocaleString()} USD</td>
-                    </tr>
-                </table>
-                
-                <div style='display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;'>
-                    <a href='mailto:contact@cyberdudebivash.in?subject=Scoping%20Proposal%20` + propId + `' style='display:block; text-align:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px;'>📥 Intake Sales Ticket</a>
-                    <a href='https://www.cyberdudebivash.com/' target='_blank' style='display:block; text-align:center; background:var(--accent); color:#020406; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:bold;'>🟢 Start Escrow Audit</a>
-                </div>
-            </div>
-        `;
-        
+        text.innerHTML = 
+            "<div style='border:1px solid rgba(0, 255, 204, 0.4); background:rgba(0, 255, 204, 0.02); border-radius:6px; padding:16px; font-family:var(--font-sans); margin-bottom:15px; text-align:left;'>" +
+                "<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--border); padding-bottom:8px; margin-bottom:12px;'>" +
+                    "<span style='font-family:var(--font-mono); font-size:10px; color:var(--accent); font-weight:bold;'>PROPOSAL REF: " + propId + "</span>" +
+                    "<span class='badge-verified' style='background:var(--accent-glow); color:var(--accent); padding:2px 6px; font-size:8px;'>SLA READY</span>" +
+                "</div>" +
+                "<h4 style='color:#fff; margin:0 0 10px 0; font-size:15px; font-family:var(--font-mono);'>CYBERDUDEBIVASH® CORPORATE AUDIT SERVICES</h4>" +
+                "<table style='width:100%; border-collapse:collapse; font-size:12px; line-height:1.6; color:var(--text-secondary); margin-bottom:12px;'>" +
+                    "<tr>" +
+                        "<td style='padding:4px 0; font-weight:bold;'>Methodology:</td>" +
+                        "<td style='padding:4px 0; text-align:right; color:#fff;'>" + methodology + "</td>" +
+                    "</tr>" +
+                    "<tr>" +
+                        "<td style='padding:4px 0; font-weight:bold;'>Framework Alignment:</td>" +
+                        "<td style='padding:4px 0; text-align:right; color:#fff;'>" + fwName + " Compliance Standards</td>" +
+                    "</tr>" +
+                    "<tr>" +
+                        "<td style='padding:4px 0; font-weight:bold;'>Scoping Scope:</td>" +
+                        "<td style='padding:4px 0; text-align:right; color:#fff; font-size:11px; max-width:240px;'>" + checks + "</td>" +
+                    "</tr>" +
+                    "<tr>" +
+                        "<td style='padding:4px 0; font-weight:bold;'>Execution Window:</td>" +
+                        "<td style='padding:4px 0; text-align:right; color:#fff;'>" + hours + " Technical Assessment Hours</td>" +
+                    "</tr>" +
+                    "<tr style='border-top:1px dashed var(--border);'>" +
+                        "<td style='padding:8px 0; font-weight:bold; font-size:14px; color:var(--accent);'>Estimated Pricing:</td>" +
+                        "<td style='padding:8px 0; text-align:right; font-size:16px; font-weight:bold; color:#fff;'>$" + price.toLocaleString() + " USD</td>" +
+                    "</tr>" +
+                "</table>" +
+                "<div style='display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;'>" +
+                    "<a href='mailto:contact@cyberdudebivash.in?subject=Scoping%20Proposal%20" + propId + "' style='display:block; text-align:center; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:#fff; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px;'>📥 Intake Sales Ticket</a>" +
+                    "<a href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='display:block; text-align:center; background:var(--accent); color:#020406; text-decoration:none; padding:6px; border-radius:4px; font-family:var(--font-mono); font-size:10px; font-weight:bold;'>🟢 Start Escrow Audit</a>" +
+                "</div>" +
+            "</div>";
         box.style.display = 'block';
     }
 
