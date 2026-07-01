@@ -5918,6 +5918,182 @@ body {
     overflow-y: auto;
     white-space: pre-wrap;
 }
+
+
+/* ==========================================================================
+   B2B PLAYBOOK CHECKOUT OVERLAY MODAL
+   ========================================================================== */
+
+.playbook-checkout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkout-modal-box {
+    background: #090e16;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 460px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.15);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.checkout-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.checkout-modal-close:hover {
+    color: #fff;
+}
+
+.checkout-modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.checkout-security-shield {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+}
+
+.checkout-modal-title {
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+    font-family: var(--font-sans);
+}
+
+.checkout-modal-desc {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.checkout-pricing-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px dashed rgba(16, 185, 129, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 22px;
+}
+
+.checkout-price-original {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    font-size: 0.85rem;
+}
+
+.checkout-price-discount {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.checkout-badge {
+    background: var(--crit);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.checkout-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.btn-checkout-channel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-checkout-channel.upwork {
+    background: #14a800;
+    color: #fff;
+}
+
+.btn-checkout-channel.upwork:hover {
+    background: #118f00;
+    transform: translateY(-1px);
+}
+
+.btn-checkout-channel.fiverr {
+    background: #1dbf73;
+    color: #fff;
+}
+
+.btn-checkout-channel.fiverr:hover {
+    background: #19a362;
+    transform: translateY(-1px);
+}
+
+.btn-checkout-channel.invoice {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: #fff;
+}
+
+.btn-checkout-channel.invoice:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.checkout-modal-footer {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 0;
+    line-height: 1.4;
+}
 ]]></b:skin>
 </head>
 
@@ -6909,7 +7085,7 @@ body {
                             </div>
 
                             <div class='gen-cta-box'>
-                                <a class='btn-gen-download' href='#consultation-inquiry-anchor' onclick='selectCatalogService("Premium CTI Intelligence Brief - ₹999")'>
+                                <a class='btn-gen-download' href='javascript:void(0)' onclick='openPlaybookCheckout(event)'>
                                     🔓 Download Complete Playbook Bundle — ₹999
                                 </a>
                             </div>
@@ -9429,6 +9605,88 @@ level: high`,
     setTimeout(() => {
         window.generateThreatSignature();
     }, 1500);
+
+    // B2B Monetization Engine Controllers
+    window.openPlaybookCheckout = function(e) {
+        if (e) e.preventDefault();
+        const modal = document.getElementById('playbook-checkout-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.closePlaybookCheckout = function() {
+        const modal = document.getElementById('playbook-checkout-modal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.checkoutViaConsultationForm = function() {
+        closePlaybookCheckout();
+        
+        const serviceSelect = document.getElementById('lead-inquiry-type');
+        const descBox = document.getElementById('lead-description');
+        
+        if (serviceSelect) {
+            serviceSelect.value = 'Premium CTI Brief';
+            if (typeof calculatePrice === 'function') calculatePrice();
+        }
+        
+        if (descBox) {
+            const threatProfile = document.getElementById('threat-vector-select')?.value || 'Gateway Remote Code Execution';
+            const siemPipeline = document.getElementById('siem-pipeline-select')?.value || 'Sigma Generic Rule';
+            descBox.value = 'Requesting Playbook Bundle for: ' + threatProfile + ' (' + siemPipeline + '). Please send invoice and checkout path.';
+        }
+        
+        const contactSection = document.getElementById('consultation-inquiry-anchor') || document.querySelector('.lead-generation-section');
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
+
+    window.submitSLAPlanToForm = function() {
+        const endpointsEl = document.getElementById('sla-endpoints-count');
+        const frequencyEl = document.getElementById('sla-audit-frequency');
+        const irEl = document.getElementById('sla-addon-ir');
+        const yaraEl = document.getElementById('sla-addon-yara');
+        const advisorEl = document.getElementById('sla-addon-advisor');
+        const priceBox = document.getElementById('sla-result-price');
+        
+        if (!endpointsEl || !frequencyEl || !priceBox) return;
+        
+        const endpoints = endpointsEl.options[endpointsEl.selectedIndex].text;
+        const frequency = frequencyEl.options[frequencyEl.selectedIndex].text;
+        const priceText = priceBox.innerText;
+        
+        let addons = [];
+        if (irEl && irEl.checked) addons.push("24/7 Incident Response Retainer");
+        if (yaraEl && yaraEl.checked) addons.push("Dynamic YARA/Sigma Feed");
+        if (advisorEl && advisorEl.checked) addons.push("Dedicated CISO Advisor");
+        
+        const addonsStr = addons.length > 0 ? addons.join(", ") : "None";
+        
+        const serviceSelect = document.getElementById('lead-inquiry-type');
+        const descBox = document.getElementById('lead-description');
+        
+        if (serviceSelect) {
+            serviceSelect.value = 'AI Security Assessment';
+            if (typeof calculatePrice === 'function') calculatePrice();
+        }
+        
+        if (descBox) {
+            descBox.value = 'Custom SLA Configuration:
+- Endpoints Scope: ' + endpoints + '
+- Scan Frequency: ' + frequency + '
+- Addons: ' + addonsStr + '
+- Estimated Retainer Price: ' + priceText + '
+
+Please review and prepare the custom Upwork scoping proposal.';
+        }
+        
+        alert("SLA configuration plan generated! Automatically scrolled down to the lead inquiry form.");
+        
+        const contactSection = document.getElementById('consultation-inquiry-anchor') || document.querySelector('.lead-generation-section');
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
 
     // Client-Side Category SPA Filter
     window.filterCategoryFeed = function(categoryName, element) {
