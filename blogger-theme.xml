@@ -9430,6 +9430,36 @@ level: high`,
         window.generateThreatSignature();
     }, 1500);
 
+    // Client-Side Category SPA Filter
+    window.filterCategoryFeed = function(categoryName, element) {
+        const tabs = document.querySelectorAll('.category-link');
+        tabs.forEach(t => t.classList.remove('active'));
+        if (element) element.classList.add('active');
+
+        const posts = document.querySelectorAll('.post-card');
+        const cleanCategory = categoryName.trim().toLowerCase();
+        
+        posts.forEach(post => {
+            if (cleanCategory === 'all security' || cleanCategory === 'all') {
+                post.style.display = 'flex';
+                return;
+            }
+            
+            const labelsEl = post.querySelector('.hidden-labels-list');
+            if (!labelsEl) {
+                post.style.display = 'none';
+                return;
+            }
+            
+            const labelsText = labelsEl.innerText.toLowerCase();
+            if (labelsText.includes(cleanCategory)) {
+                post.style.display = 'flex';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    };
+
     // B2B API Sandbox Tester Controller
     const apiMockPayloads = {
         apex: {
