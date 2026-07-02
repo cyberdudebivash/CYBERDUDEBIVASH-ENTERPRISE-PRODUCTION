@@ -6146,6 +6146,126 @@ body {
     margin: 0;
     line-height: 1.4;
 }
+
+/* AI Security & LLM Threat Glossary Hub */
+.glossary-container {
+    background: #020813;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-top: 16px;
+}
+.glossary-title {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 8px;
+}
+.glossary-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.glossary-search-row {
+    margin-bottom: 20px;
+}
+.glossary-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+.glossary-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.05);
+}
+.glossary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.glossary-card {
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+.glossary-card[open] {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(0, 255, 204, 0.3);
+}
+.glossary-card-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    outline: none;
+    list-style: none;
+}
+.glossary-card-summary::-webkit-details-marker {
+    display: none;
+}
+.glossary-term-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.glossary-term-badge.critical {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+.glossary-term-badge.high {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+.glossary-term-badge.medium {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+}
+.glossary-card-detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+.glossary-card-detail p {
+    margin: 0 0 8px 0;
+}
+.glossary-card-detail p:last-child {
+    margin: 0;
+}
+.glossary-upsell {
+    background: rgba(0, 255, 204, 0.01);
+    border: 1px dashed rgba(0, 255, 204, 0.3);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+.glossary-upsell span {
+    font-weight: bold;
+    color: var(--accent);
+    display: inline-block;
+    margin-bottom: 6px;
+}
 ]]></b:skin>
 </head>
 
@@ -10629,6 +10749,98 @@ window.loadLiveAdvisories = function(categoryKey) {
 
     // WIDGET REGISTRY DEFINITION
     const widgetRegistry = {
+    "AI Security": `
+<div class='glossary-container'>
+  <div class='glossary-title'>🤖 Interactive AI Security &amp; LLM Threat Glossary</div>
+  <p class='glossary-subtitle'>Structured terms mapping to OWASP LLM Top 10, NIST AI RMF, and EU AI Act. Search to filter key threat vectors.</p>
+  
+  <div class='glossary-search-row'>
+    <input class='glossary-search-input' id='glossary-search-query' placeholder='Filter concepts (e.g. Prompt Injection, MCP)...' type='text' onkeyup='filterGlossary()'/>
+  </div>
+
+  <div class='glossary-grid' id='glossary-grid-box'>
+    <details class='glossary-card' data-term='prompt injection'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>Prompt Injection (LLM01)</span>
+        <span class='glossary-term-badge critical'>CRITICAL</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Manipulating LLM input headers to override system instructions, extract system prompt weights, or trigger unauthorized backend commands.</p>
+        <p><strong>Target Vector:</strong> Input prompt fields, chat APIs, Model Context Protocol gateways.</p>
+        <p><strong>Mitigation:</strong> Enforce strict input sanitization, separate user parameters from developer instruction blocks, deploy input-filtering guardrail models.</p>
+      </div>
+    </details>
+
+    <details class='glossary-card' data-term='data leakage'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>AI Data Leakage (LLM06)</span>
+        <span class='glossary-term-badge high'>HIGH</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Exposure of sensitive operational data, credentials, or proprietary training weights via unsecured model responses or memory buffers.</p>
+        <p><strong>Target Vector:</strong> System output screens, retrieval-augmented generation (RAG) databases, model feedback logs.</p>
+        <p><strong>Mitigation:</strong> Implement automated response scrubbing, data sanitization wrappers, and zero-data-retention API contracts.</p>
+      </div>
+    </details>
+
+    <details class='glossary-card' data-term='model context protocol mcp security'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>MCP Token Leakage (MCP01)</span>
+        <span class='glossary-term-badge critical'>CRITICAL</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Unauthorized exposure of API tokens or system environment keys via Model Context Protocol (MCP) server permission escalations.</p>
+        <p><strong>Target Vector:</strong> MCP server configs, client prompt payloads, file read/write scopes.</p>
+        <p><strong>Mitigation:</strong> Force granular MCP tool access limits, restrict directory paths, and audit server tokens rotation schedule.</p>
+      </div>
+    </details>
+
+    <details class='glossary-card' data-term='model poisoning data poisoning'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>Data Poisoning (LLM03)</span>
+        <span class='glossary-term-badge high'>HIGH</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Adversarial manipulation of training datasets or fine-tuning pipelines to introduce backdoor vulnerabilities or systemic output biases.</p>
+        <p><strong>Target Vector:</strong> Base training data logs, feedback validation loops, unverified open-source datasets.</p>
+        <p><strong>Mitigation:</strong> Strict dataset origin signing, outlier detection in gradient weights updates, and isolated fine-tuning pipelines.</p>
+      </div>
+    </details>
+
+    <details class='glossary-card' data-term='model evasion adversarial perturbation'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>Model Evasion / Perturbation</span>
+        <span class='glossary-term-badge medium'>MEDIUM</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Crafting input perturbations (like noise in images or character replacement in texts) that force models to misclassify targets.</p>
+        <p><strong>Target Vector:</strong> Input classifiers, optical character recognition (OCR) models, moderation endpoints.</p>
+        <p><strong>Mitigation:</strong> Train on adversarial examples, apply preprocessing input smoothing filters, and implement ensemble classification voting.</p>
+      </div>
+    </details>
+
+    <details class='glossary-card' data-term='shadow ai unapproved models'>
+      <summary class='glossary-card-summary'>
+        <span class='glossary-term-name'>Shadow AI / Unmonitored Models</span>
+        <span class='glossary-term-badge medium'>MEDIUM</span>
+      </summary>
+      <div class='glossary-card-detail'>
+        <p><strong>Description:</strong> Proliferation of unauthorized AI tools and model gateways inside corporate subnets, bypassing official governance pipelines.</p>
+        <p><strong>Target Vector:</strong> Developer terminals, unmonitored API routes, third-party browser extensions.</p>
+        <p><strong>Mitigation:</strong> Run network traffic auditing sweeps, enforce strict corporate AI acceptable usage rules, deploy perimeter proxy restrictions.</p>
+      </div>
+    </details>
+  </div>
+  
+  <div class='glossary-upsell'>
+    <span>🛡️ READY TO SECURE CORPORATE AI ARCHITECTURES?</span><br/>
+    Configure verified AI Red Teaming assessments and ISO 42001 governance reviews.
+    <br/>
+    <a class='scope-upsell-btn' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank'>🟢 Request AI Security Audits on Upwork</a>
+  </div>
+</div>
+`,
+
         "Web3 Security": `
                         <div class='solidity-auditor-container'>
                             <div class='solidity-auditor-title'>🛡️ Solidity Code Auditor &amp; Compiler Simulator</div>
@@ -11030,7 +11242,9 @@ window.loadLiveAdvisories = function(categoryKey) {
                         </div>
         `
     };
-    widgetRegistry["Breaking Threats"] = widgetRegistry["Threat Intel"];
+    widgetRegistry["AI Security Hub"] = widgetRegistry["AI Security"];
+widgetRegistry["AI Security & Governance"] = widgetRegistry["AI Security"];
+widgetRegistry["Breaking Threats"] = widgetRegistry["Threat Intel"];
     widgetRegistry["Zero Trust"] = widgetRegistry["DevSecOps"];
     widgetRegistry["Digital Forensics"] = widgetRegistry["Ransomware"];
     widgetRegistry["Purple Team"] = widgetRegistry["All Security"];
