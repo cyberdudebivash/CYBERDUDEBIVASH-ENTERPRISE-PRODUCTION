@@ -6267,6 +6267,106 @@ body {
     display: inline-block;
     margin-bottom: 6px;
 }
+
+/* Flagship Multi-Agent SOC Styling */
+.multi-agent-soc-section {
+    margin-top: 56px;
+    padding: 0 20px;
+}
+.agent-matrix {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+.agent-card {
+    background: rgba(2, 8, 16, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.agent-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.agent-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+}
+.agent-status-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.agent-status-badge.standby {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.agent-status-badge.thinking {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    animation: text-pulse 1.5s infinite;
+}
+.agent-status-badge.analyzing {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+.agent-status-badge.resolved {
+    background: rgba(0, 255, 204, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+}
+.agent-log {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 4px;
+    height: 90px;
+    overflow-y: hidden;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    line-height: 1.6;
+}
+.agent-log div {
+    margin-bottom: 4px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.agent-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+}
+.agent-meta-row strong {
+    color: #fff;
+}
+.executive-risk-synthesizer {
+    background: rgba(2, 8, 16, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+}
+@keyframes text-pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
 ]]></b:skin>
 </head>
 
@@ -6512,7 +6612,163 @@ body {
                     </div>
                 </div>
 
-                <!-- 6-PILLAR ENTERPRISE AI SECURITY PLATFORM SHOWCASE -->
+                
+<!-- FLAGSHIP MULTI-AGENT SOC SIMULATION -->
+<div class='multi-agent-soc-section'>
+  <div class='pillars-header'>
+    <div class='pillars-badge'>ACTIVE SECURITY OPERATION CENTER</div>
+    <h2 class='pillars-title'>Multi-Agent Autonomous SOC Engine</h2>
+    <p class='pillars-desc'>Interactive emulation of nine specialized AI agents collaborating in real-time to detect threat vectors and compute executive risk.</p>
+  </div>
+  
+  <div class='agent-matrix'>
+    <!-- Recon Agent -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>🔍 Recon_Agent_01</span>
+        <span class='agent-status-badge standby' id='agent-status-recon'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-recon'>
+        <div>[+] Standby. Waiting for telemetry hook...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-recon'>98%</strong></span>
+        <span>Latency: <strong id='agent-latency-recon'>142ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Auth Auditor -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>🔑 Auth_Auditor_02</span>
+        <span class='agent-status-badge standby' id='agent-status-auth'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-auth'>
+        <div>[+] Standby. Awaiting key audits...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-auth'>96%</strong></span>
+        <span>Latency: <strong id='agent-latency-auth'>185ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- AppSec Agent -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>🛡️ AppSec_Scanner_03</span>
+        <span class='agent-status-badge standby' id='agent-status-appsec'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-appsec'>
+        <div>[+] Standby. Awaiting code uploads...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-appsec'>99%</strong></span>
+        <span>Latency: <strong id='agent-latency-appsec'>112ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Network Sentinel -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>📡 Net_Sentinel_04</span>
+        <span class='agent-status-badge standby' id='agent-status-network'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-network'>
+        <div>[+] Standby. Awaiting port maps...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-network'>94%</strong></span>
+        <span>Latency: <strong id='agent-latency-network'>320ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Payload Parser -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>🦠 Payload_Parser_05</span>
+        <span class='agent-status-badge standby' id='agent-status-payload'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-payload'>
+        <div>[+] Standby. Sandbox idle...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-payload'>95%</strong></span>
+        <span>Latency: <strong id='agent-latency-payload'>245ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- YARA compiler -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>⚙️ Yara_Compiler_06</span>
+        <span class='agent-status-badge standby' id='agent-status-yara'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-yara'>
+        <div>[+] Standby. Signature engine primed...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-yara'>97%</strong></span>
+        <span>Latency: <strong id='agent-latency-yara'>190ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Compliance Guard -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>⚖️ Compliance_Guard_07</span>
+        <span class='agent-status-badge standby' id='agent-status-compliance'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-compliance'>
+        <div>[+] Standby. Audit registers clear...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-compliance'>98%</strong></span>
+        <span>Latency: <strong id='agent-latency-compliance'>165ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Cloud Defender -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>☁️ Cloud_Defender_08</span>
+        <span class='agent-status-badge standby' id='agent-status-cloud'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-cloud'>
+        <div>[+] Standby. IAM maps active...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-cloud'>96%</strong></span>
+        <span>Latency: <strong id='agent-latency-cloud'>210ms</strong></span>
+      </div>
+    </div>
+    
+    <!-- Escalation Dispatcher -->
+    <div class='agent-card glass-panel'>
+      <div class='agent-status-row'>
+        <span class='agent-name'>🚨 Alert_Dispatcher_09</span>
+        <span class='agent-status-badge standby' id='agent-status-dispatcher'>STANDBY</span>
+      </div>
+      <div class='agent-log' id='agent-log-dispatcher'>
+        <div>[+] Standby. Notification loops ready...</div>
+      </div>
+      <div class='agent-meta-row'>
+        <span>Confidence: <strong id='agent-conf-dispatcher'>99%</strong></span>
+        <span>Latency: <strong id='agent-latency-dispatcher'>80ms</strong></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class='executive-risk-synthesizer glass-panel' style='margin-top: 24px; padding: 20px; text-align: center;'>
+    <div style='font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase;'>[!] EXECUTIVE RISK SYNTHESIZER</div>
+    <h3 style='color: #fff; font-family: var(--font-mono); margin: 10px 0 15px 0; font-size: 18px;'>Autonomous Threat Vector Synthesis: <span id='risk-synthesis-level' style='color: var(--accent);'>MONITORING</span></h3>
+    <p style='color: var(--text-secondary); font-size: 13px; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.6;'>
+      All active security agents stream findings into the executive compiler to calculate overall compliance risk and security posturing.
+    </p>
+    <a class='btn-unlock-report' href='https://www.upwork.com/freelancers/~010d4dde1657fa5619' target='_blank' style='display: inline-block; padding: 10px 24px; text-decoration: none;'>🟢 Book Executive SOC Consultation on Upwork</a>
+  </div>
+</div>
+
+<!-- 6-PILLAR ENTERPRISE AI SECURITY PLATFORM SHOWCASE -->
                 <div class='ai-pillars-section'>
                     <div class='pillars-header'>
                         <div class='pillars-badge'>ENTERPRISE FRAMEWORK</div>
