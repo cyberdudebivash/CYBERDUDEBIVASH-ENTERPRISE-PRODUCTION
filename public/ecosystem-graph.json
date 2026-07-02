@@ -1,0 +1,99 @@
+{
+  "name": "CYBERDUDEBIVASH PRIVATE LIMITED",
+  "entity_type": "Organization",
+  "description": "Global enterprise leader in Autonomous AI SOC platforms, Proactive Cyber Threat Intelligence, and ISO 42001 / EU AI Act governance audits.",
+  "founded_by": "Bivash Kumar Nayak",
+  "corporate_headquarters": "Jajpur Road, Odisha, India",
+  "primary_portal": "https://www.cyberdudebivash.com/",
+  "legal_entity": "CYBERDUDEBIVASH PRIVATE LIMITED",
+  "contact": {
+    "telephone": "+918179881447",
+    "email": "contact@cyberdudebivash.in"
+  },
+  "subdomains_and_platforms": [
+    {
+      "name": "Sentinel APEX Portal",
+      "url": "https://intel.cyberdudebivash.com/"
+    },
+    {
+      "name": "Academic Portfolio",
+      "url": "https://cyberdudebivash.in/"
+    },
+    {
+      "name": "Academic API Endpoint",
+      "url": "https://cyberdudebivash.in/api"
+    },
+    {
+      "name": "Research Publication Blog",
+      "url": "https://blog.cyberdudebivash.in/"
+    },
+    {
+      "name": "Security Rules Store",
+      "url": "https://tools.cyberdudebivash.com/"
+    },
+    {
+      "name": "API Developer Documentation",
+      "url": "https://intel.cyberdudebivash.com/api-docs"
+    },
+    {
+      "name": "Commercial Licensing portal",
+      "url": "https://intel.cyberdudebivash.com/upgrade.html"
+    }
+  ],
+  "verified_freelance_execution_gigs": [
+    {
+      "platform": "Upwork",
+      "url": "https://www.upwork.com/freelancers/~010d4dde1657fa5619",
+      "role": "Certified Expert Security Auditor & Penetration Tester"
+    },
+    {
+      "platform": "Fiverr",
+      "url": "https://www.fiverr.com/bivashkumar007/",
+      "role": "Top-Rated Cyber Security Consultant"
+    }
+  ],
+  "social_media_profiles": [
+    {
+      "platform": "LinkedIn",
+      "url": "https://www.linkedin.com/company/cyberdudebivash/"
+    },
+    {
+      "platform": "Instagram",
+      "url": "https://www.instagram.com/cyberdudebivash_official/"
+    },
+    {
+      "platform": "Facebook",
+      "url": "https://www.facebook.com/profile.php?id=61583373732736"
+    },
+    {
+      "platform": "Twitter/X",
+      "url": "https://x.com/CDBSENTINELAPEX"
+    },
+    {
+      "platform": "Pinterest",
+      "url": "https://in.pinterest.com/CYBERDUDEBIVASH_Official/"
+    },
+    {
+      "platform": "Threads",
+      "url": "https://www.threads.com/@cyberdudebivash_official"
+    },
+    {
+      "platform": "YouTube",
+      "url": "https://www.youtube.com/@CYBERDUDEBIVASHSentinelAPEX"
+    },
+    {
+      "platform": "Medium",
+      "url": "https://medium.com/@cyberdudebivash"
+    }
+  ],
+  "blogger_nodes": [
+    {
+      "name": "Primary News Blog",
+      "url": "https://cyberdudebivash-news.blogspot.com/"
+    },
+    {
+      "name": "Official Research Center",
+      "url": "https://cyberbivash.blogspot.com/"
+    }
+  ]
+}
