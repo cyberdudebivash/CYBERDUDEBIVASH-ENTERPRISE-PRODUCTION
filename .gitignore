@@ -9,6 +9,8 @@ backend/data/
 # Secrets
 backend/.env
 .env
+credentials.json
+
 
 # Temp
 backend/test-boot.js
