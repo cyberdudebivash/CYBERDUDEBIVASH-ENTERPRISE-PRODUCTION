@@ -52,7 +52,6 @@ def markdown_to_html(md_text):
                 in_list = False
             content = stripped
             # Bold **text**
-            content = re.sub(r'\*\frac{}{}': '', content) # Safe fallback
             content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
             # Links [text](url)
             content = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', content)
