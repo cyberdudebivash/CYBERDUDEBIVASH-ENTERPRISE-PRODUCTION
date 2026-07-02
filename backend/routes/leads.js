@@ -69,4 +69,18 @@ router.get('/analytics', (req, res) => {
   }
 });
 
+// POST /newsletter/subscribe
+router.post('/newsletter/subscribe', (req, res) => {
+  try {
+    const { email='' } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email' });
+
+    db.subscribers.insert(email.trim().toLowerCase());
+    return res.status(201).json({ success: true, message: 'Successfully subscribed to CTI alerts.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to save subscription' });
+  }
+});
+
 module.exports = router;

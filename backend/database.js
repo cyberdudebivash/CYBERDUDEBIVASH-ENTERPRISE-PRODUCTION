@@ -13,13 +13,14 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const adapter = new JSONFileSync(path.join(DATA_DIR, 'db.json'));
 const db = new Low(adapter, {
-  users:    [],
-  api_keys: [],
-  api_usage:[],
-  payments: [],
-  leads:    [],
-  events:   [],
-  _seq: { users:0, api_keys:0, api_usage:0, payments:0, leads:0, events:0 }
+  users:       [],
+  api_keys:    [],
+  api_usage:   [],
+  payments:    [],
+  leads:       [],
+  events:      [],
+  subscribers: [],
+  _seq: { users:0, api_keys:0, api_usage:0, payments:0, leads:0, events:0, subscribers:0 }
 });
 
 db.read();
@@ -124,6 +125,22 @@ db.leads = {
     return rec;
   },
   all: () => [...db.data.leads].sort((a,b)=>b.created_at-a.created_at)
+};
+
+// subscribers
+db.subscribers = {
+  insert: (email) => {
+    if (!db.data.subscribers) db.data.subscribers = [];
+    const normalized = email.toLowerCase().trim();
+    let rec = db.data.subscribers.find(s => s.email === normalized);
+    if (!rec) {
+      rec = { id: db.nextId('subscribers'), email: normalized, created_at: Math.floor(Date.now()/1000) };
+      db.data.subscribers.push(rec);
+      db.save();
+    }
+    return rec;
+  },
+  all: () => db.data.subscribers || []
 };
 
 // events
