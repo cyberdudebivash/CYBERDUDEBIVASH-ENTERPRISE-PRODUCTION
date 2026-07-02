@@ -9621,12 +9621,12 @@ level: high`,
     window.checkoutViaConsultationForm = function() {
         closePlaybookCheckout();
         
-        const serviceSelect = document.getElementById('lead-inquiry-type');
-        const descBox = document.getElementById('lead-description');
+        const serviceSelect = document.getElementById('inq-service');
+        const descBox = document.getElementById('inq-desc');
         
         if (serviceSelect) {
-            serviceSelect.value = 'Premium CTI Brief';
-            if (typeof calculatePrice === 'function') calculatePrice();
+            serviceSelect.value = "Premium CTI Intelligence Brief - ₹999";
+            if (typeof calculateDynamicCost === 'function') calculateDynamicCost();
         }
         
         if (descBox) {
@@ -9662,13 +9662,31 @@ level: high`,
         
         const addonsStr = addons.length > 0 ? addons.join(", ") : "None";
         
-        const serviceSelect = document.getElementById('lead-inquiry-type');
-        const descBox = document.getElementById('lead-description');
+        const serviceSelect = document.getElementById('inq-service');
+        const descBox = document.getElementById('inq-desc');
         
         if (serviceSelect) {
-            serviceSelect.value = 'AI Security Assessment';
-            if (typeof calculatePrice === 'function') calculatePrice();
+            serviceSelect.value = "AI Security Assessment (Enterprise) - ₹39,999";
+            if (typeof calculateDynamicCost === 'function') calculateDynamicCost();
         }
+        
+        if (descBox) {
+            descBox.value = 'Custom SLA Configuration:
+- Endpoints Scope: ' + endpoints + '
+- Scan Frequency: ' + frequency + '
+- Addons: ' + addonsStr + '
+- Estimated Retainer Price: ' + priceText + '
+
+Please review and prepare the custom Upwork scoping proposal.';
+        }
+        
+        alert("SLA configuration plan generated! Automatically scrolled down to the lead inquiry form.");
+        
+        const contactSection = document.getElementById('consultation-inquiry-anchor') || document.querySelector('.lead-generation-section');
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
         
         if (descBox) {
             descBox.value = 'Custom SLA Configuration:
