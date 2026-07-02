@@ -1239,7 +1239,7 @@ main {
 }
 
 .checklist-checkbox::after {
-    content: '✓';
+    content: '\2713';
     font-size: 10px;
     font-weight: bold;
     display: none;
@@ -2388,7 +2388,7 @@ body {
     border-color: var(--accent);
 }
 .comp-check-item.checked .comp-check-box::after {
-    content: "✓";
+    content: "\2713";
     position: absolute;
     top: -2px;
     left: 2px;
@@ -4007,7 +4007,7 @@ body {
     position: relative;
 }
 .pricing-features li::before {
-    content: '✓';
+    content: '\2713';
     color: var(--accent);
     position: absolute;
     left: 0;
