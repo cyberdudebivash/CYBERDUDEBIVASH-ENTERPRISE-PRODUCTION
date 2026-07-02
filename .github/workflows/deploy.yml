@@ -43,52 +43,55 @@ jobs:
           set -euo pipefail
 
           # Copy static subpages and folders to dist for production serving
-          cp *.html dist/
-          cp -r portal dist/
-          cp -r react-portal dist/
+          for f in *.html; do [ "$f" != "_vite_entry.html" ] && cp "$f" dist/ || true; done
+          [ -d portal ] && cp -r portal dist/ || true
+          [ -d react-portal ] && cp -r react-portal dist/ || true
           mkdir -p dist/assets/images dist/assets/css dist/assets/js
-          cp -r assets/images/* dist/assets/images/ 2>/dev/null || true
-          cp -r assets/css/* dist/assets/css/ 2>/dev/null || true
-          cp -r assets/js/* dist/assets/js/ 2>/dev/null || true
+          [ -d assets/images ] && cp -r assets/images/. dist/assets/images/ 2>/dev/null || true
+          [ -d assets/css ]    && cp -r assets/css/.    dist/assets/css/    2>/dev/null || true
+          [ -d assets/js ]     && cp -r assets/js/.     dist/assets/js/     2>/dev/null || true
 
+          # Identify the built entry chunk and CSS
           JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1 | xargs basename)
           CSS_FILE=$(ls dist/assets/index-*.css 2>/dev/null | head -1 | xargs basename)
-          ICO_FILE=$(ls dist/assets/favicon-*.ico 2>/dev/null | head -1 | xargs basename 2>/dev/null || true)
 
           if [ -z "$JS_FILE" ] || [ -z "$CSS_FILE" ]; then
             echo "ERROR: Vite build did not produce expected JS/CSS assets"
             ls dist/assets/ || true
             exit 1
           fi
-          echo "Built: $JS_FILE | $CSS_FILE"
+          echo "Entry: $JS_FILE | CSS: $CSS_FILE"
+          echo "All JS chunks:"
+          ls dist/assets/*.js 2>/dev/null || true
 
-          # Generate dist/index.html from root index.html with correct built asset refs.
-          # Root index.html always keeps crossorigin format so sed reliably updates the hash.
-          cp index.html dist/index.html
-          sed -i '/<script type="module"/d' dist/index.html
-          sed -i '\|<link rel="stylesheet".*href="/assets/|d' dist/index.html
-          sed -i "s|  </head>|    <script type=\"module\" crossorigin src=\"/assets/$JS_FILE\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/$CSS_FILE\">\n  </head>|" dist/index.html
-          rm -f dist/_vite_entry.html
+          # Use Vite's processed _vite_entry.html directly as dist/index.html.
+          # It already has the correct <script type="module">, <link rel="modulepreload">
+          # for every vendor chunk, and <link rel="stylesheet"> — all with correct hashes.
+          mv dist/_vite_entry.html dist/index.html
 
-          # Sync built assets to root assets/ for branch-based Pages serving
-          cp "dist/assets/$JS_FILE" "assets/$JS_FILE"
-          cp "dist/assets/$CSS_FILE" "assets/$CSS_FILE"
-          [ -n "$ICO_FILE" ] && cp "dist/assets/$ICO_FILE" "assets/$ICO_FILE" || true
+          # Validate dist/index.html has the entry chunk reference
+          grep -q "src=\"/assets/$JS_FILE\"" dist/index.html \
+            || { echo "FATAL: dist/index.html missing entry ref for $JS_FILE"; exit 1; }
+          grep -q "href=\"/assets/$CSS_FILE\"" dist/index.html \
+            || { echo "FATAL: dist/index.html missing CSS ref for $CSS_FILE"; exit 1; }
+          echo "✅ dist/index.html validated"
 
-          # Update root index.html asset hashes for branch-based Pages
+          # Sync ALL built JS chunks (entry + vendor) and CSS to root assets/.
+          # Branch-based Pages deployment needs every chunk the entry imports.
+          cp dist/assets/*.js assets/
+          cp dist/assets/*.css assets/
+          ls dist/assets/favicon-*.ico 2>/dev/null && cp dist/assets/favicon-*.ico assets/ || true
+
+          # Update root index.html entry-chunk ref for branch-based Pages fallback.
+          # Root index.html always uses crossorigin src= format so this sed always matches.
           sed -i "s|crossorigin src=\"/assets/index-[^\"]*\.js\"|crossorigin src=\"/assets/$JS_FILE\"|" index.html
           sed -i "s|crossorigin href=\"/assets/index-[^\"]*\.css\"|crossorigin href=\"/assets/$CSS_FILE\"|" index.html
 
-          # Validate both index.html files have correct built refs before deploying
-          grep -q "crossorigin src=\"/assets/$JS_FILE\"" dist/index.html \
-            || { echo "FATAL: dist/index.html missing asset ref for $JS_FILE"; exit 1; }
-          grep -q "crossorigin href=\"/assets/$CSS_FILE\"" dist/index.html \
-            || { echo "FATAL: dist/index.html missing CSS ref for $CSS_FILE"; exit 1; }
           grep -q "crossorigin src=\"/assets/$JS_FILE\"" index.html \
-            || { echo "FATAL: root index.html missing asset ref for $JS_FILE"; exit 1; }
-          echo "✅ Asset refs validated in dist/index.html and root index.html"
+            || { echo "FATAL: root index.html missing entry ref for $JS_FILE"; exit 1; }
+          echo "✅ root index.html validated"
 
-          # Commit root changes for branch-based Pages (skip if nothing changed)
+          # Commit root assets/ + index.html for branch-based Pages (skip if unchanged)
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
