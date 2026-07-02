@@ -52,6 +52,7 @@ def markdown_to_html(md_text):
                 in_list = False
             content = stripped
             # Bold **text**
+            content = re.sub(r'\*\frac{}{}': '', content) # Safe fallback
             content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
             # Links [text](url)
             content = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', content)
@@ -111,7 +112,7 @@ def update_frontmatter_published(file_path, post_id, post_url):
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(updated_content)
 
-def get_access_token(client_id, client_secret, refresh_token):
+def get_access_token_oauth(client_id, client_secret, refresh_token):
     url = "https://oauth2.googleapis.com/token"
     data = urllib.parse.urlencode({
         "client_id": client_id,
@@ -130,13 +131,18 @@ def get_access_token(client_id, client_secret, refresh_token):
         return None
 
 def main():
+    service_account_json = os.environ.get("BLOGGER_SERVICE_ACCOUNT_JSON")
     client_id = os.environ.get("BLOGGER_CLIENT_ID")
     client_secret = os.environ.get("BLOGGER_CLIENT_SECRET")
     refresh_token = os.environ.get("BLOGGER_REFRESH_TOKEN")
     blog_id = os.environ.get("BLOGGER_BLOG_ID")
     
-    if not all([client_id, client_secret, refresh_token, blog_id]):
-        print("[-] Missing required Blogger API environment variables!")
+    if not blog_id:
+        print("[-] Missing BLOGGER_BLOG_ID environment variable!")
+        return
+        
+    if not service_account_json and not all([client_id, client_secret, refresh_token]):
+        print("[-] Missing required Blogger credentials (either BLOGGER_SERVICE_ACCOUNT_JSON or OAuth client tokens must be configured)!")
         return
         
     if not os.path.exists(POSTS_DIR):
@@ -165,11 +171,29 @@ def main():
         
         # Get token on-demand
         if not access_token:
-            print("[+] Fetching Blogger API Access Token...")
-            access_token = get_access_token(client_id, client_secret, refresh_token)
-            if not access_token:
-                print("[-] Could not retrieve OAuth Access Token. Exiting.")
-                return
+            if service_account_json:
+                print("[+] Authenticating using Google Service Account JWT flow...")
+                try:
+                    from google.oauth2 import service_account
+                    import google.auth.transport.requests
+                    info = json.loads(service_account_json)
+                    creds = service_account.Credentials.from_service_account_info(
+                        info, 
+                        scopes=["https://www.googleapis.com/auth/blogger"]
+                    )
+                    auth_req = google.auth.transport.requests.Request()
+                    creds.refresh(auth_req)
+                    access_token = creds.token
+                    print("[+] Successfully authenticated using Google Service Account!")
+                except Exception as e:
+                    print(f"[-] Service Account authentication failed: {e}")
+                    return
+            else:
+                print("[+] Fetching Blogger API Access Token via OAuth Client refresh token...")
+                access_token = get_access_token_oauth(client_id, client_secret, refresh_token)
+                if not access_token:
+                    print("[-] Could not retrieve OAuth Access Token. Exiting.")
+                    return
                 
         title = metadata.get("title", filename.replace(".md", ""))
         labels_str = metadata.get("labels", "")
