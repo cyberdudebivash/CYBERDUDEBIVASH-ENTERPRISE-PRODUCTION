@@ -23,11 +23,12 @@ import {
   Download,
   ExternalLink
 } from "lucide-react";
-import { 
-  ECOSYSTEM_PORTALS, 
-  ECOSYSTEM_APIS, 
-  SOCIAL_PROFILES, 
-  CORPORATE_REGISTRATION 
+import {
+  ECOSYSTEM_PORTALS,
+  ECOSYSTEM_APIS,
+  SOCIAL_PROFILES,
+  CORPORATE_REGISTRATION,
+  aligned
 } from "./ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
@@ -177,9 +178,9 @@ export default function App() {
     mitigationSuccessRate: "100.0%",
     sentinelNodeStatus: "Fully Operational",
     hqLocation: "Ragadi, Jajpur, Odisha, India",
-    isoCompliance: "ISO/IEC 27001:2022 Certified",
-    soc2Compliance: "SOC 2 Type II Compliant",
-    dpdpCompliance: "DPDP 2023 Audited"
+    isoCompliance: aligned("iso27001") + " (certification in progress)",
+    soc2Compliance: aligned("soc2") + " (formal audit in progress)",
+    dpdpCompliance: aligned("dpdp") + " (self-assessed)"
   });
 
   const [cves, setCves] = useState<CveItem[]>([
@@ -236,9 +237,6 @@ export default function App() {
   const [pingingPortalId, setPingingPortalId] = useState<string | null>(null);
   const [pingLogs, setPingLogs] = useState<string[]>([]);
   const [activeSocialFilter, setActiveSocialFilter] = useState<string>("All");
-  const [gstInput, setGstInput] = useState<string>(CORPORATE_REGISTRATION.gstin);
-  const [gstVerificationResult, setGstVerificationResult] = useState<any | null>(null);
-  const [gstVerifying, setGstVerifying] = useState<boolean>(false);
   const [activeEcosystemApiIndex, setActiveEcosystemApiIndex] = useState<number>(0);
 
   // Premium product Gumroad downloads/order helper
@@ -572,38 +570,6 @@ export default function App() {
     });
   };
 
-  // God Mode: GSTIN Verification Tool
-  const verifyGstInward = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGstVerifying(true);
-    setGstVerificationResult(null);
-    
-    setTimeout(() => {
-      const normalized = gstInput.trim().toUpperCase().replace(/\s+/g, '');
-      if (normalized === CORPORATE_REGISTRATION.gstin) {
-        setGstVerificationResult({
-          status: "SUCCESS_ACTIVE",
-          message: "GSTIN record found and matched against the India GST common database.",
-          legalName: CORPORATE_REGISTRATION.legalName,
-          tradeName: CORPORATE_REGISTRATION.tradeName,
-          gstin: CORPORATE_REGISTRATION.gstin,
-          pan: CORPORATE_REGISTRATION.pan,
-          address: CORPORATE_REGISTRATION.address,
-          taxpayerType: "Private Limited Company",
-          registrationDate: "2024-03-12",
-          jurisdiction: "Jajpur Ward, Odisha, India",
-          complianceScore: "10/10 (Highest Trust Rating)"
-        });
-      } else {
-        setGstVerificationResult({
-          status: "ERROR_UNRESOLVED",
-          message: `The entered GSTIN "${normalized}" could not be reconciled against CYBERDUDEBIVASH corporate profiles. Confirm coordinates and try again.`,
-        });
-      }
-      setGstVerifying(false);
-    }, 1500);
-  };
-
   // Advanced: Execute custom live API queries for any of the 8 routes
   const executeEcosystemApiRequest = (idx: number) => {
     setActiveEcosystemApiIndex(idx);
@@ -736,8 +702,8 @@ export default function App() {
       <div className="bg-[#080d12] text-[11px] border-b border-slate-900 py-1.5 px-6 flex flex-wrap items-center justify-between gap-3 text-slate-400 font-mono">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-          <span className="text-slate-200 font-bold">🛡️ LIVE MONITOR:</span>
-          <span className="truncate max-w-[280px] sm:max-w-none text-slate-400">2,847 threats neutralized in last 24h &bull; APEX Threat Map Active</span>
+          <span className="text-slate-200 font-bold">🛡️ INTERACTIVE DEMO:</span>
+          <span className="truncate max-w-[280px] sm:max-w-none text-slate-400">Explore our simulated AI SOC command center below &bull; illustrative data</span>
         </div>
         <div className="flex items-center gap-4 text-xs">
           <span className="hidden sm:inline-block">🕐 Mon–Sat 9AM–7PM IST</span>
@@ -767,7 +733,7 @@ export default function App() {
               <span className="bg-cyan-950 text-cyan-400 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-cyan-800">ECOSYSTEM V4</span>
             </div>
             <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
-              ISO/IEC 27001 &bull; SOC 2 Type II &bull; DPDP 2023 Compliant
+              {aligned("iso27001")} &bull; {aligned("soc2")} &bull; {aligned("dpdp")}
             </span>
           </button>
         </div>
@@ -1020,16 +986,11 @@ export default function App() {
             pingingPortalId={pingingPortalId}
             pingLogs={pingLogs}
             activeSocialFilter={activeSocialFilter}
-            gstInput={gstInput}
-            gstVerificationResult={gstVerificationResult}
-            gstVerifying={gstVerifying}
             purchasedProduct={purchasedProduct}
             premiumProducts={premiumProducts}
             onPortalPing={triggerPortalPing}
             onClosePingTerminal={() => setPingingPortalId(null)}
             onSocialFilterChange={setActiveSocialFilter}
-            onGstInputChange={setGstInput}
-            onGstVerify={verifyGstInward}
             onCheckoutProduct={handleCheckoutProduct}
             onContact={() => setShowContactModal(true)}
             onNavigate={setCurrentView}
@@ -1136,10 +1097,10 @@ export default function App() {
         <div className="bg-[#050c14] border-b border-slate-800/60 py-3 px-6">
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {[
-              { label: "ISO/IEC 27001:2022", color: "text-cyan-400" },
-              { label: "SOC 2 Type II", color: "text-emerald-400" },
-              { label: "GDPR Compliant", color: "text-sky-400" },
-              { label: "PCI-DSS v4.0", color: "text-violet-400" },
+              { label: aligned("iso27001"), color: "text-cyan-400" },
+              { label: aligned("soc2"), color: "text-emerald-400" },
+              { label: aligned("gdpr"), color: "text-sky-400" },
+              { label: aligned("pciDss"), color: "text-violet-400" },
               { label: "India DPDP Act 2023", color: "text-amber-400" },
               { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
               { label: "OWASP LLM Top 10", color: "text-pink-400" },

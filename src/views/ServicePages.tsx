@@ -38,9 +38,9 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { v: "24×7", l: "Continuous Monitoring", c: "text-violet-400" },
-                { v: "<15m", l: "Mean Time to Respond", c: "text-cyan-400" },
-                { v: "99.7%", l: "AI Detection Accuracy", c: "text-emerald-400" },
-                { v: "2,800+", l: "SOC Teams Served", c: "text-amber-400" },
+                { v: "<15m", l: "Target Response SLA", c: "text-cyan-400" },
+                { v: "99.7%", l: "Target Detection Accuracy", c: "text-emerald-400" },
+                { v: "100+", l: "Detection Playbooks", c: "text-amber-400" },
               ].map(s => (
                 <div key={s.l} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
                   <div className={`text-2xl font-extrabold font-mono ${s.c}`}>{s.v}</div>
