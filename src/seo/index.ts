@@ -37,3 +37,9 @@ export * from "./runtime";
 // sitemap, robots.txt, search index, build manifest, build report)
 // under dist/seo/. See build/documentation/BUILD_PLATFORM.md.
 export * from "./build";
+// Phase 2.1's release management & deployment platform — consumes
+// ONLY Build Platform's already-written dist/seo/ output to plan,
+// stage, verify, publish, and (if needed) roll back releases under
+// dist/release/. Never calls Runtime or Build Platform's own
+// generation functions. See release/documentation/RELEASE_PLATFORM.md.
+export * from "./release";
