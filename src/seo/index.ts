@@ -32,3 +32,8 @@ export * from "./commercial";
 // implementation detail of the runtime. See
 // runtime/documentation/SEO_RUNTIME.md.
 export * from "./runtime";
+// Phase 2.0's build generation platform — consumes ONLY the Runtime
+// API above to produce production-ready artifacts (metadata, JSON-LD,
+// sitemap, robots.txt, search index, build manifest, build report)
+// under dist/seo/. See build/documentation/BUILD_PLATFORM.md.
+export * from "./build";
