@@ -95,7 +95,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               <div className="grid md:grid-cols-2 gap-8 items-center">
                 <div className="space-y-4">
                   <div>
-                    <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                    <div className="flex justify-between text-xs text-slate-200 font-bold mb-1.5">
                       <span>Security Analysts (In-House Team)</span>
                       <span className="text-emerald-400 font-mono">{roiStaff} Analysts</span>
                     </div>
@@ -103,7 +103,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                     <div className="flex justify-between text-[9px] text-slate-600 mt-1"><span>1 Analyst</span><span>15 Analysts</span></div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                    <div className="flex justify-between text-xs text-slate-200 font-bold mb-1.5">
                       <span>Endpoints / Active Cloud Workloads</span>
                       <span className="text-cyan-400 font-mono">{roiEndpoints} Nodes</span>
                     </div>
@@ -111,7 +111,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                     <div className="flex justify-between text-[9px] text-slate-600 mt-1"><span>10 Nodes</span><span>2,000 Nodes</span></div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-slate-350 font-bold mb-1.5">
+                    <div className="flex justify-between text-xs text-slate-200 font-bold mb-1.5">
                       <span>Est. Breach Event Liability Exposure</span>
                       <span className="text-red-400 font-mono">${roiBreach.toLocaleString()}</span>
                     </div>

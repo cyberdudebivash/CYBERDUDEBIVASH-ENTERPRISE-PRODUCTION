@@ -44,27 +44,27 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
             </div>
             <div>
               <div className="text-sm font-bold text-white tracking-wide">CyberDudeBivash<span className="text-cyan-400">®</span></div>
-              <div className="text-[9px] text-slate-500 font-mono tracking-widest uppercase">ECOSYSTEM V4 · EST. 2020</div>
+              <div className="text-[10px] text-slate-300 font-mono font-semibold tracking-widest uppercase">ECOSYSTEM V4 · EST. 2020</div>
             </div>
           </div>
-          <p className="text-[12px] text-slate-400 leading-relaxed font-sans max-w-xs">
+          <p className="text-[13px] text-slate-300 leading-relaxed font-sans max-w-xs">
             Autonomous AI-powered cybersecurity defense platform delivering real-time threat intelligence, managed SOC auditing, and 100+ security tools to enterprise teams globally.
           </p>
           {/* Legal registration */}
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-lg p-3 space-y-1.5">
-            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Legal Registration</div>
-            <div className="text-[11px] text-slate-300 font-mono">CYBERDUDEBIVASH PRIVATE LIMITED</div>
+          <div className="bg-slate-900/60 border border-slate-700/80 rounded-lg p-3 space-y-1.5">
+            <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Legal Registration</div>
+            <div className="text-[12px] text-white font-mono font-semibold">CYBERDUDEBIVASH PRIVATE LIMITED</div>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
-              <span className="text-[10px] text-slate-500 font-mono">PAN: <span className="text-cyan-400">ARKPN8270G</span></span>
-              <span className="text-[10px] text-slate-500 font-mono">GSTIN: <span className="text-cyan-400">21ARKPN8270G1ZP</span></span>
+              <span className="text-[11px] text-slate-300 font-mono">PAN: <span className="text-cyan-300 font-semibold">ARKPN8270G</span></span>
+              <span className="text-[11px] text-slate-300 font-mono">GSTIN: <span className="text-cyan-300 font-semibold">21ARKPN8270G1ZP</span></span>
             </div>
-            <div className="text-[10px] text-slate-500 font-sans leading-relaxed">
+            <div className="text-[11px] text-slate-300 font-sans leading-relaxed">
               29, Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India
             </div>
-            <a href="tel:+918179881447" className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 pt-0.5">
+            <a href="tel:+918179881447" className="text-[12px] font-mono font-semibold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 pt-0.5">
               <Phone className="w-3 h-3" /> +91 81798 81447
             </a>
-            <a href="mailto:bivash@cyberdudebivash.com" className="text-[11px] font-mono text-cyan-400/80 hover:text-cyan-300 transition-colors block">
+            <a href="mailto:bivash@cyberdudebivash.com" className="text-[12px] font-mono font-semibold text-cyan-300 hover:text-cyan-200 transition-colors block">
               bivash@cyberdudebivash.com
             </a>
           </div>
@@ -144,14 +144,14 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
             Request Enterprise Demo →
           </button>
           <div className="pt-2 space-y-1.5">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800/60 pb-2">Legal</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-300 border-b border-slate-700/60 pb-2">Legal</h4>
             {[
               { label: "About Us", view: "about" as const },
               { label: "Privacy Policy", view: "privacy" as const },
               { label: "Terms of Service", view: "terms" as const },
               { label: "Copyright & IP", view: "copyright" as const },
             ].map(l => (
-              <button key={l.label} onClick={() => onNavigate(l.view)} className="block text-[11px] text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer text-left font-sans">
+              <button key={l.label} onClick={() => onNavigate(l.view)} className="block text-[12px] text-slate-300 font-medium hover:text-cyan-300 transition-colors cursor-pointer text-left font-sans">
                 {l.label}
               </button>
             ))}
@@ -160,12 +160,12 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
       </div>
 
       {/* Social row */}
-      <div className="border-t border-slate-800/60 bg-[#030912]">
+      <div className="border-t border-slate-700/60 bg-[#030912]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap gap-3">
             {[
               { label: "LinkedIn", url: "https://linkedin.com/company/cyberdudebivash", color: "hover:text-sky-400" },
-              { label: "X / Twitter", url: "https://twitter.com/CDBSENTINELAPEX", color: "hover:text-slate-200" },
+              { label: "X / Twitter", url: "https://twitter.com/CDBSENTINELAPEX", color: "hover:text-slate-100" },
               { label: "Instagram", url: "https://instagram.com/cyberdudebivash_official", color: "hover:text-pink-400" },
               { label: "YouTube", url: "https://youtube.com/@CYBERDUDEBIVASHSentinelAPEX", color: "hover:text-red-400" },
               { label: "Medium", url: "https://medium.com/@cyberdudebivash", color: "hover:text-emerald-400" },
@@ -173,31 +173,31 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
             ].map(s => (
               <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
                 aria-label={`CYBERDUDEBIVASH® on ${s.label} (opens in new tab)`}
-                className={`text-[11px] text-slate-500 ${s.color} transition-colors font-sans`}>
+                className={`text-[12px] text-slate-300 font-medium ${s.color} transition-colors font-sans`}>
                 {s.label}
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-3 text-[10px] text-slate-600 font-mono">
+          <div className="flex items-center gap-3 text-[11px] text-slate-300 font-mono font-medium">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Secure Engine v4.1
             </span>
-            <span className="text-slate-700">|</span>
+            <span className="text-slate-500">|</span>
             <span>NODE: 103.142.12.98</span>
           </div>
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-black border-t border-slate-900">
+      <div className="bg-black border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
-          <div className="text-[10px] text-slate-600 font-mono">
+          <div className="text-[11px] text-slate-300 font-mono">
             &copy; {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved.
             &nbsp;&bull;&nbsp;TLP:CLEAR unless otherwise marked.
             &nbsp;&bull;&nbsp;Registered in India under Companies Act 2013.
           </div>
-          <div className="text-[10px] text-slate-700 font-mono">SESSION: APEX-9922-BIVASH</div>
+          <div className="text-[11px] text-slate-300 font-mono font-medium">SESSION: APEX-9922-BIVASH</div>
         </div>
       </div>
     </footer>
