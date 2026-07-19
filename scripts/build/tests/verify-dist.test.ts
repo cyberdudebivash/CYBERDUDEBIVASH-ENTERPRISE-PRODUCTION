@@ -8,6 +8,7 @@ import {
   checkNoOrphanedHashedAssets,
   checkHtmlWellFormed,
   checkMetadataAndSchema,
+  checkFavicon,
   checkSitemapAndRobots,
   verifyDist,
 } from "../verify-dist.mjs";
@@ -38,6 +39,7 @@ function writeGoodDist(distDir: string) {
   writeFileSync(join(distDir, "index.html"), GOOD_HTML);
   writeFileSync(join(distDir, "sitemap.xml"), '<?xml version="1.0"?><urlset></urlset>');
   writeFileSync(join(distDir, "robots.txt"), "User-agent: *\nAllow: /");
+  writeFileSync(join(distDir, "favicon.ico"), "fake-icon-bytes");
 }
 
 test("checkAssetReferencesResolve: passes when every referenced file exists", (t) => {
@@ -102,6 +104,30 @@ test("checkMetadataAndSchema: passes when description/canonical/JSON-LD all pres
   const distDir = makeDist(t);
   writeGoodDist(distDir);
   assert.equal(checkMetadataAndSchema(distDir).ok, true);
+});
+
+test("checkFavicon: fails when favicon.ico is missing", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  rmSync(join(distDir, "favicon.ico"));
+  const result = checkFavicon(distDir);
+  assert.equal(result.ok, false);
+  assert.match(result.message, /missing/);
+});
+
+test("checkFavicon: fails when favicon.ico is empty", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  writeFileSync(join(distDir, "favicon.ico"), "");
+  const result = checkFavicon(distDir);
+  assert.equal(result.ok, false);
+  assert.match(result.message, /empty/);
+});
+
+test("checkFavicon: passes when favicon.ico is present and non-empty", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  assert.equal(checkFavicon(distDir).ok, true);
 });
 
 test("checkSitemapAndRobots: fails when sitemap.xml is missing", (t) => {
