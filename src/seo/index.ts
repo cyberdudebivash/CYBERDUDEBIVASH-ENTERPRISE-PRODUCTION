@@ -25,3 +25,10 @@ export * from "./relationships";
 // products), joined to the config above by entity id. See
 // commercial/documentation/COMMERCIAL_MODEL.md.
 export * from "./commercial";
+// Phase 1.5's runtime platform — the single public entry point
+// (generateSEO(pageId)) integrating every engine above by
+// composition. This becomes the ONLY supported way to consume the SEO
+// platform going forward; every engine above is now an internal
+// implementation detail of the runtime. See
+// runtime/documentation/SEO_RUNTIME.md.
+export * from "./runtime";
