@@ -1,5 +1,5 @@
 import { Phone } from "lucide-react";
-import { TrustBadge } from "../badges/TrustBadge";
+import { SecurityBadge } from "../../design-system/components/SecurityBadge";
 import { aligned } from "../../constants/ecosystemData";
 import type { ViewType } from "../../types/app";
 
@@ -28,7 +28,7 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
             { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
             { label: "OWASP LLM Top 10", color: "text-pink-400" },
           ].map(b => (
-            <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="dot-text" />
+            <SecurityBadge key={b.label} label={b.label} colorClassName={b.color} variant="dot-text" />
           ))}
         </div>
       </div>

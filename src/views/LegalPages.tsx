@@ -1,6 +1,9 @@
 import type { ViewType } from "../types/app";
 import { aligned } from "../constants/ecosystemData";
-import { TrustBadge } from "../components/badges/TrustBadge";
+import { SecurityBadge } from "../design-system/components/SecurityBadge";
+import { SectionHeader } from "../design-system/components/SectionHeader";
+import { StatCard } from "../design-system/components/StatCard";
+import { FeatureCard } from "../design-system/components/FeatureCard";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";
@@ -20,43 +23,32 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
         {/* ===== ABOUT US ===== */}
         {currentView === "about" && (
           <div className="space-y-10">
-            <div className="relative">
-              <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                Corporate Profile · Est. 2020
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                About CyberDudeBivash<span className="text-cyan-400">®</span>
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base max-w-3xl font-sans">
-                CYBERDUDEBIVASH PRIVATE LIMITED is India's autonomous AI-powered cybersecurity authority — delivering real-time threat intelligence, managed SOC operations, AI security auditing, and 100+ production-grade security tools to enterprise teams, government agencies, and security researchers globally. Founded in Odisha in 2020, we stand at the intersection of AI innovation and enterprise-grade cyber defense.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="cyan"
+              subtitle="Corporate Profile · Est. 2020"
+              title={<>About CyberDudeBivash<span className="text-cyan-400">®</span></>}
+              description="CYBERDUDEBIVASH PRIVATE LIMITED is India's autonomous AI-powered cybersecurity authority — delivering real-time threat intelligence, managed SOC operations, AI security auditing, and 100+ production-grade security tools to enterprise teams, government agencies, and security researchers globally. Founded in Odisha in 2020, we stand at the intersection of AI innovation and enterprise-grade cyber defense."
+            />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { value: "500K+", label: "Threat IOCs Tracked", color: "text-cyan-400" },
-                { value: "50+", label: "Countries Protected", color: "text-emerald-400" },
-                { value: "100+", label: "AI Security Tools", color: "text-violet-400" },
-                { value: "99.9%", label: "Platform SLA Uptime", color: "text-amber-400" },
+                { value: "500K+", label: "Threat IOCs Tracked", color: "cyan" as const },
+                { value: "50+", label: "Countries Protected", color: "emerald" as const },
+                { value: "100+", label: "AI Security Tools", color: "violet" as const },
+                { value: "99.9%", label: "Platform SLA Uptime", color: "amber" as const },
               ].map(s => (
-                <div key={s.label} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-2xl font-extrabold font-mono ${s.color}`}>{s.value}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.label}</div>
-                </div>
+                <StatCard key={s.label} value={s.value} label={s.label} tone={s.color} />
               ))}
             </div>
 
             <div className="grid md:grid-cols-3 gap-5">
               {[
-                { title: "Mission", color: "border-cyan-500/40 bg-cyan-950/10", label: "text-cyan-400", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to the largest global enterprises." },
-                { title: "Vision", color: "border-violet-500/40 bg-violet-950/10", label: "text-violet-400", body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence." },
-                { title: "Core Values", color: "border-emerald-500/40 bg-emerald-950/10", label: "text-emerald-400", body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community." },
+                { title: "Mission", accent: "cyan" as const, body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to the largest global enterprises." },
+                { title: "Vision", accent: "violet" as const, body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence." },
+                { title: "Core Values", accent: "emerald" as const, body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community." },
               ].map(c => (
-                <div key={c.title} className={`border rounded-xl p-5 ${c.color}`}>
-                  <h3 className={`text-xs font-bold uppercase tracking-widest mb-2 ${c.label}`}>{c.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-sans">{c.body}</p>
-                </div>
+                <FeatureCard key={c.title} variant="tinted" accent={c.accent} title={c.title} description={c.body} />
               ))}
             </div>
 
@@ -75,7 +67,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">What We Deliver</h2>
+              <SectionHeader size="subsection" title="What We Deliver" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "Managed SOC-as-a-Service", desc: "24×7 autonomous security operations center monitoring your infrastructure with AI-driven alert triage, threat hunting, and incident response playbooks." },
@@ -85,19 +77,13 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { title: "India DPDP Act Compliance", desc: "End-to-end data protection compliance scanning, privacy impact assessments, DPO advisory, and breach notification readiness for Indian enterprises." },
                   { title: "Enterprise REST API", desc: "Programmable threat intelligence API delivering IOC enrichment, malware hash lookups, CVE data, and geolocation threat data to your SIEM/SOAR in real time." },
                 ].map(s => (
-                  <div key={s.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{s.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{s.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={s.title} iconWrapper="dot" title={s.title} description={s.desc} />
                 ))}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Compliance Framework Alignment</h2>
+              <SectionHeader size="subsection" title="Compliance Framework Alignment" />
               <p className="text-[11px] text-slate-500 -mt-2">Our internal practices are aligned with the frameworks below. We are not yet formally certified against ISO/IEC 27001 or audited against SOC 2; formal certification will be pursued as the organization scales.</p>
               <div className="flex flex-wrap gap-3">
                 {[
@@ -111,7 +97,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
                   { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
                 ].map(b => (
-                  <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
+                  <SecurityBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
                 ))}
               </div>
             </div>
@@ -153,10 +139,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
         {currentView === "privacy" && (
           <div className="space-y-10">
             <div>
-              <div className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Legal Document
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Privacy Policy</h1>
+              <SectionHeader size="page" accent="emerald" pulse={false} subtitle="Legal Document" title="Privacy Policy" className="mb-3" />
               <div className="flex flex-wrap gap-3 text-[10px] font-mono">
                 <span className="bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 px-2.5 py-1 rounded">Last updated: June 2026</span>
                 <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">DPDP Act 2023 Aligned</span>
@@ -191,10 +174,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
         {currentView === "terms" && (
           <div className="space-y-10">
             <div>
-              <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" /> Legal Document
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Terms of Service</h1>
+              <SectionHeader size="page" accent="violet" pulse={false} subtitle="Legal Document" title="Terms of Service" className="mb-3" />
               <div className="flex flex-wrap gap-3 text-[10px] font-mono">
                 <span className="bg-violet-950/40 text-violet-400 border border-violet-900/40 px-2.5 py-1 rounded">Last updated: June 2026</span>
                 <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">Governing Law: India</span>
@@ -226,10 +206,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
         {currentView === "copyright" && (
           <div className="space-y-10">
             <div>
-              <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Legal Document
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Copyright &amp; Intellectual Property</h1>
+              <SectionHeader size="page" accent="amber" pulse={false} subtitle="Legal Document" title="Copyright & Intellectual Property" className="mb-3" />
               <p className="text-xs text-slate-500 font-mono">&copy; {new Date().getFullYear()} CYBERDUDEBIVASH PRIVATE LIMITED. All rights reserved worldwide.</p>
             </div>
 
@@ -239,7 +216,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Trademark & Brand Registry</h2>
+              <SectionHeader size="subsection" title="Trademark & Brand Registry" />
               <div className="grid md:grid-cols-2 gap-3">
                 {[
                   { mark: "CyberDudeBivash®", type: "Registered Trademark", desc: "Primary corporate brand and platform name. Protected under Trade Marks Act 1999, Class 42 (IT services)." },

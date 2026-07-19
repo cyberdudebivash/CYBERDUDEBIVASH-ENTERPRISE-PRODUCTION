@@ -1,7 +1,9 @@
 import { Activity, Shield, Terminal, ExternalLink, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
-import { TrustBadge } from "../components/badges/TrustBadge";
+import { SecurityBadge } from "../design-system/components/SecurityBadge";
+import { StatCard } from "../design-system/components/StatCard";
+import { Hero } from "../design-system/components/Hero";
 import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../constants/ecosystemData";
 import type { ViewType, LiveLogEntry, PremiumProduct } from "../types/app";
 
@@ -30,66 +32,22 @@ export default function HomeView({
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto w-full animate-fade-in">
 
-      {/* Header Hero Section */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-full py-1.5 px-4 text-xs font-mono text-cyan-400">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
-          CYBERDUDEBIVASH® Global Cybersecurity Authority
-        </div>
-
-        <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
-          AI-Powered Cyber Defense &amp; <br />
-          <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 bg-clip-text text-transparent">
-            Threat Intelligence Platform
-          </span>
-        </h2>
-
-        <p className="text-sm md:text-base text-slate-400 leading-relaxed font-sans">
-          CYBERDUDEBIVASH® delivers real-time threat intelligence, AI-powered SOC operations, 100+ production tools, and programmable REST APIs - unified in one enterprise command center used by security teams globally. Stop threat matrices before they impact your subnets.
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
-          <button
-            onClick={() => onNavigate("intel")}
-            className="px-6 py-3 bg-cyan-500 text-black hover:bg-cyan-400 font-extrabold rounded text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-cyan-500/20"
-          >
-            <Activity className="w-4 h-4" /> View Live Threat Feed
-          </button>
-          <button
-            onClick={() => onNavigate("ai")}
-            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 font-extrabold rounded text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
-          >
-            <Shield className="w-4 h-4 text-cyan-400" /> Start Free Security Audit
-          </button>
-        </div>
-      </div>
-
-      {/* Core Stats Counters */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
-          <div className="text-2xl md:text-3xl font-extrabold text-cyan-400 font-mono">500K+</div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Threat IOCs</div>
-        </div>
-        <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
-          <div className="text-2xl md:text-3xl font-extrabold text-emerald-400 font-mono">Global</div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Threat Coverage</div>
-        </div>
-        <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
-          <div className="text-2xl md:text-3xl font-extrabold text-purple-400 font-mono">100+</div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">AI Tools</div>
-        </div>
-        <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
-          <div className="text-2xl md:text-3xl font-extrabold text-amber-500 font-mono">99.9%</div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Uptime SLA</div>
-        </div>
-        <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center col-span-2 md:col-span-1">
-          <div className="text-2xl md:text-3xl font-extrabold text-red-500 font-mono flex items-center justify-center gap-1.5">
-            <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
-            24/7
-          </div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Automated Monitoring</div>
-        </div>
-      </div>
+      <Hero
+        badge={<><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />CYBERDUDEBIVASH® Global Cybersecurity Authority</>}
+        headline={<>AI-Powered Cyber Defense &amp; <br /><span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 bg-clip-text text-transparent">Threat Intelligence Platform</span></>}
+        description="CYBERDUDEBIVASH® delivers real-time threat intelligence, AI-powered SOC operations, 100+ production tools, and programmable REST APIs - unified in one enterprise command center used by security teams globally. Stop threat matrices before they impact your subnets."
+        buttons={[
+          { label: "View Live Threat Feed", icon: <Activity className="w-4 h-4" />, variant: "primary", onClick: () => onNavigate("intel") },
+          { label: "Start Free Security Audit", icon: <Shield className="w-4 h-4 text-cyan-400" />, variant: "secondary", onClick: () => onNavigate("ai") },
+        ]}
+        metrics={[
+          { value: "500K+", label: "Threat IOCs", tone: "cyan" },
+          { value: "Global", label: "Threat Coverage", tone: "emerald" },
+          { value: "100+", label: "AI Tools", tone: "purple" },
+          { value: "99.9%", label: "Uptime SLA", tone: "amber" },
+          { value: <><span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />24/7</>, label: "Automated Monitoring", tone: "red", spanFullOnMobile: true },
+        ]}
+      />
 
       {/* AI SOC Active Control Command Center */}
       <div className="space-y-4">
@@ -299,7 +257,7 @@ export default function HomeView({
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }
           ].map((item, idx) => (
-            <TrustBadge key={idx} label={item.title} colorClassName={item.col} variant="pill-icon" />
+            <SecurityBadge key={idx} label={item.title} colorClassName={item.col} variant="pill-icon" />
           ))}
         </div>
       </div>
@@ -409,22 +367,10 @@ export default function HomeView({
 
       {/* Company facts */}
       <div className="bg-[#0c1117] border border-slate-800 p-6 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">100+</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Security Tools &amp; Playbooks</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">2020</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Operating Since</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">&lt;15m</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Target Response SLA</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">24&times;7</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Automated Monitoring</p>
-        </div>
+        <StatCard variant="plain" value="100+" label="Security Tools & Playbooks" />
+        <StatCard variant="plain" value="2020" label="Operating Since" />
+        <StatCard variant="plain" value="<15m" label="Target Response SLA" />
+        <StatCard variant="plain" value="24×7" label="Automated Monitoring" />
       </div>
 
     </div>
