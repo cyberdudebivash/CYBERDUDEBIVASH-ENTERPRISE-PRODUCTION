@@ -1,5 +1,5 @@
 import type { ViewType } from "../types/app";
-import { aligned } from "../ecosystemData";
+import { aligned } from "../constants/ecosystemData";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";

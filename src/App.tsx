@@ -29,7 +29,7 @@ import {
   SOCIAL_PROFILES,
   CORPORATE_REGISTRATION,
   aligned
-} from "./ecosystemData";
+} from "./constants/ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
 import CookieConsent from "./components/CookieConsent";

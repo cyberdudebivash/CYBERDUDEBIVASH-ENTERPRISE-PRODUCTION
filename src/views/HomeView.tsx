@@ -1,7 +1,7 @@
 import { Activity, Shield, Terminal, ExternalLink, Check, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
-import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../ecosystemData";
+import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../constants/ecosystemData";
 import type { ViewType, LiveLogEntry, PremiumProduct } from "../types/app";
 
 interface HomeViewProps {

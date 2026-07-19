@@ -6,7 +6,7 @@ import {
   X, Radio, TrendingUp, Eye, Wifi
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { CORPORATE_REGISTRATION } from "../ecosystemData";
+import { CORPORATE_REGISTRATION } from "../constants/ecosystemData";
 
 interface LogItem {
   id: number;
