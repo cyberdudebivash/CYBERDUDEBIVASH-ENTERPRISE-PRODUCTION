@@ -2,6 +2,7 @@ import type { ViewType } from "../types/app";
 import { aligned } from "../constants/ecosystemData";
 import { TrustBadge } from "../components/badges/TrustBadge";
 import { SectionHeader } from "../design-system/components/SectionHeader";
+import { StatCard } from "../design-system/components/StatCard";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";
@@ -31,15 +32,12 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { value: "500K+", label: "Threat IOCs Tracked", color: "text-cyan-400" },
-                { value: "50+", label: "Countries Protected", color: "text-emerald-400" },
-                { value: "100+", label: "AI Security Tools", color: "text-violet-400" },
-                { value: "99.9%", label: "Platform SLA Uptime", color: "text-amber-400" },
+                { value: "500K+", label: "Threat IOCs Tracked", color: "cyan" as const },
+                { value: "50+", label: "Countries Protected", color: "emerald" as const },
+                { value: "100+", label: "AI Security Tools", color: "violet" as const },
+                { value: "99.9%", label: "Platform SLA Uptime", color: "amber" as const },
               ].map(s => (
-                <div key={s.label} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-2xl font-extrabold font-mono ${s.color}`}>{s.value}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.label}</div>
-                </div>
+                <StatCard key={s.label} value={s.value} label={s.label} tone={s.color} />
               ))}
             </div>
 

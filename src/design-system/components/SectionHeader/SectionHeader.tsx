@@ -1,32 +1,12 @@
 import type { ReactNode } from "react";
 import { typography, spacing } from "../../tokens";
+import { ACCENT_TEXT, ACCENT_DOT, ACCENT_BORDER, type AccentColor } from "../../utilities/accentColor";
 
 export type SectionHeaderSize = "page" | "section" | "subsection";
 export type SectionHeaderAlign = "left" | "center";
 export type SectionHeaderDivider = "bottom" | "left" | "none";
-export type SectionHeaderAccent = "cyan" | "emerald" | "amber" | "red" | "violet" | "sky" | "pink" | "slate";
+export type SectionHeaderAccent = AccentColor;
 export type SectionHeaderHeadingLevel = "h1" | "h2" | "h3" | "h4";
-
-const ACCENT_TEXT: Record<SectionHeaderAccent, string> = {
-  cyan: "text-cyan-400",
-  emerald: "text-emerald-400",
-  amber: "text-amber-400",
-  red: "text-red-400",
-  violet: "text-violet-400",
-  sky: "text-sky-400",
-  pink: "text-pink-400",
-  slate: "text-slate-400",
-};
-
-const ACCENT_DOT: Record<SectionHeaderAccent, string> = {
-  cyan: "bg-cyan-400", emerald: "bg-emerald-400", amber: "bg-amber-400", red: "bg-red-400",
-  violet: "bg-violet-400", sky: "bg-sky-400", pink: "bg-pink-400", slate: "bg-slate-400",
-};
-
-const ACCENT_BORDER: Record<SectionHeaderAccent, string> = {
-  cyan: "border-cyan-500", emerald: "border-emerald-500", amber: "border-amber-500", red: "border-red-500",
-  violet: "border-violet-500", sky: "border-sky-500", pink: "border-pink-500", slate: "border-slate-500",
-};
 
 // Default heading tag per size mirrors the tag already in use at each
 // size's real call sites today (see README "Evidence"), so wiring an

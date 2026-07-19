@@ -1,6 +1,7 @@
 import type { ViewType } from "../types/app";
 import { PricingCard } from "../components/cards/PricingCard";
 import { SectionHeader } from "../design-system/components/SectionHeader";
+import { StatCard } from "../design-system/components/StatCard";
 
 interface ServicePagesProps {
   currentView: "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
@@ -35,15 +36,12 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { v: "24×7", l: "Continuous Monitoring", c: "text-violet-400" },
-                { v: "<15m", l: "Target Response SLA", c: "text-cyan-400" },
-                { v: "99.7%", l: "Target Detection Accuracy", c: "text-emerald-400" },
-                { v: "100+", l: "Detection Playbooks", c: "text-amber-400" },
+                { v: "24×7", l: "Continuous Monitoring", c: "violet" as const },
+                { v: "<15m", l: "Target Response SLA", c: "cyan" as const },
+                { v: "99.7%", l: "Target Detection Accuracy", c: "emerald" as const },
+                { v: "100+", l: "Detection Playbooks", c: "amber" as const },
               ].map(s => (
-                <div key={s.l} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-2xl font-extrabold font-mono ${s.c}`}>{s.v}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.l}</div>
-                </div>
+                <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} />
               ))}
             </div>
             <div className="bg-violet-950/20 border border-violet-800/30 rounded-xl p-6">
@@ -337,15 +335,12 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { v: "500+", l: "Active MSSP Tenants", c: "text-sky-400" },
-                { v: "99.99%", l: "Platform Uptime", c: "text-emerald-400" },
-                { v: "50+", l: "Countries Supported", c: "text-violet-400" },
-                { v: "72hr", l: "Onboarding SLA", c: "text-amber-400" },
+                { v: "500+", l: "Active MSSP Tenants", c: "sky" as const },
+                { v: "99.99%", l: "Platform Uptime", c: "emerald" as const },
+                { v: "50+", l: "Countries Supported", c: "violet" as const },
+                { v: "72hr", l: "Onboarding SLA", c: "amber" as const },
               ].map(s => (
-                <div key={s.l} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-2xl font-extrabold font-mono ${s.c}`}>{s.v}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.l}</div>
-                </div>
+                <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} />
               ))}
             </div>
             <div className="space-y-4">
@@ -405,15 +400,12 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { v: "₹15L/yr", l: "vs ₹1.5Cr full-time CISO", c: "text-emerald-400" },
-                { v: "48hr", l: "Incident Response SLA", c: "text-cyan-400" },
-                { v: "100+", l: "Security Frameworks", c: "text-violet-400" },
-                { v: "15yr+", l: "Avg. vCISO Experience", c: "text-amber-400" },
+                { v: "₹15L/yr", l: "vs ₹1.5Cr full-time CISO", c: "emerald" as const },
+                { v: "48hr", l: "Incident Response SLA", c: "cyan" as const },
+                { v: "100+", l: "Security Frameworks", c: "violet" as const },
+                { v: "15yr+", l: "Avg. vCISO Experience", c: "amber" as const },
               ].map(s => (
-                <div key={s.l} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-xl font-extrabold font-mono ${s.c}`}>{s.v}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.l}</div>
-                </div>
+                <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} valueSize="sm" />
               ))}
             </div>
             <div className="space-y-4">
@@ -475,15 +467,12 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
             />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { v: "2,500+", l: "Engagements Completed", c: "text-pink-400" },
-                { v: "97%", l: "Critical Findings Rate", c: "text-red-400" },
-                { v: "5 days", l: "Avg. Delivery Time", c: "text-cyan-400" },
-                { v: "CERT-In", l: "Empanelled Organization", c: "text-emerald-400" },
+                { v: "2,500+", l: "Engagements Completed", c: "pink" as const },
+                { v: "97%", l: "Critical Findings Rate", c: "red" as const },
+                { v: "5 days", l: "Avg. Delivery Time", c: "cyan" as const },
+                { v: "CERT-In", l: "Empanelled Organization", c: "emerald" as const },
               ].map(s => (
-                <div key={s.l} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-center">
-                  <div className={`text-2xl font-extrabold font-mono ${s.c}`}>{s.v}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{s.l}</div>
-                </div>
+                <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} />
               ))}
             </div>
             <div className="space-y-4">

@@ -2,6 +2,7 @@ import { Activity, Shield, Terminal, ExternalLink, CheckCircle2 } from "lucide-r
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
 import { TrustBadge } from "../components/badges/TrustBadge";
+import { StatCard } from "../design-system/components/StatCard";
 import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../constants/ecosystemData";
 import type { ViewType, LiveLogEntry, PremiumProduct } from "../types/app";
 
@@ -409,22 +410,10 @@ export default function HomeView({
 
       {/* Company facts */}
       <div className="bg-[#0c1117] border border-slate-800 p-6 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">100+</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Security Tools &amp; Playbooks</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">2020</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Operating Since</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">&lt;15m</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Target Response SLA</p>
-        </div>
-        <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">24&times;7</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Automated Monitoring</p>
-        </div>
+        <StatCard variant="plain" value="100+" label="Security Tools & Playbooks" />
+        <StatCard variant="plain" value="2020" label="Operating Since" />
+        <StatCard variant="plain" value="<15m" label="Target Response SLA" />
+        <StatCard variant="plain" value="24×7" label="Automated Monitoring" />
       </div>
 
     </div>
