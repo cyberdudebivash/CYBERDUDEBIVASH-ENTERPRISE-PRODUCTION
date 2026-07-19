@@ -1,6 +1,6 @@
 import type { ViewType } from "../types/app";
 import { aligned } from "../constants/ecosystemData";
-import { TrustBadge } from "../components/badges/TrustBadge";
+import { SecurityBadge } from "../design-system/components/SecurityBadge";
 import { SectionHeader } from "../design-system/components/SectionHeader";
 import { StatCard } from "../design-system/components/StatCard";
 import { FeatureCard } from "../design-system/components/FeatureCard";
@@ -97,7 +97,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
                   { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
                 ].map(b => (
-                  <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
+                  <SecurityBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
                 ))}
               </div>
             </div>

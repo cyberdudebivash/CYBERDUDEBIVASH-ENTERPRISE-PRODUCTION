@@ -36,7 +36,7 @@ export interface HeroProps {
   background?: HeroBackground;
   /** No current call site — HomeView's hero is text-only, no side visual. Future growth per spec. */
   illustration?: ReactNode;
-  /** No current call site within the hero itself — HomeView's compliance badge bar is a separate, distant section this component does not relocate. A future hero variant can pass e.g. `<TrustBadge />` elements here. */
+  /** No current call site within the hero itself — HomeView's compliance badge bar is a separate, distant section this component does not relocate. A future hero variant can pass e.g. `<SecurityBadge />` elements here. */
   trustIndicators?: ReactNode;
   align?: HeroAlign;
   className?: string;

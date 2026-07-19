@@ -1,7 +1,7 @@
 import { Activity, Shield, Terminal, ExternalLink, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
-import { TrustBadge } from "../components/badges/TrustBadge";
+import { SecurityBadge } from "../design-system/components/SecurityBadge";
 import { StatCard } from "../design-system/components/StatCard";
 import { Hero } from "../design-system/components/Hero";
 import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../constants/ecosystemData";
@@ -257,7 +257,7 @@ export default function HomeView({
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }
           ].map((item, idx) => (
-            <TrustBadge key={idx} label={item.title} colorClassName={item.col} variant="pill-icon" />
+            <SecurityBadge key={idx} label={item.title} colorClassName={item.col} variant="pill-icon" />
           ))}
         </div>
       </div>

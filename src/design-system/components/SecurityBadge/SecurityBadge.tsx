@@ -1,11 +1,11 @@
 import { Check } from "lucide-react";
 
-export type TrustBadgeVariant = "pill-icon" | "pill-solid" | "text" | "dot-text";
+export type SecurityBadgeVariant = "pill-icon" | "pill-solid" | "text" | "dot-text";
 
-interface TrustBadgeProps {
+export interface SecurityBadgeProps {
   label: string;
   colorClassName: string;
-  variant?: TrustBadgeVariant;
+  variant?: SecurityBadgeVariant;
 }
 
 // Four variants because that's what actually exists across the site today
@@ -13,7 +13,12 @@ interface TrustBadgeProps {
 // speculative API. Each was independently hand-rolled before this extraction,
 // which is exactly how the ISO/SOC2 wording drifted out of sync in the first
 // place. Change how a variant looks once, here, instead of at every call site.
-export function TrustBadge({ label, colorClassName, variant = "text" }: TrustBadgeProps) {
+//
+// Formerly TrustBadge (src/components/badges/) — Phase 0.3 formalized it
+// as the canonical SecurityBadge (compliance/trust/verification/
+// certification/platform status) rather than building a second, redundant
+// component for the same job. See README.md.
+export function SecurityBadge({ label, colorClassName, variant = "text" }: SecurityBadgeProps) {
   if (variant === "pill-icon") {
     return (
       <span className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-[10px] font-mono flex items-center gap-1.5">
