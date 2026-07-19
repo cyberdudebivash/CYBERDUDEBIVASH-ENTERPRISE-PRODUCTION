@@ -11,3 +11,7 @@ export * from "./reports";
 // Phase 1.1's metadata engine — generates typed metadata objects from
 // the config above. See documentation/SEO_METADATA_ENGINE.md.
 export * from "./metadata";
+// Phase 1.2's schema generation platform — generates typed Schema.org
+// JSON-LD objects from the config and metadata above. See
+// schema/documentation/SCHEMA_ENGINE.md.
+export * from "./schema";
