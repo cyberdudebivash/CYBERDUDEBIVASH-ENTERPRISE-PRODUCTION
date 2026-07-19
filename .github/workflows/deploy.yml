@@ -95,9 +95,10 @@ jobs:
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
-          git diff --staged --quiet \
-            || git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
-          git diff --staged --quiet || git push
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
+            git push
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
