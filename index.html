@@ -66,8 +66,8 @@
     <!-- ═══════════════════════════════════════════════════════════
          FAVICONS & PWA
     ═══════════════════════════════════════════════════════════ -->
-    <link rel="icon" type="image/x-icon" href="/assets/favicon-D6GVHMFz.ico" />
-    <link rel="apple-touch-icon" href="/assets/favicon-D6GVHMFz.ico" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon-D6GVHMFz-D6GVHMFz.ico" />
+    <link rel="apple-touch-icon" href="/assets/favicon-D6GVHMFz-D6GVHMFz.ico" />
     <link rel="manifest" href="/manifest.json" />
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -77,9 +77,20 @@
     <link rel="preconnect" href="https://www.google-analytics.com" />
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     <link rel="dns-prefetch" href="https://adservice.google.com" />
+    <!-- Non-blocking font load: media trick defers until after render -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" />
+    </noscript>
 
     <!-- ═══════════════════════════════════════════════════════════
          GOOGLE CONSENT MODE V2 — Default denied until user accepts
@@ -458,6 +469,9 @@
          These are auto-updated by CI/CD pipeline on every deploy
     ═══════════════════════════════════════════════════════════ -->
     <script type="module" crossorigin src="/assets/index-Cu9Oqa8k.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-sXpfDjey.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-lucide-BVGzGXcY.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-motion-C_klgzL7.js">
     <link rel="stylesheet" crossorigin href="/assets/index-1a65p6lM.css">
   </head>
   <body>
