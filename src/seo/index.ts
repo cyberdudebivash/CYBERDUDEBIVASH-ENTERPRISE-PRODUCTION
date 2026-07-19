@@ -4,3 +4,7 @@
 export * from "./types";
 export * from "./config";
 export * from "./utils";
+// Phase 1.0.5's validation engine — validates the data model above, does
+// not change it. See documentation/SEO_VALIDATION_REPORT.md.
+export * from "./validators";
+export * from "./reports";
