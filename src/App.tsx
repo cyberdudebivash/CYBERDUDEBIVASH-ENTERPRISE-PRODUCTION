@@ -31,6 +31,7 @@ import {
   aligned
 } from "./constants/ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
+import { TrustBadge } from "./components/badges/TrustBadge";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
 import CookieConsent from "./components/CookieConsent";
 import HomeView from "./views/HomeView";
@@ -1104,12 +1105,9 @@ export default function App() {
               { label: "India DPDP Act 2023", color: "text-amber-400" },
               { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
               { label: "OWASP LLM Top 10", color: "text-pink-400" },
-            ].map(b => (
-              <span key={b.label} className={`text-[10px] font-mono font-semibold ${b.color} flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${b.color.replace("text-", "bg-")} opacity-80`} />
-                {b.label}
-              </span>
-            ))}
+            ].map(b =>
+              React.createElement(TrustBadge, { key: b.label, label: b.label, colorClassName: b.color, variant: "dot-text" })
+            )}
           </div>
         </div>
 

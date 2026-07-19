@@ -1,6 +1,8 @@
-import { Activity, Shield, Terminal, ExternalLink, Check, CheckCircle2 } from "lucide-react";
+import { createElement } from "react";
+import { Activity, Shield, Terminal, ExternalLink, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
+import { TrustBadge } from "../components/badges/TrustBadge";
 import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../constants/ecosystemData";
 import type { ViewType, LiveLogEntry, PremiumProduct } from "../types/app";
 
@@ -297,12 +299,9 @@ export default function HomeView({
             { title: "India DPDP Act 2023", col: "text-slate-300 font-bold" },
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }
-          ].map((item, idx) => (
-            <span key={idx} className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-[10px] font-mono flex items-center gap-1.5">
-              <Check className="w-3 h-3 text-emerald-500" />
-              <span className={item.col}>{item.title}</span>
-            </span>
-          ))}
+          ].map((item, idx) =>
+            createElement(TrustBadge, { key: idx, label: item.title, colorClassName: item.col, variant: "pill-icon" })
+          )}
         </div>
       </div>
 
