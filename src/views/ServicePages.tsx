@@ -1,4 +1,5 @@
 import type { ViewType } from "../types/app";
+import { PricingCard } from "../components/cards/PricingCard";
 
 interface ServicePagesProps {
   currentView: "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
@@ -91,19 +92,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { tier: "Professional SOC", price: "₹6L/mo", color: "border-violet-700", badge: "text-violet-400 bg-violet-950", features: ["24×7 monitoring", "AI triage + threat hunting", "Unlimited alert processing", "SOAR playbook automation", "Weekly reports + MITRE ATT&CK mapping", "Dedicated analyst (SLA: 1h)"] },
                   { tier: "Enterprise SOC", price: "Custom", color: "border-cyan-700", badge: "text-cyan-400 bg-cyan-950", features: ["24×7 dedicated SOC team", "Full SIEM/SOAR/EDR deployment", "On-prem + cloud + OT/ICS coverage", "vCISO inclusion", "Real-time executive dashboard", "15-minute MTTR SLA guarantee"] },
                 ].map(t => (
-                  <div key={t.tier} className={`border ${t.color} rounded-xl p-5 space-y-3`}>
-                    <div>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${t.badge}`}>{t.tier}</span>
-                      <div className="text-xl font-extrabold text-white mt-2 font-mono">{t.price}</div>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {t.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[11px] text-slate-400 font-sans">
-                          <span className="text-emerald-400 shrink-0 mt-0.5">✓</span>{f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <PricingCard key={t.tier} tier={t.tier} price={t.price} color={t.color} badge={t.badge} features={t.features} />
                 ))}
               </div>
             </div>
@@ -403,20 +392,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { tier: "MSSP Professional", price: "₹1.5L/mo", clients: "Up to 50 clients", color: "border-sky-700", badge: "text-sky-400 bg-sky-950", features: ["50 client tenants", "Full white-label suite", "SOC tooling included", "Dedicated partner manager", "Custom reporting", "PSA/RMM integrations"] },
                   { tier: "MSSP Enterprise", price: "Custom", clients: "Unlimited clients", color: "border-cyan-700", badge: "text-cyan-400 bg-cyan-950", features: ["Unlimited tenants", "On-prem deployment option", "Revenue share model", "Co-marketing program", "Priority engineering support", "SLA: 99.99% uptime"] },
                 ].map(t => (
-                  <div key={t.tier} className={`border ${t.color} rounded-xl p-5 space-y-3`}>
-                    <div>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${t.badge}`}>{t.tier}</span>
-                      <div className="text-xl font-extrabold text-white mt-2 font-mono">{t.price}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{t.clients}</div>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {t.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[11px] text-slate-400 font-sans">
-                          <span className="text-emerald-400 shrink-0 mt-0.5">✓</span>{f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <PricingCard key={t.tier} tier={t.tier} price={t.price} subtitle={t.clients} color={t.color} badge={t.badge} features={t.features} />
                 ))}
               </div>
             </div>
@@ -490,20 +466,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { tier: "Embedded vCISO", price: "₹1.5L/mo", hours: "20 hrs/month", color: "border-emerald-700", badge: "text-emerald-400 bg-emerald-950", features: ["Bi-weekly leadership calls", "Full policy development", "Compliance program management", "Risk register management", "Vendor risk assessments", "Board presentations included"] },
                   { tier: "Full vCISO", price: "₹3L/mo", hours: "40+ hrs/month", color: "border-cyan-700", badge: "text-cyan-400 bg-cyan-950", features: ["Weekly executive alignment", "ISO 27001 / SOC 2 program", "24hr incident response SLA", "Full security roadmap ownership", "Regulatory interface", "Annual security strategy offsite"] },
                 ].map(t => (
-                  <div key={t.tier} className={`border ${t.color} rounded-xl p-5 space-y-3`}>
-                    <div>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${t.badge}`}>{t.tier}</span>
-                      <div className="text-xl font-extrabold text-white mt-2 font-mono">{t.price}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{t.hours}</div>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {t.features.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[11px] text-slate-400 font-sans">
-                          <span className="text-emerald-400 shrink-0 mt-0.5">✓</span>{f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <PricingCard key={t.tier} tier={t.tier} price={t.price} subtitle={t.hours} color={t.color} badge={t.badge} features={t.features} />
                 ))}
               </div>
             </div>
