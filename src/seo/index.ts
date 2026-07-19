@@ -20,3 +20,8 @@ export * from "./schema";
 // derived from the config above. See
 // relationships/documentation/RELATIONSHIP_ENGINE.md.
 export * from "./relationships";
+// Phase 1.4's commercial intelligence layer — an additive commercial
+// enrichment overlay (12 pilot entities: about, 6 services, 5
+// products), joined to the config above by entity id. See
+// commercial/documentation/COMMERCIAL_MODEL.md.
+export * from "./commercial";
