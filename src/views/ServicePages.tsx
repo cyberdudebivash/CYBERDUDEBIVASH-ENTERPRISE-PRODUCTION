@@ -3,6 +3,7 @@ import { PricingCard } from "../components/cards/PricingCard";
 import { SectionHeader } from "../design-system/components/SectionHeader";
 import { StatCard } from "../design-system/components/StatCard";
 import { FeatureCard } from "../design-system/components/FeatureCard";
+import { EnterprisePanel } from "../design-system/components/EnterprisePanel";
 
 interface ServicePagesProps {
   currentView: "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
@@ -45,10 +46,9 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} />
               ))}
             </div>
-            <div className="bg-violet-950/20 border border-violet-800/30 rounded-xl p-6">
-              <h2 className="text-sm font-bold text-violet-300 mb-3 uppercase tracking-widest">What is Managed SOC-as-a-Service?</h2>
+            <EnterprisePanel variant="tinted" accent="violet" header="What is Managed SOC-as-a-Service?">
               <p className="text-xs text-slate-300 leading-relaxed font-sans">Our Managed SOC eliminates the need to hire, train, and retain a 20-person security team. Instead, you get the full power of an enterprise SOC — staffed by CyberDudeBivash analysts, augmented by our proprietary GE-Neural AI engine — delivered as a subscription service with predictable monthly pricing, SLA guarantees, and full integration into your existing infrastructure.</p>
-            </div>
+            </EnterprisePanel>
             <div className="space-y-4">
               <SectionHeader size="subsection" title="Core SOC Capabilities" />
               <div className="grid md:grid-cols-2 gap-4">
@@ -141,15 +141,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-violet-950/30 to-slate-900/60 border border-violet-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Ready to activate your SOC in 72 hours?</h3>
-                <p className="text-xs text-slate-400 font-sans">Our onboarding team deploys log collectors and integrations in under 3 business days. No hardware required.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-violet-500 hover:bg-violet-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Start Free SOC Assessment
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="violet"
+              header="Ready to activate your SOC in 72 hours?"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-violet-500 hover:bg-violet-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Start Free SOC Assessment
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">Our onboarding team deploys log collectors and integrations in under 3 business days. No hardware required.</p>
+            </EnterprisePanel>
           </div>
         )}
 
@@ -221,15 +224,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-r from-amber-950/30 to-slate-900/60 border border-amber-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Get your DPDP readiness score in 48 hours</h3>
-                <p className="text-xs text-slate-400 font-sans">We'll run a preliminary DPDP gap assessment and deliver a readiness scorecard with prioritized remediation steps.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Request DPDP Assessment
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="amber"
+              header="Get your DPDP readiness score in 48 hours"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Request DPDP Assessment
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">We'll run a preliminary DPDP gap assessment and deliver a readiness scorecard with prioritized remediation steps.</p>
+            </EnterprisePanel>
           </div>
         )}
 
@@ -300,15 +306,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-r from-red-950/30 to-slate-900/60 border border-red-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Is your AI application adversarially hardened?</h3>
-                <p className="text-xs text-slate-400 font-sans">Book a free 30-minute AI security scoping call with our red team lead.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-red-500 hover:bg-red-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Schedule AI Red Team
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="red"
+              header="Is your AI application adversarially hardened?"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-red-500 hover:bg-red-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Schedule AI Red Team
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">Book a free 30-minute AI security scoping call with our red team lead.</p>
+            </EnterprisePanel>
           </div>
         )}
 
@@ -359,15 +368,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-r from-sky-950/30 to-slate-900/60 border border-sky-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Ready to launch your MSSP practice?</h3>
-                <p className="text-xs text-slate-400 font-sans">Get a personalized MSSP business case with projected revenue models for your target client base.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Apply for MSSP Partnership
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="sky"
+              header="Ready to launch your MSSP practice?"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-sky-500 hover:bg-sky-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Apply for MSSP Partnership
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">Get a personalized MSSP business case with projected revenue models for your target client base.</p>
+            </EnterprisePanel>
           </div>
         )}
 
@@ -420,15 +432,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-r from-emerald-950/30 to-slate-900/60 border border-emerald-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Get your first vCISO session free</h3>
-                <p className="text-xs text-slate-400 font-sans">60-minute complimentary security strategy session with a senior CyberDudeBivash security executive.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Book Free vCISO Session
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="emerald"
+              header="Get your first vCISO session free"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Book Free vCISO Session
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">60-minute complimentary security strategy session with a senior CyberDudeBivash security executive.</p>
+            </EnterprisePanel>
           </div>
         )}
 
@@ -490,15 +505,18 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 </div>
               </div>
             </div>
-            <div className="bg-gradient-to-r from-pink-950/30 to-slate-900/60 border border-pink-800/30 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold text-white mb-1">Get a pentest quote in 24 hours</h3>
-                <p className="text-xs text-slate-400 font-sans">Tell us your scope — we'll send a detailed proposal with timeline, methodology, and fixed-price quote within one business day.</p>
-              </div>
-              <button onClick={onContact} className="shrink-0 px-6 py-2.5 bg-pink-500 hover:bg-pink-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
-                Request Pentest Quote
-              </button>
-            </div>
+            <EnterprisePanel
+              variant="gradient"
+              accent="pink"
+              header="Get a pentest quote in 24 hours"
+              actions={
+                <button onClick={onContact} className="px-6 py-2.5 bg-pink-500 hover:bg-pink-400 text-white text-xs font-extrabold rounded-lg uppercase tracking-wider transition-colors">
+                  Request Pentest Quote
+                </button>
+              }
+            >
+              <p className="text-xs text-slate-400 font-sans">Tell us your scope — we'll send a detailed proposal with timeline, methodology, and fixed-price quote within one business day.</p>
+            </EnterprisePanel>
           </div>
         )}
       </div>
