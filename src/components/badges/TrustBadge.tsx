@@ -13,14 +13,6 @@ interface TrustBadgeProps {
 // speculative API. Each was independently hand-rolled before this extraction,
 // which is exactly how the ISO/SOC2 wording drifted out of sync in the first
 // place. Change how a variant looks once, here, instead of at every call site.
-//
-// Note for call sites: under this repo's installed TypeScript (6.0.2) +
-// @types/react (19.2.7), `key` isn't recognized on ANY non-intrinsic JSX tag
-// in .map() output — not on this component, not even on <Fragment>. Use
-// createElement(TrustBadge, { key, ...props }) instead of JSX at the call
-// site; createElement's props argument isn't run through the same
-// LibraryManagedAttributes/key-stripping path that's affected. See call
-// sites in HomeView.tsx, LegalPages.tsx, and App.tsx for the pattern.
 export function TrustBadge({ label, colorClassName, variant = "text" }: TrustBadgeProps) {
   if (variant === "pill-icon") {
     return (

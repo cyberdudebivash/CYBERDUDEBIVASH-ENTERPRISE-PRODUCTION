@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { ViewType } from "../types/app";
 import { aligned } from "../constants/ecosystemData";
 import { TrustBadge } from "../components/badges/TrustBadge";
@@ -111,9 +110,9 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { label: "OWASP LLM Top 10", color: "text-pink-400 bg-pink-950/40 border-pink-900/40" },
                   { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
                   { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
-                ].map(b =>
-                  createElement(TrustBadge, { key: b.label, label: b.label, colorClassName: b.color, variant: "pill-solid" })
-                )}
+                ].map(b => (
+                  <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
+                ))}
               </div>
             </div>
 

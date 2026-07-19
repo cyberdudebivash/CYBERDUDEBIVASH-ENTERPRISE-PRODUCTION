@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { Activity, Shield, Terminal, ExternalLink, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
@@ -299,9 +298,9 @@ export default function HomeView({
             { title: "India DPDP Act 2023", col: "text-slate-300 font-bold" },
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }
-          ].map((item, idx) =>
-            createElement(TrustBadge, { key: idx, label: item.title, colorClassName: item.col, variant: "pill-icon" })
-          )}
+          ].map((item, idx) => (
+            <TrustBadge key={idx} label={item.title} colorClassName={item.col} variant="pill-icon" />
+          ))}
         </div>
       </div>
 

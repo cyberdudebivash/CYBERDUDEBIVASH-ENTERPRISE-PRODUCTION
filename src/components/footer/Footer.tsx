@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { Phone } from "lucide-react";
 import { TrustBadge } from "../badges/TrustBadge";
 import { aligned } from "../../constants/ecosystemData";
@@ -10,8 +9,6 @@ interface FooterProps {
 }
 
 // Extracted verbatim from App.tsx — same markup, same classNames, same data.
-// See TrustBadge.tsx for why the badge row below uses createElement instead
-// of JSX for its keyed list.
 export function Footer({ onNavigate, onContactClick }: FooterProps) {
   return (
     <footer className="relative bg-[#020810] border-t-0 overflow-hidden">
@@ -30,9 +27,9 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
             { label: "India DPDP Act 2023", color: "text-amber-400" },
             { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
             { label: "OWASP LLM Top 10", color: "text-pink-400" },
-          ].map(b =>
-            createElement(TrustBadge, { key: b.label, label: b.label, colorClassName: b.color, variant: "dot-text" })
-          )}
+          ].map(b => (
+            <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="dot-text" />
+          ))}
         </div>
       </div>
 
