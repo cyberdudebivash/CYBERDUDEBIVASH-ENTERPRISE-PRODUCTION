@@ -15,3 +15,8 @@ export * from "./metadata";
 // JSON-LD objects from the config and metadata above. See
 // schema/documentation/SCHEMA_ENGINE.md.
 export * from "./schema";
+// Phase 1.3's relationship platform — a deterministic graph of
+// entity/page relationships and ranked internal-link recommendations,
+// derived from the config above. See
+// relationships/documentation/RELATIONSHIP_ENGINE.md.
+export * from "./relationships";
