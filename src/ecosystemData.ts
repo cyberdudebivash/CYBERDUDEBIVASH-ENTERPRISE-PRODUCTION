@@ -378,3 +378,27 @@ export const CORPORATE_REGISTRATION = {
   country: "India",
   regNumber: "CDB-IN-2024-GST"
 };
+
+// Single source of truth for compliance-framework wording. CYBERDUDEBIVASH is not
+// currently ISO 27001 certified or SOC 2 audited (see COMPLIANCE.md) — every display
+// site should compose labels from these strings rather than hardcoding its own claim,
+// so the wording can't drift out of sync with actual certification status again.
+export const COMPLIANCE_DISCLOSURE =
+  "Our internal practices are aligned with the frameworks below. We are not yet formally certified against ISO/IEC 27001 or audited against SOC 2; formal certification will be pursued as the organization scales.";
+
+export const COMPLIANCE_FRAMEWORKS = {
+  iso27001: "ISO/IEC 27001:2022",
+  soc2: "SOC 2 Type II",
+  gdpr: "GDPR",
+  pciDss: "PCI-DSS v4.0",
+  dpdp: "India DPDP Act 2023",
+  mitre: "MITRE ATT&CK",
+  owasp: "OWASP LLM Top 10",
+  nist: "NIST CSF 2.0",
+  certIn: "CERT-In",
+} as const;
+
+// Appends the shared "Aligned" qualifier used everywhere a framework name is shown
+// as a trust badge, so no display site can independently claim "Certified"/"Audited".
+export const aligned = (framework: keyof typeof COMPLIANCE_FRAMEWORKS) =>
+  `${COMPLIANCE_FRAMEWORKS[framework]} Aligned`;

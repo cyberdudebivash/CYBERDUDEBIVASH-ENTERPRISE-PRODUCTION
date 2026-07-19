@@ -1,4 +1,5 @@
 import type { ViewType } from "../types/app";
+import { aligned } from "../ecosystemData";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";
@@ -47,7 +48,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
 
             <div className="grid md:grid-cols-3 gap-5">
               {[
-                { title: "Mission", color: "border-cyan-500/40 bg-cyan-950/10", label: "text-cyan-400", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to global Fortune 500 enterprises." },
+                { title: "Mission", color: "border-cyan-500/40 bg-cyan-950/10", label: "text-cyan-400", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to the largest global enterprises." },
                 { title: "Vision", color: "border-violet-500/40 bg-violet-950/10", label: "text-violet-400", body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence." },
                 { title: "Core Values", color: "border-emerald-500/40 bg-emerald-950/10", label: "text-emerald-400", body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community." },
               ].map(c => (
@@ -99,10 +100,10 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
               <p className="text-[11px] text-slate-500 -mt-2">Our internal practices are aligned with the frameworks below. We are not yet formally certified against ISO/IEC 27001 or audited against SOC 2; formal certification will be pursued as the organization scales.</p>
               <div className="flex flex-wrap gap-3">
                 {[
-                  { label: "ISO/IEC 27001:2022 (Aligned)", color: "text-cyan-400 bg-cyan-950/40 border-cyan-900/40" },
-                  { label: "SOC 2 Type II (Aligned)", color: "text-emerald-400 bg-emerald-950/40 border-emerald-900/40" },
-                  { label: "GDPR-Aligned", color: "text-sky-400 bg-sky-950/40 border-sky-900/40" },
-                  { label: "PCI-DSS v4.0 (Aligned)", color: "text-violet-400 bg-violet-950/40 border-violet-900/40" },
+                  { label: aligned("iso27001"), color: "text-cyan-400 bg-cyan-950/40 border-cyan-900/40" },
+                  { label: aligned("soc2"), color: "text-emerald-400 bg-emerald-950/40 border-emerald-900/40" },
+                  { label: aligned("gdpr"), color: "text-sky-400 bg-sky-950/40 border-sky-900/40" },
+                  { label: aligned("pciDss"), color: "text-violet-400 bg-violet-950/40 border-violet-900/40" },
                   { label: "India DPDP Act 2023", color: "text-amber-400 bg-amber-950/40 border-amber-900/40" },
                   { label: "MITRE ATT&CK Mapped", color: "text-red-400 bg-red-950/40 border-red-900/40" },
                   { label: "OWASP LLM Top 10", color: "text-pink-400 bg-pink-950/40 border-pink-900/40" },
@@ -157,8 +158,8 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
               <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 leading-tight">Privacy Policy</h1>
               <div className="flex flex-wrap gap-3 text-[10px] font-mono">
                 <span className="bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 px-2.5 py-1 rounded">Last updated: June 2026</span>
-                <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">DPDP Act 2023 Compliant</span>
-                <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">GDPR Compliant</span>
+                <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">DPDP Act 2023 Aligned</span>
+                <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded">{aligned("gdpr")}</span>
               </div>
             </div>
             <div className="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-5">

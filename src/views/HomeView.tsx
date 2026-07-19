@@ -1,7 +1,7 @@
 import { Activity, Shield, Terminal, ExternalLink, Check, CheckCircle2 } from "lucide-react";
 import { AiSocDashboard } from "../components/AiSocDashboard";
 import EcosystemDiscovery from "../components/EcosystemDiscovery";
-import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION } from "../ecosystemData";
+import { ECOSYSTEM_PORTALS, SOCIAL_PROFILES, CORPORATE_REGISTRATION, COMPLIANCE_DISCLOSURE, aligned } from "../ecosystemData";
 import type { ViewType, LiveLogEntry, PremiumProduct } from "../types/app";
 
 interface HomeViewProps {
@@ -286,14 +286,14 @@ export default function HomeView({
       <div className="bg-slate-900/50 border border-slate-800/80 rounded-lg p-6 space-y-4">
         <div className="text-center space-y-1">
           <h4 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-400">Compliance &amp; Trust Core</h4>
-          <p className="text-[11px] text-slate-500">Our security practices are aligned with internationally recognized frameworks and applicable Indian data protection law. <button onClick={() => onNavigate("about")} className="underline hover:text-cyan-400 cursor-pointer">See our compliance statement.</button></p>
+          <p className="text-[11px] text-slate-500">{COMPLIANCE_DISCLOSURE} <button onClick={() => onNavigate("about")} className="underline hover:text-cyan-400 cursor-pointer">See our compliance statement.</button></p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {[
-            { title: "ISO 27001:2022 Aligned", col: "text-cyan-400" },
-            { title: "SOC 2 Type II Aligned", col: "text-emerald-400" },
-            { title: "GDPR-Aligned", col: "text-purple-400" },
-            { title: "PCI-DSS v4.0 Aligned", col: "text-amber-500" },
+            { title: aligned("iso27001"), col: "text-cyan-400" },
+            { title: aligned("soc2"), col: "text-emerald-400" },
+            { title: aligned("gdpr"), col: "text-purple-400" },
+            { title: aligned("pciDss"), col: "text-amber-500" },
             { title: "India DPDP Act 2023", col: "text-slate-300 font-bold" },
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }

@@ -23,11 +23,12 @@ import {
   Download,
   ExternalLink
 } from "lucide-react";
-import { 
-  ECOSYSTEM_PORTALS, 
-  ECOSYSTEM_APIS, 
-  SOCIAL_PROFILES, 
-  CORPORATE_REGISTRATION 
+import {
+  ECOSYSTEM_PORTALS,
+  ECOSYSTEM_APIS,
+  SOCIAL_PROFILES,
+  CORPORATE_REGISTRATION,
+  aligned
 } from "./ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
@@ -177,9 +178,9 @@ export default function App() {
     mitigationSuccessRate: "100.0%",
     sentinelNodeStatus: "Fully Operational",
     hqLocation: "Ragadi, Jajpur, Odisha, India",
-    isoCompliance: "ISO/IEC 27001:2022 — Aligned (certification in progress)",
-    soc2Compliance: "SOC 2 — Aligned (formal audit in progress)",
-    dpdpCompliance: "DPDP 2023 — Self-assessed alignment"
+    isoCompliance: aligned("iso27001") + " (certification in progress)",
+    soc2Compliance: aligned("soc2") + " (formal audit in progress)",
+    dpdpCompliance: aligned("dpdp") + " (self-assessed)"
   });
 
   const [cves, setCves] = useState<CveItem[]>([
@@ -732,7 +733,7 @@ export default function App() {
               <span className="bg-cyan-950 text-cyan-400 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-cyan-800">ECOSYSTEM V4</span>
             </div>
             <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
-              ISO 27001-Aligned &bull; SOC 2-Aligned &bull; DPDP 2023-Aligned
+              {aligned("iso27001")} &bull; {aligned("soc2")} &bull; {aligned("dpdp")}
             </span>
           </button>
         </div>
@@ -1096,10 +1097,10 @@ export default function App() {
         <div className="bg-[#050c14] border-b border-slate-800/60 py-3 px-6">
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {[
-              { label: "ISO/IEC 27001:2022 (Aligned)", color: "text-cyan-400" },
-              { label: "SOC 2 Type II (Aligned)", color: "text-emerald-400" },
-              { label: "GDPR-Aligned", color: "text-sky-400" },
-              { label: "PCI-DSS v4.0 (Aligned)", color: "text-violet-400" },
+              { label: aligned("iso27001"), color: "text-cyan-400" },
+              { label: aligned("soc2"), color: "text-emerald-400" },
+              { label: aligned("gdpr"), color: "text-sky-400" },
+              { label: aligned("pciDss"), color: "text-violet-400" },
               { label: "India DPDP Act 2023", color: "text-amber-400" },
               { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
               { label: "OWASP LLM Top 10", color: "text-pink-400" },
