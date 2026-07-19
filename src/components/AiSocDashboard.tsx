@@ -459,11 +459,12 @@ export function AiSocDashboard() {
                   <>
                     <span className="text-gradient-cyber">CYBERDUDEBIVASH®</span>
                     <span className="text-slate-400 font-normal text-xs">AI CYBERSECURITY COMMAND CENTER</span>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 bg-amber-950/60 text-amber-400 border-amber-900/40">Simulated Demo</span>
                   </>
                 )}
               </h2>
               <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-                End-to-end autonomous AI SOC — Jajpur, Odisha, India &bull; Node: <span className="text-cyan-400">103.142.12.98</span>
+                Interactive product demo with illustrative data — not live production telemetry &bull; HQ: Jajpur, Odisha, India
               </p>
             </div>
           </div>

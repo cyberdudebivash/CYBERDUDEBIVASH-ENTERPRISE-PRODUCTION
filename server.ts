@@ -104,9 +104,10 @@ app.get("/api/security/threat-feed", (req, res) => {
     mitigationSuccessRate: "100.0%",
     sentinelNodeStatus: "Fully Operational",
     hqLocation: "Ragadi, Jajpur, Odisha, India",
-    isoCompliance: "ISO/IEC 27001:2022 Certified",
-    soc2Compliance: "SOC 2 Type II Compliant",
-    dpdpCompliance: "DPDP 2023 Audited"
+    isoCompliance: "ISO/IEC 27001:2022 — Aligned (certification in progress)",
+    soc2Compliance: "SOC 2 — Aligned (formal audit in progress)",
+    dpdpCompliance: "DPDP 2023 — Self-assessed alignment",
+    dataNote: "Illustrative simulation for demonstration purposes; not live production telemetry."
   };
 
   const recentCves = [

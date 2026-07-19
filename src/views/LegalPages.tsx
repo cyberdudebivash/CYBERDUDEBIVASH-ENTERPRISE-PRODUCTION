@@ -95,13 +95,14 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Certifications & Compliance Framework</h2>
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Compliance Framework Alignment</h2>
+              <p className="text-[11px] text-slate-500 -mt-2">Our internal practices are aligned with the frameworks below. We are not yet formally certified against ISO/IEC 27001 or audited against SOC 2; formal certification will be pursued as the organization scales.</p>
               <div className="flex flex-wrap gap-3">
                 {[
-                  { label: "ISO/IEC 27001:2022", color: "text-cyan-400 bg-cyan-950/40 border-cyan-900/40" },
-                  { label: "SOC 2 Type II", color: "text-emerald-400 bg-emerald-950/40 border-emerald-900/40" },
-                  { label: "GDPR Compliant", color: "text-sky-400 bg-sky-950/40 border-sky-900/40" },
-                  { label: "PCI-DSS v4.0", color: "text-violet-400 bg-violet-950/40 border-violet-900/40" },
+                  { label: "ISO/IEC 27001:2022 (Aligned)", color: "text-cyan-400 bg-cyan-950/40 border-cyan-900/40" },
+                  { label: "SOC 2 Type II (Aligned)", color: "text-emerald-400 bg-emerald-950/40 border-emerald-900/40" },
+                  { label: "GDPR-Aligned", color: "text-sky-400 bg-sky-950/40 border-sky-900/40" },
+                  { label: "PCI-DSS v4.0 (Aligned)", color: "text-violet-400 bg-violet-950/40 border-violet-900/40" },
                   { label: "India DPDP Act 2023", color: "text-amber-400 bg-amber-950/40 border-amber-900/40" },
                   { label: "MITRE ATT&CK Mapped", color: "text-red-400 bg-red-950/40 border-red-900/40" },
                   { label: "OWASP LLM Top 10", color: "text-pink-400 bg-pink-950/40 border-pink-900/40" },
@@ -170,7 +171,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
               { num: "04", title: "Data Localisation (DPDP Act 2023)", color: "border-amber-500/50", body: "Pursuant to Section 16 of the DPDP Act 2023 and MeitY guidelines, all personal data of Indian residents is stored exclusively on servers physically located within the Republic of India (primary data center: Odisha, India). Cross-border data transfers are conducted only to jurisdictions approved under DPDP Act schedules, under Standard Contractual Clauses." },
               { num: "05", title: "Your Rights as a Data Principal", color: "border-violet-500/50", body: "Under the DPDP Act 2023 and GDPR, you have the right to: (a) Access a summary of your personal data; (b) Correct inaccurate data; (c) Erasure of your data upon request; (d) Withdraw consent at any time; (e) Nominate a successor for your data; (f) Grievance redressal within 30 days. Submit requests to: bivash@cyberdudebivash.com with subject 'Data Rights Request'." },
               { num: "06", title: "Data Retention", color: "border-slate-500/50", body: "Contact and inquiry data: retained for 36 months from last interaction, then securely deleted. API usage logs: 12 months for billing/audit, then purged. Managed SOC telemetry: per DPA terms, typically 24 months." },
-              { num: "07", title: "Security Measures", color: "border-red-500/50", body: "We implement enterprise-grade security controls: AES-256 encryption at rest; TLS 1.3 for data in transit; SOC 2 Type II certified infrastructure; role-based access controls; multi-factor authentication; regular penetration testing; and CERT-In-compliant incident response procedures." },
+              { num: "07", title: "Security Measures", color: "border-red-500/50", body: "We implement enterprise-grade security controls: AES-256 encryption at rest; TLS 1.3 for data in transit; access controls aligned with SOC 2 Type II principles; role-based access controls; multi-factor authentication; regular penetration testing; and CERT-In-compliant incident response procedures." },
               { num: "08", title: "Personal Data Breach Notification", color: "border-orange-500/50", body: "In the event of a personal data breach, CYBERDUDEBIVASH will: (1) Notify the Data Protection Board of India within 6 hours per CERT-In Directions 2022; (2) Notify affected Data Principals within 72 hours; (3) Provide a detailed breach report including nature of breach and remediation measures." },
               { num: "09", title: "Cookies & Tracking Technologies", color: "border-pink-500/50", body: "We use strictly necessary session cookies for platform security. Analytics cookies (Google Analytics 4) are used only with your explicit consent via our Cookie Consent banner. We do NOT use third-party advertising or cross-site tracking cookies." },
               { num: "10", title: "Contact & Grievance Redressal", color: "border-emerald-500/50", body: "Data Protection Officer: Bivasha Kumar Nayak | Email: bivash@cyberdudebivash.com | Phone: +91 81798 81447 | Address: CYBERDUDEBIVASH PRIVATE LIMITED, 29 Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India." },

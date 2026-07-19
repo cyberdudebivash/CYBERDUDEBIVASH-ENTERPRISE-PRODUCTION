@@ -9,16 +9,11 @@ interface HomeViewProps {
   pingingPortalId: string | null;
   pingLogs: string[];
   activeSocialFilter: string;
-  gstInput: string;
-  gstVerificationResult: any;
-  gstVerifying: boolean;
   purchasedProduct: string | null;
   premiumProducts: PremiumProduct[];
   onPortalPing: (id: string, name: string, url: string) => void;
   onClosePingTerminal: () => void;
   onSocialFilterChange: (filter: string) => void;
-  onGstInputChange: (v: string) => void;
-  onGstVerify: (e: React.FormEvent) => void;
   onCheckoutProduct: (p: PremiumProduct) => void;
   onContact: () => void;
   onNavigate: (view: ViewType) => void;
@@ -26,10 +21,9 @@ interface HomeViewProps {
 
 export default function HomeView({
   liveLogs, pingingPortalId, pingLogs, activeSocialFilter,
-  gstInput, gstVerificationResult, gstVerifying,
   purchasedProduct, premiumProducts,
   onPortalPing, onClosePingTerminal, onSocialFilterChange,
-  onGstInputChange, onGstVerify, onCheckoutProduct,
+  onCheckoutProduct,
   onContact, onNavigate,
 }: HomeViewProps) {
   return (
@@ -76,8 +70,8 @@ export default function HomeView({
           <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Threat IOCs</div>
         </div>
         <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
-          <div className="text-2xl md:text-3xl font-extrabold text-emerald-400 font-mono">50+</div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Countries Protected</div>
+          <div className="text-2xl md:text-3xl font-extrabold text-emerald-400 font-mono">Global</div>
+          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Threat Coverage</div>
         </div>
         <div className="bg-[#0c1117] border border-slate-800/80 p-4 rounded-lg text-center">
           <div className="text-2xl md:text-3xl font-extrabold text-purple-400 font-mono">100+</div>
@@ -92,7 +86,7 @@ export default function HomeView({
             <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
             24/7
           </div>
-          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">SOC ACTIVE</div>
+          <div className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1">Automated Monitoring</div>
         </div>
       </div>
 
@@ -263,11 +257,11 @@ export default function HomeView({
         <div className="bg-[#0c1117] border-b border-slate-800 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold font-mono uppercase tracking-widest text-slate-300">
             <Terminal className="w-4 h-4 text-cyan-500" />
-            <span>Sentinel APEX™ Active Event Logger</span>
+            <span>Sentinel APEX™ Event Logger</span>
           </div>
           <div className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            GLOBAL CLOUD INGEST FEED
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+            SIMULATED FEED — SAMPLE EVENTS
           </div>
         </div>
         <div className="p-4 font-mono text-xs text-slate-400 space-y-2 h-56 overflow-y-auto select-text">
@@ -292,14 +286,14 @@ export default function HomeView({
       <div className="bg-slate-900/50 border border-slate-800/80 rounded-lg p-6 space-y-4">
         <div className="text-center space-y-1">
           <h4 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-400">Compliance &amp; Trust Core</h4>
-          <p className="text-[11px] text-slate-500">Every audit, scan, and response is aligned with certified international and domestic security policies.</p>
+          <p className="text-[11px] text-slate-500">Our security practices are aligned with internationally recognized frameworks and applicable Indian data protection law. <button onClick={() => onNavigate("about")} className="underline hover:text-cyan-400 cursor-pointer">See our compliance statement.</button></p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {[
-            { title: "ISO 27001:2022 Certified", col: "text-cyan-400" },
-            { title: "SOC 2 Type II Audited", col: "text-emerald-400" },
-            { title: "GDPR Compliant", col: "text-purple-400" },
-            { title: "PCI-DSS v4.0 Hardened", col: "text-amber-500" },
+            { title: "ISO 27001:2022 Aligned", col: "text-cyan-400" },
+            { title: "SOC 2 Type II Aligned", col: "text-emerald-400" },
+            { title: "GDPR-Aligned", col: "text-purple-400" },
+            { title: "PCI-DSS v4.0 Aligned", col: "text-amber-500" },
             { title: "India DPDP Act 2023", col: "text-slate-300 font-bold" },
             { title: "MITRE ATT&CK Mapped", col: "text-red-400 font-bold" },
             { title: "OWASP LLM Top 10", col: "text-sky-400" }
@@ -347,64 +341,31 @@ export default function HomeView({
         <div className="lg:col-span-5 bg-slate-950 border border-slate-900 rounded-lg p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <h5 className="text-[11px] font-bold font-mono text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              India GSTIN Verification Gateway
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              Verify This Registration Independently
             </h5>
             <p className="text-[10px] text-slate-500 font-sans leading-snug">
-              Query the Central Board of Indirect Taxes and Customs (CBIC) common registry to confirm active licensing status.
+              We publish our GSTIN, PAN, and registered address so you can check them yourself against the Government of India's public records, rather than take our word for it.
             </p>
           </div>
 
-          <form onSubmit={onGstVerify} className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block">Inward GSTIN Token</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={gstInput}
-                  onChange={(e) => onGstInputChange(e.target.value)}
-                  placeholder="E.g. 21ARKPN8270G1ZP"
-                  className="flex-1 bg-black border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-500"
-                />
-                <button
-                  type="submit"
-                  disabled={gstVerifying}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded text-xs font-extrabold uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer shrink-0"
-                >
-                  {gstVerifying ? "Querying..." : "Verify"}
-                </button>
-              </div>
+          <div className="bg-black border border-slate-800 rounded p-4 space-y-3">
+            <div className="space-y-1">
+              <span className="text-[9px] text-slate-500 uppercase tracking-widest block">GSTIN to search</span>
+              <span className="text-emerald-400 font-bold font-mono text-sm block">{CORPORATE_REGISTRATION.gstin}</span>
             </div>
-          </form>
-
-          {gstVerificationResult && (
-            <div className={`p-4 rounded border font-mono text-[11px] leading-relaxed animate-fade-in ${
-              gstVerificationResult.status === "SUCCESS_ACTIVE"
-                ? "bg-emerald-950/40 border-emerald-900 text-slate-300"
-                : "bg-red-950/40 border-red-900 text-slate-300"
-            }`}>
-              {gstVerificationResult.status === "SUCCESS_ACTIVE" ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold border-b border-emerald-900/60 pb-1.5">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>REGISTRY RECORD ACTIVE</span>
-                  </div>
-                  <div className="space-y-1 text-[10px]">
-                    <div><span className="text-slate-500">Legal Name:</span> <span className="text-slate-200 font-bold">{gstVerificationResult.legalName}</span></div>
-                    <div><span className="text-slate-500">Trade Entity:</span> <span className="text-cyan-400 font-bold">{gstVerificationResult.tradeName}</span></div>
-                    <div><span className="text-slate-500">Taxpayer Class:</span> <span className="text-slate-300">{gstVerificationResult.taxpayerType}</span></div>
-                    <div><span className="text-slate-500">State Code:</span> <span className="text-slate-300">21 (Odisha, IN)</span></div>
-                    <div><span className="text-slate-500">Compliance score:</span> <span className="text-emerald-400 font-bold">{gstVerificationResult.complianceScore}</span></div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <div className="text-red-400 font-bold border-b border-red-900/60 pb-1">Error Unresolved</div>
-                  <p className="text-[10px] text-slate-400 font-sans">{gstVerificationResult.message}</p>
-                </div>
-              )}
-            </div>
-          )}
+            <a
+              href="https://www.gst.gov.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer"
+            >
+              Open Official GST Portal <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+            <p className="text-[9px] text-slate-600 font-sans leading-snug">
+              Use "Search Taxpayer" on the GST Portal and enter the GSTIN above to see the live government record.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -448,23 +409,23 @@ export default function HomeView({
         </div>
       </div>
 
-      {/* Trusted Sectors */}
+      {/* Company facts */}
       <div className="bg-[#0c1117] border border-slate-800 p-6 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">2,800+</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">SOC Teams Served</p>
+          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">100+</span>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Security Tools &amp; Playbooks</p>
         </div>
         <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">99.7%</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">AI Detection Rate</p>
+          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">2020</span>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Operating Since</p>
         </div>
         <div>
           <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">&lt;15m</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Managed SOC SLA</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Target Response SLA</p>
         </div>
         <div>
-          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">95%</span>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">ROSI Return Rate</p>
+          <span className="text-xl md:text-2xl font-bold font-mono text-slate-300">24&times;7</span>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Automated Monitoring</p>
         </div>
       </div>
 
