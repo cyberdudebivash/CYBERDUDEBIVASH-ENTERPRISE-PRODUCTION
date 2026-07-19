@@ -1,0 +1,252 @@
+import type { SEOPage } from "../types/page";
+import { SITE_CONFIG } from "./site.config";
+
+// Owns: the per-page registry — one SEOPage record per real static
+// page. title/description/canonical below are transcribed directly
+// from each page's actual current <head> (grep'd from the live files,
+// not re-authored) — see SEO_MIGRATION_PLAN.md's Metadata section for
+// why the mechanism changes but this content doesn't. openGraph/twitter
+// reuse each page's own verified title/description rather than
+// inventing separate OG-specific copy this pass didn't verify per page.
+//
+// `item.html` has no canonical entry below — confirmed still missing
+// in the live file (SEO_FOUNDATION.md's original finding, re-verified
+// in SEO_ARCHITECTURE.md). Left absent rather than invented; Phase 1.1's
+// generator fixes this as a byproduct of every page going through one
+// generator, not a one-off patch here.
+
+function ogFor(title: string, description: string): SEOPage["openGraph"] {
+  return {
+    title,
+    description,
+    type: "website",
+    image: SITE_CONFIG.defaultImage,
+    siteName: SITE_CONFIG.siteName,
+    locale: SITE_CONFIG.defaultLocale,
+  };
+}
+
+function twitterFor(title: string, description: string): SEOPage["twitterCard"] {
+  return {
+    card: "summary_large_image",
+    site: SITE_CONFIG.twitterHandle,
+    creator: SITE_CONFIG.twitterHandle,
+    title,
+    description,
+    image: SITE_CONFIG.defaultImage,
+  };
+}
+
+export const PAGES: SEOPage[] = [
+  {
+    id: "home",
+    path: "/",
+    title: "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform — Threat Intelligence, Managed SOC, India",
+    description: "CYBERDUDEBIVASH® delivers real-time AI threat intelligence, managed SOC operations, 100+ security tools, and DPDP/ISO 27001 compliance — enterprise cybersecurity from Odisha, India.",
+    canonical: { path: "/" },
+    openGraph: ogFor("CYBERDUDEBIVASH® — AI-Powered Cybersecurity Platform", "Real-time threat intelligence, autonomous AI SOC, 100+ security tools, and enterprise compliance — protecting organizations globally from Odisha, India."),
+    twitterCard: twitterFor("CYBERDUDEBIVASH® — AI-Powered Cybersecurity Platform", "Real-time threat intelligence, autonomous AI SOC, 100+ security tools, DPDP/ISO 27001 compliance. Based in Odisha, India."),
+    primaryKeyword: "AI cybersecurity platform India",
+    searchIntent: "navigational",
+    funnelStage: "awareness",
+    relatedEntityIds: ["apex", "ai_hub", "tools", "official"],
+  },
+  {
+    id: "about",
+    path: "/about.html",
+    title: "About CYBERDUDEBIVASH® | AI Cybersecurity Company | Global Security Vendor",
+    description: "CYBERDUDEBIVASH® is a global AI-powered cybersecurity company founded by Bivash. Protecting enterprises across 50+ countries with threat intelligence, SOC, and penetration testing.",
+    canonical: { path: "/about.html" },
+    openGraph: ogFor("About CYBERDUDEBIVASH®", "CYBERDUDEBIVASH® is a global AI-powered cybersecurity company founded by Bivash."),
+    twitterCard: twitterFor("About CYBERDUDEBIVASH®", "CYBERDUDEBIVASH® is a global AI-powered cybersecurity company founded by Bivash."),
+    primaryKeyword: "CYBERDUDEBIVASH company",
+    searchIntent: "informational",
+    funnelStage: "awareness",
+  },
+  {
+    id: "apps",
+    path: "/apps.html",
+    title: "Apps & Products | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH Apps & Products - Production-Grade Cybersecurity Tools, Frameworks, Scripts & Libraries",
+    canonical: { path: "/apps.html" },
+    openGraph: ogFor("Apps & Products | CYBERDUDEBIVASH®", "Production-grade cybersecurity tools, frameworks, scripts & libraries."),
+    twitterCard: twitterFor("Apps & Products | CYBERDUDEBIVASH®", "Production-grade cybersecurity tools, frameworks, scripts & libraries."),
+    primaryKeyword: "cybersecurity tools suite",
+    searchIntent: "transactional",
+    funnelStage: "decision",
+    relatedEntityIds: ["tools"],
+  },
+  {
+    id: "bug-bounty",
+    path: "/bug-bounty.html",
+    title: "Bug Bounty Program | Responsible Disclosure | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH Bug Bounty Program. Report security vulnerabilities responsibly and earn rewards. Transparent disclosure policy, fast triage, and fair bounties.",
+    canonical: { path: "/bug-bounty.html" },
+    openGraph: ogFor("Bug Bounty Program | CYBERDUDEBIVASH®", "Report security vulnerabilities responsibly and earn rewards."),
+    twitterCard: twitterFor("Bug Bounty Program | CYBERDUDEBIVASH®", "Report security vulnerabilities responsibly and earn rewards."),
+    primaryKeyword: "bug bounty program",
+    searchIntent: "informational",
+    funnelStage: "consideration",
+    relatedEntityIds: ["owasp"],
+  },
+  {
+    id: "compliance",
+    path: "/compliance.html",
+    title: "Compliance Automation | ISO 27001, SOC 2, GDPR, PCI-DSS | CYBERDUDEBIVASH®",
+    description: "Automated compliance for ISO 27001, SOC 2 Type II, GDPR, PCI-DSS, HIPAA, and NIST CSF. Continuous monitoring, audit-ready reports, and control mapping with AI.",
+    canonical: { path: "/compliance.html" },
+    openGraph: ogFor("Compliance Automation | CYBERDUDEBIVASH®", "Automated compliance for ISO 27001, SOC 2 Type II, GDPR, PCI-DSS, HIPAA, and NIST CSF."),
+    twitterCard: twitterFor("Compliance Automation | CYBERDUDEBIVASH®", "Automated compliance for ISO 27001, SOC 2 Type II, GDPR, PCI-DSS, HIPAA, and NIST CSF."),
+    primaryKeyword: "compliance automation platform",
+    searchIntent: "commercial",
+    funnelStage: "decision",
+    relatedEntityIds: ["dpdp"],
+  },
+  {
+    id: "contact",
+    path: "/contact.html",
+    title: "Contact CYBERDUDEBIVASH® | Enterprise Security Consultation | Free Assessment",
+    description: "Contact CYBERDUDEBIVASH for enterprise cybersecurity consultation, sales, and technical support. Get a free security assessment. Email: bivash@cyberdudebivash.com | +91 8179881447",
+    canonical: { path: "/contact.html" },
+    openGraph: ogFor("Contact CYBERDUDEBIVASH®", "Enterprise cybersecurity consultation, sales, and technical support."),
+    twitterCard: twitterFor("Contact CYBERDUDEBIVASH®", "Enterprise cybersecurity consultation, sales, and technical support."),
+    primaryKeyword: "contact cybersecurity consultation",
+    searchIntent: "transactional",
+    funnelStage: "decision",
+  },
+  {
+    id: "dark-web-monitor",
+    path: "/dark-web-monitor.html",
+    title: "Dark Web Monitoring | Leaked Credentials & Breach Detection | CYBERDUDEBIVASH®",
+    description: "Real-time dark web monitoring for leaked credentials, stolen data, brand mentions, and breach detection. AI-powered surveillance across Tor, paste sites, and criminal forums.",
+    canonical: { path: "/dark-web-monitor.html" },
+    openGraph: ogFor("Dark Web Monitoring | CYBERDUDEBIVASH®", "Real-time dark web monitoring for leaked credentials, stolen data, and breach detection."),
+    twitterCard: twitterFor("Dark Web Monitoring | CYBERDUDEBIVASH®", "Real-time dark web monitoring for leaked credentials, stolen data, and breach detection."),
+    primaryKeyword: "dark web monitoring service",
+    searchIntent: "commercial",
+    funnelStage: "consideration",
+  },
+  {
+    id: "item",
+    path: "/item.html",
+    title: "SENTINEL APEX | CYBERDUDEBIVASH® Official Research Center",
+    // No `description`, no `canonical`: both confirmed genuinely absent
+    // from the live file (SEO_FOUNDATION.md's original finding,
+    // re-verified in SEO_ARCHITECTURE.md) — left unset per SEOPage's
+    // documented optionality rather than guessed. Phase 1.1's generator
+    // fixes this as a byproduct of every page sharing one generator.
+    openGraph: ogFor("SENTINEL APEX | CYBERDUDEBIVASH® Official Research Center", ""),
+    twitterCard: twitterFor("SENTINEL APEX | CYBERDUDEBIVASH® Official Research Center", ""),
+    robots: "index,follow",
+  },
+  {
+    id: "platforms",
+    path: "/platforms.html",
+    title: "AI Cybersecurity Platform | Enterprise Security Infrastructure | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH enterprise security platform: AI threat detection, SIEM integration, SOAR automation, zero-trust architecture, and real-time threat intelligence for global organizations.",
+    canonical: { path: "/platforms.html" },
+    openGraph: ogFor("AI Cybersecurity Platform | CYBERDUDEBIVASH®", "AI threat detection, SIEM integration, SOAR automation, and zero-trust architecture."),
+    twitterCard: twitterFor("AI Cybersecurity Platform | CYBERDUDEBIVASH®", "AI threat detection, SIEM integration, SOAR automation, and zero-trust architecture."),
+    primaryKeyword: "enterprise security infrastructure platform",
+    searchIntent: "commercial",
+    funnelStage: "consideration",
+  },
+  {
+    id: "pricing",
+    path: "/pricing.html",
+    title: "Cybersecurity Pricing Plans | CYBERDUDEBIVASH® | From $49/month",
+    description: "Transparent cybersecurity pricing from $49/month. Starter, Professional, Enterprise, and Sovereign plans. No hidden fees. 14-day free trial. Cancel anytime.",
+    canonical: { path: "/pricing.html" },
+    openGraph: ogFor("Cybersecurity Pricing Plans | CYBERDUDEBIVASH®", "Transparent pricing from $49/month. No hidden fees. 14-day free trial."),
+    twitterCard: twitterFor("Cybersecurity Pricing Plans | CYBERDUDEBIVASH®", "Transparent pricing from $49/month. No hidden fees. 14-day free trial."),
+    primaryKeyword: "cybersecurity pricing plans",
+    searchIntent: "transactional",
+    funnelStage: "decision",
+  },
+  {
+    id: "privacy",
+    path: "/privacy.html",
+    title: "Privacy Policy | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH® Privacy Policy — How we collect, use, and protect your data, aligned with GDPR, India's DPDP Act 2023, and ISO 27001 principles.",
+    canonical: { path: "/privacy.html" },
+    openGraph: ogFor("Privacy Policy | CYBERDUDEBIVASH®", "How we collect, use, and protect your data."),
+    twitterCard: twitterFor("Privacy Policy | CYBERDUDEBIVASH®", "How we collect, use, and protect your data."),
+    searchIntent: "informational",
+    robots: "index,follow",
+  },
+  {
+    id: "research",
+    path: "/research.html",
+    title: "Research & Threat Intelligence | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH Research - Cybersecurity Blogs, Threat Intelligence, Malware Analysis, AI Security Research",
+    canonical: { path: "/research.html" },
+    openGraph: ogFor("Research & Threat Intelligence | CYBERDUDEBIVASH®", "Cybersecurity blogs, threat intelligence, malware analysis, and AI security research."),
+    twitterCard: twitterFor("Research & Threat Intelligence | CYBERDUDEBIVASH®", "Cybersecurity blogs, threat intelligence, malware analysis, and AI security research."),
+    primaryKeyword: "cybersecurity research blog",
+    searchIntent: "informational",
+    funnelStage: "awareness",
+    relatedEntityIds: ["blog"],
+  },
+  {
+    id: "services",
+    path: "/services.html",
+    title: "Enterprise Cybersecurity Services | CYBERDUDEBIVASH®",
+    description: "Enterprise cybersecurity services: penetration testing, SOC-as-a-Service, incident response, zero-trust architecture, and vCISO. AI-powered protection for global organizations.",
+    canonical: { path: "/services.html" },
+    openGraph: ogFor("Enterprise Cybersecurity Services | CYBERDUDEBIVASH®", "Penetration testing, SOC-as-a-Service, incident response, zero-trust, and vCISO."),
+    twitterCard: twitterFor("Enterprise Cybersecurity Services | CYBERDUDEBIVASH®", "Penetration testing, SOC-as-a-Service, incident response, zero-trust, and vCISO."),
+    primaryKeyword: "enterprise cybersecurity services",
+    searchIntent: "commercial",
+    funnelStage: "decision",
+    relatedEntityIds: ["pentest"],
+  },
+  {
+    id: "soc-services",
+    path: "/soc-services.html",
+    title: "SOC Services | CYBERDUDEBIVASH®",
+    description: "Managed SOC, SIEM, SOAR & 24x7 Threat Monitoring",
+    canonical: { path: "/soc-services.html" },
+    openGraph: ogFor("SOC Services | CYBERDUDEBIVASH®", "Managed SOC, SIEM, SOAR & 24x7 threat monitoring."),
+    twitterCard: twitterFor("SOC Services | CYBERDUDEBIVASH®", "Managed SOC, SIEM, SOAR & 24x7 threat monitoring."),
+    primaryKeyword: "managed SOC services",
+    searchIntent: "commercial",
+    funnelStage: "decision",
+    relatedEntityIds: ["soc"],
+  },
+  {
+    id: "status",
+    path: "/status.html",
+    title: "Platform Status | CYBERDUDEBIVASH®",
+    description: "CYBERDUDEBIVASH® Platform Status — real-time operational status of Sentinel APEX™, AI Security Hub, ThreatCore™ Tools, Intelligence API, and all platform services.",
+    canonical: { path: "/status.html" },
+    openGraph: ogFor("Platform Status | CYBERDUDEBIVASH®", "Real-time operational status of every platform service."),
+    twitterCard: twitterFor("Platform Status | CYBERDUDEBIVASH®", "Real-time operational status of every platform service."),
+    searchIntent: "navigational",
+  },
+  {
+    id: "threat-intel",
+    path: "/threat-intel.html",
+    title: "Threat Intelligence Platform | Real-Time CVE & APT Monitoring | CYBERDUDEBIVASH®",
+    description: "Real-time threat intelligence: CVE tracking, APT group monitoring, IOC feeds, dark web surveillance, and global threat actor profiling. API-first, enterprise-ready.",
+    canonical: { path: "/threat-intel.html" },
+    openGraph: ogFor("Threat Intelligence Platform | CYBERDUDEBIVASH®", "CVE tracking, APT group monitoring, IOC feeds, and global threat actor profiling."),
+    twitterCard: twitterFor("Threat Intelligence Platform | CYBERDUDEBIVASH®", "CVE tracking, APT group monitoring, IOC feeds, and global threat actor profiling."),
+    primaryKeyword: "threat intelligence platform",
+    searchIntent: "commercial",
+    funnelStage: "consideration",
+    relatedEntityIds: ["apex"],
+  },
+  {
+    id: "vciso",
+    path: "/vciso.html",
+    title: "Virtual CISO (vCISO) Service | AI-Powered Security Leadership | CYBERDUDEBIVASH®",
+    description: "Virtual CISO (vCISO) service by CYBERDUDEBIVASH. Fractional AI-powered Chief Information Security Officer from $499/mo. Security strategy, compliance, board reporting, risk management.",
+    canonical: { path: "/vciso.html" },
+    openGraph: ogFor("Virtual CISO (vCISO) Service | CYBERDUDEBIVASH®", "Fractional AI-powered Chief Information Security Officer."),
+    twitterCard: twitterFor("Virtual CISO (vCISO) Service | CYBERDUDEBIVASH®", "Fractional AI-powered Chief Information Security Officer."),
+    primaryKeyword: "virtual CISO service",
+    searchIntent: "commercial",
+    funnelStage: "decision",
+    relatedEntityIds: ["vciso"],
+  },
+];
