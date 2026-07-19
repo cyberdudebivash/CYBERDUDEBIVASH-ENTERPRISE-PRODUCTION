@@ -52,12 +52,15 @@ jobs:
           set -euo pipefail
           find assets -maxdepth 1 -type f \( -name "index-*.js" -o -name "index-*.css" -o -name "vendor-*.js" -o -name "favicon-*.ico" \) -delete
           cp dist/assets/*.js dist/assets/*.css assets/ 2>/dev/null || true
-          ls dist/assets/favicon-*.ico >/dev/null 2>&1 && cp dist/assets/favicon-*.ico assets/ || true
+          # favicon.ico moved to public/ (PR #21) and builds unhashed to dist/favicon.ico,
+          # not dist/assets/favicon-*.ico — mirror it to root directly, unconditionally
+          # (verify-dist's checkFavicon already guarantees it exists by the time we get here).
+          cp dist/favicon.ico favicon.ico
           cp dist/index.html index.html
 
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
-          git add assets/ index.html
+          git add assets/ index.html favicon.ico
           if ! git diff --staged --quiet; then
             git commit -m "chore: mirror dist/ to root for Cloudflare (temporary bridge — see BUILD_PIPELINE_MIGRATION.md)"
             git push

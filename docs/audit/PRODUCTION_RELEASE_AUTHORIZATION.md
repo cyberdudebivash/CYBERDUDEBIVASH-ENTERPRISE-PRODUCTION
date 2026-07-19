@@ -2,6 +2,17 @@
 
 Stage 2.5 final GO/NO-GO checkpoint. Executed against real Cloudflare Pages deployment evidence — supplied for the first time since `PRODUCTION_READINESS_GATE.md` recorded Gate 3 as BLOCKED — consisting of a dashboard export (project, deployment ID, environment, domains, deployment history) and the deployment's own raw, timestamped build log. Every criterion below was re-verified live against production, the deployment's dedicated URL, and GitHub Pages as of this evaluation (2026-07-19); nothing is carried over from the prior report without being re-checked.
 
+## Stage 2.6 Addendum — Favicon Regression Resolved (Repository-Side)
+
+Added after this report's original Stage 2.5 evaluation, as its own separate hotfix stage. **Does not re-run or re-score the evaluation below** — per Stage 2.6's own stop conditions, the authorization is not re-executed here; this addendum only annotates the one specific defect that now has a repository-side fix.
+
+The favicon bridge regression documented in §3.2 and §6 below has been corrected: branch `fix/favicon-bridge-regression` fixes `.github/workflows/deploy.yml`'s bridge step to mirror `dist/favicon.ico` → root `favicon.ico` (full detail, root cause, and validation evidence in `docs/audit/FAVICON_BRIDGE_HOTFIX.md`). Validated clean — 435/435 tests, `verify-dist` 6/6, and an isolated dry-run of the corrected commands producing a root file byte-for-byte identical to `dist/favicon.ico`.
+
+- **Repository favicon regression: RESOLVED** (code-level fix implemented and validated; open for review as a pull request, not yet merged).
+- **Operational Cloudflare cutover: PENDING** (unchanged — Criterion 2 below remains FAIL; this hotfix does not touch Cloudflare configuration, deployment settings, or any of the other pre-existing artifact gaps).
+
+**The Final Decision below is unchanged: NO-GO stands.** This fix closes one repository-side defect; it does not merge itself, does not touch Cloudflare, and does not affect the sitemap/robots/manifest/404 gaps, which remain gated on the separate source-build cutover. Once merged, the correction takes effect automatically on the next `deploy.yml` run against `main` — but production is not corrected until that run actually happens, and this report is not re-verified against it here (that would be a new evaluation, not this addendum).
+
 ## Prerequisite check
 
 At least one of {Cloudflare Pages deployment details, build log, deployment ID, commit SHA, deployment timestamp} is required before this evaluation may run. All five are present. **Evaluation proceeds — this is not AUTHORIZATION BLOCKED.**
@@ -84,7 +95,7 @@ The supplied evidence was not taken at face value. Fresh checks this evaluation 
 | 3 | Artifact Integrity | ❌ **FAIL** | `index.html`, hashed JS/CSS, `portal/`, `react-portal/` all correct; `favicon.ico`, `robots.txt`, `sitemap.xml`, `manifest.json`, `404.html` all wrong or absent on production |
 | 4 | Runtime Integrity | ❌ **FAIL** | 200s correct where expected; 404s never occur (SPA fallback everywhere); manifest returns HTML; sitemap content wrong |
 | 5 | SEO Integrity | ❌ **FAIL** | Canonical/metadata/OG/Twitter/JSON-LD all pass; Robots/Manifest/Sitemap all fail |
-| 6 | Regression Review | ❌ **FAIL** | No HTML drift, no orphaned/duplicate assets — but a real, newly-identified favicon bridge regression |
+| 6 | Regression Review | ❌ **FAIL** (as of Stage 2.5; favicon defect RESOLVED repository-side in Stage 2.6, see Addendum above) | No HTML drift, no orphaned/duplicate assets — but a real, newly-identified favicon bridge regression |
 | 7 | Rollback Readiness | ✅ **PASS** | Bridge intact, nothing deleted, full git + Cloudflare deployment history available |
 
 **Decision rule applied:** NO-GO (5 of 7 criteria FAIL; GO requires all 7 PASS).
@@ -106,7 +117,7 @@ The supplied evidence was not taken at face value. Fresh checks this evaluation 
 | `index.html` | ✅ 200, byte-identical across all three production targets | ✅ 200 | Expected |
 | Hashed JS/CSS (5 files: main JS, main CSS, 3 vendor chunks) | ✅ all 200, correct content-types, all references resolve | ✅ 200 | Expected |
 | `portal/`, `react-portal/` | ✅ 200 | ✅ 200 (react-portal correctly 404s — legacy stub, by design) | Expected |
-| `favicon.ico` | ❌ **200, but `content-type: text/html`, SHA-256 identical to `/`'s body** — not an icon | ✅ 200, correct binary, SHA-256 matches `dist/favicon.ico` | **Defect — new finding, see §6** |
+| `favicon.ico` | ❌ **200, but `content-type: text/html`, SHA-256 identical to `/`'s body** — not an icon (state as of Stage 2.5; see Stage 2.6 Addendum above — repository-side fix implemented, not yet merged/live) | ✅ 200, correct binary, SHA-256 matches `dist/favicon.ico` | **Defect — RESOLVED (repository-side), see Stage 2.6 Addendum and §6** |
 | `robots.txt` | ❌ Root's stale 16-URL-era content (SHA-256-confirmed byte-identical to `git show HEAD:robots.txt`); custom domain additionally carries an unrelated Cloudflare zone-level Content-Signal block on top (pre-existing, already documented) | ✅ 200, correct richer content | Legacy — pre-existing |
 | `sitemap.xml` | ❌ 16 URLs (root's stale file) | ✅ 23 URLs | Legacy — pre-existing |
 | `manifest.json` | ❌ Not real JSON — root has no `manifest.json` at all (confirmed via `git ls-tree`); requests silently return the homepage HTML | ✅ valid JSON | Legacy — pre-existing |
@@ -117,7 +128,7 @@ The supplied evidence was not taken at face value. Fresh checks this evaluation 
 | Item | Severity | Notes |
 |---|---|---|
 | Promoting to Phase 2 now | **Critical, avoided** | Would delete the bridge and root assets — the only thing currently keeping Cloudflare correct — before Cloudflare can serve correctly on its own. This report's NO-GO is what prevents that. |
-| Favicon bridge regression | **Medium, new finding** | Live, real, silent since PR #21 merged. Cosmetic/branding impact only (browser tab icon, PWA icon, some social-share surfaces) — no security or data exposure. Self-resolves the moment cutover happens, same as the three Legacy gaps, but is currently an active, undetected defect in its own right and should not wait for cutover if that timeline is uncertain. |
+| Favicon bridge regression | **Medium → RESOLVED (repository-side)** | Was live, real, silent since PR #21 merged; cosmetic/branding impact only (browser tab icon, PWA icon, some social-share surfaces), no security or data exposure. Fixed in `fix/favicon-bridge-regression` (Stage 2.6, see `FAVICON_BRIDGE_HOTFIX.md`) — validated, PR open, not yet merged. Not live in production until merged and the next `deploy.yml` run against `main` completes. |
 | Robots/Sitemap/Manifest/404 gaps | **Low, unchanged** | Pre-existing, documented three times over (`PRE_CUTOVER.md`, `ARTIFACT_PARITY_REPORT.md`, `PRODUCTION_READINESS_GATE.md`), not worsening, structurally guaranteed to resolve on cutover |
 | Cloudflare zone-level Content-Signal injection on `robots.txt` | **None** | Confirmed decoupled from the repository/deployment — a platform-level setting, not a code defect. Unaffected by anything this engagement controls. |
 | Everything else (index.html, bundle integrity, portal, react-portal, canonical/OG/Twitter/JSON-LD) | **None observed** | Fully verified matching across production, the deployment's own URL, and GitHub Pages |
@@ -143,7 +154,7 @@ The supplied evidence was not taken at face value. Fresh checks this evaluation 
 
 2. **Criterion 3/4/5 — Artifact/Runtime/SEO (sitemap, robots, manifest, 404).** No action beyond #1 — these are structurally guaranteed to resolve automatically once Cloudflare builds from source and serves `dist/` directly, per `ARTIFACT_PARITY_REPORT.md`'s already-verified prediction. Do not attempt to patch these individually at root; that would be duplicate, throwaway work superseded by #1.
 
-3. **Criterion 6 — Regression Review (favicon).** Minimum fix, requires explicit go-ahead since it is a code change: extend the bridge step in `.github/workflows/deploy.yml` (currently `ls dist/assets/favicon-*.ico >/dev/null 2>&1 && cp dist/assets/favicon-*.ico assets/ || true`) to also mirror `dist/favicon.ico` → root `favicon.ico`, matching the unhashed convention PR #21 introduced. This is the minimum patch to stop the regression before cutover; it becomes moot (but harmless) once #1 lands, since Cloudflare would then serve `dist/favicon.ico` directly.
+3. ~~**Criterion 6 — Regression Review (favicon).**~~ **RESOLVED (repository-side), Stage 2.6.** The bridge step in `.github/workflows/deploy.yml` now mirrors `dist/favicon.ico` → root `favicon.ico` unconditionally, matching the unhashed convention PR #21 introduced. Implemented and validated on `fix/favicon-bridge-regression` (see `docs/audit/FAVICON_BRIDGE_HOTFIX.md`) — build clean, 435/435 tests, isolated dry-run confirms byte-for-byte match against `dist/favicon.ico`. PR open, awaiting review/merge — not yet live in production. Once #1 (below) lands, this fix becomes moot but harmless, since Cloudflare would then serve `dist/favicon.ico` directly.
 
 4. **Re-run this authorization** once #1 has landed and a Cloudflare deployment sourced from the new build command exists. Expect Criteria 3/4/5's current FAILs to flip to PASS by construction; if any do not, that is a real finding requiring its own investigation, not an assumption either way — same posture `PRODUCTION_READINESS_GATE.md` already recommended for this exact step.
 
