@@ -31,76 +31,35 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
-      - name: Build Vite app from TypeScript source
-        run: npx vite build
+      - name: Build production site (vite build + assemble + verify)
+        run: npm run build
         env:
           NODE_ENV: production
 
-      - name: Prepare dist and sync root assets
+      # TEMPORARY — Phase 1 bridge only. Remove once Cloudflare Pages is confirmed
+      # building from source itself (build command `npm ci --ignore-scripts && npm
+      # run build`, output directory `dist`) — see docs/audit/BUILD_PIPELINE_MIGRATION.md
+      # for the exact Phase 2 cleanup. Cloudflare currently has no build step of its
+      # own and just deploys the repo root as committed, so this keeps that root
+      # mirror current in the meantime. Deliberately full-file replacement (not a
+      # sed patch), and deliberately no skip-ci tag: Cloudflare's own Git integration
+      # honors that tag too, and during this bridge period it still needs to see
+      # the commit (that exact collision is what caused the last production incident).
+      - name: "[TEMPORARY] Mirror dist/ to root for Cloudflare"
         run: |
           set -euo pipefail
+          find assets -maxdepth 1 -type f \( -name "index-*.js" -o -name "index-*.css" -o -name "vendor-*.js" -o -name "favicon-*.ico" \) -delete
+          cp dist/assets/*.js dist/assets/*.css assets/ 2>/dev/null || true
+          ls dist/assets/favicon-*.ico >/dev/null 2>&1 && cp dist/assets/favicon-*.ico assets/ || true
+          cp dist/index.html index.html
 
-          # Copy static subpages and folders to dist for production serving
-          for f in *.html; do [ "$f" != "_vite_entry.html" ] && cp "$f" dist/ || true; done
-          [ -d portal ] && cp -r portal dist/ || true
-          [ -d react-portal ] && cp -r react-portal dist/ || true
-          mkdir -p dist/assets/images dist/assets/css dist/assets/js
-          [ -d assets/images ] && cp -r assets/images/. dist/assets/images/ 2>/dev/null || true
-          [ -d assets/css ]    && cp -r assets/css/.    dist/assets/css/    2>/dev/null || true
-          [ -d assets/js ]     && cp -r assets/js/.     dist/assets/js/     2>/dev/null || true
-
-          # Identify the built entry chunk and CSS
-          JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -1 | xargs basename)
-          CSS_FILE=$(ls dist/assets/index-*.css 2>/dev/null | head -1 | xargs basename)
-
-          if [ -z "$JS_FILE" ] || [ -z "$CSS_FILE" ]; then
-            echo "ERROR: Vite build did not produce expected JS/CSS assets"
-            ls dist/assets/ || true
-            exit 1
-          fi
-          echo "Entry: $JS_FILE | CSS: $CSS_FILE"
-          echo "All JS chunks:"
-          ls dist/assets/*.js 2>/dev/null || true
-
-          # Use Vite's processed _vite_entry.html directly as dist/index.html.
-          # It already has the correct <script type="module">, <link rel="modulepreload">
-          # for every vendor chunk, and <link rel="stylesheet"> — all with correct hashes.
-          mv dist/_vite_entry.html dist/index.html
-
-          # Validate dist/index.html has the entry chunk reference
-          grep -q "src=\"/assets/$JS_FILE\"" dist/index.html \
-            || { echo "FATAL: dist/index.html missing entry ref for $JS_FILE"; exit 1; }
-          grep -q "href=\"/assets/$CSS_FILE\"" dist/index.html \
-            || { echo "FATAL: dist/index.html missing CSS ref for $CSS_FILE"; exit 1; }
-          echo "✅ dist/index.html validated"
-
-          # Sync ALL built JS chunks (entry + vendor) and CSS to root assets/.
-          # Branch-based Pages deployment needs every chunk the entry imports.
-          cp dist/assets/*.js assets/
-          cp dist/assets/*.css assets/
-          ls dist/assets/favicon-*.ico 2>/dev/null && cp dist/assets/favicon-*.ico assets/ || true
-
-          # Update root index.html entry-chunk ref for branch-based Pages fallback.
-          # Root index.html always uses crossorigin src= format so this sed always matches.
-          sed -i "s|crossorigin src=\"/assets/index-[^\"]*\.js\"|crossorigin src=\"/assets/$JS_FILE\"|" index.html
-          sed -i "s|crossorigin href=\"/assets/index-[^\"]*\.css\"|crossorigin href=\"/assets/$CSS_FILE\"|" index.html
-
-          grep -q "crossorigin src=\"/assets/$JS_FILE\"" index.html \
-            || { echo "FATAL: root index.html missing entry ref for $JS_FILE"; exit 1; }
-          echo "✅ root index.html validated"
-
-          # Commit root assets/ + index.html for branch-based Pages (skip if unchanged).
-          # Deliberately no skip-ci tag: Cloudflare Pages' own Git integration honors the
-          # same convention, so tagging it would make Cloudflare silently skip deploying
-          # the one commit that syncs the assets it serves (it has no build step of its own).
-          # The one-time cost is a second, no-op GitHub Actions run per push.
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
           if ! git diff --staged --quiet; then
-            git commit -m "chore: sync built assets to root for branch deployment"
+            git commit -m "chore: mirror dist/ to root for Cloudflare (temporary bridge — see BUILD_PIPELINE_MIGRATION.md)"
             git push
           fi
 
