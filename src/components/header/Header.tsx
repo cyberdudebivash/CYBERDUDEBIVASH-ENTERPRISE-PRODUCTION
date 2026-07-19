@@ -59,7 +59,7 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
             </h1>
             <span className="bg-cyan-950 text-cyan-400 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-cyan-800">ECOSYSTEM V4</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
+          <span className="text-[11px] text-slate-300 font-mono font-medium tracking-wide leading-none mt-1">
             {aligned("iso27001")} &bull; {aligned("soc2")} &bull; {aligned("dpdp")}
           </span>
         </button>
@@ -90,10 +90,10 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
                 : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
             }`}
           >
-            <Shield className="w-3.5 h-3.5 text-cyan-550" aria-hidden="true" /> Services <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
+            <Shield className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" /> Services <span className="text-[9px] opacity-90" aria-hidden="true">▼</span>
           </button>
           {servicesDropdownOpen && (
-            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
+            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
               {SERVICE_ITEMS.map((s) => (
                 <button
                   key={s.view}
@@ -103,10 +103,10 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
                     onNavigate(s.view);
                     setServicesDropdownOpen(false);
                   }}
-                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
+                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
                 >
                   <span className="text-xs font-bold font-mono">{s.label}</span>
-                  <span className="text-[9px] text-slate-550 leading-none mt-0.5">{s.desc}</span>
+                  <span className="text-[10px] text-slate-300 leading-none mt-0.5">{s.desc}</span>
                 </button>
               ))}
             </div>
@@ -124,10 +124,10 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
             aria-expanded={solutionsDropdownOpen}
             className="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
           >
-            <Cpu className="w-3.5 h-3.5 text-purple-450" aria-hidden="true" /> Solutions <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
+            <Cpu className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" /> Solutions <span className="text-[9px] opacity-90" aria-hidden="true">▼</span>
           </button>
           {solutionsDropdownOpen && (
-            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
+            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
               {solutionsItems.map((sol, idx) => (
                 <button
                   key={idx}
@@ -136,10 +136,10 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
                     sol.action();
                     setSolutionsDropdownOpen(false);
                   }}
-                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
+                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
                 >
                   <span className="text-xs font-bold font-mono">{sol.label}</span>
-                  <span className="text-[9px] text-slate-555 leading-none mt-0.5">{sol.desc}</span>
+                  <span className="text-[10px] text-slate-300 leading-none mt-0.5">{sol.desc}</span>
                 </button>
               ))}
             </div>
@@ -192,7 +192,7 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
         </button>
         <div className="h-8 w-[1px] bg-slate-800"></div>
         <div className="text-right hidden md:block font-mono">
-          <div className="text-[10px] text-slate-500 leading-none">NODE IP</div>
+          <div className="text-[10px] text-slate-300 font-semibold leading-none">NODE IP</div>
           <div className="text-xs text-slate-300 font-bold mt-1">103.142.12.98</div>
         </div>
       </div>

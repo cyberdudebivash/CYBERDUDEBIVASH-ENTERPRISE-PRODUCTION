@@ -70,7 +70,7 @@ export default function ApiView({ apiKey, apiConsoleResponse, activeEcosystemApi
                 </button>
               </div>
             </div>
-            <div className="space-y-2 font-mono text-[10px] text-slate-450">
+            <div className="space-y-2 font-mono text-[10px] text-slate-300">
               <div className="flex justify-between border-b border-slate-900 pb-1">
                 <span>Access Tier</span>
                 <span className="text-emerald-400 font-bold">PRO SUBNET INTEGRITY</span>

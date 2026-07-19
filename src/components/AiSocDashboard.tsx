@@ -112,7 +112,7 @@ function StatCard({
 
       <div className="flex items-start justify-between gap-2 relative z-10">
         <div className="space-y-0.5">
-          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block">{label}</span>
+          <span className="text-[10px] font-mono text-slate-300 uppercase tracking-widest block">{label}</span>
           <div className={`text-lg font-extrabold font-mono ${textColors[accent]} flex items-center gap-1.5 leading-tight`}>
             <span className={`${textColors[accent]} opacity-70`}>{icon}</span>
             {value}
@@ -173,7 +173,7 @@ function RiskRing({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-xl font-extrabold font-mono" style={{ color }}>{score}%</span>
-        <span className="text-[8px] font-mono text-slate-500 uppercase">Risk</span>
+        <span className="text-[8px] font-mono text-slate-300 uppercase">Risk</span>
       </div>
     </div>
   );
@@ -463,7 +463,7 @@ export function AiSocDashboard() {
                   </>
                 )}
               </h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+              <p className="text-[10px] text-slate-300 font-mono mt-0.5">
                 Interactive product demo with illustrative data — not live production telemetry &bull; HQ: Jajpur, Odisha, India
               </p>
             </div>
@@ -471,22 +471,22 @@ export function AiSocDashboard() {
 
           <div className="flex items-center gap-2 shrink-0 flex-wrap">
             {/* Live clock */}
-            <div className="hidden sm:flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-slate-500">
+            <div className="hidden sm:flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[10px] font-mono text-slate-300">
               <Wifi className="w-3 h-3 text-emerald-400 animate-pulse" />
               <LiveClock />
-              <span className="text-slate-600">IST</span>
+              <span className="text-slate-300">IST</span>
             </div>
 
             <button
               onClick={() => setAudioEnabled(v => !v)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border flex items-center gap-1.5 cursor-pointer ${audioEnabled ? "bg-cyan-950/80 text-cyan-400 border-cyan-700/50" : "bg-slate-950 text-slate-500 border-slate-800 hover:border-slate-700"}`}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border flex items-center gap-1.5 cursor-pointer ${audioEnabled ? "bg-cyan-950/80 text-cyan-400 border-cyan-700/50" : "bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700"}`}
             >
               {audioEnabled ? <><Volume2 className="w-3.5 h-3.5" /> Audio: ON</> : <><VolumeX className="w-3.5 h-3.5" /> Audio: OFF</>}
             </button>
 
             <button
               onClick={() => setLogsPaused(v => !v)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border flex items-center gap-1.5 cursor-pointer ${logsPaused ? "bg-amber-950/80 text-amber-400 border-amber-700/50" : "bg-slate-950 text-slate-500 border-slate-800 hover:border-slate-700"}`}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border flex items-center gap-1.5 cursor-pointer ${logsPaused ? "bg-amber-950/80 text-amber-400 border-amber-700/50" : "bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700"}`}
             >
               <Activity className={`w-3.5 h-3.5 ${logsPaused ? "" : "animate-pulse"}`} />
               {logsPaused ? "PAUSED" : "LIVE"}
@@ -590,7 +590,7 @@ export function AiSocDashboard() {
               <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> ACTIVE DEFENSE
               </div>
-              <div className="text-slate-500 space-y-0.5">
+              <div className="text-slate-300 space-y-0.5">
                 <div>HQ Node IP: <span className="text-slate-200">103.142.12.98</span></div>
                 <div>Filter Latency: <span className="text-cyan-400">11.8ms</span></div>
               </div>
@@ -598,10 +598,10 @@ export function AiSocDashboard() {
 
             {/* Attack stats bottom-right */}
             <div className="absolute bottom-3 right-3 glass-card border border-slate-700/50 p-2 rounded-lg text-[9px] font-mono space-y-1 text-right">
-              <div><span className="text-slate-500">USA →</span> <span className="text-red-400 font-bold">38 blocked</span></div>
-              <div><span className="text-slate-500">RU →</span> <span className="text-orange-400 font-bold">43 blocked</span></div>
-              <div><span className="text-slate-500">CN →</span> <span className="text-purple-400 font-bold">26 blocked</span></div>
-              <div><span className="text-slate-500">Defense:</span> <span className="text-emerald-400 font-bold">99.98%</span></div>
+              <div><span className="text-slate-300">USA →</span> <span className="text-red-400 font-bold">38 blocked</span></div>
+              <div><span className="text-slate-300">RU →</span> <span className="text-orange-400 font-bold">43 blocked</span></div>
+              <div><span className="text-slate-300">CN →</span> <span className="text-purple-400 font-bold">26 blocked</span></div>
+              <div><span className="text-slate-300">Defense:</span> <span className="text-emerald-400 font-bold">99.98%</span></div>
             </div>
 
             {activeSimulation && (
@@ -615,7 +615,7 @@ export function AiSocDashboard() {
 
           {/* Playbook buttons */}
           <div className="px-5 py-4 border-t border-slate-800/50 space-y-2">
-            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest font-bold">Inject Real-time Threat Playbooks</span>
+            <span className="text-[9px] font-mono text-slate-300 uppercase tracking-widest font-bold">Inject Real-time Threat Playbooks</span>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "ddos" as const,      label: "Simulate DDoS",      color: "text-red-400    border-red-900/50    hover:border-red-500    hover:bg-red-950/20" },
@@ -647,7 +647,7 @@ export function AiSocDashboard() {
               <span className="text-[9px] font-mono text-emerald-400">LIVE</span>
               <button
                 onClick={() => setSocLogs([{ id: _logSeq++, timestamp: new Date().toLocaleTimeString(), category: "SYSTEM", msg: "Telemetry log buffer cleared.", source: "Terminal" }])}
-                className="text-[9px] font-mono text-slate-500 hover:text-red-400 uppercase cursor-pointer transition-colors"
+                className="text-[9px] font-mono text-slate-300 hover:text-red-400 uppercase cursor-pointer transition-colors"
               >
                 [Clear]
               </button>
@@ -666,7 +666,7 @@ export function AiSocDashboard() {
                     : f === "ALERT"      ? "bg-red-950 text-red-400 border-red-800/60"
                     : f === "MITIGATION" ? "bg-emerald-950 text-emerald-400 border-emerald-800/60"
                     :                     "bg-purple-950 text-purple-400 border-purple-800/60"
-                    : "text-slate-600 border-transparent hover:text-slate-400"
+                    : "text-slate-300 border-transparent hover:text-white"
                 }`}
               >
                 {f === "ALL" ? "All" : f}
@@ -684,8 +684,8 @@ export function AiSocDashboard() {
                 placeholder="Search syslog..."
                 className="w-full bg-black/50 border border-slate-800/60 rounded-lg pl-8 pr-8 py-1.5 text-[10px] font-mono text-slate-300 focus:outline-none focus:border-cyan-500/40 placeholder-slate-700"
               />
-              <Search className="w-3 h-3 text-slate-600 absolute left-2.5 top-2.5" />
-              {logSearch && <button onClick={() => setLogSearch("")} className="absolute right-2.5 top-2.5 text-slate-600 hover:text-slate-400 cursor-pointer"><X className="w-3 h-3" /></button>}
+              <Search className="w-3 h-3 text-slate-300 absolute left-2.5 top-2.5" />
+              {logSearch && <button onClick={() => setLogSearch("")} className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"><X className="w-3 h-3" /></button>}
             </div>
           </div>
 
@@ -696,7 +696,7 @@ export function AiSocDashboard() {
                 const isNew = i === filteredLogs.length - 1;
                 return (
                   <div key={log.id} className={`flex items-start gap-2 py-0.5 rounded px-1 ${isNew ? "log-line-new" : ""} hover:bg-slate-900/20 group`}>
-                    <span className="text-slate-700 shrink-0 tabular-nums select-none">[{log.timestamp}]</span>
+                    <span className="text-slate-400 shrink-0 tabular-nums select-none">[{log.timestamp}]</span>
                     <LogBadge cat={log.category} />
                     <span className={`flex-1 ${
                       log.category === "ALERT"      ? "text-red-300" :
@@ -708,7 +708,7 @@ export function AiSocDashboard() {
                 );
               })
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-700 py-8 gap-2">
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 py-8 gap-2">
                 <Search className="w-6 h-6" />
                 <span className="text-[10px] font-mono uppercase">No matching events</span>
               </div>
@@ -717,7 +717,7 @@ export function AiSocDashboard() {
 
           {/* Footer status */}
           <div className="px-4 py-2 border-t border-slate-900 flex justify-between items-center text-[9px] font-mono shrink-0">
-            <span className="text-slate-600">Node: <span className="text-slate-400">Jajpur_HQ_Sector_B</span></span>
+            <span className="text-slate-300">Node: <span className="text-slate-400">Jajpur_HQ_Sector_B</span></span>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-emerald-400 font-bold">99.99% INTAKE</span>
@@ -736,12 +736,12 @@ export function AiSocDashboard() {
             </div>
             <div>
               <h4 className="text-xs font-extrabold font-mono text-white uppercase tracking-widest">CYBERDUDE® REAL-TIME AI SECURITY COPILOT</h4>
-              <p className="text-[9px] text-slate-500 font-mono">Ask threat analysis queries, generate configs, or verify compliance codes.</p>
+              <p className="text-[9px] text-slate-300 font-mono">Ask threat analysis queries, generate configs, or verify compliance codes.</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span className="text-[9px] font-mono text-slate-500 hidden sm:inline">GE-NEURAL ARCHITECTURE</span>
+            <span className="text-[9px] font-mono text-slate-300 hidden sm:inline">GE-NEURAL ARCHITECTURE</span>
           </div>
         </div>
 
@@ -760,7 +760,7 @@ export function AiSocDashboard() {
                   <span className={`text-[8px] font-mono font-extrabold uppercase ${msg.sender === "user" ? "text-cyan-500" : "text-emerald-500"}`}>
                     {msg.sender === "user" ? "◉ YOU" : "⬡ CYBERDUDE_AI"}
                   </span>
-                  <span className="text-[8px] font-mono text-slate-700">{msg.timestamp}</span>
+                  <span className="text-[8px] font-mono text-slate-400">{msg.timestamp}</span>
                 </div>
                 <div className={`p-3 rounded-xl text-[11px] leading-relaxed font-sans whitespace-pre-wrap ${
                   msg.sender === "user"
@@ -789,7 +789,7 @@ export function AiSocDashboard() {
 
         {/* Quick presets */}
         <div className="px-4 py-2 border-t border-slate-900/60 bg-slate-950/40">
-          <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest block mb-2">Quick Presets</span>
+          <span className="text-[9px] font-mono text-slate-300 uppercase tracking-widest block mb-2">Quick Presets</span>
           <div className="flex flex-wrap gap-1.5">
             {[
               "Audit typical Log4j payloads & write Sentinel Rules",
@@ -801,7 +801,7 @@ export function AiSocDashboard() {
                 key={idx}
                 onClick={() => triggerQuickPrompt(preset)}
                 disabled={aiAnalyzing}
-                className="bg-slate-900/80 hover:bg-cyan-950/40 text-slate-500 hover:text-cyan-400 border border-slate-800 hover:border-cyan-800/50 px-2.5 py-1 rounded-lg text-[10px] font-mono transition-all cursor-pointer"
+                className="bg-slate-900/80 hover:bg-cyan-950/40 text-slate-300 hover:text-cyan-400 border border-slate-800 hover:border-cyan-800/50 px-2.5 py-1 rounded-lg text-[10px] font-mono transition-all cursor-pointer"
               >
                 {preset}
               </button>
@@ -840,7 +840,7 @@ export function AiSocDashboard() {
             <Eye className="w-4 h-4 text-red-400" />
             <div>
               <h4 className="text-xs font-extrabold font-mono text-white uppercase tracking-widest">Interactive Exploit Mitigation Lab</h4>
-              <p className="text-[9px] text-slate-500 font-mono">Audit IPs, domains, or hashes — exports shell scripts for immediate block.</p>
+              <p className="text-[9px] text-slate-300 font-mono">Audit IPs, domains, or hashes — exports shell scripts for immediate block.</p>
             </div>
           </div>
 
@@ -848,14 +848,14 @@ export function AiSocDashboard() {
             <form onSubmit={executeThreatHunter} className="space-y-3">
               {/* Type selector */}
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Analysis Coordinate Class</label>
+                <label className="text-[9px] font-mono text-slate-300 uppercase tracking-widest">Analysis Coordinate Class</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(["ip", "domain", "hash"] as const).map(type => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => { setHunterType(type); setTargetInput(type === "ip" ? "185.220.101.4" : type === "domain" ? "scam-redirector-portal.su" : "4198fa3906a59bc8da771970b89cf8271a067ff09761da12937000e4bbf451ae"); }}
-                      className={`py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border cursor-pointer ${hunterType === type ? "bg-cyan-950 text-cyan-400 border-cyan-700/60" : "bg-slate-950/50 text-slate-500 border-slate-800 hover:text-slate-300 hover:border-slate-700"}`}
+                      className={`py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border cursor-pointer ${hunterType === type ? "bg-cyan-950 text-cyan-400 border-cyan-700/60" : "bg-slate-950/50 text-slate-300 border-slate-800 hover:text-white hover:border-slate-700"}`}
                     >
                       {type === "ip" ? "IP Node" : type === "domain" ? "Domain/URL" : "SHA256 Hash"}
                     </button>
@@ -864,7 +864,7 @@ export function AiSocDashboard() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Indicator Token Coordinate</label>
+                <label className="text-[9px] font-mono text-slate-300 uppercase tracking-widest">Indicator Token Coordinate</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -895,12 +895,12 @@ export function AiSocDashboard() {
                         <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/60 border border-red-900/40 px-1.5 py-0.5 rounded uppercase">
                           {hunterResult.classification}
                         </span>
-                        <p className="text-[10px] font-mono text-slate-500 truncate">{hunterResult.query}</p>
+                        <p className="text-[10px] font-mono text-slate-300 truncate">{hunterResult.query}</p>
                       </div>
                       <div className="grid grid-cols-1 gap-1 text-[10px] font-mono">
-                        <div><span className="text-slate-600">Attribution: </span><span className="text-slate-200 font-bold">{hunterResult.threatGroup}</span></div>
-                        <div><span className="text-slate-600">Origin: </span><span className="text-slate-300">{hunterResult.origin}</span></div>
-                        <div><span className="text-slate-600">MITRE: </span><span className="text-amber-400">{hunterResult.mitreRef}</span></div>
+                        <div><span className="text-slate-300">Attribution: </span><span className="text-slate-200 font-bold">{hunterResult.threatGroup}</span></div>
+                        <div><span className="text-slate-300">Origin: </span><span className="text-slate-300">{hunterResult.origin}</span></div>
+                        <div><span className="text-slate-300">MITRE: </span><span className="text-amber-400">{hunterResult.mitreRef}</span></div>
                       </div>
                     </div>
                   </div>
@@ -910,10 +910,10 @@ export function AiSocDashboard() {
                     <div className="flex items-center justify-between">
                       <span className="text-[8px] font-mono text-emerald-400 font-bold uppercase">Mitigation Shell Script</span>
                       <div className="flex gap-1.5">
-                        <button onClick={() => copyToClipboard(hunterResult.shellCommand, "shell")} className="text-[8px] font-mono text-slate-500 hover:text-slate-300 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors">
+                        <button onClick={() => copyToClipboard(hunterResult.shellCommand, "shell")} className="text-[8px] font-mono text-slate-300 hover:text-white bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors">
                           {copiedText === "shell" ? <><Check className="w-2.5 h-2.5 text-emerald-400" /> Copied</> : <><Copy className="w-2.5 h-2.5" /> Copy</>}
                         </button>
-                        <button onClick={() => downloadScript(`mitigate-${hunterType}.sh`, hunterResult.shellCommand)} className="text-[8px] font-mono text-slate-500 hover:text-slate-300 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors">
+                        <button onClick={() => downloadScript(`mitigate-${hunterType}.sh`, hunterResult.shellCommand)} className="text-[8px] font-mono text-slate-300 hover:text-white bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors">
                           <Download className="w-2.5 h-2.5" /> .sh
                         </button>
                       </div>
@@ -926,10 +926,10 @@ export function AiSocDashboard() {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-2 text-center py-4">
                   <div className="w-12 h-12 rounded-full bg-slate-900/80 border border-slate-800 flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-slate-700 animate-pulse" />
+                    <Shield className="w-6 h-6 text-slate-400 animate-pulse" />
                   </div>
-                  <span className="text-[10px] font-mono text-slate-600 uppercase tracking-wider">MITIGATION GENERATOR COMPILER</span>
-                  <p className="text-[10px] text-slate-700 font-sans max-w-xs">Submit an IP, domain, or hash to generate network filters and YARA detections.</p>
+                  <span className="text-[10px] font-mono text-slate-300 uppercase tracking-wider">MITIGATION GENERATOR COMPILER</span>
+                  <p className="text-[10px] text-slate-400 font-sans max-w-xs">Submit an IP, domain, or hash to generate network filters and YARA detections.</p>
                 </div>
               )}
             </div>
@@ -943,7 +943,7 @@ export function AiSocDashboard() {
               <FileCheck className="w-4 h-4 text-emerald-400" />
               <div>
                 <h4 className="text-xs font-extrabold font-mono text-white uppercase tracking-widest">Information Security Governance Hub</h4>
-                <p className="text-[9px] text-slate-500 font-mono">Toggle controls to recalculate compliance scores in real-time.</p>
+                <p className="text-[9px] text-slate-300 font-mono">Toggle controls to recalculate compliance scores in real-time.</p>
               </div>
             </div>
           </div>
@@ -963,8 +963,8 @@ export function AiSocDashboard() {
                     onClick={() => { setSelectedFramework(tab.fw); playTickAudio(); }}
                     className={`p-2.5 rounded-xl border transition-all cursor-pointer text-center space-y-1 ${isActive ? tab.activeBg : "bg-slate-950/50 border-slate-800 hover:border-slate-700"}`}
                   >
-                    <span className={`text-[9px] font-mono uppercase tracking-wider block ${isActive ? "text-slate-200" : "text-slate-500"}`}>{tab.label}</span>
-                    <span className={`text-base font-extrabold font-mono block ${isActive ? (tab.score >= 80 ? "text-emerald-400" : tab.score >= 50 ? "text-amber-400" : "text-red-400") : "text-slate-600"}`}>{tab.score}%</span>
+                    <span className={`text-[9px] font-mono uppercase tracking-wider block ${isActive ? "text-slate-200" : "text-slate-300"}`}>{tab.label}</span>
+                    <span className={`text-base font-extrabold font-mono block ${isActive ? (tab.score >= 80 ? "text-emerald-400" : tab.score >= 50 ? "text-amber-400" : "text-red-400") : "text-slate-300"}`}>{tab.score}%</span>
                     <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
                       <div className={`h-full transition-all duration-700 rounded-full ${tab.score >= 80 ? "bg-emerald-500" : tab.score >= 50 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: isActive ? `${tab.score}%` : "0%" }}></div>
                     </div>
@@ -985,8 +985,8 @@ export function AiSocDashboard() {
                     {item.status && <Check className="w-3 h-3 text-black stroke-[3]" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className={`text-[10px] font-sans block leading-snug ${item.status ? "text-slate-200" : "text-slate-500"}`}>{item.title}</span>
-                    <span className="text-[8px] font-mono text-slate-700">Weight: {item.score} pts</span>
+                    <span className={`text-[10px] font-sans block leading-snug ${item.status ? "text-slate-200" : "text-slate-300"}`}>{item.title}</span>
+                    <span className="text-[8px] font-mono text-slate-400">Weight: {item.score} pts</span>
                   </div>
                 </div>
               ))}
@@ -995,7 +995,7 @@ export function AiSocDashboard() {
             {/* Score display */}
             <div className="bg-slate-950/60 border border-slate-800/50 rounded-xl p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">
+                <span className="text-[9px] font-mono text-slate-300 uppercase tracking-wider">
                   {selectedFramework === "dpdp" ? "India DPDP digital fiduciary rating" : selectedFramework === "iso" ? "ISO/IEC certification eligibility" : "SOC-2 Trust Principle posture"}
                 </span>
                 <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-lg border ${fwScore >= 80 ? "bg-emerald-950/60 text-emerald-400 border-emerald-900/40" : fwScore >= 50 ? "bg-amber-950/60 text-amber-400 border-amber-900/40" : "bg-red-950/60 text-red-400 border-red-900/40"}`}>

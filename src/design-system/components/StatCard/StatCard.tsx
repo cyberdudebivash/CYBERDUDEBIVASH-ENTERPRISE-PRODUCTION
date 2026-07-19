@@ -15,7 +15,7 @@ const TREND_ICON: Record<StatCardTrend, typeof TrendingUp> = {
 const TREND_COLOR: Record<StatCardTrend, string> = {
   up: "text-emerald-400",
   down: "text-red-400",
-  flat: "text-slate-500",
+  flat: "text-slate-300",
 };
 
 export interface StatCardProps {
@@ -75,24 +75,24 @@ export function StatCard({
   ].join(" ");
 
   const labelClass = variant === "surface"
-    ? "text-[10px] md:text-xs text-slate-500 uppercase tracking-widest mt-1"
-    : "text-[10px] text-slate-500 uppercase tracking-widest mt-1";
+    ? "text-[11px] md:text-xs text-slate-300 font-semibold uppercase tracking-widest mt-1"
+    : "text-[11px] text-slate-300 font-semibold uppercase tracking-widest mt-1";
 
   const TrendIcon = trend ? TREND_ICON[trend] : null;
 
   return (
     <div className={containerClass}>
-      {icon && <div className="flex justify-center mb-1.5 text-slate-500">{icon}</div>}
+      {icon && <div className="flex justify-center mb-1.5 text-slate-400">{icon}</div>}
       <div className={`${valueClass} ${animate ? "counter-pop" : ""}`}>{value}</div>
       <div className={labelClass}>{label}</div>
       {trend && TrendIcon && (
-        <div className={`flex items-center justify-center gap-1 mt-1 text-[9px] font-mono ${TREND_COLOR[trend]}`}>
+        <div className={`flex items-center justify-center gap-1 mt-1 text-[10px] font-mono font-semibold ${TREND_COLOR[trend]}`}>
           <TrendIcon className="w-3 h-3" aria-hidden="true" />
           {trendValue}
         </div>
       )}
       {status && (
-        <div className="mt-1.5 inline-block text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-slate-800 text-slate-500">
+        <div className="mt-1.5 inline-block text-[10px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-slate-700 text-slate-300">
           {status}
         </div>
       )}

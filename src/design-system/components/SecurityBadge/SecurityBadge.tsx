@@ -21,8 +21,8 @@ export interface SecurityBadgeProps {
 export function SecurityBadge({ label, colorClassName, variant = "text" }: SecurityBadgeProps) {
   if (variant === "pill-icon") {
     return (
-      <span className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-[10px] font-mono flex items-center gap-1.5">
-        <Check className="w-3 h-3 text-emerald-500" />
+      <span className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-[11px] font-mono font-semibold flex items-center gap-1.5">
+        <Check className="w-3 h-3 text-emerald-400" />
         <span className={colorClassName}>{label}</span>
       </span>
     );
@@ -30,7 +30,7 @@ export function SecurityBadge({ label, colorClassName, variant = "text" }: Secur
 
   if (variant === "pill-solid") {
     return (
-      <span className={`text-[11px] font-mono font-semibold px-3 py-1.5 rounded-lg border ${colorClassName}`}>
+      <span className={`text-[12px] font-mono font-bold px-3 py-1.5 rounded-lg border ${colorClassName}`}>
         {label}
       </span>
     );
@@ -38,8 +38,8 @@ export function SecurityBadge({ label, colorClassName, variant = "text" }: Secur
 
   if (variant === "dot-text") {
     return (
-      <span className={`text-[10px] font-mono font-semibold ${colorClassName} flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${colorClassName.replace("text-", "bg-")} opacity-80`} />
+      <span className={`text-[11px] font-mono font-semibold ${colorClassName} flex items-center gap-1.5 transition-opacity`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${colorClassName.replace("text-", "bg-")}`} />
         {label}
       </span>
     );

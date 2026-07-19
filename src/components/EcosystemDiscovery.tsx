@@ -304,7 +304,7 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
               CYBERDUDEBIVASH® Complete Ecosystem
             </h2>
           </div>
-          <p className="text-[11px] text-slate-500 font-sans">
+          <p className="text-[11px] text-slate-300 font-sans">
             Discover every platform, service, API, and commercial offering in the unified cybersecurity ecosystem.
           </p>
         </div>
@@ -354,7 +354,7 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
                           <span className={`text-[9px] font-mono font-bold uppercase tracking-widest border px-1.5 py-0.5 rounded ${p.badgeColor}`}>
                             {p.category}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-mono">{p.tagline}</span>
+                          <span className="text-[10px] text-slate-300 font-mono">{p.tagline}</span>
                         </div>
                         <h3 className="text-sm font-extrabold text-white tracking-tight">{p.name}</h3>
                       </div>
@@ -393,7 +393,7 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
 
                     {/* Audience Tag */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[9px] text-slate-600 uppercase tracking-wider font-mono">Best for:</span>
+                      <span className="text-[9px] text-slate-300 uppercase tracking-wider font-mono">Best for:</span>
                       {p.audience.split(", ").map((a) => (
                         <span key={a} className="text-[9px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">
                           {a}
@@ -405,7 +405,7 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
                   {/* Expand Toggle */}
                   <button
                     onClick={() => setExpandedPlatform(isExpanded ? null : p.id)}
-                    className="shrink-0 text-slate-500 hover:text-slate-200 transition-colors mt-1 cursor-pointer"
+                    className="shrink-0 text-slate-300 hover:text-slate-200 transition-colors mt-1 cursor-pointer"
                     title={isExpanded ? "Collapse" : "Show capabilities"}
                   >
                     <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
@@ -415,7 +415,7 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
                 {/* Expandable Capabilities Grid */}
                 {isExpanded && (
                   <div className="border-t border-slate-800/60 px-5 py-4 bg-slate-950/40">
-                    <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono mb-3">Key Capabilities</p>
+                    <p className="text-[9px] text-slate-300 uppercase tracking-widest font-mono mb-3">Key Capabilities</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                       {p.capabilities.map((cap) => (
                         <div key={cap} className="flex items-start gap-2 text-[11px] text-slate-300">
@@ -548,15 +548,15 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <span className="text-xs font-bold text-slate-200">{ep.label}</span>
-                      <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">{ep.url}</span>
+                      <span className="text-[9px] text-slate-300 font-mono truncate max-w-full">{ep.url}</span>
                     </div>
-                    <p className="text-[10px] text-slate-500">{ep.desc}</p>
+                    <p className="text-[10px] text-slate-300">{ep.desc}</p>
                   </div>
                   <a
                     href={ep.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 text-[10px] text-slate-500 hover:text-cyan-400 font-mono flex items-center gap-1 transition-colors group-hover:text-cyan-400"
+                    className="shrink-0 text-[10px] text-slate-300 hover:text-cyan-400 font-mono flex items-center gap-1 transition-colors group-hover:text-cyan-400"
                   >
                     Open <ExternalLink className="w-3 h-3" />
                   </a>
