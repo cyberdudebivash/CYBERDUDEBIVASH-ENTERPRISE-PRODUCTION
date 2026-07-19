@@ -3,6 +3,7 @@ import { aligned } from "../constants/ecosystemData";
 import { TrustBadge } from "../components/badges/TrustBadge";
 import { SectionHeader } from "../design-system/components/SectionHeader";
 import { StatCard } from "../design-system/components/StatCard";
+import { FeatureCard } from "../design-system/components/FeatureCard";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";
@@ -43,14 +44,11 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
 
             <div className="grid md:grid-cols-3 gap-5">
               {[
-                { title: "Mission", color: "border-cyan-500/40 bg-cyan-950/10", label: "text-cyan-400", body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to the largest global enterprises." },
-                { title: "Vision", color: "border-violet-500/40 bg-violet-950/10", label: "text-violet-400", body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence." },
-                { title: "Core Values", color: "border-emerald-500/40 bg-emerald-950/10", label: "text-emerald-400", body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community." },
+                { title: "Mission", accent: "cyan" as const, body: "To democratize enterprise-grade cybersecurity with AI-native tools, real-time threat intelligence, and autonomous SOC operations — protecting organizations of every scale, from Indian SMEs to the largest global enterprises." },
+                { title: "Vision", accent: "violet" as const, body: "To be India's premier global cybersecurity authority, setting the international standard for AI-driven threat defense in the Asia-Pacific region and establishing CYBERDUDEBIVASH as the most trusted name in autonomous cyber intelligence." },
+                { title: "Core Values", accent: "emerald" as const, body: "Integrity in intelligence reporting. Zero-tolerance for false positives. Radical transparency in compliance. Responsible disclosure. India-first data sovereignty. Open-source contribution to the global security community." },
               ].map(c => (
-                <div key={c.title} className={`border rounded-xl p-5 ${c.color}`}>
-                  <h3 className={`text-xs font-bold uppercase tracking-widest mb-2 ${c.label}`}>{c.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-sans">{c.body}</p>
-                </div>
+                <FeatureCard key={c.title} variant="tinted" accent={c.accent} title={c.title} description={c.body} />
               ))}
             </div>
 
@@ -79,13 +77,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { title: "India DPDP Act Compliance", desc: "End-to-end data protection compliance scanning, privacy impact assessments, DPO advisory, and breach notification readiness for Indian enterprises." },
                   { title: "Enterprise REST API", desc: "Programmable threat intelligence API delivering IOC enrichment, malware hash lookups, CVE data, and geolocation threat data to your SIEM/SOAR in real time." },
                 ].map(s => (
-                  <div key={s.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{s.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{s.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={s.title} iconWrapper="dot" title={s.title} description={s.desc} />
                 ))}
               </div>
             </div>

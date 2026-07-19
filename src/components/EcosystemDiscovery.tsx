@@ -4,6 +4,7 @@ import {
   Zap, Lock, Database, FileText, Users, ArrowRight, Star,
   Server, Radio, Eye, TrendingUp, Award, ChevronRight
 } from "lucide-react";
+import { FeatureCard } from "../design-system/components/FeatureCard";
 
 interface EcosystemPlatform {
   id: string;
@@ -449,45 +450,38 @@ export default function EcosystemDiscovery({ onContact }: { onContact: () => voi
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {COMMERCIAL_SERVICES.map((svc, idx) => (
-              <div
+              <FeatureCard
                 key={idx}
-                className="bg-[#0c1117] border border-slate-800 p-4 rounded-lg flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-950/30 group-hover:border-cyan-800/40 transition-all">
-                        {svc.icon}
-                      </div>
-                      <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${CATEGORY_COLORS[svc.category] || "text-slate-400 bg-slate-900 border-slate-800"}`}>
-                        {svc.category}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-extrabold text-white group-hover:text-cyan-300 transition-colors mb-1">{svc.title}</h4>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">{svc.description}</p>
-                  </div>
-                </div>
-
-                {svc.url ? (
-                  <a
-                    href={svc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1.5 transition-all"
-                  >
-                    {svc.ctaText} <ExternalLink className="w-3 h-3 text-cyan-400" />
-                  </a>
-                ) : (
-                  <button
-                    onClick={onContact}
-                    className="w-full py-2 bg-slate-900 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-800/40 text-slate-300 hover:text-cyan-300 text-[10px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    {svc.ctaText} <ArrowRight className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
+                layout="stack"
+                iconWrapper="box"
+                icon={svc.icon}
+                badge={
+                  <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${CATEGORY_COLORS[svc.category] || "text-slate-400 bg-slate-900 border-slate-800"}`}>
+                    {svc.category}
+                  </span>
+                }
+                title={svc.title}
+                description={svc.description}
+                cta={
+                  svc.url ? (
+                    <a
+                      href={svc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      {svc.ctaText} <ExternalLink className="w-3 h-3 text-cyan-400" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={onContact}
+                      className="w-full py-2 bg-slate-900 hover:bg-cyan-950/40 border border-slate-800 hover:border-cyan-800/40 text-slate-300 hover:text-cyan-300 text-[10px] font-bold uppercase tracking-wider rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      {svc.ctaText} <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )
+                }
+              />
             ))}
           </div>
 

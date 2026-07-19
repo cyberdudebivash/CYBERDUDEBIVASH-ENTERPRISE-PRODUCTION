@@ -2,6 +2,7 @@ import type { ViewType } from "../types/app";
 import { PricingCard } from "../components/cards/PricingCard";
 import { SectionHeader } from "../design-system/components/SectionHeader";
 import { StatCard } from "../design-system/components/StatCard";
+import { FeatureCard } from "../design-system/components/FeatureCard";
 
 interface ServicePagesProps {
   currentView: "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
@@ -61,13 +62,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { title: "Threat Intelligence Integration", icon: "🌐", desc: "Real-time feed from Sentinel APEX™ — 500K+ IOCs updated every 4 hours — automatically enriching alerts with threat actor context, malware family attribution, and global campaign tracking." },
                   { title: "Compliance Reporting", icon: "📋", desc: "Monthly SOC reports mapped to ISO 27001, SOC 2 Type II, DPDP Act, NIST CSF, and PCI-DSS. Evidence packages ready for auditors and board presentations." },
                 ].map(c => (
-                  <div key={c.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="text-lg shrink-0">{c.icon}</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{c.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{c.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={c.title} icon={c.icon} title={c.title} description={c.desc} />
                 ))}
               </div>
             </div>
@@ -196,13 +191,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { title: "Privacy Impact Assessment (PIA)", icon: "📝", desc: "Structured PIA methodology for new products, features, and data processing activities — identifying privacy risks before they become compliance violations." },
                   { title: "Third-Party Data Processor Audits", icon: "🔗", desc: "Audit of vendor and data processor agreements (DPAs) to ensure your entire supply chain meets DPDP Act obligations. Non-compliant processors are a direct liability for Data Fiduciaries." },
                 ].map(c => (
-                  <div key={c.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="text-lg shrink-0">{c.icon}</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{c.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{c.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={c.title} icon={c.icon} title={c.title} description={c.desc} />
                 ))}
               </div>
             </div>
@@ -269,13 +258,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { id: "LLM09", name: "Overreliance", desc: "Business risk assessment of over-dependence on LLM outputs in security-critical decision workflows without human review." },
                   { id: "LLM10", name: "Model Theft", desc: "Model extraction attacks, intellectual property theft via API probing, and reconstruction of proprietary model weights." },
                 ].map(v => (
-                  <div key={v.id} className="flex gap-3 bg-slate-900/40 border border-slate-800 rounded-lg p-3">
-                    <span className="text-[10px] font-mono text-red-400 bg-red-950/50 border border-red-900/40 px-1.5 py-0.5 rounded h-fit shrink-0 font-bold">{v.id}</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-0.5">{v.name}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{v.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard
+                    key={v.id}
+                    iconWrapper="raw"
+                    icon={<span className="text-[10px] font-mono text-red-400 bg-red-950/50 border border-red-900/40 px-1.5 py-0.5 rounded h-fit shrink-0 font-bold">{v.id}</span>}
+                    title={v.name}
+                    description={v.desc}
+                  />
                 ))}
               </div>
             </div>
@@ -354,13 +343,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { title: "Automated Billing & Reporting", icon: "💰", desc: "Client-specific usage metering, automated invoice generation, white-labeled monthly security reports, and SLA scorecards — all generated automatically for each client." },
                   { title: "API-First Integration", icon: "🔌", desc: "Full REST API for integrating MSSP Suite with your existing PSA tools (ConnectWise, Autotask), RMM platforms, ticketing systems (Jira, ServiceNow), and billing systems." },
                 ].map(c => (
-                  <div key={c.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="text-lg shrink-0">{c.icon}</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{c.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{c.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={c.title} icon={c.icon} title={c.title} description={c.desc} />
                 ))}
               </div>
             </div>
@@ -421,13 +404,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { title: "Vendor Risk Management", icon: "🔗", desc: "Third-party risk assessments for critical vendors and cloud providers. Negotiate security requirements into contracts and ensure ongoing vendor compliance monitoring." },
                   { title: "Incident Response Leadership", icon: "🚨", desc: "Command your incident response during active breaches — coordinating technical teams, communicating with executives, managing regulatory notifications, and leading post-incident reviews." },
                 ].map(c => (
-                  <div key={c.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4 flex gap-3">
-                    <span className="text-lg shrink-0">{c.icon}</span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-200 mb-1">{c.title}</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{c.desc}</p>
-                    </div>
-                  </div>
+                  <FeatureCard key={c.title} icon={c.icon} title={c.title} description={c.desc} />
                 ))}
               </div>
             </div>
@@ -488,18 +465,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                   { title: "Red Team Operations", icon: "🔴", tags: ["APT Simulation", "C2 Framework", "Persistence", "Exfiltration"], desc: "Full adversary simulation engagements — emulating specific threat actor TTPs (MITRE ATT&CK mapped), establishing persistent access, moving laterally, exfiltrating data, and testing detection + response capabilities." },
                   { title: "Source Code Security Review", icon: "💻", tags: ["SAST", "Manual Review", "Secrets Scanning", "Dependency Audit"], desc: "Manual and automated source code security review — OWASP ASVS compliance, secret detection, dependency vulnerability analysis, and architectural security review of critical application logic." },
                 ].map(c => (
-                  <div key={c.title} className="bg-slate-900/40 border border-slate-800 rounded-lg p-4">
-                    <div className="flex items-start gap-3 mb-2">
-                      <span className="text-lg shrink-0">{c.icon}</span>
-                      <h4 className="text-xs font-bold text-slate-200">{c.title}</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {c.tags.map(t => (
-                        <span key={t} className="text-[9px] font-mono text-pink-400 bg-pink-950/40 border border-pink-900/40 px-1.5 py-0.5 rounded">{t}</span>
-                      ))}
-                    </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed font-sans">{c.desc}</p>
-                  </div>
+                  <FeatureCard key={c.title} icon={c.icon} title={c.title} tags={c.tags} description={c.desc} accent="pink" />
                 ))}
               </div>
             </div>
