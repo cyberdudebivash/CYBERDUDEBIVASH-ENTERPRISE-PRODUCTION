@@ -91,12 +91,16 @@ jobs:
             || { echo "FATAL: root index.html missing entry ref for $JS_FILE"; exit 1; }
           echo "✅ root index.html validated"
 
-          # Commit root assets/ + index.html for branch-based Pages (skip if unchanged)
+          # Commit root assets/ + index.html for branch-based Pages (skip if unchanged).
+          # Deliberately no skip-ci tag: Cloudflare Pages' own Git integration honors the
+          # same convention, so tagging it would make Cloudflare silently skip deploying
+          # the one commit that syncs the assets it serves (it has no build step of its own).
+          # The one-time cost is a second, no-op GitHub Actions run per push.
           git config --local user.email "ci@cyberdudebivash.com"
           git config --local user.name "CDB Build Bot"
           git add assets/ index.html
           if ! git diff --staged --quiet; then
-            git commit -m "chore: sync built assets to root for branch deployment [skip ci]"
+            git commit -m "chore: sync built assets to root for branch deployment"
             git push
           fi
 
