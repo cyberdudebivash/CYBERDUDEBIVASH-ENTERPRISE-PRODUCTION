@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Shield, 
-  Terminal, 
-  Globe, 
-  Activity, 
-  Cpu, 
-  RefreshCw, 
-  Code, 
-  FileCheck, 
-  CheckCircle2, 
-  Info, 
+import {
+  Shield,
+  Terminal,
+  Activity,
+  RefreshCw,
+  Code,
+  FileCheck,
+  CheckCircle2,
+  Info,
   Send,
   Zap,
   Briefcase,
-  BookOpen,
-  Key,
   Mail,
   Check,
   Play,
   CheckSquare,
-  Phone,
   Download,
   ExternalLink
 } from "lucide-react";
@@ -29,9 +24,14 @@ import {
   SOCIAL_PROFILES,
   CORPORATE_REGISTRATION,
   aligned
-} from "./ecosystemData";
+} from "./constants/ecosystemData";
 import { AiSocDashboard } from "./components/AiSocDashboard";
+import { Footer } from "./components/footer/Footer";
+import { Header } from "./components/header/Header";
+import { EcosystemStrip } from "./components/navigation/EcosystemStrip";
+import { MobileNav } from "./components/navigation/MobileNav";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
+import type { ViewType, AiTab } from "./types/app";
 import CookieConsent from "./components/CookieConsent";
 import HomeView from "./views/HomeView";
 import IntelView from "./views/IntelView";
@@ -78,9 +78,7 @@ interface CveItem {
 
 export default function App() {
   // Top-level navigation tab: home (Official Website Gateway), intel (Sentinel APEX), ai (AI Security Hub), tools (ThreatCore Tools), blog (Advisories & Academy), api (Ecosystem REST APIs)
-  const [currentView, setCurrentView] = useState<"home" | "intel" | "ai" | "tools" | "blog" | "api" | "about" | "privacy" | "terms" | "copyright" | "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest">("home");
-  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
-  const [solutionsDropdownOpen, setSolutionsDropdownOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<ViewType>("home");
 
   // In-app ROI Calculator States
   const [roiStaff, setRoiStaff] = useState(3);
@@ -111,7 +109,7 @@ export default function App() {
   }, [currentView]);
 
   // Core App states carrying forward from our baseline
-  const [activeAiTab, setActiveAiTab] = useState<"log" | "code" | "domain" | "compliance" | "chat">("log");
+  const [activeAiTab, setActiveAiTab] = useState<AiTab>("log");
   const [loadingFeed, setLoadingFeed] = useState(false);
   const [alerts, setAlerts] = useState<ThreatAlert[]>([
     {
@@ -714,267 +712,16 @@ export default function App() {
           </div>
         </div>
       </div>
+      <Header
+        currentView={currentView}
+        onNavigate={setCurrentView}
+        onContactClick={() => setShowContactModal(true)}
+        onOpenAiTab={setActiveAiTab}
+        onRunHashCheck={runHashCheck}
+      />
 
-      {/* 2. UNIFIED ENTERPRISE NAVIGATION HEADER */}
-      <header className="flex items-center justify-between px-6 h-16 border-b border-slate-800 bg-[#0c1117] shrink-0 sticky top-0 z-40 shadow-lg shadow-black/40">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setCurrentView("home")}
-            aria-label="CyberDudeBivash Home"
-            className="w-10 h-10 bg-cyan-500 rounded flex items-center justify-center text-black font-extrabold text-xl shadow-lg shadow-cyan-500/20 glow-cyan cursor-pointer"
-          >
-            C
-          </button>
-          <button className="flex flex-col cursor-pointer text-left" onClick={() => setCurrentView("home")} aria-label="Go to Gateway home">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold tracking-tight text-slate-100">
-                CyberDudeBivash<span className="text-cyan-500 font-semibold text-xs ml-0.5">®</span> 
-              </h1>
-              <span className="bg-cyan-950 text-cyan-400 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border border-cyan-800">ECOSYSTEM V4</span>
-            </div>
-            <span className="text-[10px] text-slate-500 font-mono tracking-wide leading-none mt-1">
-              {aligned("iso27001")} &bull; {aligned("soc2")} &bull; {aligned("dpdp")}
-            </span>
-          </button>
-        </div>
-
-        {/* Global Tabs Navigation Selector */}
-        <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button
-            onClick={() => setCurrentView("home")}
-            aria-current={currentView === "home" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "home" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" aria-hidden="true" /> Gateway
-          </button>
-
-          {/* Services Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setServicesDropdownOpen(true)}
-            onMouseLeave={() => setServicesDropdownOpen(false)}
-          >
-            <button
-              aria-haspopup="true"
-              aria-expanded={servicesDropdownOpen}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                ["soc", "dpdp", "owasp", "mssp", "vciso", "pentest"].includes(currentView)
-                  ? "bg-cyan-900/40 text-cyan-400 border border-cyan-800"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5 text-cyan-550" aria-hidden="true" /> Services <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
-            </button>
-            {servicesDropdownOpen && (
-              <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
-                {[
-                  { label: "Managed SOC-as-a-Service", view: "soc" as const, desc: "24/7 autonomous monitoring" },
-                  { label: "DPDP Act Compliance Scans", view: "dpdp" as const, desc: "India data protection audits" },
-                  { label: "OWASP LLM Red Team Testing", view: "owasp" as const, desc: "Adversarial AI validation" },
-                  { label: "Multi-Tenant MSSP Suite", view: "mssp" as const, desc: "Client partner command center" },
-                  { label: "vCISO Advisory Services", view: "vciso" as const, desc: "Executive security governance" },
-                  { label: "Professional Penetration Testing", view: "pentest" as const, desc: "Full-spectrum pentests" },
-                ].map((s) => (
-                  <button
-                    key={s.view}
-                    role="menuitem"
-                    aria-current={currentView === s.view ? "page" : undefined}
-                    onClick={() => {
-                      setCurrentView(s.view);
-                      setServicesDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
-                  >
-                    <span className="text-xs font-bold font-mono">{s.label}</span>
-                    <span className="text-[9px] text-slate-550 leading-none mt-0.5">{s.desc}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Solutions Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setSolutionsDropdownOpen(true)}
-            onMouseLeave={() => setSolutionsDropdownOpen(false)}
-          >
-            <button
-              aria-haspopup="true"
-              aria-expanded={solutionsDropdownOpen}
-              className="px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            >
-              <Cpu className="w-3.5 h-3.5 text-purple-450" aria-hidden="true" /> Solutions <span className="text-[8px] opacity-70" aria-hidden="true">▼</span>
-            </button>
-            {solutionsDropdownOpen && (
-              <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-800 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
-                {[
-                  { label: "AI Security Governance", action: () => { setCurrentView("ai"); setActiveAiTab("compliance"); }, desc: "OWASP LLM & AI compliance audits" },
-                  { label: "Threat Intelligence Feeds", action: () => { setCurrentView("intel"); }, desc: "Sentinel APEX IOC feed telemetry" },
-                  { label: "Zero Trust Architecture", action: () => { setCurrentView("tools"); runHashCheck(); }, desc: "NIST 800-207 design frameworks" },
-                  { label: "DevSecOps Integration", action: () => { setCurrentView("ai"); setActiveAiTab("code"); }, desc: "SAST vulnerability scanners" },
-                ].map((sol, idx) => (
-                  <button
-                    key={idx}
-                    role="menuitem"
-                    onClick={() => {
-                      sol.action();
-                      setSolutionsDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-350 hover:text-cyan-400 transition-colors flex flex-col cursor-pointer border-0"
-                  >
-                    <span className="text-xs font-bold font-mono">{sol.label}</span>
-                    <span className="text-[9px] text-slate-555 leading-none mt-0.5">{sol.desc}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => setCurrentView("intel")}
-            aria-current={currentView === "intel" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "intel" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" aria-hidden="true" /> Sentinel APEX™
-          </button>
-          <button
-            onClick={() => setCurrentView("ai")}
-            aria-current={currentView === "ai" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "ai" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" aria-hidden="true" /> AI Hub &amp; Audit
-          </button>
-          <button
-            onClick={() => setCurrentView("tools")}
-            aria-current={currentView === "tools" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "tools" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <Cpu className="w-3.5 h-3.5" aria-hidden="true" /> ThreatCore™ Tools
-          </button>
-          <button
-            onClick={() => setCurrentView("blog")}
-            aria-current={currentView === "blog" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "blog" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" aria-hidden="true" /> Blog &amp; Academy
-          </button>
-          <button
-            onClick={() => setCurrentView("api")}
-            aria-current={currentView === "api" ? "page" : undefined}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              currentView === "api" ? "bg-cyan-500 text-black shadow-md shadow-cyan-500/10" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
-            }`}
-          >
-            <Key className="w-3.5 h-3.5" aria-hidden="true" /> REST API
-          </button>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setShowContactModal(true)}
-            className="hidden sm:inline-block px-4 py-2 bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-black font-extrabold text-xs uppercase tracking-wider rounded transition-all shadow-md shadow-cyan-500/10"
-          >
-            Request Enterprise SOC
-          </button>
-          <div className="h-8 w-[1px] bg-slate-800"></div>
-          <div className="text-right hidden md:block font-mono">
-            <div className="text-[10px] text-slate-500 leading-none">NODE IP</div>
-            <div className="text-xs text-slate-300 font-bold mt-1">103.142.12.98</div>
-          </div>
-        </div>
-      </header>
-
-      {/* 2b. ECOSYSTEM QUICK-JUMP NAVIGATION BAR */}
-      <div className="hidden md:flex items-center gap-0 bg-[#080d12] border-b border-slate-900/80 px-6 py-0 overflow-x-auto">
-        <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest pr-3 border-r border-slate-900 mr-1 shrink-0 py-2">Ecosystem</span>
-        {[
-          { label: "Official Website",    url: "https://www.cyberdudebivash.com",                   dot: "bg-cyan-500" },
-          { label: "Sentinel APEX™",      url: "https://intel.cyberdudebivash.com/",                 dot: "bg-red-500" },
-          { label: "AI Security Hub",     url: "https://cyberdudebivash.in/",                        dot: "bg-purple-500" },
-          { label: "Tools Marketplace",   url: "https://tools.cyberdudebivash.com/",                 dot: "bg-amber-500" },
-          { label: "Research Blog",       url: "https://blog.cyberdudebivash.in/",                   dot: "bg-emerald-500" },
-          { label: "Developer Docs",      url: "https://intel.cyberdudebivash.com/api-docs",         dot: "bg-sky-500" },
-          { label: "Upgrade Enterprise",  url: "https://intel.cyberdudebivash.com/upgrade.html",     dot: "bg-amber-400" },
-        ].map((item) => (
-          <a
-            key={item.label}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-mono text-slate-500 hover:text-slate-200 hover:bg-slate-900/40 transition-all border-r border-slate-900 shrink-0 group"
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${item.dot} opacity-60 group-hover:opacity-100 transition-opacity`}></span>
-            {item.label}
-          </a>
-        ))}
-        <div className="flex-1"></div>
-        <a
-          href="https://intel.cyberdudebivash.com/upgrade.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-[9px] font-mono text-amber-400 bg-amber-950/30 border-l border-amber-900/30 px-3 py-2 hover:bg-amber-950/50 transition-all flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-          ENTERPRISE UPGRADE
-        </a>
-      </div>
-
-      {/* 3. MOBILE MENU BAR */}
-      <nav aria-label="Mobile navigation" className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
-        <button
-          onClick={() => setCurrentView("home")}
-          aria-current={currentView === "home" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "home" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Gateway
-        </button>
-        <button
-          onClick={() => setCurrentView("intel")}
-          aria-current={currentView === "intel" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "intel" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Sentinel APEX
-        </button>
-        <button
-          onClick={() => setCurrentView("ai")}
-          aria-current={currentView === "ai" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "ai" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          AI Audit
-        </button>
-        <button
-          onClick={() => setCurrentView("tools")}
-          aria-current={currentView === "tools" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "tools" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          ThreatCore Tools
-        </button>
-        <button
-          onClick={() => setCurrentView("blog")}
-          aria-current={currentView === "blog" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "blog" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Blog
-        </button>
-        <button
-          onClick={() => setCurrentView("api")}
-          aria-current={currentView === "api" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "api" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          API
-        </button>
-      </nav>
+      <EcosystemStrip />
+      <MobileNav currentView={currentView} onNavigate={setCurrentView} />
 
       {/* 4. MAIN WORKSPACE VIEW ROUTER */}
       <main id="main-content" className="flex-1">
@@ -1088,199 +835,7 @@ export default function App() {
       )}
 
             {/* 5. BOTTOM ECOSYSTEM FOOTER BAR */}
-      <footer className="relative bg-[#020810] border-t-0 overflow-hidden">
-        {/* Top gradient accent border */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent" />
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-900/40 to-transparent mb-0" />
-
-        {/* Trust badge strip */}
-        <div className="bg-[#050c14] border-b border-slate-800/60 py-3 px-6">
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            {[
-              { label: aligned("iso27001"), color: "text-cyan-400" },
-              { label: aligned("soc2"), color: "text-emerald-400" },
-              { label: aligned("gdpr"), color: "text-sky-400" },
-              { label: aligned("pciDss"), color: "text-violet-400" },
-              { label: "India DPDP Act 2023", color: "text-amber-400" },
-              { label: "MITRE ATT&CK Mapped", color: "text-red-400" },
-              { label: "OWASP LLM Top 10", color: "text-pink-400" },
-            ].map(b => (
-              <span key={b.label} className={`text-[10px] font-mono font-semibold ${b.color} flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${b.color.replace("text-", "bg-")} opacity-80`} />
-                {b.label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Main footer grid */}
-        <div className="max-w-7xl mx-auto px-6 pt-10 pb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 [&>*]:border-0">
-
-          {/* Brand column */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center shadow-lg shadow-cyan-900/50">
-                <span className="text-white font-black text-sm">C</span>
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white tracking-wide">CyberDudeBivash<span className="text-cyan-400">®</span></div>
-                <div className="text-[9px] text-slate-500 font-mono tracking-widest uppercase">ECOSYSTEM V4 · EST. 2020</div>
-              </div>
-            </div>
-            <p className="text-[12px] text-slate-400 leading-relaxed font-sans max-w-xs">
-              Autonomous AI-powered cybersecurity defense platform delivering real-time threat intelligence, managed SOC auditing, and 100+ security tools to enterprise teams globally.
-            </p>
-            {/* Legal registration */}
-            <div className="bg-slate-900/60 border border-slate-800/80 rounded-lg p-3 space-y-1.5">
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Legal Registration</div>
-              <div className="text-[11px] text-slate-300 font-mono">CYBERDUDEBIVASH PRIVATE LIMITED</div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <span className="text-[10px] text-slate-500 font-mono">PAN: <span className="text-cyan-400">ARKPN8270G</span></span>
-                <span className="text-[10px] text-slate-500 font-mono">GSTIN: <span className="text-cyan-400">21ARKPN8270G1ZP</span></span>
-              </div>
-              <div className="text-[10px] text-slate-500 font-sans leading-relaxed">
-                29, Korai-Sukinda Rd, Ragadi, Jajpur Road, Odisha 755019, India
-              </div>
-              <a href="tel:+918179881447" className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 pt-0.5">
-                <Phone className="w-3 h-3" /> +91 81798 81447
-              </a>
-              <a href="mailto:bivash@cyberdudebivash.com" className="text-[11px] font-mono text-cyan-400/80 hover:text-cyan-300 transition-colors block">
-                bivash@cyberdudebivash.com
-              </a>
-            </div>
-          </div>
-
-          {/* Workspace links */}
-          <div className="space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-cyan-500 border-b border-slate-800 pb-2">Workspace</h4>
-            <ul className="space-y-2">
-              {[
-                { label: "Gateway", view: "home" as const },
-                { label: "Sentinel APEX™", view: "intel" as const },
-                { label: "AI Hub & Audit", view: "ai" as const },
-                { label: "ThreatCore™ Tools", view: "tools" as const },
-                { label: "Blog & Academy", view: "blog" as const },
-                { label: "REST API", view: "api" as const },
-              ].map(l => (
-                <li key={l.view}>
-                  <button onClick={() => setCurrentView(l.view)} className="text-[12px] text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer text-left font-sans flex items-center gap-2 group">
-                    <span className="w-1 h-1 rounded-full bg-slate-700 group-hover:bg-cyan-400 transition-colors" />
-                    {l.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Live platforms */}
-          <div className="space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 border-b border-slate-800 pb-2">Live Platforms</h4>
-            <ul className="space-y-2">
-              {[
-                { label: "Official Gateway", url: "https://www.cyberdudebivash.com" },
-                { label: "Sentinel APEX™", url: "https://intel.cyberdudebivash.com" },
-                { label: "AI Security Hub", url: "https://cyberdudebivash.in" },
-                { label: "ThreatCore™ Tools", url: "https://tools.cyberdudebivash.com" },
-                { label: "Research Blog", url: "https://blog.cyberdudebivash.in" },
-                { label: "Developer APIs", url: "https://cyberdudebivash.in/api" },
-              ].map(l => (
-                <li key={l.url}>
-                  <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-[12px] text-slate-400 hover:text-emerald-400 transition-colors font-sans flex items-center gap-2 group">
-                    <span className="w-1 h-1 rounded-full bg-slate-700 group-hover:bg-emerald-400 transition-colors" />
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Enterprise & legal */}
-          <div className="space-y-3">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 border-b border-slate-800 pb-2">Enterprise Services</h4>
-            <ul className="space-y-2">
-              {[
-                { label: "Managed SOC-as-a-Service", view: "soc" as const },
-                { label: "DPDP Act Compliance Scans", view: "dpdp" as const },
-                { label: "OWASP LLM Red Team", view: "owasp" as const },
-                { label: "Multi-Tenant MSSP Suite", view: "mssp" as const },
-                { label: "vCISO Advisory", view: "vciso" as const },
-                { label: "Penetration Testing", view: "pentest" as const },
-              ].map(s => (
-                <li key={s.label}>
-                  <button
-                    onClick={() => setCurrentView(s.view)}
-                    className="text-left w-full text-[11px] text-slate-400 hover:text-violet-300 font-sans flex items-start gap-2 group transition-colors"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-violet-500/60 group-hover:bg-violet-400 mt-1.5 shrink-0 transition-colors" />
-                    {s.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="w-full mt-1 py-1.5 bg-violet-950/40 hover:bg-violet-900/40 border border-violet-800/30 hover:border-violet-600/50 text-violet-400 hover:text-violet-300 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
-            >
-              Request Enterprise Demo →
-            </button>
-            <div className="pt-2 space-y-1.5">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800/60 pb-2">Legal</h4>
-              {[
-                { label: "About Us", view: "about" as const },
-                { label: "Privacy Policy", view: "privacy" as const },
-                { label: "Terms of Service", view: "terms" as const },
-                { label: "Copyright & IP", view: "copyright" as const },
-              ].map(l => (
-                <button key={l.label} onClick={() => setCurrentView(l.view)} className="block text-[11px] text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer text-left font-sans">
-                  {l.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Social row */}
-        <div className="border-t border-slate-800/60 bg-[#030912]">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-3">
-              {[
-                { label: "LinkedIn", url: "https://linkedin.com/company/cyberdudebivash", color: "hover:text-sky-400" },
-                { label: "X / Twitter", url: "https://twitter.com/CDBSENTINELAPEX", color: "hover:text-slate-200" },
-                { label: "Instagram", url: "https://instagram.com/cyberdudebivash_official", color: "hover:text-pink-400" },
-                { label: "YouTube", url: "https://youtube.com/@CYBERDUDEBIVASHSentinelAPEX", color: "hover:text-red-400" },
-                { label: "Medium", url: "https://medium.com/@cyberdudebivash", color: "hover:text-emerald-400" },
-                { label: "GitHub", url: "https://github.com/cyberdudebivash", color: "hover:text-violet-400" },
-              ].map(s => (
-                <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer"
-                  aria-label={`CYBERDUDEBIVASH® on ${s.label} (opens in new tab)`}
-                  className={`text-[11px] text-slate-500 ${s.color} transition-colors font-sans`}>
-                  {s.label}
-                </a>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 text-[10px] text-slate-600 font-mono">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Secure Engine v4.1
-              </span>
-              <span className="text-slate-700">|</span>
-              <span>NODE: 103.142.12.98</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="bg-black border-t border-slate-900">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
-            <div className="text-[10px] text-slate-600 font-mono">
-              &copy; {new Date().getFullYear()} CyberDudeBivash Private Limited. All rights reserved.
-              &nbsp;&bull;&nbsp;TLP:CLEAR unless otherwise marked.
-              &nbsp;&bull;&nbsp;Registered in India under Companies Act 2013.
-            </div>
-            <div className="text-[10px] text-slate-700 font-mono">SESSION: APEX-9922-BIVASH</div>
-          </div>
-        </div>
-      </footer>
+      <Footer onNavigate={setCurrentView} onContactClick={() => setShowContactModal(true)} />
 
       {/* 6. GENERAL REQUEST ENTRY / LEAD MODAL */}
       {showContactModal && (

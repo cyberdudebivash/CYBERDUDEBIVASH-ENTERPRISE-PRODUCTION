@@ -3,6 +3,8 @@ export type ViewType =
   | "about" | "privacy" | "terms" | "copyright"
   | "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
 
+export type AiTab = "log" | "code" | "domain" | "compliance" | "chat";
+
 export interface ThreatAlert {
   id: string;
   timestamp: string;

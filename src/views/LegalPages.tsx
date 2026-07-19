@@ -1,5 +1,6 @@
 import type { ViewType } from "../types/app";
-import { aligned } from "../ecosystemData";
+import { aligned } from "../constants/ecosystemData";
+import { TrustBadge } from "../components/badges/TrustBadge";
 
 interface LegalPagesProps {
   currentView: "about" | "privacy" | "terms" | "copyright";
@@ -110,7 +111,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
                   { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
                 ].map(b => (
-                  <span key={b.label} className={`text-[11px] font-mono font-semibold px-3 py-1.5 rounded-lg border ${b.color}`}>{b.label}</span>
+                  <TrustBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
                 ))}
               </div>
             </div>

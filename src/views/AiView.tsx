@@ -1,7 +1,6 @@
 import React from "react";
 import { Terminal, Code, Globe, FileCheck, Shield, RefreshCw, Zap } from "lucide-react";
-
-type AiTab = "log" | "code" | "domain" | "compliance" | "chat";
+import type { AiTab } from "../types/app";
 
 interface AiViewProps {
   activeAiTab: AiTab;

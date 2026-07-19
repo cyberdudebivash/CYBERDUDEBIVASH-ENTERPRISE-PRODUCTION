@@ -1,5 +1,5 @@
 import { Send } from "lucide-react";
-import { ECOSYSTEM_APIS } from "../ecosystemData";
+import { ECOSYSTEM_APIS } from "../constants/ecosystemData";
 
 interface ApiViewProps {
   apiKey: string;
