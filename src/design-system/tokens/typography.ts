@@ -29,7 +29,7 @@ export const microScale = {
 // Standard Tailwind scale, named for where each is actually used.
 export const scale = {
   body: "text-xs",       // 12px — default running text in dense panels
-  bodyLarge: "text-sm",  // 14px — page-level descriptions, sub-headers
+  bodyLarge: "text-sm md:text-base", // 14px→16px — page-level descriptions (ServicePages/LegalPages)
   heading: "text-lg",    // 18px — card/panel titles (About page founder name)
   display: "text-3xl md:text-5xl", // Hero headline only (HomeView)
   pageTitle: "text-3xl md:text-4xl", // ServicePages/LegalPages H1

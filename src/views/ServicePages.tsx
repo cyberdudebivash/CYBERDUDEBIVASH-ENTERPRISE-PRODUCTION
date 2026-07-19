@@ -1,5 +1,6 @@
 import type { ViewType } from "../types/app";
 import { PricingCard } from "../components/cards/PricingCard";
+import { SectionHeader } from "../design-system/components/SectionHeader";
 
 interface ServicePagesProps {
   currentView: "soc" | "dpdp" | "owasp" | "mssp" | "vciso" | "pentest";
@@ -25,17 +26,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== MANAGED SOC-AS-A-SERVICE ===== */}
         {currentView === "soc" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-violet-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" /> Enterprise Service · SOC Operations
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                Managed SOC-as-a-Service
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                CyberDudeBivash® delivers a fully autonomous 24×7 Security Operations Center powered by our GE-Neural AI engine — combining real-time threat detection, automated alert triage, human-expert incident response, and continuous threat hunting into a single managed service that protects your enterprise without the overhead of building an in-house SOC.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="violet"
+              subtitle="Enterprise Service · SOC Operations"
+              title="Managed SOC-as-a-Service"
+              description="CyberDudeBivash® delivers a fully autonomous 24×7 Security Operations Center powered by our GE-Neural AI engine — combining real-time threat detection, automated alert triage, human-expert incident response, and continuous threat hunting into a single managed service that protects your enterprise without the overhead of building an in-house SOC."
+            />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { v: "24×7", l: "Continuous Monitoring", c: "text-violet-400" },
@@ -54,7 +51,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               <p className="text-xs text-slate-300 leading-relaxed font-sans">Our Managed SOC eliminates the need to hire, train, and retain a 20-person security team. Instead, you get the full power of an enterprise SOC — staffed by CyberDudeBivash analysts, augmented by our proprietary GE-Neural AI engine — delivered as a subscription service with predictable monthly pricing, SLA guarantees, and full integration into your existing infrastructure.</p>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Core SOC Capabilities</h2>
+              <SectionHeader size="subsection" title="Core SOC Capabilities" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "AI-Powered Alert Triage", icon: "🧠", desc: "GE-Neural AI processes millions of raw security events per hour, reducing alert noise by 94%. Only true positives reach your dedicated analyst queue — zero alert fatigue." },
@@ -77,7 +74,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">SOC Technology Stack</h2>
+              <SectionHeader size="subsection" title="SOC Technology Stack" />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {["Splunk SIEM", "Microsoft Sentinel", "CrowdStrike EDR", "Palo Alto XSOAR", "Elastic Stack", "AWS GuardDuty", "Azure Defender", "Wazuh HIDS", "Zeek Network Monitor", "MITRE ATT&CK", "SIGMA Rules Engine", "GE-Neural AI v4"].map(t => (
                   <div key={t} className="bg-slate-900/60 border border-slate-800 rounded-lg px-3 py-2 text-[10px] font-mono text-slate-400 text-center">{t}</div>
@@ -85,7 +82,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Service Tiers</h2>
+              <SectionHeader size="subsection" title="Service Tiers" />
               <div className="grid md:grid-cols-3 gap-4">
                 {[
                   { tier: "Essential SOC", price: "₹2.5L/mo", color: "border-slate-700", badge: "text-slate-400 bg-slate-800", features: ["8×5 monitoring", "SIEM log management", "Alert triage (up to 500 alerts/day)", "Monthly compliance report", "Email support (SLA: 4h)"] },
@@ -99,7 +96,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
 
             <div className="bg-slate-950/40 border border-slate-900 rounded-xl p-6 space-y-6">
               <div>
-                <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">SOC Operations Cost &amp; ROI Calculator</h2>
+                <SectionHeader size="subsection" title="SOC Operations Cost & ROI Calculator" />
                 <p className="text-[11px] text-slate-500 font-sans mt-2">Compare the financial investment of building an in-house Security Operations Center versus subscribing to our autonomous managed SOC services.</p>
               </div>
               <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -166,17 +163,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== DPDP ACT COMPLIANCE SCANS ===== */}
         {currentView === "dpdp" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> Enterprise Service · India Compliance
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                India DPDP Act 2023 Compliance Scans
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                The Digital Personal Data Protection Act 2023 (DPDP Act) is India's landmark data protection law — and non-compliance carries penalties up to ₹250 crore per violation. CyberDudeBivash® delivers end-to-end DPDP compliance scanning, data mapping, DPO advisory, and breach-readiness assessments to bring your organization into full conformance before regulators come knocking.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="amber"
+              subtitle="Enterprise Service · India Compliance"
+              title="India DPDP Act 2023 Compliance Scans"
+              description="The Digital Personal Data Protection Act 2023 (DPDP Act) is India's landmark data protection law — and non-compliance carries penalties up to ₹250 crore per violation. CyberDudeBivash® delivers end-to-end DPDP compliance scanning, data mapping, DPO advisory, and breach-readiness assessments to bring your organization into full conformance before regulators come knocking."
+            />
             <div className="bg-amber-950/20 border border-amber-800/30 rounded-xl p-6">
               <h2 className="text-sm font-bold text-amber-400 mb-3">Why DPDP Act Compliance Cannot Wait</h2>
               <div className="grid md:grid-cols-3 gap-4 text-xs font-sans">
@@ -193,7 +186,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Our DPDP Compliance Service Portfolio</h2>
+              <SectionHeader size="subsection" title="Our DPDP Compliance Service Portfolio" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "DPDP Gap Assessment", icon: "🔍", desc: "Comprehensive audit of your current data processing activities against all DPDP Act 2023 obligations — identifying gaps in consent management, data localisation, purpose limitation, and retention policies." },
@@ -216,7 +209,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">DPDP Act Key Obligations We Cover</h2>
+              <SectionHeader size="subsection" title="DPDP Act Key Obligations We Cover" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   ["Section 4", "Grounds for processing personal data (consent + legitimate use)"],
@@ -256,17 +249,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== OWASP LLM RED TEAM ===== */}
         {currentView === "owasp" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-red-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" /> Enterprise Service · AI Security
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                OWASP LLM Red Team Testing
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                As enterprises rush to deploy AI and Large Language Models, attackers have developed a new class of attacks specifically targeting AI systems. CyberDudeBivash® is India's leading AI Red Team, specializing in adversarial testing of LLM-powered applications against the full OWASP LLM Top 10 2024 threat catalogue — identifying vulnerabilities before your AI becomes a liability.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="red"
+              subtitle="Enterprise Service · AI Security"
+              title="OWASP LLM Red Team Testing"
+              description="As enterprises rush to deploy AI and Large Language Models, attackers have developed a new class of attacks specifically targeting AI systems. CyberDudeBivash® is India's leading AI Red Team, specializing in adversarial testing of LLM-powered applications against the full OWASP LLM Top 10 2024 threat catalogue — identifying vulnerabilities before your AI becomes a liability."
+            />
             <div className="bg-red-950/20 border border-red-800/30 rounded-xl p-6">
               <h2 className="text-sm font-bold text-red-400 mb-4">OWASP LLM Top 10 2024 — Our Testing Coverage</h2>
               <div className="grid md:grid-cols-2 gap-3">
@@ -293,7 +282,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">AI Red Team Methodology</h2>
+              <SectionHeader size="subsection" title="AI Red Team Methodology" />
               <div className="space-y-3">
                 {[
                   { phase: "Phase 1: AI Asset Discovery", weeks: "Week 1", desc: "Map all AI/LLM components in your environment — base models, fine-tuned versions, RAG pipelines, agent frameworks (LangChain, AutoGen, CrewAI), API integrations, and plugin ecosystems." },
@@ -315,7 +304,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Deliverables</h2>
+              <SectionHeader size="subsection" title="Deliverables" />
               <div className="grid md:grid-cols-3 gap-3">
                 {["Executive Risk Summary (board-ready)", "Full OWASP LLM Top 10 test report", "CVSSv4-scored vulnerability findings", "PoC exploit demonstrations (controlled)", "Remediation roadmap (prioritized)", "Re-test validation included", "AI Security Policy templates", "Developer secure AI coding guidelines", "MITRE ATLAS technique mapping"].map(d => (
                   <div key={d} className="flex items-start gap-2 bg-slate-900/30 border border-slate-800 rounded-lg px-3 py-2 text-[11px] text-slate-400 font-sans">
@@ -339,17 +328,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== MULTI-TENANT MSSP SUITE ===== */}
         {currentView === "mssp" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-sky-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" /> Enterprise Service · MSSP Platform
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                Multi-Tenant MSSP Suite
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                Launch or scale your Managed Security Service Provider (MSSP) business on CyberDudeBivash®'s battle-tested multi-tenant infrastructure. Our MSSP Suite gives you white-labeled threat intelligence, SOC tooling, client management portals, and billing automation — everything you need to deliver enterprise security services to dozens of clients from a single pane of glass.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="sky"
+              subtitle="Enterprise Service · MSSP Platform"
+              title="Multi-Tenant MSSP Suite"
+              description="Launch or scale your Managed Security Service Provider (MSSP) business on CyberDudeBivash®'s battle-tested multi-tenant infrastructure. Our MSSP Suite gives you white-labeled threat intelligence, SOC tooling, client management portals, and billing automation — everything you need to deliver enterprise security services to dozens of clients from a single pane of glass."
+            />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { v: "500+", l: "Active MSSP Tenants", c: "text-sky-400" },
@@ -364,7 +349,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               ))}
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Platform Capabilities</h2>
+              <SectionHeader size="subsection" title="Platform Capabilities" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "True Multi-Tenancy", icon: "🏢", desc: "Fully isolated tenant environments with dedicated data stores, separate RBAC policies, and zero data bleed between client environments. Each client sees only their data." },
@@ -385,7 +370,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">MSSP Partner Tiers</h2>
+              <SectionHeader size="subsection" title="MSSP Partner Tiers" />
               <div className="grid md:grid-cols-3 gap-4">
                 {[
                   { tier: "MSSP Starter", price: "₹50K/mo", clients: "Up to 10 clients", color: "border-slate-700", badge: "text-slate-400 bg-slate-800", features: ["10 client tenants", "White-label threat feeds", "Basic client portal", "Email support", "Standard reporting"] },
@@ -411,17 +396,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== vCISO ADVISORY ===== */}
         {currentView === "vciso" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Enterprise Service · Executive Advisory
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                Virtual CISO (vCISO) Advisory
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                A full-time Chief Information Security Officer costs ₹1–2 crore annually in India. Our Virtual CISO service gives you the strategic security leadership of a seasoned CISO — available on-demand, aligned to your business objectives, and integrated with your executive team — at a fraction of the cost. Built for SMEs, startups, and mid-market enterprises that need enterprise-grade security governance without a full-time hire.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="emerald"
+              subtitle="Enterprise Service · Executive Advisory"
+              title="Virtual CISO (vCISO) Advisory"
+              description="A full-time Chief Information Security Officer costs ₹1–2 crore annually in India. Our Virtual CISO service gives you the strategic security leadership of a seasoned CISO — available on-demand, aligned to your business objectives, and integrated with your executive team — at a fraction of the cost. Built for SMEs, startups, and mid-market enterprises that need enterprise-grade security governance without a full-time hire."
+            />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { v: "₹15L/yr", l: "vs ₹1.5Cr full-time CISO", c: "text-emerald-400" },
@@ -436,7 +417,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               ))}
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">What Your vCISO Does</h2>
+              <SectionHeader size="subsection" title="What Your vCISO Does" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "Security Strategy & Roadmap", icon: "🗺️", desc: "Develop a 3-year cybersecurity strategy aligned to your business goals, risk appetite, regulatory requirements, and budget. Deliver quarterly roadmap updates to your board." },
@@ -459,7 +440,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">vCISO Engagement Models</h2>
+              <SectionHeader size="subsection" title="vCISO Engagement Models" />
               <div className="grid md:grid-cols-3 gap-4">
                 {[
                   { tier: "Advisory Retainer", price: "₹75K/mo", hours: "8 hrs/month", color: "border-slate-700", badge: "text-slate-400 bg-slate-800", features: ["Monthly strategy call", "Board report template", "Policy review (2/quarter)", "Incident escalation support", "Email advisory access"] },
@@ -485,17 +466,13 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
         {/* ===== PENETRATION TESTING ===== */}
         {currentView === "pentest" && (
           <div className="space-y-10">
-            <div>
-              <div className="text-[10px] font-mono text-pink-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse" /> Enterprise Service · Offensive Security
-              </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                Professional Penetration Testing
-              </h1>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base font-sans max-w-3xl">
-                CyberDudeBivash® delivers full-spectrum penetration testing engagements — from web application and API security to network infrastructure, cloud environments, mobile applications, and social engineering. Our certified red team follows rigorous methodologies (OWASP, PTES, NIST 800-115) and delivers actionable, risk-scored reports that your developers can implement — not just a PDF of CVE numbers.
-              </p>
-            </div>
+            <SectionHeader
+              size="page"
+              accent="pink"
+              subtitle="Enterprise Service · Offensive Security"
+              title="Professional Penetration Testing"
+              description="CyberDudeBivash® delivers full-spectrum penetration testing engagements — from web application and API security to network infrastructure, cloud environments, mobile applications, and social engineering. Our certified red team follows rigorous methodologies (OWASP, PTES, NIST 800-115) and delivers actionable, risk-scored reports that your developers can implement — not just a PDF of CVE numbers."
+            />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { v: "2,500+", l: "Engagements Completed", c: "text-pink-400" },
@@ -510,7 +487,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               ))}
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Penetration Testing Services</h2>
+              <SectionHeader size="subsection" title="Penetration Testing Services" />
               <div className="grid md:grid-cols-2 gap-4">
                 {[
                   { title: "Web Application Penetration Testing", icon: "🌐", tags: ["OWASP Top 10", "API Security", "Authentication Bypass", "Business Logic Flaws"], desc: "Manual + automated testing of web applications covering authentication, authorization, injection flaws, IDOR, SSRF, XXE, deserialization, and business logic vulnerabilities. Includes OWASP WSTG compliance coverage." },
@@ -538,7 +515,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
               </div>
             </div>
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">Methodology & Certifications</h2>
+              <SectionHeader size="subsection" title="Methodology & Certifications" />
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold text-slate-300">Testing Methodologies</h3>
