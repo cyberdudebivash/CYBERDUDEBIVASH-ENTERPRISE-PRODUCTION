@@ -104,6 +104,18 @@ export function checkMetadataAndSchema(distDir) {
   return { ok: true, message: `metadata present, ${ldJsonBlocks.length} JSON-LD block(s) valid` };
 }
 
+/** public/favicon.ico must have made it into dist/ (Vite copies public/ automatically). */
+export function checkFavicon(distDir) {
+  const faviconPath = join(distDir, 'favicon.ico');
+  if (!existsSync(faviconPath)) {
+    return { ok: false, message: 'dist/favicon.ico missing' };
+  }
+  if (statSync(faviconPath).size === 0) {
+    return { ok: false, message: 'dist/favicon.ico is empty' };
+  }
+  return { ok: true, message: 'dist/favicon.ico present' };
+}
+
 /** public/sitemap.xml and public/robots.txt must have made it into dist/ (Vite copies public/ automatically). */
 export function checkSitemapAndRobots(distDir) {
   const problems = [];
@@ -134,6 +146,7 @@ export function verifyDist(distDir) {
     : { ok: false, message: 'skipped — asset references check failed first' };
   results.htmlWellFormed = checkHtmlWellFormed(distDir);
   results.metadataAndSchema = checkMetadataAndSchema(distDir);
+  results.favicon = checkFavicon(distDir);
   results.sitemapAndRobots = checkSitemapAndRobots(distDir);
   return results;
 }

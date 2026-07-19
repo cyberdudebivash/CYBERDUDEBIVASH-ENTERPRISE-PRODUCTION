@@ -13,7 +13,7 @@
   "categories": ["security", "business", "productivity"],
   "icons": [
     {
-      "src": "/assets/favicon-D6GVHMFz.ico",
+      "src": "/favicon.ico",
       "sizes": "any",
       "type": "image/x-icon",
       "purpose": "any maskable"
@@ -34,21 +34,21 @@
       "short_name": "Threat Intel",
       "description": "Real-time threat intelligence feed",
       "url": "/?view=intel",
-      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+      "icons": [{ "src": "/favicon.ico", "sizes": "any" }]
     },
     {
       "name": "AI Security Copilot",
       "short_name": "AI Copilot",
       "description": "AI-powered security analysis",
       "url": "/?view=ai",
-      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+      "icons": [{ "src": "/favicon.ico", "sizes": "any" }]
     },
     {
       "name": "ThreatCore™ Tools",
       "short_name": "Tools",
       "description": "100+ enterprise security tools",
       "url": "/?view=tools",
-      "icons": [{ "src": "/assets/favicon-D6GVHMFz.ico", "sizes": "any" }]
+      "icons": [{ "src": "/favicon.ico", "sizes": "any" }]
     }
   ],
   "related_applications": [],
