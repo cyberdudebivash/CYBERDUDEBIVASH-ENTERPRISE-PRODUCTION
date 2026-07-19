@@ -40,7 +40,32 @@ The bridge only ever mirrors `index.html` and the top-level hashed asset files t
 
 Phase 1.6 Step 2 re-verification (after PR #21/#22 merged) found the bundle hash had changed again — `index-BV7paXZk.js`/`index-BWak8xtL.css` (confirmed live immediately after PR #21) to `index-CP5ZVCTF.js`/`index-CVf7Rv3z.css` (current). Investigated directly: `_vite_entry.html`, `src/`, `vite.config.ts`, `package.json`, and `package-lock.json` are **byte-identical** between the two commits — confirmed via `git diff`, zero output. `package-lock.json` has zero non-exact-pinned entries (every package resolves to a specific `registry.npmjs.org` tarball). Four independent fresh `rm -rf node_modules && npm ci --ignore-scripts && vite build` cycles just now all reproduce the current hash exactly — so it is *not* actively flaky, but it did genuinely drift once, from identical source, between two points separated by roughly an hour.
 
-Root cause not fully pinned down (most likely an optional/transitive dependency resolving to a marginally different published version between those two builds, despite `package-lock.json` appearing exact) — but the practical implication is clear and important: **do not treat "bundle hash matches across two independently-timed builds" as a pass/fail validation criterion.** The correct check, restated for Phase 1.6 Step 3 onward: each platform's own `index.html` must correctly reference files that exist in *its own* deployment (internal consistency), and rendered content/metadata must be equivalent — not that Cloudflare's hash must literally equal whatever GitHub Pages happened to hash at a different moment. `verify-dist.mjs` already checks the former; the latter is a content/DOM comparison, not a hash comparison.
+One historical build of identical source produced a different hashed bundle filename. Subsequent clean rebuilds are stable. **The underlying cause has not been conclusively identified.** Plausible explanations include Vite/Rollup chunk-ordering variance, filesystem enumeration order, build-cache behavior, environment differences, dependency resolution, or something else entirely — none confirmed, and none ruled out. Naming one as "most likely" without evidence for it over the others would overstate what's actually known here.
+
+The practical implication stands regardless of cause: **deployment verification validates artifact integrity and internal consistency, not identical filenames across independently executed builds.** Concretely, split by artifact type:
+
+- **Static, content-addressable files** (`index.html`, `favicon.ico`, `sitemap.xml`, `robots.txt`, `manifest.json`) — compare by **checksum**. These aren't hashed-by-build-tool, so identical source should mean identical bytes regardless of when/where built; a checksum mismatch here is a real signal, not a false positive from the drift above.
+- **Hashed JS/CSS bundles** — do **not** require identical filenames across platforms. Verify instead: the filename `index.html` references actually exists in that deployment, it returns `HTTP 200`, the reference itself resolves (no dangling links), and no orphaned hashed files are left over. `verify-dist.mjs` already enforces exactly this, per-deployment.
+
+## Post-cutover production parity checklist (for Step 5)
+
+Once Cloudflare is building from source, compare GitHub Pages against Cloudflare Pages directly:
+
+| Endpoint | Expected |
+|---|---|
+| `/` | 200 |
+| `/about.html` | Same redirect/200 behavior on both (a difference here would need explaining, not assuming) |
+| `/404.html` | Exists on both |
+| `/robots.txt` | Identical content (checksum) |
+| `/sitemap.xml` | Identical content (checksum) |
+| `/manifest.json` | Identical content (checksum) |
+| `/favicon.ico` | Identical content (checksum) |
+| `/portal/` | 200 |
+| `/react-portal/` | Same behavior on both (the legacy redirect stub — see `BUILD_PIPELINE_MIGRATION.md`) |
+| Hashed JS (whatever `index.html` references) | 200 |
+| Hashed CSS (whatever `index.html` references) | 200 |
+
+This is the true production-parity test: it doesn't assume the two platforms hash identically, only that each is internally consistent and that content each platform *should* serve identically (everything that isn't build-tool-hashed) actually does.
 
 ## Recommendation carried into Step 3
 
