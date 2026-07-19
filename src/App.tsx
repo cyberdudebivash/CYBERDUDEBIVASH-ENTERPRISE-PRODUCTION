@@ -28,6 +28,8 @@ import {
 import { AiSocDashboard } from "./components/AiSocDashboard";
 import { Footer } from "./components/footer/Footer";
 import { Header } from "./components/header/Header";
+import { EcosystemStrip } from "./components/navigation/EcosystemStrip";
+import { MobileNav } from "./components/navigation/MobileNav";
 import EcosystemDiscovery from "./components/EcosystemDiscovery";
 import type { ViewType, AiTab } from "./types/app";
 import CookieConsent from "./components/CookieConsent";
@@ -718,86 +720,8 @@ export default function App() {
         onRunHashCheck={runHashCheck}
       />
 
-      {/* 2b. ECOSYSTEM QUICK-JUMP NAVIGATION BAR */}
-      <div className="hidden md:flex items-center gap-0 bg-[#080d12] border-b border-slate-900/80 px-6 py-0 overflow-x-auto">
-        <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest pr-3 border-r border-slate-900 mr-1 shrink-0 py-2">Ecosystem</span>
-        {[
-          { label: "Official Website",    url: "https://www.cyberdudebivash.com",                   dot: "bg-cyan-500" },
-          { label: "Sentinel APEX™",      url: "https://intel.cyberdudebivash.com/",                 dot: "bg-red-500" },
-          { label: "AI Security Hub",     url: "https://cyberdudebivash.in/",                        dot: "bg-purple-500" },
-          { label: "Tools Marketplace",   url: "https://tools.cyberdudebivash.com/",                 dot: "bg-amber-500" },
-          { label: "Research Blog",       url: "https://blog.cyberdudebivash.in/",                   dot: "bg-emerald-500" },
-          { label: "Developer Docs",      url: "https://intel.cyberdudebivash.com/api-docs",         dot: "bg-sky-500" },
-          { label: "Upgrade Enterprise",  url: "https://intel.cyberdudebivash.com/upgrade.html",     dot: "bg-amber-400" },
-        ].map((item) => (
-          <a
-            key={item.label}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-mono text-slate-500 hover:text-slate-200 hover:bg-slate-900/40 transition-all border-r border-slate-900 shrink-0 group"
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${item.dot} opacity-60 group-hover:opacity-100 transition-opacity`}></span>
-            {item.label}
-          </a>
-        ))}
-        <div className="flex-1"></div>
-        <a
-          href="https://intel.cyberdudebivash.com/upgrade.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-[9px] font-mono text-amber-400 bg-amber-950/30 border-l border-amber-900/30 px-3 py-2 hover:bg-amber-950/50 transition-all flex items-center gap-1.5"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-          ENTERPRISE UPGRADE
-        </a>
-      </div>
-
-      {/* 3. MOBILE MENU BAR */}
-      <nav aria-label="Mobile navigation" className="lg:hidden bg-slate-950 border-b border-slate-900 p-2 flex justify-between overflow-x-auto gap-1">
-        <button
-          onClick={() => setCurrentView("home")}
-          aria-current={currentView === "home" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "home" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Gateway
-        </button>
-        <button
-          onClick={() => setCurrentView("intel")}
-          aria-current={currentView === "intel" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "intel" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Sentinel APEX
-        </button>
-        <button
-          onClick={() => setCurrentView("ai")}
-          aria-current={currentView === "ai" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "ai" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          AI Audit
-        </button>
-        <button
-          onClick={() => setCurrentView("tools")}
-          aria-current={currentView === "tools" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "tools" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          ThreatCore Tools
-        </button>
-        <button
-          onClick={() => setCurrentView("blog")}
-          aria-current={currentView === "blog" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "blog" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          Blog
-        </button>
-        <button
-          onClick={() => setCurrentView("api")}
-          aria-current={currentView === "api" ? "page" : undefined}
-          className={`px-3 py-1 rounded text-xs shrink-0 font-bold ${currentView === "api" ? "bg-cyan-500 text-black" : "text-slate-400"}`}
-        >
-          API
-        </button>
-      </nav>
+      <EcosystemStrip />
+      <MobileNav currentView={currentView} onNavigate={setCurrentView} />
 
       {/* 4. MAIN WORKSPACE VIEW ROUTER */}
       <main id="main-content" className="flex-1">
