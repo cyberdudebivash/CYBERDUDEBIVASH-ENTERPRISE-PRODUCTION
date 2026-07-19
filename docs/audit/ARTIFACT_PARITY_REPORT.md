@@ -45,3 +45,15 @@ Do not apply the Cloudflare settings yet. Two things first, in order:
 2. Re-run this same parity check once more after that fix, to confirm `npm run build` succeeds cleanly and all "Expected" rows stay expected.
 
 The three "Legacy" mismatches don't block cutover — they're exactly what cutover is supposed to fix, and this report is the evidence that they will be.
+
+## Resolution (commit `5f23358`)
+
+The true source file was recoverable: recovered its exact original bytes from `eb698b4^` (the commit immediately before the bridge deleted it), verified by SHA-256 match, and moved it to `public/favicon.ico` — Vite's standard convention, copied verbatim, never hashed, structurally no longer confusable with disposable build-output hash files. Updated all three references (`_vite_entry.html`'s two `<link>` tags and JSON-LD `url`, `public/manifest.json`'s four icon entries). Added `verify-dist.mjs`'s `checkFavicon` (plus three tests) so this exact failure mode is caught immediately if it ever recurs, matching how `sitemap.xml`/`robots.txt` are already guarded.
+
+Re-verified clean:
+- `npm run build` — succeeds end to end, all six `verify-dist` checks pass, including the new favicon check.
+- `dist/favicon.ico` — SHA-256 identical to the recovered original.
+- Full test suite — **435/435 passing** (432 previous + 3 new).
+- Lint — 22 pre-existing errors, unchanged.
+
+The Defect row above is now resolved; all "Expected" rows hold; the three "Legacy" rows are unchanged (still awaiting cutover to resolve, as designed). **The prerequisite this report's recommendation was gating on is satisfied — the parity picture is clean and `npm run build` is healthy again.**
