@@ -246,25 +246,106 @@ before scoping Phase 1's Metadata Manager, Canonical Manager, and
 Sitemap Manager — their entire design (what "a page" is, what routes
 exist, what a canonical URL resolves to) depends on the answer.
 
-## What Phase 1 likely looks like once the above is resolved
+## Decision record
 
-Sketched here for context, not specified for implementation yet:
+Resolved via direct conversation with the platform owner:
 
-- A single page-config module (TypeScript, likely `src/design-system/`-adjacent
-  given Phase 0.3's precedent of centralizing cross-cutting concerns)
-  defining, per real page/route: title, description, canonical path,
-  primary/secondary keywords, OG image, and structured-data type —
-  consumed by both the static-page build step (if (a)/(c) above) and/or
-  a `<Helmet>`-style head manager in the SPA (if (b)/(c)).
+1. **Canonical SEO surface: "both, explicitly reconciled."** Static
+   pages and the SPA both stay; the boundary between them is not
+   invented here but read directly out of existing code — `src/App.tsx`'s
+   404-redirect handler (Finding 1) already contains an explicit
+   static-page → SPA-view correspondence table that predates this
+   review:
+
+   | Static page | SPA view | Relationship |
+   |---|---|---|
+   | `about.html` | `about` | same topic, two implementations |
+   | `privacy.html` | `privacy` | same topic, two implementations |
+   | `terms.html` / `TERMS.md` | `terms` | same topic, two implementations |
+   | `copyright.html` | `copyright` | same topic, two implementations |
+   | `soc-services.html` | `soc` | same topic, two implementations |
+   | `compliance.html` | `dpdp` | same topic, two implementations |
+   | `bug-bounty.html` | `owasp` | same topic, two implementations |
+   | `vciso.html` | `vciso` | same topic, two implementations |
+   | `services.html` | `pentest` | same topic, two implementations |
+   | `platforms.html` | `home` | static page summarizes, SPA home is the full experience |
+   | `apps.html` | `tools` | same topic, two implementations |
+   | `research.html` | `blog` | same topic, two implementations |
+   | *(none)* | `intel`, `ai` | SPA-only — live dashboards, no static equivalent, not marketing content |
+
+   This means the "reconciliation" this program needs isn't a redesign
+   of either side — it's a **deliberate division of responsibility**
+   along a line the codebase already drew:
+   - **The 20 static pages become Phase 1's actual target** — real
+     URLs, real canonicals, the thing Google indexes. This is where
+     the Metadata/Schema/Sitemap/Canonical managers apply.
+   - **The matching SPA views keep existing exactly as Phase 0.2/0.3
+     left them** — no rework, no retirement, no content changes. They
+     already have no stable URL and are therefore already
+     (accidentally, now deliberately) outside the indexable surface.
+     Nothing about this decision requires touching `ServicePages.tsx`,
+     `LegalPages.tsx`, or any other view built in the design-system phase.
+   - **Cross-linking**, the third leg of "reconciled," already exists
+     in both directions and doesn't need new code to satisfy this
+     decision: the SPA's `Header.tsx` Services dropdown and `Footer.tsx`
+     link out to the static pages' topics; the static pages already
+     link back into the live SPA experience (the react-portal /
+     `portal-landing.html` client-portal links documented in
+     `CANONICAL_ARCHITECTURE.md`). Phase 4 (Internal Linking Engine)
+     can formalize and extend this, but it isn't starting from zero.
+   - `intel` and `ai` (no static equivalent) stay SPA-only by design —
+     they're live dashboards, not content pages a search engine should
+     rank.
+
+   Net effect: **this decision has zero blast radius on the SPA or the
+   design system.** It only changes what Phase 1 is scoped to build
+   against — the static pages — which was already the more
+   SEO-complete half per `SEO_FOUNDATION.md`.
+
+2. **Branch: new dedicated branch.** `claude/seo-rocket-engine`,
+   branched from the tip of `claude/enterprise-design-system-h1hw6y`
+   (not from `main`) — that branch's design-system work isn't merged
+   yet, and this program's later phases may want to reuse its
+   components (e.g. an admin SEO-health dashboard built from
+   `EnterprisePanel`/`StatCard`), so branching from its tip carries that
+   forward instead of losing access to it. This Phase 0 document's
+   commit is shared history between both branches as a result.
+
+3. **Still genuinely unresolved, still needs a manual check, not a
+   decision:** which GitHub Pages deployment mechanism is live
+   (Finding 3) — a live `WebFetch` of `sitemap.xml` to compare its
+   URL count/namespace against the two candidate files was attempted
+   and blocked by a 403 (the production site's bot/WAF protection, not
+   a tooling issue on this end). Whoever has access to the repo's
+   Settings → Pages should confirm this before Phase 1's Sitemap
+   Manager decides which file path to write to.
+
+## What Phase 1 targets, now that the decision is made
+
+Scoped to the 20 static pages only — the SPA is explicitly out of
+scope for this program per the decision record above:
+
+- A single page-config module (TypeScript — a natural sibling of
+  `src/design-system/`, following Phase 0.3's precedent of centralizing
+  cross-cutting concerns, even though it drives static-page generation
+  rather than SPA components) defining, per real static page: title,
+  description, canonical path, primary/secondary keywords, OG image,
+  and structured-data type. Every page's tags are generated from this
+  one source instead of hand-duplicated per file.
 - A schema/JSON-LD generator replacing `god_mode_seo_engine.py`'s output
-  with per-page-type templates (Organization once, `Article`/`FAQPage`/
-  `Product`/`SoftwareApplication` per content type) composed from the
+  with per-page-type templates (`Organization` once, `Article`/`FAQPage`/
+  `Service`/`SoftwareApplication` per content type) composed from the
   same page-config data — reusing `public/ecosystem-graph.json`'s
-  organization/platform data as the Organization singleton rather than
-  hardcoding it again.
+  organization/platform data as the `Organization` singleton rather than
+  hardcoding it again, and generated at build time so a future change
+  to, say, the `sameAs` list touches one data file, not 20 HTML files.
 - One sitemap generated from the same page-config module (resolving
-  Finding 4), written to whichever path Finding 3's answer confirms is
-  actually served.
+  Finding 4 — the two `sitemap.xml` files collapse into one generated
+  output), written to whichever path the still-open Pages-mechanism
+  question (decision record #3) confirms is actually served.
+- `item.html`'s missing canonical (Phase 0.1 finding, still open) gets
+  fixed as a side effect of every page going through the same
+  generator — not as a one-off patch.
 
 ## Appendix: evidence inventory
 
