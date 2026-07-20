@@ -1,0 +1,13 @@
+{
+  "name": "@titan/config",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "tsconfig.base.json",
+    "eslint.base.mjs"
+  ],
+  "exports": {
+    "./eslint": "./eslint.base.mjs"
+  }
+}
