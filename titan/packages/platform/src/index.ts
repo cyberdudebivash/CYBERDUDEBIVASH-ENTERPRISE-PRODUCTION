@@ -36,6 +36,7 @@ export type { AuthConfigOptions, OAuthCredentials } from "./auth/config.js";
 export { createAuthConfig } from "./auth/config.js";
 export { getSession } from "./auth/session.js";
 export { canAccessOrganization, findProfileForOrganization, hasAtLeastRole } from "./auth/rbac.js";
+export { requireOrganizationAccess } from "./auth/authorize.js";
 
 export type { Logger, LogFields, LogLevel } from "./observability/logger.js";
 export { createLogger } from "./observability/logger.js";
