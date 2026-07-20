@@ -141,8 +141,10 @@ const authConfig = createAuthConfig({ db: env.DB, secret: env.AUTH_SECRET });
 // Mount this in a Worker: any request to /api/auth/* is handled by Auth.js
 // directly once `authConfig` is passed through Dependencies.authConfig
 // (router.ts). getSession(request, authConfig) reads the current session;
-// hasAtLeastRole/findProfileForOrganization/canAccessOrganization (auth/rbac.ts)
-// check a UserProfileRecord's role once you have one.
+// hasAtLeastRole/findProfileForOrganization/canAccessOrganization/
+// isPlatformAdministrator (auth/rbac.ts) check a UserProfileRecord[] once you
+// have one — router.ts's resolveCaller is the reference pattern for turning a
+// session into that UserProfileRecord[] (getSession + userProfiles.findByUserId).
 ```
 
 Google/GitHub only appear in the provider list when real credentials are configured (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` in `.dev.vars`) — this project has never had either. The Email provider works today in a dev-mode configuration that logs the sign-in link instead of emailing it (no email provider decided yet — `DECISION_LOG.md`).
@@ -156,9 +158,9 @@ Google/GitHub only appear in the provider list when real credentials are configu
 
 ## What NOT to do (things this stage deliberately doesn't have yet)
 
-- Don't build protected routes/session context/login UI in `@titan/web` yet — the backend (Auth.js, sessions, RBAC) exists and is tested, but no frontend consumes it yet. That's real remaining work (an Admin/Customer Portal, `ROADMAP.md`), not something to stub ahead of a real screen needing it.
+- Don't build protected routes/session context/login UI in `@titan/web` yet — the backend now genuinely gates `GET /api/leads`/`GET /api/assessments/:id` (Security Release Blocker Sprint), but no frontend consumes any of it yet (no login screen, no session context). That's real remaining work (an Admin/Customer Portal, `ROADMAP.md`), not something to stub ahead of a real screen needing it.
 - Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`). sql.js-backed repository tests close most of the practical gap in the meantime.
 - Don't add a Credentials (username/password) auth provider — only Email/Google/GitHub were asked for (Stage 4's own scope); a fourth provider nobody requested is exactly the kind of unrequested parallel implementation this program's rules warn against (`DECISION_LOG.md`).
 - Don't add real email sending to the Auth.js Email provider without an actual email-provider decision first (`ARCHITECTURE.md`'s "still open" list) — the dev-mode logger is a deliberate placeholder, not an oversight to "fix" unilaterally.
-- Don't claim CSRF protection exists on `POST /api/leads`/`POST /api/assessments` — it doesn't yet (`ROADMAP.md`'s "What Stage 5 needs"). Auth.js's own `/api/auth/*` actions have their own CSRF handling; the custom JSON endpoints don't inherit that.
+- Don't add a route that lets a caller grant themselves (or anyone) the Platform Administrator role — that would be a privilege-escalation vulnerability, not a convenience feature. Provisioning is a direct D1 insert on purpose (`OPERATIONAL_RUNBOOK.md`, `SECURITY_GUIDE.md`).
 - Don't reach for the main repository's `node:test`/`tsx` conventions inside `titan/` — this workspace has its own toolchain, documented above.

@@ -1,11 +1,15 @@
 import type { AuthConfig } from "@auth/core";
 import { Auth } from "@auth/core";
+import type { QuestionBank } from "@titan/assessment-core";
+import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
   AssessmentRepository,
   AuditRepository,
   LeadRepository,
   NewAssessment,
   NewLead,
+  UserProfileRecord,
+  UserProfileRepository,
 } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
@@ -15,6 +19,8 @@ import { createInMemoryMetrics, type Metrics } from "./observability/metrics.js"
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
 import { isTrustedOrigin } from "./security/csrf.js";
+import { getSession } from "./auth/session.js";
+import { requireAssessmentAccess, requireLeadsAccess } from "./auth/authorize.js";
 import {
   ok,
   requireJsonObject,
@@ -43,6 +49,14 @@ export interface Dependencies {
    * exists when a real AuthConfig (auth/config.ts's createAuthConfig) is
    * supplied. */
   authConfig?: AuthConfig;
+  /** Security Release Blocker Sprint: backs `resolveCaller`'s lookup from an
+   * authenticated session's user id to that user's UserProfileRecord[]
+   * (role + organization memberships). Optional for the same reason
+   * `authConfig` is — a route that calls `resolveCaller` without both
+   * `authConfig` and `userProfiles` configured treats every caller as
+   * anonymous rather than throwing, so existing tests that don't need auth
+   * are unaffected. */
+  userProfiles?: UserProfileRepository;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -209,6 +223,10 @@ async function route(
   }
 
   if (url.pathname === "/api/leads" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requireLeadsAccess(caller.profiles, ctx.requestId);
+    if (denied) return denied;
     return listLeads(deps, ctx);
   }
 
@@ -224,10 +242,38 @@ async function route(
 
   const assessmentMatch = ASSESSMENT_ID_PATTERN.exec(url.pathname);
   if (assessmentMatch?.[1] && request.method === "GET") {
-    return getAssessment(assessmentMatch[1], deps, ctx);
+    return getAssessment(assessmentMatch[1], request, deps, ctx);
   }
 
   return jsonError({ code: "not_found", message: "Not found" }, ctx.requestId, 404);
+}
+
+interface Caller {
+  userId: string;
+  profiles: UserProfileRecord[];
+}
+
+/**
+ * Security Release Blocker Sprint: resolves "who is calling" for any
+ * protected route — a real Auth.js session (database strategy, so this is a
+ * live D1 lookup via `getSession`, not just decoding a token) joined with
+ * that user's `UserProfileRecord[]` (role + organization memberships).
+ * Returns `null` for anonymous callers and, deliberately, for a request
+ * this deployment can't even evaluate (no `authConfig`/`userProfiles`
+ * wired) — an unconfigured protected route must fail closed (401), not
+ * silently grant access.
+ */
+async function resolveCaller(request: Request, deps: Dependencies): Promise<Caller | null> {
+  if (!deps.authConfig || !deps.userProfiles) return null;
+  const session = await getSession(request, deps.authConfig);
+  const userId = session?.user?.id;
+  if (!userId) return null;
+  const profiles = await deps.userProfiles.findByUserId(userId);
+  return { userId, profiles };
+}
+
+function unauthorized(requestId: string): Response {
+  return jsonError({ code: "unauthorized", message: "Authentication required" }, requestId, 401);
 }
 
 function checkRateLimit(request: Request, ctx: RouteContext, limiter: RateLimiter): boolean {
@@ -313,8 +359,18 @@ async function createLead(
     return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
   }
 
+  // Server trust (Security Release Blocker Sprint): the client's own
+  // `result` is validated for shape above but never trusted for its
+  // *value* — a visitor could otherwise submit `answers` indicating high
+  // risk alongside a hand-edited LOW-risk `result`, corrupting the
+  // business's own lead data (SECURITY_GUIDE.md's tampering finding). The
+  // visitor's on-screen result stays whatever they saw client-side; this
+  // only affects what's persisted. `dpdpV1` directly, not a lookup: `NewLead`
+  // has no framework selector and assessment-core ships exactly one bank.
+  const recomputedResult = scoreAssessment(dpdpV1.questions, validation.value.answers);
+
   const saved = await withOperationTiming(ctx.metrics, "leads.save", () =>
-    deps.leads.save(validation.value),
+    deps.leads.save({ ...validation.value, result: recomputedResult }),
   );
 
   await recordAuditEvent(deps, ctx, {
@@ -350,8 +406,21 @@ async function createAssessment(
     return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
   }
 
+  // Server trust: same principle as createLead, but this endpoint takes an
+  // explicit framework/frameworkVersion, so recomputation first has to
+  // resolve which question bank to score against.
+  const bank = resolveQuestionBank(validation.value.framework, validation.value.frameworkVersion);
+  if (!bank) {
+    return jsonError(
+      { code: "unsupported_framework", message: "Unknown framework or frameworkVersion" },
+      ctx.requestId,
+      400,
+    );
+  }
+  const recomputedResult = scoreAssessment(bank.questions, validation.value.answers);
+
   const saved = await withOperationTiming(ctx.metrics, "assessments.save", () =>
-    deps.assessments.save(validation.value),
+    deps.assessments.save({ ...validation.value, result: recomputedResult }),
   );
 
   await recordAuditEvent(deps, ctx, {
@@ -367,14 +436,41 @@ async function createAssessment(
   return jsonSuccess(saved, 201);
 }
 
-async function getAssessment(id: string, deps: Dependencies, ctx: RouteContext): Promise<Response> {
+async function getAssessment(
+  id: string,
+  request: Request,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
   const assessment = await withOperationTiming(ctx.metrics, "assessments.findById", () =>
     deps.assessments.findById(id),
   );
   if (!assessment) {
     return jsonError({ code: "not_found", message: "Assessment not found" }, ctx.requestId, 404);
   }
+
+  // Gated after the lookup, not before: which organization this check is
+  // against is a property of the record itself (an assessment's own
+  // organizationId), not something the URL alone determines.
+  const caller = await resolveCaller(request, deps);
+  if (!caller) return unauthorized(ctx.requestId);
+  const denied = requireAssessmentAccess(caller.profiles, assessment.organizationId, ctx.requestId);
+  if (denied) return denied;
+
   return jsonSuccess(assessment);
+}
+
+// A small, explicit registry — exactly one entry today, matching
+// assessment-core's own framing ("DPDP is the first module, not the whole
+// product", questions/types.ts). A second real framework is a second entry
+// here, not a restructure of resolveQuestionBank.
+const QUESTION_BANKS: QuestionBank[] = [dpdpV1];
+
+function resolveQuestionBank(framework: string, frameworkVersion: string): QuestionBank | null {
+  return (
+    QUESTION_BANKS.find((bank) => bank.id === framework && bank.version === frameworkVersion) ??
+    null
+  );
 }
 
 async function recordAuditEvent(

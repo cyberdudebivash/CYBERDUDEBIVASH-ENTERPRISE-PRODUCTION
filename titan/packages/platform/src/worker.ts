@@ -3,6 +3,7 @@ import { createAuthConfig } from "./auth/config.js";
 import { createD1AssessmentRepository } from "./repositories/assessmentRepository.d1.js";
 import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 import { createD1LeadRepository } from "./repositories/leadRepository.d1.js";
+import { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
 import { handleRequest } from "./router.js";
 import { createLogger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
@@ -58,6 +59,7 @@ export default {
       leads: createD1LeadRepository(env.DB),
       assessments: createD1AssessmentRepository(env.DB),
       audit: createD1AuditRepository(env.DB),
+      userProfiles: createD1UserProfileRepository(env.DB),
       logger,
       rateLimiter,
       authRateLimiter,

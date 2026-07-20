@@ -70,16 +70,57 @@ curl -s http://localhost:8787/health/ready
 # probes, /health for liveness probes.
 
 curl -s http://localhost:8787/api/leads
-# [] on a fresh DB, or seed.sql's one lead if seeded
+# 401 {"error":{"code":"unauthorized",...}} — Security Release Blocker Sprint:
+# this route requires a Platform Administrator session now. See "Provisioning
+# a local Platform Administrator" below for an authenticated curl example.
 
 curl -s -X POST http://localhost:8787/api/assessments \
   -H "Content-Type: application/json" \
-  -d '{"framework":"dpdp","frameworkVersion":"v1","answers":{},"result":{"score":0,"riskLevel":"low","breakdown":{"critical":0,"high":0,"medium":0,"low":0,"total":0},"gaps":[],"scoredQuestionCount":12},"createdAt":"2026-01-01T00:00:00.000Z"}'
-# 201, returns the saved assessment with a generated id
+  -d '{"framework":"dpdp","frameworkVersion":"1.0.0","answers":{},"result":{"score":0,"riskLevel":"low","breakdown":{"critical":0,"high":0,"medium":0,"low":0,"total":0},"gaps":[],"scoredQuestionCount":12},"createdAt":"2026-01-01T00:00:00.000Z"}'
+# 201, returns the saved assessment with a generated id. frameworkVersion must
+# match a real @titan/assessment-core question bank (dpdpV1.version, "1.0.0")
+# — the server now recomputes `result` from `answers` against that bank
+# rather than trusting the client's `result`, and rejects an unrecognized
+# framework/frameworkVersion pair with 400 unsupported_framework.
 
 curl -s http://localhost:8787/api/auth/session
 # null (no session cookie) — confirms Auth.js + the D1 adapter are wired correctly
 ```
+
+### Provisioning a local Platform Administrator
+
+`GET /api/leads` and cross-organization `GET /api/assessments/:id` reads require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
+
+```bash
+# 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
+#    logs the magic link instead of sending it, auth/config.ts)
+curl -s -c cookies.txt http://localhost:8787/api/auth/csrf
+# {"csrfToken":"<token>"}
+
+curl -s -b cookies.txt -c cookies.txt -X POST http://localhost:8787/api/auth/signin/email \
+  --data-urlencode "email=admin@titan.local" \
+  --data-urlencode "csrfToken=<token from above>" \
+  --data-urlencode "callbackUrl=http://localhost:8787/"
+# 302. Find the real magic link in wrangler dev's own stdout:
+#   {"message":"sign-in link generated (dev mode — not actually emailed)", "url":"http://localhost:8787/api/auth/callback/email?...&token=...&email=admin%40titan.local"}
+
+# 2. Follow it to complete sign-in — this sets the real session cookie
+curl -s -b cookies.txt -c cookies.txt "<the url from the log line above>"
+
+# 3. Confirm the session and note the user id
+curl -s -b cookies.txt http://localhost:8787/api/auth/session
+# {"user":{"id":"<user-id>","email":"admin@titan.local"},"expires":"..."}
+
+# 4. Grant that user id a Platform Administrator profile directly in D1
+npx wrangler d1 execute titan-platform-db --local --command="
+  INSERT INTO user_profiles (id, user_id, organization_id, role, created_at)
+  VALUES (lower(hex(randomblob(16))), '<user-id from step 3>', NULL, 'owner', '$(date -u +%Y-%m-%dT%H:%M:%S.000Z)')"
+
+# 5. GET /api/leads now returns 200 with real data for this same cookie jar
+curl -s -b cookies.txt http://localhost:8787/api/leads
+```
+
+Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the role) is a direct database write, because no route exists to do it any other way.
 
 To check what actually landed in the database (not just trusting the HTTP response):
 

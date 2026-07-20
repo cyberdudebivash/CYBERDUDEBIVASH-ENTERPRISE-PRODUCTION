@@ -30,3 +30,19 @@ export function canAccessOrganization(
   const profile = findProfileForOrganization(profiles, organizationId);
   return profile !== null && hasAtLeastRole(profile.role, minimumRole);
 }
+
+/**
+ * Platform Administrator (Security Release Blocker Sprint): a grant that
+ * isn't scoped to any single organization — needed for routes like
+ * `GET /api/leads` that read across every organization at once, where no
+ * per-organization role is the right question to ask. Deliberately reuses
+ * the existing `user_profiles` shape instead of a new role enum or a schema
+ * change: a profile with `organizationId: null` has no organization to be
+ * a member/admin/owner *of*, so that combination is otherwise unused, and
+ * `role: "owner"` on it reads naturally as "owns the platform itself". The
+ * table's `(user_id, organization_id)` unique index (migrations/0003)
+ * already guarantees at most one such row per user.
+ */
+export function isPlatformAdministrator(profiles: UserProfileRecord[]): boolean {
+  return profiles.some((profile) => profile.organizationId === null && profile.role === "owner");
+}
