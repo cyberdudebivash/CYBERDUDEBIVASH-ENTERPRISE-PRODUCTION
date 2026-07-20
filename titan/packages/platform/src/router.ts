@@ -9,11 +9,12 @@ import type {
 } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
-import { finalizeResponse } from "./http/finalizeResponse.js";
+import { AUTH_PAGES_CSP, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
 import { createLogger, type Logger } from "./observability/logger.js";
 import { createInMemoryMetrics, type Metrics } from "./observability/metrics.js";
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
+import { isTrustedOrigin } from "./security/csrf.js";
 import {
   ok,
   requireJsonObject,
@@ -29,6 +30,12 @@ export interface Dependencies {
   audit: AuditRepository;
   logger?: Logger;
   rateLimiter?: RateLimiter;
+  /** Separate, stricter limiter for /api/auth/* (RC1 Workstream 2): sign-in
+   * and magic-link requests are a classic abuse target (brute force,
+   * email-bombing a victim's inbox via repeated sign-in requests) — a
+   * legitimate user rarely needs more than a couple of attempts a minute,
+   * so this defaults tighter than the general API limiter. */
+  authRateLimiter?: RateLimiter;
   metrics?: Metrics;
   allowedOrigin?: string;
   /** Workstream 5. Optional so every existing router test (and any caller
@@ -39,6 +46,7 @@ export interface Dependencies {
 }
 
 const defaultRateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
+const defaultAuthRateLimiter = createInMemoryRateLimiter({ limit: 10, windowMs: 60_000 });
 const defaultMetrics = createInMemoryMetrics();
 
 /**
@@ -58,6 +66,7 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
   const requestId = resolveRequestId(request);
   const logger = deps.logger ?? createLogger();
   const rateLimiter = deps.rateLimiter ?? defaultRateLimiter;
+  const authRateLimiter = deps.authRateLimiter ?? defaultAuthRateLimiter;
   const metrics = deps.metrics ?? defaultMetrics;
   const allowedOrigin = resolveAllowedOrigin(deps.allowedOrigin);
   const url = new URL(request.url);
@@ -69,7 +78,13 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
 
   let response: Response;
   try {
-    response = await route(request, url, deps, { requestId, logger, rateLimiter });
+    response = await route(request, url, deps, {
+      requestId,
+      logger,
+      rateLimiter,
+      authRateLimiter,
+      allowedOrigin,
+    });
   } catch (error) {
     logger.error("Unhandled error while routing request", {
       requestId,
@@ -84,7 +99,12 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
     );
   }
 
-  response = finalizeResponse(response, requestId, allowedOrigin);
+  // Auth.js's own /api/auth/* actions can render real HTML (its default
+  // sign-in page) — a materially different content type than every other
+  // route here, which only ever returns JSON. See finalizeResponse.ts for
+  // why the CSP differs specifically for this path prefix.
+  const csp = url.pathname.startsWith("/api/auth/") ? AUTH_PAGES_CSP : STRICT_CSP;
+  response = finalizeResponse(response, requestId, allowedOrigin, csp);
   const durationMs = Date.now() - startedAt;
 
   const metricTags = {
@@ -110,6 +130,8 @@ interface RouteContext {
   requestId: string;
   logger: Logger;
   rateLimiter: RateLimiter;
+  authRateLimiter: RateLimiter;
+  allowedOrigin: string;
 }
 
 const ASSESSMENT_ID_PATTERN = /^\/api\/assessments\/([^/]+)$/;
@@ -125,11 +147,21 @@ async function route(
   }
 
   if (url.pathname.startsWith("/api/auth/") && deps.authConfig) {
+    // POST covers sign-in/callback/signout — the actions worth abuse-limiting
+    // (brute force, email-bombing a victim via repeated magic-link
+    // requests). GET actions (session/providers/csrf) are read-only and
+    // stay unlimited, same as /api/leads's own GET.
+    if (request.method === "POST" && !checkRateLimit(request, ctx, ctx.authRateLimiter)) {
+      return tooManyRequests(ctx.requestId);
+    }
     return Auth(request, deps.authConfig);
   }
 
   if (url.pathname === "/api/leads" && request.method === "POST") {
-    if (!checkRateLimit(request, ctx)) {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
       return tooManyRequests(ctx.requestId);
     }
     return createLead(request, deps, ctx);
@@ -140,7 +172,10 @@ async function route(
   }
 
   if (url.pathname === "/api/assessments" && request.method === "POST") {
-    if (!checkRateLimit(request, ctx)) {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
       return tooManyRequests(ctx.requestId);
     }
     return createAssessment(request, deps, ctx);
@@ -154,9 +189,9 @@ async function route(
   return jsonError({ code: "not_found", message: "Not found" }, ctx.requestId, 404);
 }
 
-function checkRateLimit(request: Request, ctx: RouteContext): boolean {
+function checkRateLimit(request: Request, ctx: RouteContext, limiter: RateLimiter): boolean {
   const key = request.headers.get("cf-connecting-ip") ?? "unknown";
-  const result = ctx.rateLimiter.check(key);
+  const result = limiter.check(key);
   if (!result.allowed) {
     ctx.logger.warn("rate limit exceeded", { requestId: ctx.requestId, key });
   }
@@ -165,6 +200,14 @@ function checkRateLimit(request: Request, ctx: RouteContext): boolean {
 
 function tooManyRequests(requestId: string): Response {
   return jsonError({ code: "rate_limited", message: "Too many requests" }, requestId, 429);
+}
+
+function forbiddenOrigin(requestId: string): Response {
+  return jsonError(
+    { code: "forbidden_origin", message: "Request origin not allowed" },
+    requestId,
+    403,
+  );
 }
 
 function healthResponse(): Response {

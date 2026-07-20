@@ -13,7 +13,19 @@ export interface OAuthCredentials {
 
 export interface AuthConfigOptions {
   db: D1Database;
-  secret: string;
+  /**
+   * A single secret, or an array for rotation (RC1 Workstream 2 —
+   * "secret rotation guidance"): @auth/core tries every entry in order when
+   * decrypting an existing session/JWT, but only ever signs *new* ones with
+   * the first. To rotate: prepend the new secret (index 0) ahead of the old
+   * one, deploy, and once every session that could have been signed with
+   * the old secret has expired (`session.maxAge`, 30 days by default),
+   * remove the old one. Never reorder or drop a secret while sessions
+   * signed with it could still be live, or those sessions become
+   * unrecoverable (which is the correct failure mode for a compromised
+   * secret, just not one you want to hit by accident).
+   */
+  secret: string | string[];
   /** Real value required before any deployment — trustHost:true is only
    * safe when the Worker's own routing controls what Host header is
    * possible, which is true for local `wrangler dev` and stays true once
@@ -88,5 +100,12 @@ export function createAuthConfig(options: AuthConfigOptions): AuthConfig {
     trustHost: options.trustHost ?? true,
     basePath: "/api/auth",
     session: { strategy: "database" },
+    // Cookies: deliberately not overridden here. @auth/core's own defaults
+    // (verified directly against its cookie.js, not assumed) are already
+    // `httpOnly: true`, `sameSite: "lax"` on every cookie it sets, and
+    // `secure` auto-detected from whether the request was made over HTTPS —
+    // with the `__Secure-`/`__Host-` name prefixes applied automatically
+    // once `secure` is on. There is no hardening left to add without a
+    // concrete reason to diverge from a well-reviewed default.
   };
 }

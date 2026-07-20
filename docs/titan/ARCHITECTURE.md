@@ -144,6 +144,35 @@ Every entity above needs a tenant boundary (`organization_id` or equivalent) enf
 - **Error reporting**: a hosted error-tracking service (Sentry-class) from Phase 0 — same rationale.
 - **Testing pyramid**: unit tests for the risk-scoring engine specifically get the highest priority and coverage bar, since a scoring bug is a correctness bug with real consequences for what an organization is told about their compliance posture. Integration tests for API boundaries. E2E tests for the critical path (landing → questionnaire → results, and admin login → view assessment). Accessibility and performance tests run in CI, not manually, from Phase 0 — retrofitting them later, as this repo's own architecture audit found for the *existing* site, is far more expensive than building them in from the start.
 
+## Enterprise architecture audit (RC1 pass)
+
+A real audit of `titan/` as it stands after Stage 4, not a self-assessment — every claim below was checked with an actual command, not asserted from memory.
+
+**Package dependency graph — clean, no cycles.** Checked directly against each package's `package.json`:
+
+```
+@titan/design-system   (no @titan deps — leaf)
+@titan/assessment-core (no @titan deps — leaf)
+@titan/platform        → @titan/assessment-core
+@titan/web              → @titan/assessment-core, @titan/design-system, @titan/platform
+```
+
+`@titan/web` is the only consumer of all three others; nothing depends back on `web`. Confirmed no package under `assessment-core`/`design-system` imports `@titan/platform` or `@titan/web` (`grep` across both packages' `src/`, zero matches).
+
+**Repository Pattern boundary — held.** `router.ts` never imports a concrete `*.d1.ts`/`*.memory.ts` repository module — only the interfaces from `repositories/types.ts`, with concrete implementations injected via `Dependencies` from `worker.ts`. `grep` for `D1Database` across `packages/platform/src` returns matches only in the expected files (`*.d1.ts`, `worker.ts`, `testD1.ts`, `auth/config.ts`) — no business logic anywhere touches D1 directly.
+
+**Shared models — single source of truth, no duplication.** `LeadRecord`/`AssessmentRecord`/`OrganizationRecord`/etc. are defined exactly once, in `@titan/platform/src/repositories/types.ts`; `grep` for a second definition anywhere in `apps/web` or `packages/assessment-core` returns nothing. `titan/apps/web`'s `leadStore.ts` re-exports `NewLead` under the name its callers use, rather than redefining the shape.
+
+**API contract — consistent, not accidentally.** The Worker's error envelope (`http/responses.ts`'s `jsonError`: `{ error: { code, message }, requestId }`) and the frontend's parsing of it (`apiClient.ts`'s `ErrorEnvelope`) agree on shape. The client intentionally does not import the server's internal `ApiError` type — an HTTP client parsing a wire contract shouldn't need to import the server's internal response-building types, and a minimal local shape for parsing purposes is standard practice, not duplication of business logic.
+
+**Dependency health.** `npm audit` (root workspace, all packages): 0 known vulnerabilities. `vitest`/`@vitest/coverage-v8` versions are consistent (`^3.0.0`) across all four packages — no accidental drift from the deliberate Vitest-4-deferral decision (`DECISION_LOG.md`).
+
+**Scaling risk identified, deliberately not acted on:** `router.ts`'s route dispatch is a hand-written if/else chain. This is the right amount of structure for today's 6 routes (easy to read top-to-bottom, no framework overhead) but will not scale gracefully if an Admin/Customer Portal (`ROADMAP.md`, deferred this pass) adds the dozens of routes those need. **Recommendation, not action taken:** revisit with a real route-table/matcher once route count materially grows — introducing that abstraction now, for 6 routes, would be solving a problem that doesn't exist yet (this repository's own stated engineering principle: refactor only where measurable value exists).
+
+**No XSS surface found.** `grep` for `dangerouslySetInnerHTML` across `apps/web/src`: zero matches, confirming Stage 3's original finding still holds after all of Stage 4's additions.
+
+**Tooling gap found and fixed:** `packages/config/eslint.base.mjs` ignored `dist/`, `coverage/`, `node_modules/` but not `.wrangler/` — `wrangler dev`'s own local build cache (gitignored, but not excluded from ESLint's scan). This was invisible until Stage 4's real local operational verification actually ran `wrangler dev` for the first time in this workspace, which generates that directory; anyone following `OPERATIONAL_RUNBOOK.md`'s local dev instructions would hit the same `npm run lint` failure. Fixed by adding `**/.wrangler/**` to the shared ignore list.
+
 ## Open decisions
 
 ### Decided (see `DECISION_LOG.md` for the full record)

@@ -25,6 +25,7 @@ export interface Env {
 // only a per-isolate one, not a global production control.
 const logger = createLogger({ service: "titan-platform" });
 const rateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
+const authRateLimiter = createInMemoryRateLimiter({ limit: 10, windowMs: 60_000 });
 const metrics = createInMemoryMetrics();
 
 // Not deployed anywhere (no Cloudflare account/credentials in this
@@ -59,6 +60,7 @@ export default {
       audit: createD1AuditRepository(env.DB),
       logger,
       rateLimiter,
+      authRateLimiter,
       metrics,
       allowedOrigin: env.ALLOWED_ORIGIN,
       authConfig,

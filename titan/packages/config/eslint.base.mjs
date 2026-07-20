@@ -73,7 +73,12 @@ export function titanEslintConfig({ tsconfigRootDir }) {
       },
     },
     {
-      ignores: ["**/dist/**", "**/coverage/**", "**/node_modules/**"],
+      // .wrangler/ is `wrangler dev`'s local build cache (gitignored,
+      // packages/platform/.gitignore) — its generated bundles aren't this
+      // codebase's source and shouldn't be linted as if they were. Found
+      // because a real local `wrangler dev` run (Stage 4 Workstream 10
+      // verification) created it for the first time in this workspace.
+      ignores: ["**/dist/**", "**/coverage/**", "**/node_modules/**", "**/.wrangler/**"],
     },
   ];
 }

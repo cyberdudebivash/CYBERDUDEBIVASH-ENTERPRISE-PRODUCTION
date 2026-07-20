@@ -38,6 +38,11 @@ describe("createAuthConfig", () => {
     expect(config.basePath).toBe("/api/auth");
   });
 
+  it("accepts an array of secrets for rotation", () => {
+    const config = createAuthConfig({ db: createDb(), secret: ["new-secret", "old-secret"] });
+    expect(config.secret).toEqual(["new-secret", "old-secret"]);
+  });
+
   it("the dev Email provider logs instead of sending real email", async () => {
     const messages: unknown[] = [];
     const config = createAuthConfig({

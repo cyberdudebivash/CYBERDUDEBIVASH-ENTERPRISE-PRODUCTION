@@ -230,6 +230,69 @@ describe("handleRequest", () => {
       expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
       expect(response.headers.get("X-Request-Id")).toBeTruthy();
     });
+
+    it("uses a relaxed style-src CSP (not the strict JSON-API policy) so Auth.js's own HTML pages render", async () => {
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+      };
+      // GET /api/auth/signin (no custom `pages` configured) is real HTML with
+      // inline <style> — verified directly against a real Auth() call
+      // (finalizeResponse.ts's comment). The strict default-src 'none' used
+      // everywhere else would silently break its styling.
+      const response = await handleRequest(
+        new Request("https://example.com/api/auth/signin"),
+        deps,
+      );
+      const csp = response.headers.get("Content-Security-Policy");
+      expect(csp).toContain("style-src 'unsafe-inline'");
+      expect(csp).not.toBe("default-src 'none'");
+    });
+
+    it("rate-limits POST /api/auth/* separately from the general API limiter", async () => {
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        authRateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/auth/signin/email", {
+            method: "POST",
+            headers: {
+              "cf-connecting-ip": "203.0.113.5",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "email=asha%40acme.in",
+          }),
+          deps,
+        );
+
+      const first = await makeRequest();
+      expect(first.status).not.toBe(429);
+
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
+    });
+
+    it("does not rate-limit GET /api/auth/session against the auth limiter", async () => {
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        authRateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/auth/session", {
+            headers: { "cf-connecting-ip": "203.0.113.6" },
+          }),
+          deps,
+        );
+
+      await makeRequest();
+      const second = await makeRequest();
+      expect(second.status).toBe(200);
+    });
   });
 
   it("returns 404 for an unmatched route", async () => {
@@ -246,6 +309,10 @@ describe("handleRequest", () => {
     expect(response.headers.get("X-Frame-Options")).toBe("DENY");
     expect(response.headers.get("Content-Security-Policy")).toBe("default-src 'none'");
     expect(response.headers.get("X-Request-Id")).toBeTruthy();
+    expect(response.headers.get("Strict-Transport-Security")).toContain("max-age=");
+    expect(response.headers.get("Permissions-Policy")).toBeTruthy();
+    expect(response.headers.get("Cross-Origin-Opener-Policy")).toBe("same-origin");
+    expect(response.headers.get("Cross-Origin-Resource-Policy")).toBe("cross-origin");
   });
 
   it("records a request count and duration metric for every request", async () => {
@@ -292,6 +359,60 @@ describe("handleRequest", () => {
       allowedOrigin: "https://app.example.com",
     });
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://app.example.com");
+  });
+
+  describe("CSRF (Origin validation on state-changing requests)", () => {
+    it("rejects POST /api/leads from an untrusted Origin with 403", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", {
+          method: "POST",
+          headers: { Origin: "https://evil.example.com" },
+          body: JSON.stringify(validLeadBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+      expect(await deps.leads.list()).toEqual([]);
+    });
+
+    it("rejects POST /api/assessments from an untrusted Origin with 403", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments", {
+          method: "POST",
+          headers: { Origin: "https://evil.example.com" },
+          body: JSON.stringify(validAssessmentBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("allows POST /api/leads whose Origin matches the configured allowed origin", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", {
+          method: "POST",
+          headers: { Origin: "http://localhost:5173" },
+          body: JSON.stringify(validLeadBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+    });
+
+    it("allows POST /api/leads with no Origin header (non-browser callers)", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", {
+          method: "POST",
+          body: JSON.stringify(validLeadBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+    });
   });
 
   it("rate-limits POST /api/leads per client IP once the limit is exceeded", async () => {
