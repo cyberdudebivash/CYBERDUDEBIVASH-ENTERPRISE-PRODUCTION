@@ -4,6 +4,27 @@ Phased, sequential, each phase's "done" tied to the quality gates the original b
 
 A module marked "not this phase" is not forgotten — it's in `PROGRAM_BACKLOG.md`-equivalent tracking once Phase 1 starts (see below), sequenced deliberately rather than attempted in parallel with everything else.
 
+## How the Phase 2 master prompt's sub-phases (A–L) map onto this roadmap
+
+A later master prompt ("Project Titan — Phase 2 — Enterprise DPDP Platform Integration & Production Evolution") introduced its own internal sequence, Phase A through Phase L, scoped to turning the already-existing scanner asset (`dpdpriskscan.html`, uploaded as part of that prompt) into Titan's Module 1. It doesn't replace the phases below — Phase 0's foundation work already happened, and this document's overall structure stands — but its Phase A–D content lands inside what Phase 1 originally scoped as Module 2/3 (questionnaire + risk engine), because that content already exists as a working asset rather than needing to be authored from scratch. `DECISION_LOG.md` has the full record; this table is the status snapshot, kept current here rather than in a second competing roadmap:
+
+| Sub-phase | Covers | Status |
+|---|---|---|
+| A — Discovery | Review the scanner, document findings, no rewriting | ✅ Done — `ARCHITECTURE.md`'s Module 1 discovery section |
+| B — Modularization | Break the scanner into production modules | 🟡 Started — `titan/packages/assessment-core` is the first extracted module |
+| C — Question Engine | Data-driven question config, no hardcoded logic | ✅ Done for the DPDP v1 bank — typed, versioned, tested |
+| D — Risk Engine | Separated business rules/scoring, tested | ✅ Done — the source asset's `maxScore` bug fixed, regression-tested, 100% statement coverage |
+| E — Cloudflare Backend | Workers API, D1, repository layer, audit logging | ⛔ Not started |
+| F — Authentication | Auth.js integration, orgs/users/RBAC/sessions | ⛔ Not started |
+| G — Lead Management | Real persistence, pipeline, admin search | ⛔ Not started |
+| H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started |
+| I — Admin Portal | Dashboard, assessments, companies, leads, reports | ⛔ Not started |
+| J — Customer Portal | Org history, reports, roadmaps, bookings | ⛔ Not started |
+| K — Security | Input validation, XSS/CSRF, rate limiting, headers | ⛔ Not started (findings documented in `ARCHITECTURE.md`; only the risk-engine class of bug is actually fixed so far) |
+| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | 🟡 Passes for what exists (`assessment-core`); nothing built yet for E–K to run it against |
+
+Phase E onward needs an explicit answer to a question nobody's made yet: does the scanner's UI get rebuilt inside `@titan/web`, or does `dpdpriskscan.html` get progressively wired to import from `assessment-core` in place? Either is workable; picking one is the next real decision on this track, separate from (and blocking progress on top of) the hosting/database/auth decisions already made.
+
 ## Phase 0 — Foundation
 
 **Goal:** a deployable skeleton with nothing user-facing yet, but every cross-cutting concern (Module 15/16/17/18/19/20's *infrastructure*, not their full feature set) wired in from day one.
