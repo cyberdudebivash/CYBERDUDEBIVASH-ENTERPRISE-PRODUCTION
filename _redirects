@@ -8,9 +8,17 @@
 # Scope is deliberately narrow: only paths directly confirmed exposed this
 # engagement. Status 404 rewrites the response to "/" with a 404 status code —
 # the real file's bytes are never sent back for a request matching these rules.
-/src/*               /  404
-/server.ts           /  404
-/vite.config.ts      /  404
-/tsconfig.json       /  404
-/package.json        /  404
-/package-lock.json   /  404
+#
+# The trailing "!" forces the rule even though a real file exists at each of
+# these paths — Cloudflare Pages (like Netlify, whose _redirects syntax this
+# follows) otherwise gives existing static files precedence over redirect
+# rules, silently. Confirmed live: without "!", all six paths kept serving
+# real file content after this file's first deploy (2026-07-20) — this is
+# not a hypothetical, it's what the unforced version actually did in
+# production.
+/src/*               /  404!
+/server.ts           /  404!
+/vite.config.ts      /  404!
+/tsconfig.json       /  404!
+/package.json        /  404!
+/package-lock.json   /  404!
