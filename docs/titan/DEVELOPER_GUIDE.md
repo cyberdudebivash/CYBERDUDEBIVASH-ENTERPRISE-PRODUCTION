@@ -10,6 +10,7 @@ titan/
     web/                  # @titan/web — the application shell (routing, layout, error handling)
   packages/
     design-system/        # @titan/design-system — tokens + reusable UI components
+    assessment-core/       # @titan/assessment-core — question banks + risk-scoring engine (framework-agnostic)
     config/                # @titan/config — shared tsconfig/eslint, not a runtime package
   package.json             # workspace root — npm workspaces, scoped to titan/ only
 ```
@@ -68,6 +69,19 @@ import { Button, Alert, colors, spacing } from "@titan/design-system";
 ```
 
 Component CSS currently hand-mirrors the token values in `src/tokens/` (see the comment at the top of `Button.css`/`Alert.css`) — there's no build-time step that generates CSS custom properties from the TypeScript token modules yet. If you change a token value, update the corresponding CSS by hand and note it in the PR; a token→CSS pipeline is a reasonable improvement, not built here to keep this phase's scope honest about what's actually automated versus manually kept in sync.
+
+## Assessment engine usage
+
+```ts
+import { dpdpV1, scoreAssessment, type Answers } from "@titan/assessment-core";
+
+const answers: Answers = { has_dpo: false, consent_mechanism: true /* ... */ };
+const result = scoreAssessment(dpdpV1.questions, answers);
+// result.score (0-100), result.riskLevel ("low"|"medium"|"high"|"critical"),
+// result.breakdown (counts per level), result.gaps (failed questions with penalty/section)
+```
+
+No UI in `@titan/web` calls this yet — it exists as a standalone, fully tested package because Phase 2's Discovery pass (`ARCHITECTURE.md`) found the original scanner's scoring logic had zero test coverage and a real off-by-one bug in it. `scoreAssessment` always derives its denominator from the question bank (`getScoredQuestions`) rather than a hardcoded count — don't reintroduce a hardcoded count anywhere that consumes this; that's the exact bug this module exists to not repeat. Adding a second framework (ISO/SOC/etc., per `PRODUCT_VISION.md`'s "DPDP is the first module, not the whole product") means adding a new file next to `questions/dpdp-v1.ts`, not changing anything in `risk-engine/` — the engine takes a `Question[]` and doesn't know what framework it's scoring.
 
 ## Adding a new component to the design system
 
