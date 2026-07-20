@@ -2,6 +2,18 @@
 
 Chronological record of architecture and product decisions once they're actually made — not proposals (those live in `ARCHITECTURE.md` until someone decides). Newest first.
 
+## 2026-07-20 — ERP-1: the `GET /api/leads` auth gap is left open this pass, on purpose; the review-board format is declined
+
+**Found: `GET /api/leads` has no authentication.** Tracing the router's actual dispatch (rather than relying on RC1's prior read of it) showed the route returns every captured lead — name, email, company, DPDP answers, computed risk result — to any caller, with no session or role check on that path. Classified **HIGH** in `SECURITY_GUIDE.md`. This is the single most consequential finding of the ERP-1 pass.
+
+**Decided: not fixed in this pass.** Three concrete reasons, not just time pressure: (1) the existing router test suite has 9+ assertions that call this endpoint unauthenticated by design — a real fix changes their contract, not just adds a check; (2) `OPERATIONAL_RUNBOOK.md`'s standard local-verification workflow curls this endpoint anonymously — the runbook itself would need to change in the same commit; (3) a real fix requires deciding *what* "authorized" means here (any authenticated session? an organization-scoped role via `auth/authorize.ts`, which exists but isn't wired to anything yet?) — a design decision, not a one-line patch, and one that deserves review on its own rather than being folded into an audit pass as an afterthought. Recorded openly in `SECURITY_GUIDE.md`, `PLATFORM_FOUNDATION.md`, and `FEATURE_MATRIX.md` rather than fixed hastily or left undocumented.
+
+**Consequence: this finding is why ERP-1's release classification does not advance beyond Internal Alpha.** A HIGH-severity, unauthenticated PII-disclosure route is disqualifying for any stage that implies the product is fit for even a single pilot customer's data, regardless of how much else in this pass checked out. See the ERP-1 Final Report's Gate B (Security) result.
+
+**Decided: ERP-1's requested "Executive Release Review Board" (9 named personas, each with individual quotes/approvals) is not produced.** Inventing named executives and their opinions would itself be fabricated evidence — directly contrary to ERP-1's own stated principle ("Never fabricate evidence"). The Final Report covers the same substantive content the board format asked for (approval status, concerns, blocking issues, required actions, risk level) organized by engineering domain instead of by invented persona.
+
+**Decided: ERP-1's scope was handled the same way RC1's was — triaged, not fully attempted, and for the same underlying reasons** (see RC1's entry below; nothing changed those facts). This pass added: a supply-chain review, two real Lighthouse-verified WCAG AA fixes, an honest downgrade of ASVS V4 from "N/A yet" to "Fail" once the route was actually traced instead of assumed clean, and this `GET /api/leads` finding itself. It did not re-attempt Admin/Customer Portal, reporting, deployment pipeline, commercial readiness, or compliance — no new facts exist to justify revisiting those deferrals.
+
 ## 2026-07-20 — RC1: Playwright committed, but not yet wired into CI; RC1 scope explicitly triaged
 
 **Decided: Playwright is now a real, committed dependency (`@titan/web`'s `@playwright/test`) with one real E2E spec (`e2e/dpdp-assessment.spec.ts`), replacing Stage 4's throwaway, uncommitted verification script.** The spec starts the real backend (migrations + `wrangler dev`) and the real frontend (`vite`) via `playwright.config.ts`'s `webServer` array and drives the actual assessment flow to a real, asserted `POST /api/leads` response — not a mock.

@@ -35,14 +35,19 @@ The "Titan RC1 — Ultra Enterprise Master Implementation Program" master prompt
 - **Compliance** (SOC 2/ISO 27001 readiness, formal GDPR/DPDP compliance) — not started. Organizational/legal work (external audits, legal review, retention-policy decisions), not something a code session completes.
 - **Performance workstream** (bundle analysis, Lighthouse, Core Web Vitals beyond what Stage 3 already measured) — not attempted this pass; no new evidence to report beyond what `PLATFORM_FOUNDATION.md` already documents from Stage 3.
 
-## What Stage 5 / the next RC pass needs
+## ERP-1 pass: an independent audit, not a features pass
 
-1. **The client-submitted-risk-score tampering finding (`SECURITY_GUIDE.md`).** The highest-value next security fix: recompute `result` server-side from `answers` on `POST /api/leads`/`POST /api/assessments` instead of trusting the client's value.
-2. **Admin Portal (I).** Now has somewhere real to read from — Stage 4/RC1 built the repositories, API, and authorization mechanism it needs.
-3. **A real email provider decision**, to make Auth.js's Email sign-in actually send mail, and to unblock server-side reporting/delivery.
-4. **A real payments provider decision**, to unblock commercial readiness (plans/licensing/billing).
-5. **The Vitest 3→4 decision**, if real Workers-runtime testing (`@cloudflare/vitest-pool-workers`, real `workerd`) becomes a priority. Still deferred (`DECISION_LOG.md`) — sql.js closed most of the practical gap for repository-level SQL correctness without requiring this upgrade.
-6. **Deploying somewhere real** (Cloudflare account/credentials still don't exist in any environment this project has run in) — everything verified so far is local-only, by design and by necessity. Needed before Turnstile, a real deployment pipeline, or a global (not per-isolate) rate limiter can exist.
+The "ERP-1 — Enterprise Release Program" prompt asked an independent reviewer to determine, with evidence, whether Titan had earned a release stage beyond Internal Alpha — explicitly not to make it look complete. It found one finding that outweighs everything else this pass verified: **`GET /api/leads` has no authentication** (HIGH — `SECURITY_GUIDE.md`, `DECISION_LOG.md`). It also closed two real WCAG AA failures a real Lighthouse audit caught (jsdom+axe could not), and ran a supply-chain review (clean). Same engineering-only scope as RC1 — see `DECISION_LOG.md`'s ERP-1 entry for why the rest of the RC1 prompt's deferred workstreams still aren't attempted. Full detail: `PLATFORM_FOUNDATION.md`'s ERP-1 section; release-stage conclusion: the ERP-1 Final Report communicated alongside this pass.
+
+## What Stage 5 / the next pass needs
+
+1. **Fix `GET /api/leads`'s missing authentication (ERP-1, HIGH).** Now the single highest-priority item in this document — ahead of the risk-score tampering finding below, because it's a live disclosure gap on a route that already exists and is called, not a design gap on a route that doesn't exist yet. Requires first deciding what "authorized" means for this route (`DECISION_LOG.md`'s ERP-1 entry), then wiring `auth/authorize.ts`'s existing `requireOrganizationAccess` (or a simpler any-session check) into the route, then updating the router test suite and `OPERATIONAL_RUNBOOK.md`'s curl-based verification workflow to match.
+2. **The client-submitted-risk-score tampering finding (`SECURITY_GUIDE.md`).** Recompute `result` server-side from `answers` on `POST /api/leads`/`POST /api/assessments` instead of trusting the client's value.
+3. **Admin Portal (I).** Now has somewhere real to read from — Stage 4/RC1 built the repositories, API, and authorization mechanism it needs. Building it is also the natural forcing function for fixing item 1, since it's the route's first real caller.
+4. **A real email provider decision**, to make Auth.js's Email sign-in actually send mail, and to unblock server-side reporting/delivery.
+5. **A real payments provider decision**, to unblock commercial readiness (plans/licensing/billing).
+6. **The Vitest 3→4 decision**, if real Workers-runtime testing (`@cloudflare/vitest-pool-workers`, real `workerd`) becomes a priority. Still deferred (`DECISION_LOG.md`) — sql.js closed most of the practical gap for repository-level SQL correctness without requiring this upgrade.
+7. **Deploying somewhere real** (Cloudflare account/credentials still don't exist in any environment this project has run in) — everything verified so far is local-only, by design and by necessity. Needed before Turnstile, a real deployment pipeline, or a global (not per-isolate) rate limiter can exist.
 
 ## Phase 0 — Foundation
 
