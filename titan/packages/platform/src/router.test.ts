@@ -66,6 +66,43 @@ describe("handleRequest", () => {
     });
   });
 
+  describe("GET /health/ready", () => {
+    it("returns 200 when no readinessCheck is configured", async () => {
+      const response = await handleRequest(
+        new Request("https://example.com/health/ready"),
+        createTestDeps(),
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ status: "ready" });
+    });
+
+    it("returns 200 when the readinessCheck resolves true", async () => {
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => true,
+      });
+      expect(response.status).toBe(200);
+    });
+
+    it("returns 503 when the readinessCheck resolves false", async () => {
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => false,
+      });
+      expect(response.status).toBe(503);
+    });
+
+    it("returns 503 (not an unhandled exception) when the readinessCheck rejects", async () => {
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => {
+          throw new Error("D1 unreachable");
+        },
+      });
+      expect(response.status).toBe(503);
+    });
+  });
+
   describe("POST /api/leads", () => {
     it("saves the lead, records an audit event, and returns 201", async () => {
       const deps = createTestDeps();
@@ -333,6 +370,24 @@ describe("handleRequest", () => {
     const durations = metrics.getDurations();
     expect(durations).toHaveLength(1);
     expect(durations[0]?.durations[0]).toBeGreaterThanOrEqual(0);
+  });
+
+  it("records a separate repository-operation timing metric, distinct from total request duration", async () => {
+    const metrics = createInMemoryMetrics();
+    const deps = { ...createTestDeps(), metrics };
+    await handleRequest(
+      new Request("https://example.com/api/leads", {
+        method: "POST",
+        body: JSON.stringify(validLeadBody),
+      }),
+      deps,
+    );
+
+    const repoDurations = metrics
+      .getDurations()
+      .find((d) => d.name === "repository.duration_ms" && d.tags.operation === "leads.save");
+    expect(repoDurations).toBeDefined();
+    expect(repoDurations?.durations[0]).toBeGreaterThanOrEqual(0);
   });
 
   it("reuses an inbound X-Request-Id instead of minting a new one", async () => {

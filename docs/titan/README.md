@@ -10,7 +10,8 @@
 6. [`FEATURE_MATRIX.md`](./FEATURE_MATRIX.md) — every implemented feature, one row each, added only once real
 7. [`DEVELOPER_GUIDE.md`](./DEVELOPER_GUIDE.md) — how to work in `titan/`
 8. [`OPERATIONAL_RUNBOOK.md`](./OPERATIONAL_RUNBOOK.md) — running, verifying, and troubleshooting the Cloudflare backend locally (local-only — nothing here is deployed anywhere)
-9. [`DPDP_ASSESSMENT_FRAMEWORK.md`](./DPDP_ASSESSMENT_FRAMEWORK.md) — draft compliance content — **not legal advice, requires expert review before any real use**
+9. [`SECURITY_GUIDE.md`](./SECURITY_GUIDE.md) — threat model, OWASP ASVS control review, and known/accepted security gaps
+10. [`DPDP_ASSESSMENT_FRAMEWORK.md`](./DPDP_ASSESSMENT_FRAMEWORK.md) — draft compliance content — **not legal advice, requires expert review before any real use**
 
 ## What actually exists right now
 

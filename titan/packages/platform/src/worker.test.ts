@@ -16,6 +16,16 @@ describe("worker (default export)", () => {
     expect(response.status).toBe(200);
   });
 
+  it("wires a real env.DB through to /health/ready via a real SELECT 1 against real SQLite", async () => {
+    const response = await worker.fetch(
+      new Request("https://example.com/health/ready"),
+      { DB: createDb() },
+      noopContext,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ status: "ready" });
+  });
+
   it("wires a real env.DB through to the D1-backed lead repository end to end", async () => {
     const env = { DB: createDb() };
 

@@ -61,7 +61,13 @@ These are the same checks used to verify Stage 4 (`PLATFORM_FOUNDATION.md`'s ver
 
 ```bash
 curl -s http://localhost:8787/health
-# {"status":"ok","service":"titan-platform","timestamp":"..."}
+# {"status":"ok","service":"titan-platform","timestamp":"..."} — liveness only, never touches D1
+
+curl -s http://localhost:8787/health/ready
+# {"status":"ready","service":"titan-platform"} — RC1: a real dependency check
+# (a trivial `SELECT 1` against env.DB, worker.ts). Returns 503 if D1 is
+# unreachable instead of a false-positive 200 — use this one for readiness
+# probes, /health for liveness probes.
 
 curl -s http://localhost:8787/api/leads
 # [] on a fresh DB, or seed.sql's one lead if seeded

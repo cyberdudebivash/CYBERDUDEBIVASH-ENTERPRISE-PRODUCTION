@@ -64,6 +64,15 @@ export default {
       metrics,
       allowedOrigin: env.ALLOWED_ORIGIN,
       authConfig,
+      // A trivial, real query — not a repository call — so a readiness
+      // failure means "D1 itself is unreachable", not "this one table has a
+      // problem". GET /health/ready turns this into a 503 the moment it
+      // rejects or resolves false.
+      readinessCheck: () =>
+        env.DB.prepare("SELECT 1")
+          .first()
+          .then(() => true)
+          .catch(() => false),
     });
   },
 };

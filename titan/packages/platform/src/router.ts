@@ -43,6 +43,19 @@ export interface Dependencies {
    * exists when a real AuthConfig (auth/config.ts's createAuthConfig) is
    * supplied. */
   authConfig?: AuthConfig;
+  /**
+   * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
+   * answers instantly and never touches D1, so it can't distinguish "the
+   * Worker is running" from "the Worker is running but its database is
+   * unreachable". This, when supplied, backs `GET /health/ready`: a real
+   * dependency check (worker.ts wires this to a trivial `SELECT 1` against
+   * env.DB), returning false/rejecting instead of throwing lets the router
+   * turn a real outage into a 503, not an unhandled exception. Kept out of
+   * router.ts's own D1 knowledge (this stays a plain function, no
+   * D1Database import here) — consistent with the Repository Pattern
+   * boundary ARCHITECTURE.md's audit confirmed holds everywhere else.
+   */
+  readinessCheck?: () => Promise<boolean>;
 }
 
 const defaultRateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
@@ -84,6 +97,7 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
       rateLimiter,
       authRateLimiter,
       allowedOrigin,
+      metrics,
     });
   } catch (error) {
     logger.error("Unhandled error while routing request", {
@@ -132,6 +146,29 @@ interface RouteContext {
   rateLimiter: RateLimiter;
   authRateLimiter: RateLimiter;
   allowedOrigin: string;
+  metrics: Metrics;
+}
+
+/**
+ * RC1 Workstream 6 (operation timing). Total request duration
+ * (http.request.duration_ms) can't tell you whether a slow response was
+ * spent in the repository call or somewhere else in the handler (audit
+ * write, validation, serialization) — this records just the repository
+ * call's own duration under a distinct metric name, real operational
+ * signal for diagnosing D1 latency without needing Cloudflare's own
+ * tracing (which requires a deployed account this project doesn't have).
+ */
+async function withOperationTiming<T>(
+  metrics: Metrics,
+  operation: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const startedAt = Date.now();
+  try {
+    return await fn();
+  } finally {
+    metrics.recordDuration("repository.duration_ms", Date.now() - startedAt, { operation });
+  }
 }
 
 const ASSESSMENT_ID_PATTERN = /^\/api\/assessments\/([^/]+)$/;
@@ -144,6 +181,10 @@ async function route(
 ): Promise<Response> {
   if (url.pathname === "/health" && request.method === "GET") {
     return healthResponse();
+  }
+
+  if (url.pathname === "/health/ready" && request.method === "GET") {
+    return readinessResponse(deps, ctx);
   }
 
   if (url.pathname.startsWith("/api/auth/") && deps.authConfig) {
@@ -168,7 +209,7 @@ async function route(
   }
 
   if (url.pathname === "/api/leads" && request.method === "GET") {
-    return listLeads(deps);
+    return listLeads(deps, ctx);
   }
 
   if (url.pathname === "/api/assessments" && request.method === "POST") {
@@ -218,6 +259,37 @@ function healthResponse(): Response {
   });
 }
 
+/** Real dependency check, not just "the process is running" — see
+ * Dependencies.readinessCheck's doc comment. Absent readinessCheck (e.g. a
+ * router test with no D1 wired up) reports ready:true — there is nothing
+ * to fail against, matching /health's own no-dependency behavior. */
+async function readinessResponse(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  if (!deps.readinessCheck) {
+    return jsonSuccess({ status: "ready", service: "titan-platform" });
+  }
+
+  let ready: boolean;
+  try {
+    ready = await deps.readinessCheck();
+  } catch (error) {
+    ctx.logger.error("readiness check threw", {
+      requestId: ctx.requestId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    ready = false;
+  }
+
+  if (!ready) {
+    return jsonError(
+      { code: "not_ready", message: "A required dependency is unreachable" },
+      ctx.requestId,
+      503,
+    );
+  }
+
+  return jsonSuccess({ status: "ready", service: "titan-platform" });
+}
+
 async function readJsonBody(request: Request): Promise<ValidationResult<unknown>> {
   try {
     return ok(await request.json());
@@ -241,7 +313,9 @@ async function createLead(
     return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
   }
 
-  const saved = await deps.leads.save(validation.value);
+  const saved = await withOperationTiming(ctx.metrics, "leads.save", () =>
+    deps.leads.save(validation.value),
+  );
 
   await recordAuditEvent(deps, ctx, {
     actorId: null,
@@ -256,8 +330,8 @@ async function createLead(
   return jsonSuccess(saved, 201);
 }
 
-async function listLeads(deps: Dependencies): Promise<Response> {
-  const leads = await deps.leads.list();
+async function listLeads(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const leads = await withOperationTiming(ctx.metrics, "leads.list", () => deps.leads.list());
   return jsonSuccess(leads);
 }
 
@@ -276,7 +350,9 @@ async function createAssessment(
     return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
   }
 
-  const saved = await deps.assessments.save(validation.value);
+  const saved = await withOperationTiming(ctx.metrics, "assessments.save", () =>
+    deps.assessments.save(validation.value),
+  );
 
   await recordAuditEvent(deps, ctx, {
     actorId: saved.createdBy,
@@ -292,7 +368,9 @@ async function createAssessment(
 }
 
 async function getAssessment(id: string, deps: Dependencies, ctx: RouteContext): Promise<Response> {
-  const assessment = await deps.assessments.findById(id);
+  const assessment = await withOperationTiming(ctx.metrics, "assessments.findById", () =>
+    deps.assessments.findById(id),
+  );
   if (!assessment) {
     return jsonError({ code: "not_found", message: "Assessment not found" }, ctx.requestId, 404);
   }
