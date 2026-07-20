@@ -8,6 +8,7 @@ import {
   copyStaticPages,
   copyStaticDirs,
   copyPreexistingAssets,
+  copyRootConventionFiles,
   assembleSite,
 } from "../assemble-site.mjs";
 
@@ -71,6 +72,22 @@ test("copyPreexistingAssets: copies assets/{images,css,js} into dist/assets/", (
   assert.equal(readFileSync(join(distDir, "assets", "css", "style.css"), "utf8"), "body{}");
 });
 
+test("copyRootConventionFiles: copies _headers and _redirects from root into dist/", (t) => {
+  const { rootDir, distDir } = makeFixtureRoot(t);
+  writeFileSync(join(rootDir, "_headers"), "/*\n  X-Frame-Options: SAMEORIGIN");
+  writeFileSync(join(rootDir, "_redirects"), "/src/*  /  404");
+  const copied = copyRootConventionFiles(rootDir, distDir);
+  assert.deepEqual(copied, ["_headers", "_redirects"]);
+  assert.equal(readFileSync(join(distDir, "_headers"), "utf8"), "/*\n  X-Frame-Options: SAMEORIGIN");
+  assert.equal(readFileSync(join(distDir, "_redirects"), "utf8"), "/src/*  /  404");
+});
+
+test("copyRootConventionFiles: silently skips files that don't exist", (t) => {
+  const { rootDir, distDir } = makeFixtureRoot(t);
+  const copied = copyRootConventionFiles(rootDir, distDir);
+  assert.deepEqual(copied, []);
+});
+
 test("assembleSite: orchestrates rename + all copy steps end-to-end", (t) => {
   const { rootDir, distDir } = makeFixtureRoot(t);
   writeFileSync(join(distDir, "_vite_entry.html"), "<html>spa</html>");
@@ -78,6 +95,7 @@ test("assembleSite: orchestrates rename + all copy steps end-to-end", (t) => {
   writeFileSync(join(rootDir, "about.html"), "about");
   mkdirSync(join(rootDir, "portal"), { recursive: true });
   writeFileSync(join(rootDir, "portal", "index.html"), "portal");
+  writeFileSync(join(rootDir, "_headers"), "/*\n  X-Frame-Options: SAMEORIGIN");
 
   const result = assembleSite(rootDir, distDir);
 
@@ -85,4 +103,6 @@ test("assembleSite: orchestrates rename + all copy steps end-to-end", (t) => {
   assert.equal(readFileSync(join(distDir, "index.html"), "utf8"), "<html>spa</html>");
   assert.deepEqual(result.pages, ["about.html"]);
   assert.deepEqual(result.dirs, ["portal"]);
+  assert.deepEqual(result.conventionFiles, ["_headers"]);
+  assert.ok(existsSync(join(distDir, "_headers")));
 });

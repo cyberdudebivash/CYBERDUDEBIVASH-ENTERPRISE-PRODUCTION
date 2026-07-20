@@ -1,0 +1,16 @@
+# Blocks direct access to raw application source and build config, currently
+# reachable only because Cloudflare Pages deploys the repository root as-is
+# (no build step configured). Temporary mitigation — resolves permanently and
+# automatically once Cloudflare is reconfigured to build from source and serve
+# dist/ instead, which never contains these files under any build outcome.
+# See docs/audit/FINAL_PRODUCTION_CERTIFICATION.md §8 / MASTER_PRODUCTION_CERTIFICATION.md.
+#
+# Scope is deliberately narrow: only paths directly confirmed exposed this
+# engagement. Status 404 rewrites the response to "/" with a 404 status code —
+# the real file's bytes are never sent back for a request matching these rules.
+/src/*               /  404
+/server.ts           /  404
+/vite.config.ts      /  404
+/tsconfig.json       /  404
+/package.json        /  404
+/package-lock.json   /  404

@@ -15,6 +15,11 @@ const EXCLUDED_HTML = new Set([
 ]);
 const COPY_DIRS = ['portal', 'react-portal'];
 const ASSET_SUBDIRS = ['images', 'css', 'js'];
+// Cloudflare Pages / Netlify hosting-convention files. Currently only read from
+// repo root (Cloudflare deploys root as-is today) — copying them into dist/ too
+// means they keep working once Cloudflare is reconfigured to build from source
+// and serve dist/ directly, instead of silently disappearing on cutover day.
+const ROOT_CONVENTION_FILES = ['_headers', '_redirects'];
 
 /** Renames Vite's built entry file to index.html — the one canonical production HTML. */
 export function promoteEntryHtml(distDir) {
@@ -68,12 +73,26 @@ export function copyPreexistingAssets(rootDir, distDir, subdirs = ASSET_SUBDIRS)
   return copied;
 }
 
+/** Copies _headers/_redirects from repo root into dist/, if present. */
+export function copyRootConventionFiles(rootDir, distDir, files = ROOT_CONVENTION_FILES) {
+  const copied = [];
+  for (const name of files) {
+    const src = join(rootDir, name);
+    if (existsSync(src) && statSync(src).isFile()) {
+      copyFileSync(src, join(distDir, name));
+      copied.push(name);
+    }
+  }
+  return copied;
+}
+
 export function assembleSite(rootDir, distDir) {
   const indexPath = promoteEntryHtml(distDir);
   const pages = copyStaticPages(rootDir, distDir);
   const dirs = copyStaticDirs(rootDir, distDir);
   const assetDirs = copyPreexistingAssets(rootDir, distDir);
-  return { indexPath, pages, dirs, assetDirs };
+  const conventionFiles = copyRootConventionFiles(rootDir, distDir);
+  return { indexPath, pages, dirs, assetDirs, conventionFiles };
 }
 
 function isMain() {
@@ -88,4 +107,5 @@ if (isMain()) {
   console.log(`assemble-site: copied ${result.pages.length} static pages: ${result.pages.join(', ')}`);
   console.log(`assemble-site: copied dirs: ${result.dirs.join(', ') || '(none found)'}`);
   console.log(`assemble-site: copied pre-existing asset subdirs: ${result.assetDirs.join(', ') || '(none found)'}`);
+  console.log(`assemble-site: copied root convention files: ${result.conventionFiles.join(', ') || '(none found)'}`);
 }
