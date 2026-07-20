@@ -13,7 +13,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@titan/assessment-core": "*",
     "@titan/design-system": "*",
+    "@titan/platform": "*",
+    "jspdf": "^4.2.1",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-router-dom": "^7.1.1"

@@ -11,19 +11,27 @@ A later master prompt ("Project Titan — Phase 2 — Enterprise DPDP Platform I
 | Sub-phase | Covers | Status |
 |---|---|---|
 | A — Discovery | Review the scanner, document findings, no rewriting | ✅ Done — `ARCHITECTURE.md`'s Module 1 discovery section |
-| B — Modularization | Break the scanner into production modules | 🟡 Started — `titan/packages/assessment-core` is the first extracted module |
+| B — Modularization | Break the scanner into production modules | ✅ Done for the DPDP flow — `titan/packages/assessment-core` (data/logic) + `titan/apps/web/src/features/dpdp-assessment` (UI), the original `dpdpriskscan.html` untouched alongside it |
 | C — Question Engine | Data-driven question config, no hardcoded logic | ✅ Done for the DPDP v1 bank — typed, versioned, tested |
 | D — Risk Engine | Separated business rules/scoring, tested | ✅ Done — the source asset's `maxScore` bug fixed, regression-tested, 100% statement coverage |
-| E — Cloudflare Backend | Workers API, D1, repository layer, audit logging | ⛔ Not started |
-| F — Authentication | Auth.js integration, orgs/users/RBAC/sessions | ⛔ Not started |
-| G — Lead Management | Real persistence, pipeline, admin search | ⛔ Not started |
-| H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started |
-| I — Admin Portal | Dashboard, assessments, companies, leads, reports | ⛔ Not started |
+| E — Cloudflare Backend | Workers API, D1, repository layer, audit logging | ✅ Done for this stage's scope — `titan/packages/platform`: 5 repositories (Lead, Organization, Assessment, UserProfile, Audit), each in-memory + D1, contract-tested against real SQLite; 7 migration files applied against a **real local D1 instance**; a Worker with 5 endpoints, audit logging on every write. Verified via real `wrangler dev` HTTP requests, not just tests — see Stage 4's `PLATFORM_FOUNDATION.md` section |
+| F — Authentication | Auth.js integration, orgs/users/RBAC/sessions | ✅ Done for this stage's scope — `titan/packages/platform/src/auth/`: D1-adapter database sessions, RBAC + org-membership foundation, Email (dev-mode)/Google/GitHub providers (Google/GitHub inactive without real credentials). Enterprise SSO explicitly deferred |
+| G — Lead Management | Real persistence, pipeline, admin search | 🟡 Started — real persistence now works end to end (`@titan/web`'s `leadStore.ts` calls the real Worker API, no more `localStorage`); status tracking, ownership, notes, activity history, admin search/filtering are all still unbuilt (need an Admin Portal, Stage 5+) |
+| H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started — PDF generation is still real but client-side only (`pdfReport.ts`, lazy-loaded jsPDF). A `reports` table exists (migrations/0006) but nothing writes to it yet |
+| I — Admin Portal | Dashboard, assessments, companies, leads, reports | ⛔ Not started — now has somewhere real to read from (E/F), which it didn't before |
 | J — Customer Portal | Org history, reports, roadmaps, bookings | ⛔ Not started |
-| K — Security | Input validation, XSS/CSRF, rate limiting, headers | ⛔ Not started (findings documented in `ARCHITECTURE.md`; only the risk-engine class of bug is actually fixed so far) |
-| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | 🟡 Passes for what exists (`assessment-core`); nothing built yet for E–K to run it against |
+| K — Security | Input validation, XSS/CSRF, rate limiting, headers | 🟡 Mostly done — input/schema validation, security headers (CSP, X-Frame-Options, etc.) on every response, a rate-limiting hook (real but per-isolate, not a global production control — `DECISION_LOG.md`), CORS. **Still open: CSRF protection on the custom JSON endpoints** (`POST /api/leads`/`POST /api/assessments`) — Auth.js's own `/api/auth/*` actions have built-in CSRF handling, the rest of the API doesn't yet |
+| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | ✅ Passes for everything that exists — 196 tests across 4 packages (up from 119), full CI green, real `wrangler dev` + real Chromium browser verification this stage, not just jsdom |
 
-Phase E onward needs an explicit answer to a question nobody's made yet: does the scanner's UI get rebuilt inside `@titan/web`, or does `dpdpriskscan.html` get progressively wired to import from `assessment-core` in place? Either is workable; picking one is the next real decision on this track, separate from (and blocking progress on top of) the hosting/database/auth decisions already made.
+## What Stage 5 needs
+
+Stage 4 closed both items this section used to name (frontend/API wiring, a real local Cloudflare dev environment). What's left, worth naming precisely:
+
+1. **CSRF protection on `POST /api/leads`/`POST /api/assessments`.** Not urgent while nothing is deployed and every caller is same-origin-trusted local dev, but it should land before either endpoint takes real cross-origin traffic.
+2. **The Vitest 3→4 decision, if real Workers-runtime testing (`@cloudflare/vitest-pool-workers`, real `workerd`) becomes a priority.** Still deferred, same reasoning as before (`DECISION_LOG.md`) — sql.js (Stage 4) closed most of the practical gap for repository-level SQL correctness without requiring this upgrade.
+3. **Admin Portal (I).** Now has somewhere real to read from — Stage 4 built the repositories and API it needs.
+4. **A real email provider decision**, to make Auth.js's Email sign-in actually send mail instead of logging it.
+5. **Deploying somewhere real** (Cloudflare account/credentials still don't exist in any environment this project has run in) — everything verified so far is local-only, by design and by necessity.
 
 ## Phase 0 — Foundation
 

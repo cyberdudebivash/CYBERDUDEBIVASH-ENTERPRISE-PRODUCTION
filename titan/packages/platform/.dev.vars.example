@@ -1,0 +1,17 @@
+# Local Wrangler dev environment variables (Workstream 1).
+# Copy to .dev.vars (gitignored) for `wrangler dev` / `wrangler d1` commands.
+# None of these are real secrets — this project has never had Cloudflare,
+# Google, or GitHub credentials in any session (DECISION_LOG.md).
+
+# Auth.js — signs/encrypts session cookies (Workstream 5). Generate a real
+# value locally with: openssl rand -base64 32
+AUTH_SECRET=dev-only-placeholder-generate-your-own-32-byte-secret
+
+# OAuth providers (Workstream 5). Left blank in local dev: the provider
+# abstraction (src/auth/config.ts) only registers a provider when both of
+# its variables are present, so an empty pair means "provider not offered",
+# not a broken login.
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
