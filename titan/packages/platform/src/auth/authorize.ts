@@ -29,16 +29,18 @@ export function requireOrganizationAccess(
 }
 
 /**
- * Gate for `GET /api/leads`. This route lists every organization's leads in
- * one unfiltered call — `leadRepository`'s `list()` has no per-organization
- * query (SECURITY_GUIDE.md's tenant-isolation review) — so gating it at
- * "any organization member" would itself be a cross-tenant leak: a member
- * of one organization would see every other organization's leads too, just
- * behind what looks like a real check. Until the repository supports
- * organization-scoped filtering, a global, cross-organization read like
- * this may only be performed by a Platform Administrator.
+ * Gate shared by every route that reads *across* every organization at once
+ * rather than one organization's own data — `GET /api/leads`,
+ * `GET /api/organizations`, `GET /api/assessments` (list),
+ * `GET /api/audit` (EAP-1). None of those repositories filter by
+ * organization (`SECURITY_GUIDE.md`'s tenant-isolation review), so gating
+ * any of them at "any organization member" would itself be a cross-tenant
+ * leak: a member of one organization would see every other organization's
+ * data too, just behind what looks like a real check. Until a repository
+ * supports organization-scoped filtering, a global, cross-organization read
+ * may only be performed by a Platform Administrator.
  */
-export function requireLeadsAccess(
+export function requirePlatformAdministrator(
   profiles: UserProfileRecord[],
   requestId: string,
 ): Response | null {
@@ -50,6 +52,18 @@ export function requireLeadsAccess(
     );
   }
   return null;
+}
+
+/** Gate for `GET /api/leads` specifically — see `requirePlatformAdministrator`
+ * for why this is the right policy for a cross-organization list. Kept as
+ * its own named export (rather than every call site calling
+ * `requirePlatformAdministrator` directly) since `SECURITY_GUIDE.md` and
+ * existing tests already reference it as the leads route's own policy. */
+export function requireLeadsAccess(
+  profiles: UserProfileRecord[],
+  requestId: string,
+): Response | null {
+  return requirePlatformAdministrator(profiles, requestId);
 }
 
 /**

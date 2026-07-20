@@ -26,9 +26,24 @@ export const STRICT_CSP = "default-src 'none'";
  * `style-src 'unsafe-inline'` allowance, not a nonce, until either Auth.js
  * exposes a nonce hook for its built-in pages or this project replaces them
  * with custom-rendered sign-in pages this codebase controls directly.
+ *
+ * `form-action` takes `allowedOrigin` too (EAP-1), not just `'self'` — a
+ * real finding from real-browser verification, not something a unit test
+ * or curl could have caught: the CSP spec's `form-action` directive also
+ * restricts *redirects resulting from* a form submission, not just its
+ * immediate POST target. Auth.js's real sign-out confirmation page POSTs
+ * back to its own origin (satisfying a bare `'self'`) but then 302s to
+ * `callbackUrl` — the cross-origin admin SPA — and Chromium correctly
+ * refused to submit a form it could determine would redirect outside
+ * `form-action`'s allowed origins, aborting the POST entirely (verified via
+ * an isolated repro: the exact same form submits successfully with no
+ * `callbackUrl`, and fails only once one pointing off-origin is present).
+ * The same trust decision as `auth/config.ts`'s `redirect` callback: this
+ * one additional, known origin is allowed, nothing else is.
  */
-export const AUTH_PAGES_CSP =
-  "default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self'";
+export function authPagesCsp(allowedOrigin: string): string {
+  return `default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' ${allowedOrigin}`;
+}
 
 const BASE_SECURITY_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",

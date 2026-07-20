@@ -9,6 +9,7 @@ titan/
   apps/
     web/                  # @titan/web — the application shell (routing, layout, error handling)
       src/features/dpdp-assessment/  # the public DPDP scan route (/assessment/dpdp) — its own visual system, not @titan/design-system
+      src/features/admin/            # the authenticated admin app (/admin, EAP-1) — auth/, layout/, dashboard/, uses @titan/design-system
   packages/
     design-system/        # @titan/design-system — tokens + reusable UI components (for the authenticated app shell only)
     assessment-core/       # @titan/assessment-core — question banks + risk-scoring engine (framework-agnostic)
@@ -84,6 +85,8 @@ npm run test:e2e
 
 `playwright.config.ts`'s `webServer` array starts the real backend (migrations + `wrangler dev`, port 8787) and the real frontend (`vite`, port 5173) itself — you don't need either running beforehand, though it'll reuse them if they already are (`reuseExistingServer`). If a run hangs with no output, check for a stale `wrangler dev`/`workerd` process already bound to port 8787 from an earlier manual session (`lsof -i :8787`) and kill it first — a stale server whose `.wrangler/` state has since been deleted is a real way to hang a run silently, not a Playwright bug.
 
+Two specs exist: `dpdp-assessment.spec.ts` (the public assessment flow, RC1) and `admin-dashboard.spec.ts` (the admin app's sign-in-required redirect, a full Platform Administrator flow including real cross-origin sign-out, and a non-admin's honest forbidden messaging — EAP-1). The latter seeds an Auth.js session directly in D1 (`seedSession()`, its own top-of-file comment explains why) rather than driving the Email provider's sign-in UI, to stay fast and focused on what EAP-1 actually changed rather than re-testing Auth.js's own already-verified sign-in mechanics.
+
 Not yet wired into `titan-ci.yml` — see `DECISION_LOG.md`'s RC1 entry for why (a GitHub Actions runner needs its own Playwright browser download; this sandbox's pre-installed Chromium at `/opt/pw-browsers` is environment-specific).
 
 ## Design system usage
@@ -149,6 +152,41 @@ const authConfig = createAuthConfig({ db: env.DB, secret: env.AUTH_SECRET });
 
 Google/GitHub only appear in the provider list when real credentials are configured (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` in `.dev.vars`) — this project has never had either. The Email provider works today in a dev-mode configuration that logs the sign-in link instead of emailing it (no email provider decided yet — `DECISION_LOG.md`).
 
+## Admin Application usage (`@titan/web`'s `/admin`, EAP-1)
+
+```tsx
+// App.tsx's real route tree for everything under /admin:
+<Route
+  path="/admin"
+  element={
+    <SessionProvider>
+      <RequireAuth>
+        <AdminLayout />
+      </RequireAuth>
+    </SessionProvider>
+  }
+>
+  <Route index element={<DashboardPage />} />
+  {/* a future module's route nests here, e.g.: */}
+  {/* <Route path="leads" element={<LeadsPage />} /> */}
+</Route>
+```
+
+`AdminLayout` documents (and its own tests enforce) that it assumes a `RequireAuth` ancestor — it reads `useSession()` expecting an already-resolved, authenticated session rather than re-deriving loading/redirect logic itself. A new module page goes inside this same `<Route path="/admin">` tree, as a route nested under `AdminLayout`'s `<Outlet/>`, and gets the header/sidebar/breadcrumbs/session context for free.
+
+**Adding a nav entry for a new module:** `features/admin/layout/navItems.ts`'s `adminNavItems(me: MeResponse): SidebarItem[]` is the one place this is decided — add a conditional entry there (e.g. gated on `me.isPlatformAdministrator` if the module should be), not a per-page decision.
+
+**Fetching data for a new module:** follow `features/admin/dashboard/useDashboardData.ts`'s pattern — a `SectionState<T> = loading | ready | forbidden | error` per independent section, a 403 from `ApiError` mapped to `"forbidden"` (never rendered as a generic error or a fabricated empty state), gated sections skipped client-side entirely for a caller that `GET /me` already says can't read them.
+
+```ts
+import { fetchMe, type MeResponse } from "../auth/session.js";
+import { useSession } from "../auth/SessionContext.js";
+// useSession() gives you `{ status: "authenticated", me }` once RequireAuth
+// has already confirmed a session exists — a new module component reads
+// `me.isPlatformAdministrator` from there, exactly as DashboardPage.tsx does,
+// rather than calling fetchMe() again itself.
+```
+
 ## Adding a new component to the design system
 
 1. `packages/design-system/src/components/YourComponent.tsx` + co-located `.css` + `.test.tsx`.
@@ -158,7 +196,9 @@ Google/GitHub only appear in the provider list when real credentials are configu
 
 ## What NOT to do (things this stage deliberately doesn't have yet)
 
-- Don't build protected routes/session context/login UI in `@titan/web` yet — the backend now genuinely gates `GET /api/leads`/`GET /api/assessments/:id` (Security Release Blocker Sprint), but no frontend consumes any of it yet (no login screen, no session context). That's real remaining work (an Admin/Customer Portal, `ROADMAP.md`), not something to stub ahead of a real screen needing it.
+- Protected routes/session context/sign-in-and-out are now real (`features/admin/auth/`, EAP-1) — don't build a second, parallel version of any of it for a new module. A new admin page nests under the existing `/admin` route tree (`AdminLayout`'s `<Outlet/>`) and reads `useSession()`/`GET /api/me` the way `DashboardPage.tsx` does, rather than re-resolving "who's signed in" itself. Don't build a custom login/sign-out form either — `RequireAuth`/`Header`'s sign-out link deliberately link to Auth.js's own hosted pages instead (`ARCHITECTURE.md`'s "Admin Application architecture" section has the reasoning).
+- Don't build Lead Management, Assessment Management, Organization Management, User Management, an Audit Center, or an Operations Center as full modules without a real go-ahead for that EAP phase — Phase 1 (EAP-1) deliberately built only the shell and one module (Dashboard); the rest are sequenced, not forgotten (`ROADMAP.md`'s EAP-1 section).
+- Don't widen `ALLOWED_ORIGIN`/the Auth.js `redirect` callback allowlist/the CSP `form-action` allowlist (`auth/config.ts`, `http/finalizeResponse.ts`) to more than one real, known frontend origin, and don't switch any of them to a wildcard for convenience — each is a deliberately closed allowlist of exactly the origins this project actually controls (`SECURITY_GUIDE.md`'s "Authorization model"), and widening any one without the other two changes the security properties silently.
 - Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`). sql.js-backed repository tests close most of the practical gap in the meantime.
 - Don't add a Credentials (username/password) auth provider — only Email/Google/GitHub were asked for (Stage 4's own scope); a fourth provider nobody requested is exactly the kind of unrequested parallel implementation this program's rules warn against (`DECISION_LOG.md`).
 - Don't add real email sending to the Auth.js Email provider without an actual email-provider decision first (`ARCHITECTURE.md`'s "still open" list) — the dev-mode logger is a deliberate placeholder, not an oversight to "fix" unilaterally.

@@ -4,6 +4,7 @@ import { scoreAssessment, dpdpV1 } from "@titan/assessment-core";
 import { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
 import { createInMemoryAssessmentRepository } from "./repositories/assessmentRepository.memory.js";
 import { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";
+import { createInMemoryOrganizationRepository } from "./repositories/organizationRepository.memory.js";
 import { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
@@ -13,7 +14,7 @@ import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createAuthConfig } from "./auth/config.js";
 import { createTestCaller } from "./auth/testUtils/testSession.js";
 import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
-import type { UserProfileRepository } from "./repositories/types.js";
+import type { OrganizationRepository, UserProfileRepository } from "./repositories/types.js";
 
 const createAuthDb = await createTestD1Factory();
 
@@ -40,11 +41,15 @@ function createTestDeps(): Dependencies {
  * adapter (`createAuthDb`, this file's shared sql.js D1 instance) plus a
  * `userProfiles` repository to grant roles against.
  */
-function createAuthorizedTestDeps(): Dependencies & { userProfiles: UserProfileRepository } {
+function createAuthorizedTestDeps(): Dependencies & {
+  userProfiles: UserProfileRepository;
+  organizations: OrganizationRepository;
+} {
   return {
     ...createTestDeps(),
     authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
     userProfiles: createInMemoryUserProfileRepository(),
+    organizations: createInMemoryOrganizationRepository(),
   };
 }
 
@@ -492,6 +497,28 @@ describe("handleRequest", () => {
       expect(csp).not.toBe("default-src 'none'");
     });
 
+    it("EAP-1: form-action allows the configured allowedOrigin, not just 'self' — a real finding from real-browser verification, not something a unit test alone would surface", async () => {
+      // The CSP spec's form-action directive also restricts *redirects
+      // resulting from* a form submission, not just the immediate POST
+      // target. Auth.js's real sign-out confirmation page POSTs same-origin
+      // but then 302s to callbackUrl (the cross-origin admin SPA) — a
+      // form-action of just 'self' makes a real browser refuse to even
+      // submit that form. This test only proves the header is correct
+      // (verified live against a real Chromium browser separately); it
+      // can't reproduce the browser-side blocking behavior itself.
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        allowedOrigin: "http://localhost:5173",
+      };
+      const response = await handleRequest(
+        new Request("https://example.com/api/auth/signout"),
+        deps,
+      );
+      const csp = response.headers.get("Content-Security-Policy");
+      expect(csp).toContain("form-action 'self' http://localhost:5173");
+    });
+
     it("rate-limits POST /api/auth/* separately from the general API limiter", async () => {
       const deps: Dependencies = {
         ...createTestDeps(),
@@ -697,5 +724,239 @@ describe("handleRequest", () => {
     const second = await makeRequest();
     expect(second.status).toBe(429);
     expect(second.headers.get("X-Request-Id")).toBeTruthy();
+  });
+
+  describe("GET /api/me (EAP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(new Request("https://example.com/api/me"), deps);
+      expect(response.status).toBe(401);
+    });
+
+    it("returns the caller's own identity and roles for any authenticated caller, no role required", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!, { email: "member@acme.in" });
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/me", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        userId: caller.userId,
+        email: "member@acme.in",
+        profiles: [{ organizationId: "org_1", role: "member" }],
+        isPlatformAdministrator: false,
+      });
+    });
+
+    it("reports isPlatformAdministrator: true for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/me", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(await response.json()).toMatchObject({ isPlatformAdministrator: true });
+    });
+  });
+
+  describe("GET /api/organizations (EAP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller who is not a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 with every organization for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as unknown[];
+      expect(body).toHaveLength(1);
+    });
+
+    it("returns an empty list rather than throwing when no organizations repository is configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const depsWithoutOrganizations: Dependencies = { ...deps, organizations: undefined };
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          headers: { cookie: caller.cookie },
+        }),
+        depsWithoutOrganizations,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual([]);
+    });
+  });
+
+  describe("GET /api/assessments (list, EAP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller who is not a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 with every assessment for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        organizationId: null,
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as unknown[];
+      expect(body).toHaveLength(1);
+    });
+  });
+
+  describe("GET /api/audit (EAP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(new Request("https://example.com/api/audit"), deps);
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller who is not a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 with recorded audit events for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as unknown[];
+      expect(body).toHaveLength(1);
+    });
   });
 });

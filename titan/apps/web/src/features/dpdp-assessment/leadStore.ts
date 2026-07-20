@@ -1,10 +1,14 @@
-// Re-exported under the name this file's callers already use — the shape itself
-// has exactly one definition, in @titan/platform, per Stage 3's "never duplicate
-// business logic" rule. `NewLead` (not `LeadRecord`) is correct here: this file
-// has no backend assigning a real `id` client-side — the Worker does that
-// (titan/packages/platform/src/repositories/leadRepository.d1.ts).
-export type { NewLead as LeadRecord } from "@titan/platform";
-import type { NewLead as LeadRecord } from "@titan/platform";
+// The shape itself has exactly one definition, in @titan/platform, per
+// Stage 3's "never duplicate business logic" rule. Two distinct types, not
+// one aliased name (EAP-1 fix — see below): `NewLead` is what this file
+// submits (no `id`, the Worker assigns one), `LeadRecord` is what it reads
+// back (a real, server-assigned `id`/`organizationId`/`assessmentId`).
+// Collapsing both onto a single `LeadRecord = NewLead` name (as this file
+// used to) type-checked fine right up until something actually called
+// `fetchLeads()` and needed `.id` on the result — nothing did, until the
+// admin Dashboard (EAP-1) became its first real caller.
+export type { NewLead, LeadRecord } from "@titan/platform";
+import type { NewLead, LeadRecord } from "@titan/platform";
 import { ApiError, getJson, postJson } from "../../lib/apiClient.js";
 
 export { ApiError };
@@ -21,12 +25,14 @@ export { ApiError };
  * a DPDP-compliance product collecting more of a visitor's data than the lead form
  * itself needs is worth not doing, not an oversight.
  */
-export async function submitLead(lead: LeadRecord): Promise<void> {
+export async function submitLead(lead: NewLead): Promise<void> {
   await postJson("/api/leads", lead);
 }
 
-/** Used by the (future) admin view — not the public scan flow, which never
- * needs to read leads back. Kept here rather than duplicated per DECISION_LOG.md. */
+/** Used by the admin Dashboard (EAP-1) — not the public scan flow, which
+ * never needs to read leads back. Kept here rather than duplicated per
+ * DECISION_LOG.md. Requires a Platform Administrator session
+ * (SECURITY_GUIDE.md); an unprivileged caller gets a 403 ApiError. */
 export function fetchLeads(): Promise<LeadRecord[]> {
   return getJson<LeadRecord[]>("/api/leads");
 }

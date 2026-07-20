@@ -1,0 +1,25 @@
+.titan-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.titan-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.titan-panel__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-panel__body {
+  min-width: 0;
+}

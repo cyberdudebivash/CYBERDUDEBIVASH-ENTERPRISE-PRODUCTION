@@ -34,6 +34,18 @@ export interface AuthConfigOptions {
   google?: OAuthCredentials;
   github?: OAuthCredentials;
   logger?: Logger;
+  /**
+   * EAP-1: the origin of the browser app that calls this Worker cross-origin
+   * (`http/cors.ts`'s `resolveAllowedOrigin` — pass the same resolved value
+   * so CORS and sign-in redirects never diverge). `@auth/core`'s *default*
+   * `redirect` callback (verified directly against its source,
+   * `lib/init.js`) only allows a `callbackUrl` that's relative or shares the
+   * Worker's own origin — a cross-origin SPA's `callbackUrl` fails both
+   * checks and silently collapses to the Worker's bare root instead of
+   * returning the user to the app. Supplying this explicitly allows that one
+   * additional, known origin without opening redirects to anywhere else.
+   */
+  allowedOrigin?: string;
 }
 
 /**
@@ -133,6 +145,23 @@ export function createAuthConfig(options: AuthConfigOptions): AuthConfig {
           },
           expires: session.expires?.toISOString?.() ?? session.expires,
         };
+      },
+      // Mirrors @auth/core's own default redirect callback (same two checks,
+      // same fallback), plus one addition: a `callbackUrl` on `allowedOrigin`
+      // is also allowed, not just one sharing the Worker's own origin. A
+      // malformed `url` (invalid URL string) falls through to `baseUrl`
+      // rather than throwing, same failure mode as an unrecognized origin.
+      redirect({ url, baseUrl }) {
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        try {
+          const target = new URL(url).origin;
+          if (target === baseUrl || (options.allowedOrigin && target === options.allowedOrigin)) {
+            return url;
+          }
+        } catch {
+          // Not a parseable absolute URL — fall through to baseUrl below.
+        }
+        return baseUrl;
       },
     },
   };

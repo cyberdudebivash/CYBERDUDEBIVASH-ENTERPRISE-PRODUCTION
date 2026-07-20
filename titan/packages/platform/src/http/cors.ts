@@ -21,6 +21,13 @@ export function corsHeaders(allowedOrigin: string): Record<string, string> {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": ALLOWED_METHODS,
     "Access-Control-Allow-Headers": ALLOWED_HEADERS,
+    // EAP-1: the admin app reads the Auth.js session cookie cross-origin
+    // (fetch(..., {credentials: "include"})). The Fetch spec requires this
+    // exact header for a browser to expose a credentialed cross-origin
+    // response to JS at all — and forbids Access-Control-Allow-Origin from
+    // ever being "*" alongside it, which `allowedOrigin` already isn't
+    // (resolveAllowedOrigin always returns one concrete origin).
+    "Access-Control-Allow-Credentials": "true",
     Vary: "Origin",
   };
 }
