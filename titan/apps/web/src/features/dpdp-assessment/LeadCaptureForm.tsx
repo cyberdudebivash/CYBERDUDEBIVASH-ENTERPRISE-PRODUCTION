@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { Answers, AssessmentResult } from "@titan/assessment-core";
-import { isValidEmail, submitLead } from "./leadStore.js";
+import { ApiError, isValidEmail, submitLead } from "./leadStore.js";
 import { buildDpdpReportPdf, reportFileName } from "./pdfReport.js";
 
 export interface LeadCaptureFormProps {
@@ -60,9 +60,18 @@ export function LeadCaptureForm({ answers, result }: LeadCaptureFormProps) {
       doc.save(reportFileName(trimmedCompany));
 
       setStatus("sent");
-    } catch {
+    } catch (submitError) {
       setStatus("error");
-      setError("Something went wrong sending your report. Please try again.");
+      // ApiError's message already distinguishes "couldn't reach the server"
+      // from "the server rejected the request" (apiClient.ts) — surface it
+      // instead of a single generic string, so a network outage doesn't read
+      // the same as a validation bug. The form itself isn't cleared and the
+      // submit button re-enables, so resubmitting is just clicking Send again.
+      setError(
+        submitError instanceof ApiError
+          ? submitError.message
+          : "Something went wrong sending your report. Please try again.",
+      );
     }
   }
 

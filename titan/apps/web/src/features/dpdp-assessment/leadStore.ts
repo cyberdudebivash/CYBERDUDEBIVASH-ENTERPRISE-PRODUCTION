@@ -1,35 +1,34 @@
 // Re-exported under the name this file's callers already use — the shape itself
 // has exactly one definition, in @titan/platform, per Stage 3's "never duplicate
 // business logic" rule. `NewLead` (not `LeadRecord`) is correct here: this file
-// has no backend assigning a real `id` yet (Workstream 7, still not wired up).
+// has no backend assigning a real `id` client-side — the Worker does that
+// (titan/packages/platform/src/repositories/leadRepository.d1.ts).
 export type { NewLead as LeadRecord } from "@titan/platform";
 import type { NewLead as LeadRecord } from "@titan/platform";
+import { ApiError, getJson, postJson } from "../../lib/apiClient.js";
 
-const STORAGE_KEY = "dpdp_leads";
+export { ApiError };
 
 /**
- * `async` even though this is a synchronous localStorage write today — this is a
- * browser-only interim (Titan's Cloudflare API layer, per DECISION_LOG.md, doesn't
- * exist yet). Keeping the call site awaiting a promise means swapping this for a
- * real API call later doesn't change anything that calls it.
+ * Workstream 4: this used to write to localStorage. It now POSTs to the
+ * Worker's `/api/leads` (titan/packages/platform/src/router.ts) — the free
+ * scan's lead capture is no longer browser-only persistence. Throws
+ * ApiError on failure (network or a non-2xx response); LeadCaptureForm
+ * catches that and shows an inline error with the message intact, so the
+ * user sees "could not reach the server" instead of a generic failure.
  *
  * Deliberately does NOT capture navigator.userAgent (the original scanner did) —
  * a DPDP-compliance product collecting more of a visitor's data than the lead form
  * itself needs is worth not doing, not an oversight.
  */
 export async function submitLead(lead: LeadRecord): Promise<void> {
-  const leads = readLeads();
-  leads.push(lead);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+  await postJson("/api/leads", lead);
 }
 
-export function readLeads(): LeadRecord[] {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as LeadRecord[]) : [];
-  } catch {
-    return [];
-  }
+/** Used by the (future) admin view — not the public scan flow, which never
+ * needs to read leads back. Kept here rather than duplicated per DECISION_LOG.md. */
+export function fetchLeads(): Promise<LeadRecord[]> {
+  return getJson<LeadRecord[]>("/api/leads");
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

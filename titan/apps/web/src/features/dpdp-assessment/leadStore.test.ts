@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { isValidEmail, readLeads, submitLead } from "./leadStore.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError, fetchLeads, isValidEmail, submitLead } from "./leadStore.js";
 import type { LeadRecord } from "./leadStore.js";
 
 const sampleResult: LeadRecord["result"] = {
@@ -25,27 +25,65 @@ function makeLead(overrides: Partial<LeadRecord> = {}): LeadRecord {
 
 describe("leadStore", () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    vi.stubGlobal("fetch", vi.fn());
   });
 
-  it("returns an empty array when nothing has been stored", () => {
-    expect(readLeads()).toEqual([]);
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it("persists a submitted lead so it can be read back", async () => {
-    await submitLead(makeLead());
-    expect(readLeads()).toEqual([makeLead()]);
+  describe("submitLead", () => {
+    it("POSTs the lead to the Worker's /api/leads endpoint", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "lead_1", ...makeLead() }), { status: 201 }),
+      );
+
+      await submitLead(makeLead());
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(String(url)).toContain("/api/leads");
+      expect(init?.method).toBe("POST");
+      expect(JSON.parse(init?.body as string)).toMatchObject({ email: "asha@acme.in" });
+    });
+
+    it("throws an ApiError with the server's message when the request is rejected", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: { message: "Missing or invalid field: email" } }), {
+          status: 400,
+        }),
+      );
+
+      await expect(submitLead(makeLead())).rejects.toMatchObject({
+        message: "Missing or invalid field: email",
+      });
+    });
+
+    it("throws a genuine ApiError instance, not a plain Error", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 500 }));
+      await expect(submitLead(makeLead())).rejects.toBeInstanceOf(ApiError);
+    });
+
+    it("throws an ApiError distinguishing a network failure from a rejected request", async () => {
+      vi.mocked(fetch).mockRejectedValueOnce(new TypeError("network error"));
+
+      await expect(submitLead(makeLead())).rejects.toThrow(/could not reach the server/i);
+    });
   });
 
-  it("appends rather than overwriting on repeated submissions", async () => {
-    await submitLead(makeLead({ email: "first@acme.in" }));
-    await submitLead(makeLead({ email: "second@acme.in" }));
-    expect(readLeads().map((l) => l.email)).toEqual(["first@acme.in", "second@acme.in"]);
-  });
+  describe("fetchLeads", () => {
+    it("GETs leads from the Worker", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(JSON.stringify([makeLead()]), { status: 200 }),
+      );
 
-  it("does not throw and falls back to empty on corrupted storage", () => {
-    window.localStorage.setItem("dpdp_leads", "{not json");
-    expect(readLeads()).toEqual([]);
+      const leads = await fetchLeads();
+
+      expect(leads).toEqual([makeLead()]);
+      const [url, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(String(url)).toContain("/api/leads");
+      expect(init?.method).toBeUndefined();
+    });
   });
 });
 
