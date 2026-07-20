@@ -1,33 +1,13 @@
 /**
- * Centralized response construction (Workstream 7/8). Every response the
- * Worker returns — success or error — goes through one of these two
- * functions, so security headers and the request id land on every response
- * exactly once, in one place, instead of being repeated (or forgotten) at
- * each route handler.
+ * Response body shaping (Workstream 7/8). These build the JSON body and
+ * status only — security headers, CORS, and the request id are applied
+ * once, centrally, in router.ts's handleRequest (finalizeResponse.js), so
+ * routes that don't go through these two helpers (Auth.js's own responses,
+ * once Workstream 5 wires /api/auth/* through) still get the same headers
+ * instead of every route needing to remember to apply them.
  */
-
-const SECURITY_HEADERS: Record<string, string> = {
-  "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  // No inline-script/style allowance: this Worker only ever returns JSON,
-  // never HTML, so a strict CSP costs nothing and forecloses an entire
-  // class of response-splitting/XSS risk if a future route ever changes
-  // that (OWASP alignment — Workstream 7).
-  "Content-Security-Policy": "default-src 'none'",
-};
-
-function withHeaders(response: Response, requestId: string): Response {
-  const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-    headers.set(key, value);
-  }
-  headers.set("X-Request-Id", requestId);
-  return new Response(response.body, { status: response.status, headers });
-}
-
-export function jsonSuccess(data: unknown, requestId: string, status = 200): Response {
-  return withHeaders(Response.json(data, { status }), requestId);
+export function jsonSuccess(data: unknown, status = 200): Response {
+  return Response.json(data, { status });
 }
 
 export interface ApiError {
@@ -44,5 +24,5 @@ export interface ApiError {
  * report or support ticket.
  */
 export function jsonError(error: ApiError, requestId: string, status: number): Response {
-  return withHeaders(Response.json({ error, requestId }, { status }), requestId);
+  return Response.json({ error, requestId }, { status });
 }

@@ -1,3 +1,5 @@
+import type { AuthConfig } from "@auth/core";
+import { Auth } from "@auth/core";
 import type {
   AssessmentRepository,
   AuditRepository,
@@ -6,7 +8,8 @@ import type {
   NewLead,
 } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
-import { preflightResponse, resolveAllowedOrigin, withCors } from "./http/cors.js";
+import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
+import { finalizeResponse } from "./http/finalizeResponse.js";
 import { createLogger, type Logger } from "./observability/logger.js";
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
@@ -26,6 +29,11 @@ export interface Dependencies {
   logger?: Logger;
   rateLimiter?: RateLimiter;
   allowedOrigin?: string;
+  /** Workstream 5. Optional so every existing router test (and any caller
+   * that doesn't need auth yet) keeps working unchanged — /api/auth/* only
+   * exists when a real AuthConfig (auth/config.ts's createAuthConfig) is
+   * supplied. */
+  authConfig?: AuthConfig;
 }
 
 const defaultRateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
@@ -72,7 +80,7 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
     );
   }
 
-  response = withCors(response, allowedOrigin);
+  response = finalizeResponse(response, requestId, allowedOrigin);
 
   logger.info("request completed", {
     requestId,
@@ -100,7 +108,11 @@ async function route(
   ctx: RouteContext,
 ): Promise<Response> {
   if (url.pathname === "/health" && request.method === "GET") {
-    return healthResponse(ctx.requestId);
+    return healthResponse();
+  }
+
+  if (url.pathname.startsWith("/api/auth/") && deps.authConfig) {
+    return Auth(request, deps.authConfig);
   }
 
   if (url.pathname === "/api/leads" && request.method === "POST") {
@@ -111,7 +123,7 @@ async function route(
   }
 
   if (url.pathname === "/api/leads" && request.method === "GET") {
-    return listLeads(deps, ctx);
+    return listLeads(deps);
   }
 
   if (url.pathname === "/api/assessments" && request.method === "POST") {
@@ -142,11 +154,12 @@ function tooManyRequests(requestId: string): Response {
   return jsonError({ code: "rate_limited", message: "Too many requests" }, requestId, 429);
 }
 
-function healthResponse(requestId: string): Response {
-  return jsonSuccess(
-    { status: "ok", service: "titan-platform", timestamp: new Date().toISOString() },
-    requestId,
-  );
+function healthResponse(): Response {
+  return jsonSuccess({
+    status: "ok",
+    service: "titan-platform",
+    timestamp: new Date().toISOString(),
+  });
 }
 
 async function readJsonBody(request: Request): Promise<ValidationResult<unknown>> {
@@ -184,12 +197,12 @@ async function createLead(
     createdAt: saved.timestamp,
   });
 
-  return jsonSuccess(saved, ctx.requestId, 201);
+  return jsonSuccess(saved, 201);
 }
 
-async function listLeads(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+async function listLeads(deps: Dependencies): Promise<Response> {
   const leads = await deps.leads.list();
-  return jsonSuccess(leads, ctx.requestId);
+  return jsonSuccess(leads);
 }
 
 async function createAssessment(
@@ -219,7 +232,7 @@ async function createAssessment(
     createdAt: saved.createdAt,
   });
 
-  return jsonSuccess(saved, ctx.requestId, 201);
+  return jsonSuccess(saved, 201);
 }
 
 async function getAssessment(id: string, deps: Dependencies, ctx: RouteContext): Promise<Response> {
@@ -227,7 +240,7 @@ async function getAssessment(id: string, deps: Dependencies, ctx: RouteContext):
   if (!assessment) {
     return jsonError({ code: "not_found", message: "Assessment not found" }, ctx.requestId, 404);
   }
-  return jsonSuccess(assessment, ctx.requestId);
+  return jsonSuccess(assessment);
 }
 
 async function recordAuditEvent(

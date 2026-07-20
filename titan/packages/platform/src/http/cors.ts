@@ -31,11 +31,3 @@ export function preflightResponse(allowedOrigin: string): Response {
     headers: { ...corsHeaders(allowedOrigin), "Access-Control-Max-Age": "86400" },
   });
 }
-
-export function withCors(response: Response, allowedOrigin: string): Response {
-  const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(corsHeaders(allowedOrigin))) {
-    headers.set(key, value);
-  }
-  return new Response(response.body, { status: response.status, headers });
-}

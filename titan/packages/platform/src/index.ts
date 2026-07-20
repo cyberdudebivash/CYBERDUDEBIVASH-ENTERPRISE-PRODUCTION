@@ -31,3 +31,8 @@ export { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 export type { Dependencies } from "./router.js";
 export { handleRequest } from "./router.js";
 export type { Env } from "./worker.js";
+
+export type { AuthConfigOptions, OAuthCredentials } from "./auth/config.js";
+export { createAuthConfig } from "./auth/config.js";
+export { getSession } from "./auth/session.js";
+export { canAccessOrganization, findProfileForOrganization, hasAtLeastRole } from "./auth/rbac.js";

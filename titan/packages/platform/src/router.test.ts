@@ -7,6 +7,10 @@ import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
 import type { Logger } from "./observability/logger.js";
+import { createAuthConfig } from "./auth/config.js";
+import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
+
+const createAuthDb = await createTestD1Factory();
 
 const silentLogger: Logger = { info: () => {}, warn: () => {}, error: () => {} };
 
@@ -186,6 +190,44 @@ describe("handleRequest", () => {
         deps,
       );
       expect(response.status).toBe(404);
+    });
+  });
+
+  describe("/api/auth/*", () => {
+    it("returns 404 when no authConfig is supplied", async () => {
+      const response = await handleRequest(
+        new Request("https://example.com/api/auth/session"),
+        createTestDeps(),
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("delegates to Auth.js and returns an empty session when authConfig is supplied", async () => {
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+      };
+      const response = await handleRequest(
+        new Request("https://example.com/api/auth/session"),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      // Auth.js's /session action returns JSON `null` (not `{}`) when there
+      // is no active session — verified behavior, not an assumption.
+      expect(await response.json()).toBeNull();
+    });
+
+    it("still attaches security headers and a request id to Auth.js's own responses", async () => {
+      const deps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+      };
+      const response = await handleRequest(
+        new Request("https://example.com/api/auth/session"),
+        deps,
+      );
+      expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+      expect(response.headers.get("X-Request-Id")).toBeTruthy();
     });
   });
 
