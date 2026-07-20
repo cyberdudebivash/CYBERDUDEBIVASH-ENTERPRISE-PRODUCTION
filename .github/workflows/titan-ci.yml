@@ -1,0 +1,51 @@
+name: Titan CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "titan/**"
+      - ".github/workflows/titan-ci.yml"
+  pull_request:
+    paths:
+      - "titan/**"
+      - ".github/workflows/titan-ci.yml"
+
+# Fully independent of deploy.yml: this workflow only ever touches titan/,
+# never installs the root package.json, and has no bridge/mirror step.
+# Nothing here can affect the marketing site's build or deployment.
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: titan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: titan/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
