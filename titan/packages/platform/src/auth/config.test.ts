@@ -74,4 +74,81 @@ describe("createAuthConfig", () => {
       fields: { identifier: "asha@acme.in" },
     });
   });
+
+  describe("redirect callback (EAP-1)", () => {
+    // @auth/core types `callbacks` as optional even though createAuthConfig
+    // always supplies one — narrowed once here so every test below can call
+    // `redirect(...)` directly without repeating the assertion.
+    function redirectOf(config: ReturnType<typeof createAuthConfig>) {
+      const redirect = config.callbacks?.redirect;
+      if (!redirect) throw new Error("expected a redirect callback");
+      return redirect;
+    }
+
+    it("allows a relative callback URL, resolved against baseUrl", async () => {
+      const config = createAuthConfig({ db: createDb(), secret: "test-secret" });
+      const result = await redirectOf(config)({
+        url: "/admin",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:8787/admin");
+    });
+
+    it("allows a callback URL on the Worker's own origin", async () => {
+      const config = createAuthConfig({ db: createDb(), secret: "test-secret" });
+      const result = await redirectOf(config)({
+        url: "http://localhost:8787/somewhere",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:8787/somewhere");
+    });
+
+    it("falls back to baseUrl for an unrecognized origin when no allowedOrigin is configured", async () => {
+      const config = createAuthConfig({ db: createDb(), secret: "test-secret" });
+      const result = await redirectOf(config)({
+        url: "https://evil.example.com/",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:8787");
+    });
+
+    it("allows a callback URL on the configured allowedOrigin (the cross-origin SPA)", async () => {
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        allowedOrigin: "http://localhost:5173",
+      });
+      const result = await redirectOf(config)({
+        url: "http://localhost:5173/admin",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:5173/admin");
+    });
+
+    it("still falls back to baseUrl for an origin that isn't the Worker's own or the configured allowedOrigin", async () => {
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        allowedOrigin: "http://localhost:5173",
+      });
+      const result = await redirectOf(config)({
+        url: "https://evil.example.com/",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:8787");
+    });
+
+    it("falls back to baseUrl for a malformed absolute URL instead of throwing", async () => {
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        allowedOrigin: "http://localhost:5173",
+      });
+      const result = await redirectOf(config)({
+        url: "not a url",
+        baseUrl: "http://localhost:8787",
+      });
+      expect(result).toBe("http://localhost:8787");
+    });
+  });
 });

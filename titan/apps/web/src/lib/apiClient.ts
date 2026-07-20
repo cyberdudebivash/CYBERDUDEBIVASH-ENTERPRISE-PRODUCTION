@@ -7,7 +7,10 @@
  */
 const DEFAULT_BASE_URL = "http://localhost:8787";
 
-function apiBaseUrl(): string {
+/** Exported for EAP-1's admin auth URLs (sign-in/sign-out link directly to
+ * Auth.js's own hosted pages on the Worker's origin) — one resolution of
+ * "where's the Worker", not a second copy of this logic. */
+export function apiBaseUrl(): string {
   return import.meta.env.VITE_API_BASE_URL ?? DEFAULT_BASE_URL;
 }
 
@@ -31,6 +34,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     response = await fetch(`${apiBaseUrl()}${path}`, {
       ...init,
       headers: { "Content-Type": "application/json", ...init?.headers },
+      // EAP-1: the admin app's session lives in a cookie the Worker sets on
+      // a different origin (apiBaseUrl() vs. this app's own origin) — the
+      // Fetch spec only sends/exposes cross-origin cookies when a request
+      // opts in explicitly. Every existing caller of postJson/getJson (the
+      // public, unauthenticated DPDP lead flow) is unaffected: an anonymous
+      // request has no cookie to send either way.
+      credentials: "include",
     });
   } catch {
     // fetch itself throwing means the network request never completed

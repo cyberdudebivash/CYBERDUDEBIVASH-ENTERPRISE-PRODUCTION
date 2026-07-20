@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, fetchLeads, isValidEmail, submitLead } from "./leadStore.js";
-import type { LeadRecord } from "./leadStore.js";
+import type { LeadRecord, NewLead } from "./leadStore.js";
 
-const sampleResult: LeadRecord["result"] = {
+const sampleResult: NewLead["result"] = {
   score: 50,
   riskLevel: "medium",
   breakdown: { critical: 1, high: 0, medium: 1, low: 10, total: 2 },
@@ -10,7 +10,7 @@ const sampleResult: LeadRecord["result"] = {
   scoredQuestionCount: 12,
 };
 
-function makeLead(overrides: Partial<LeadRecord> = {}): LeadRecord {
+function makeLead(overrides: Partial<NewLead> = {}): NewLead {
   return {
     name: "Asha Rao",
     email: "asha@acme.in",
@@ -19,6 +19,18 @@ function makeLead(overrides: Partial<LeadRecord> = {}): LeadRecord {
     result: sampleResult,
     timestamp: "2026-07-20T00:00:00.000Z",
     source: "dpdp-scan",
+    ...overrides,
+  };
+}
+
+/** What `fetchLeads()` actually reads back — a real, server-assigned
+ * `id`/`organizationId`/`assessmentId`, not just what was submitted. */
+function makeLeadRecord(overrides: Partial<LeadRecord> = {}): LeadRecord {
+  return {
+    id: "lead_1",
+    organizationId: null,
+    assessmentId: null,
+    ...makeLead(),
     ...overrides,
   };
 }
@@ -72,17 +84,31 @@ describe("leadStore", () => {
   });
 
   describe("fetchLeads", () => {
-    it("GETs leads from the Worker", async () => {
+    it("GETs leads from the Worker, including the server-assigned id", async () => {
       vi.mocked(fetch).mockResolvedValueOnce(
-        new Response(JSON.stringify([makeLead()]), { status: 200 }),
+        new Response(JSON.stringify([makeLeadRecord()]), { status: 200 }),
       );
 
       const leads = await fetchLeads();
 
-      expect(leads).toEqual([makeLead()]);
+      expect(leads).toEqual([makeLeadRecord()]);
+      expect(leads[0]?.id).toBe("lead_1");
       const [url, init] = vi.mocked(fetch).mock.calls[0]!;
       expect(String(url)).toContain("/api/leads");
       expect(init?.method).toBeUndefined();
+    });
+
+    it("throws a 403 ApiError for an authenticated caller who isn't a Platform Administrator", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: { code: "forbidden", message: "Platform Administrator role required" },
+          }),
+          { status: 403 },
+        ),
+      );
+
+      await expect(fetchLeads()).rejects.toMatchObject({ status: 403 });
     });
   });
 });

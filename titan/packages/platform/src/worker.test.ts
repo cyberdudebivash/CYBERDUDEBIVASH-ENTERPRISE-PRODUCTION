@@ -6,6 +6,8 @@ import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
 import { createAuthConfig } from "./auth/config.js";
 import { createTestCaller } from "./auth/testUtils/testSession.js";
 import { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
+import { createD1OrganizationRepository } from "./repositories/organizationRepository.d1.js";
+import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 
 const noopContext = {} as ExecutionContext;
 const createDb = await createTestD1Factory();
@@ -140,5 +142,59 @@ describe("worker (default export)", () => {
     );
     expect(getResponse.status).toBe(200);
     expect(await getResponse.json()).toMatchObject({ id: created.id, framework: "dpdp" });
+  });
+
+  it("EAP-1: wires a real env.DB through to /api/me, /api/organizations, and /api/audit end to end", async () => {
+    const env = { DB: createDb(), AUTH_SECRET: "test-secret" };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const meResponse = await worker.fetch(
+      new Request("https://example.com/api/me", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(meResponse.status).toBe(200);
+    expect(await meResponse.json()).toMatchObject({ isPlatformAdministrator: true });
+
+    // Written directly via the real D1-backed OrganizationRepository, then
+    // read back through GET /api/organizations — an empty-list assertion
+    // alone wouldn't distinguish "wired correctly but empty" from "worker.ts
+    // never wired deps.organizations at all" (the route falls back to `[]`
+    // for that case too, by design), so this needs a real fixture.
+    await createD1OrganizationRepository(env.DB).save({
+      name: "Acme Fintech",
+      slug: "acme-fintech",
+      createdAt: "2026-07-20T00:00:00.000Z",
+    });
+    const orgResponse = await worker.fetch(
+      new Request("https://example.com/api/organizations", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(orgResponse.status).toBe(200);
+    const organizations = (await orgResponse.json()) as Array<{ slug: string }>;
+    expect(organizations).toHaveLength(1);
+    expect(organizations[0]?.slug).toBe("acme-fintech");
+
+    // Same reasoning as organizations above: a real fixture via the D1-backed
+    // AuditRepository, read back through GET /api/audit.
+    await createD1AuditRepository(env.DB).record({
+      actorId: null,
+      organizationId: null,
+      action: "lead.created",
+      entityType: "lead",
+      entityId: "lead_1",
+      metadata: null,
+      createdAt: "2026-07-20T00:00:00.000Z",
+    });
+    const auditResponse = await worker.fetch(
+      new Request("https://example.com/api/audit", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(auditResponse.status).toBe(200);
+    const events = (await auditResponse.json()) as Array<{ action: string }>;
+    expect(events).toHaveLength(1);
+    expect(events[0]?.action).toBe("lead.created");
   });
 });

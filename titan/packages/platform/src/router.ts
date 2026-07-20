@@ -8,19 +8,25 @@ import type {
   LeadRepository,
   NewAssessment,
   NewLead,
+  OrganizationRepository,
   UserProfileRecord,
   UserProfileRepository,
 } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
-import { AUTH_PAGES_CSP, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
+import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
 import { createLogger, type Logger } from "./observability/logger.js";
 import { createInMemoryMetrics, type Metrics } from "./observability/metrics.js";
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
 import { isTrustedOrigin } from "./security/csrf.js";
 import { getSession } from "./auth/session.js";
-import { requireAssessmentAccess, requireLeadsAccess } from "./auth/authorize.js";
+import {
+  requireAssessmentAccess,
+  requireLeadsAccess,
+  requirePlatformAdministrator,
+} from "./auth/authorize.js";
+import { isPlatformAdministrator } from "./auth/rbac.js";
 import {
   ok,
   requireJsonObject,
@@ -34,6 +40,11 @@ export interface Dependencies {
   leads: LeadRepository;
   assessments: AssessmentRepository;
   audit: AuditRepository;
+  /** EAP-1: backs `GET /api/organizations` (the admin Dashboard's org
+   * metrics). Optional for the same reason every other repository-adjacent
+   * dependency here is — existing tests that don't exercise that route stay
+   * unaffected. */
+  organizations?: OrganizationRepository;
   logger?: Logger;
   rateLimiter?: RateLimiter;
   /** Separate, stricter limiter for /api/auth/* (RC1 Workstream 2): sign-in
@@ -131,7 +142,7 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
   // sign-in page) — a materially different content type than every other
   // route here, which only ever returns JSON. See finalizeResponse.ts for
   // why the CSP differs specifically for this path prefix.
-  const csp = url.pathname.startsWith("/api/auth/") ? AUTH_PAGES_CSP : STRICT_CSP;
+  const csp = url.pathname.startsWith("/api/auth/") ? authPagesCsp(allowedOrigin) : STRICT_CSP;
   response = finalizeResponse(response, requestId, allowedOrigin, csp);
   const durationMs = Date.now() - startedAt;
 
@@ -240,9 +251,39 @@ async function route(
     return createAssessment(request, deps, ctx);
   }
 
+  if (url.pathname === "/api/assessments" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return listAssessments(deps, ctx);
+  }
+
   const assessmentMatch = ASSESSMENT_ID_PATTERN.exec(url.pathname);
   if (assessmentMatch?.[1] && request.method === "GET") {
     return getAssessment(assessmentMatch[1], request, deps, ctx);
+  }
+
+  if (url.pathname === "/api/organizations" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return listOrganizations(deps, ctx);
+  }
+
+  if (url.pathname === "/api/audit" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return listAuditEvents(deps, ctx);
+  }
+
+  if (url.pathname === "/api/me" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    return meResponse(caller);
   }
 
   return jsonError({ code: "not_found", message: "Not found" }, ctx.requestId, 404);
@@ -250,6 +291,7 @@ async function route(
 
 interface Caller {
   userId: string;
+  email: string | null | undefined;
   profiles: UserProfileRecord[];
 }
 
@@ -269,7 +311,7 @@ async function resolveCaller(request: Request, deps: Dependencies): Promise<Call
   const userId = session?.user?.id;
   if (!userId) return null;
   const profiles = await deps.userProfiles.findByUserId(userId);
-  return { userId, profiles };
+  return { userId, email: session?.user?.email, profiles };
 }
 
 function unauthorized(requestId: string): Response {
@@ -389,6 +431,51 @@ async function createLead(
 async function listLeads(deps: Dependencies, ctx: RouteContext): Promise<Response> {
   const leads = await withOperationTiming(ctx.metrics, "leads.list", () => deps.leads.list());
   return jsonSuccess(leads);
+}
+
+/** EAP-1: backs the admin Dashboard's assessment metrics. Same cross-org,
+ * unfiltered shape as `listLeads` — same Platform-Administrator-only gate,
+ * same reasoning (`auth/authorize.ts`'s `requirePlatformAdministrator`). */
+async function listAssessments(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const assessments = await withOperationTiming(ctx.metrics, "assessments.list", () =>
+    deps.assessments.list(),
+  );
+  return jsonSuccess(assessments);
+}
+
+/** EAP-1: backs the admin Dashboard's organization metrics. Missing
+ * `deps.organizations` (an unconfigured deployment, mirroring how
+ * `resolveCaller` treats a missing `authConfig`/`userProfiles`) returns an
+ * empty list rather than throwing — organizations themselves are the tenant
+ * boundary, so there is no "their own organization's data" to fall back to
+ * the way `getAssessment` can. */
+async function listOrganizations(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  if (!deps.organizations) return jsonSuccess([]);
+  const organizations = await withOperationTiming(ctx.metrics, "organizations.list", () =>
+    deps.organizations!.list(),
+  );
+  return jsonSuccess(organizations);
+}
+
+/** EAP-1: backs the admin Dashboard's recent-activity/audit-summary
+ * sections. */
+async function listAuditEvents(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const events = await withOperationTiming(ctx.metrics, "audit.list", () => deps.audit.list());
+  return jsonSuccess(events);
+}
+
+/** EAP-1: "who am I" for the frontend — the piece role-aware navigation
+ * needs and that `GET /api/auth/session` deliberately doesn't provide
+ * (Auth.js's own session payload carries identity, not this application's
+ * roles). Any authenticated caller may read their own identity; no
+ * Platform-Administrator gate here, unlike the list endpoints above. */
+function meResponse(caller: Caller): Response {
+  return jsonSuccess({
+    userId: caller.userId,
+    email: caller.email,
+    profiles: caller.profiles,
+    isPlatformAdministrator: isPlatformAdministrator(caller.profiles),
+  });
 }
 
 async function createAssessment(

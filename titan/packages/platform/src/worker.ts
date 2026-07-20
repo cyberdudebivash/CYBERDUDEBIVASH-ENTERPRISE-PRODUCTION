@@ -3,8 +3,10 @@ import { createAuthConfig } from "./auth/config.js";
 import { createD1AssessmentRepository } from "./repositories/assessmentRepository.d1.js";
 import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 import { createD1LeadRepository } from "./repositories/leadRepository.d1.js";
+import { createD1OrganizationRepository } from "./repositories/organizationRepository.d1.js";
 import { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
 import { handleRequest } from "./router.js";
+import { resolveAllowedOrigin } from "./http/cors.js";
 import { createLogger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
@@ -35,6 +37,11 @@ const metrics = createInMemoryMetrics();
 // verification), not just against fakes in tests.
 export default {
   fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+    // One resolved value feeds both CORS and Auth.js's redirect callback —
+    // deliberately, not two independently-configured origins that could
+    // silently drift apart (EAP-1).
+    const allowedOrigin = resolveAllowedOrigin(env.ALLOWED_ORIGIN);
+
     // AUTH_SECRET absent (no .dev.vars configured) means /api/auth/* simply
     // doesn't exist yet, rather than the Worker crashing on startup — the
     // rest of the API (leads, assessments, health) works with zero auth
@@ -52,19 +59,21 @@ export default {
               ? { clientId: env.AUTH_GITHUB_ID, clientSecret: env.AUTH_GITHUB_SECRET }
               : undefined,
           logger,
+          allowedOrigin,
         })
       : undefined;
 
     return handleRequest(request, {
       leads: createD1LeadRepository(env.DB),
       assessments: createD1AssessmentRepository(env.DB),
+      organizations: createD1OrganizationRepository(env.DB),
       audit: createD1AuditRepository(env.DB),
       userProfiles: createD1UserProfileRepository(env.DB),
       logger,
       rateLimiter,
       authRateLimiter,
       metrics,
-      allowedOrigin: env.ALLOWED_ORIGIN,
+      allowedOrigin,
       authConfig,
       // A trivial, real query — not a repository call — so a readiness
       // failure means "D1 itself is unreachable", not "this one table has a

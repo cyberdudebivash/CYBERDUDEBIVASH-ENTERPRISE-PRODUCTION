@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -51,5 +51,41 @@ describe("AppRoutes", () => {
     expect(screen.getByRole("heading", { name: /Is Your Startup/ })).toBeInTheDocument();
     // Not wrapped in Layout: no header "Titan" wordmark, no sidebar nav landmark.
     expect(screen.queryByRole("navigation", { name: "Main" })).not.toBeInTheDocument();
+  });
+
+  describe("/admin (EAP-1)", () => {
+    beforeEach(() => {
+      vi.stubGlobal("fetch", vi.fn());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("resolves to the real literal /admin route, not the '*' NotFound fallback", () => {
+      vi.mocked(fetch).mockReturnValue(new Promise(() => {})); // never resolves — loading state
+      renderAt("/admin");
+      expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Checking your session…");
+    });
+
+    it("renders the real Dashboard, inside the admin shell, for an authenticated session", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            userId: "user_1",
+            email: "admin@acme.in",
+            profiles: [],
+            isPlatformAdministrator: true,
+          }),
+          { status: 200 },
+        ),
+      );
+      renderAt("/admin");
+
+      expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+      expect(screen.getByText("admin@acme.in")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
+    });
   });
 });

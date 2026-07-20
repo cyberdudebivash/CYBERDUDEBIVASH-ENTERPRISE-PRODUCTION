@@ -25,6 +25,7 @@
 .titan-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 24px;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -32,6 +33,26 @@
   font-weight: 700;
   font-size: 18px;
   color: #0a1628;
+}
+.titan-header__session {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.titan-header__email {
+  color: #334155;
+}
+.titan-header__signout {
+  color: #00a8e8;
+  text-decoration: none;
+}
+.titan-header__signout:hover {
+  text-decoration: underline;
+}
+.titan-header__signout:focus-visible {
+  outline: 2px solid #00a8e8;
+  outline-offset: 2px;
 }
 
 .titan-layout__body {

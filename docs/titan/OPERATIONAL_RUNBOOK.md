@@ -85,11 +85,26 @@ curl -s -X POST http://localhost:8787/api/assessments \
 
 curl -s http://localhost:8787/api/auth/session
 # null (no session cookie) — confirms Auth.js + the D1 adapter are wired correctly
+
+curl -s http://localhost:8787/api/me
+# 401 {"error":{"code":"unauthorized",...}} — EAP-1: any authenticated caller
+# may read this (no Platform Administrator role required, unlike the routes
+# below), but it still requires *some* real session. With a real session
+# cookie: {"userId":"...","email":"...","profiles":[...],"isPlatformAdministrator":false}
+# — the admin app's Dashboard uses this exact response to decide what to show.
+
+curl -s http://localhost:8787/api/organizations
+curl -s http://localhost:8787/api/assessments
+curl -s http://localhost:8787/api/audit
+# 401 for all three with no session cookie — EAP-1: same Platform
+# Administrator gate as /api/leads (see "Provisioning a local Platform
+# Administrator" below), backing the admin Dashboard's org/assessment/audit
+# metrics.
 ```
 
 ### Provisioning a local Platform Administrator
 
-`GET /api/leads` and cross-organization `GET /api/assessments/:id` reads require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
+`GET /api/leads`, `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
 
 ```bash
 # 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
@@ -141,7 +156,19 @@ echo "VITE_API_BASE_URL=http://localhost:8787" > .env.local
 npm run dev                                        # :5173
 ```
 
-`.env.local` is gitignored (`*.local` in `titan/.gitignore`). The Worker's default `ALLOWED_ORIGIN` (`wrangler.toml`) is `http://localhost:5173`, matching Vite's default port — if you run Vite on a different port, update `ALLOWED_ORIGIN` in `.dev.vars` or `wrangler.toml` to match, or CORS will reject the frontend's requests (by design).
+`.env.local` is gitignored (`*.local` in `titan/.gitignore`). The Worker's default `ALLOWED_ORIGIN` (`wrangler.toml`) is `http://localhost:5173`, matching Vite's default port — if you run Vite on a different port, update `ALLOWED_ORIGIN` in `.dev.vars` or `wrangler.toml` to match, or CORS will reject the frontend's requests (by design). This same value also has to match what the admin app needs below — it's the one Worker var that CORS, the Auth.js `redirect` callback, and the CSP `form-action` allowlist all read from (`ARCHITECTURE.md`'s "Admin Application architecture" section), so changing Vite's port means updating exactly one place, not three.
+
+## Signing in to the Admin Application (`/admin`, EAP-1)
+
+With both servers running (previous section), visit `http://localhost:5173/admin` in a real browser.
+
+1. **Unauthenticated:** you're redirected to the real Auth.js sign-in page at `http://localhost:8787/api/auth/signin`, with a `callbackUrl` back to `/admin`. This is a real, full-page navigation (`window.location.href`), not an in-app modal — `RequireAuth` doesn't implement its own login form, it links to Auth.js's own hosted one.
+2. **Sign in** with the dev-mode Email provider: enter any email, submit — `wrangler dev`'s stdout logs the real magic link (`"sign-in link generated (dev mode — not actually emailed)"`) instead of sending it. Open that URL (same browser, so the CSRF-protected sign-in cookie carries over) to complete sign-in.
+3. You land back on `/admin`, signed in, seeing the Dashboard. Every section that doesn't need the Platform Administrator role (platform health, system status) shows real data immediately. The four privileged sections (org/lead/assessment metrics, audit summary) show **"Platform Administrator role required to view this"** — an honest state, not an error — until the signed-in user is actually granted that role (below).
+4. **Grant Platform Administrator** to the account you just signed in with, using "Provisioning a local Platform Administrator" below — then reload `/admin`. The four previously-forbidden sections now render real data from the same local D1 instance.
+5. **Sign out** via the header's real "Sign out" link (`Header`'s `session` prop, `AdminLayout.tsx`) — another real, full-page navigation to Auth.js's own sign-out confirmation page, which redirects back to the public site's home page once confirmed. If this redirect appears to hang or silently fail after clicking the sign-out page's own "Sign out" button, see "Common problems" below — this exact path had a real bug (CSP blocking the cross-origin redirect) that's now fixed, but is worth knowing about if it ever regresses.
+
+This whole flow (steps 1–3, 5) is also covered by a committed Playwright E2E suite (`apps/web/e2e/admin-dashboard.spec.ts`) that seeds a session directly in D1 rather than driving the Email provider's UI — see that file's own top comment for why, and `npm run test:e2e --workspace=@titan/web` (`DEVELOPER_GUIDE.md`) to run it.
 
 ## Structured logs
 
@@ -156,6 +183,8 @@ Every request produces one JSON log line (`observability/logger.ts`) with `level
 | Frontend lead submission fails with a CORS error in the browser console | `ALLOWED_ORIGIN` doesn't match the Vite dev server's actual origin | Match `ALLOWED_ORIGIN` (`.dev.vars` or `wrangler.toml`) to the Vite server's real `http://localhost:PORT` |
 | `wrangler d1 migrations apply` reports migrations already applied | Expected — migrations are idempotent and tracked per-database; re-running is safe | No action needed |
 | Rate-limit (429) responses appear unexpectedly during local testing | The in-memory rate limiter (`security/rateLimiter.ts`) is per-`wrangler dev`-process and doesn't reset between runs within the same window | Wait out the window (60s default), or restart `wrangler dev` |
+| Signing in to `/admin` succeeds, but the browser never lands back on the app (session/CORS errors in the console, or the fetch to `/api/me` fails) | `ALLOWED_ORIGIN` doesn't match `/admin`'s real origin, or `.dev.vars`/`wrangler.toml` predates EAP-1's CORS-credentials change | Confirm `ALLOWED_ORIGIN` matches Vite's real origin exactly (scheme+host+port); restart `wrangler dev` after any `.dev.vars`/`wrangler.toml` edit — CORS/redirect/CSP allowlists are all read once at request time from the same `env.ALLOWED_ORIGIN` |
+| Sign-out on `/admin` appears to hang, or lands somewhere unexpected, after clicking the Auth.js confirmation page's own "Sign out" button | If this ever regresses: the CSP `form-action` directive also restricts the *redirect* a form submission causes, not just its POST target — `http/finalizeResponse.ts`'s `authPagesCsp` must allowlist the admin app's origin, not just `'self'` (`DECISION_LOG.md`'s EAP-1 entry has the full finding) | Confirm `authPagesCsp(allowedOrigin)` is actually being passed the real `allowedOrigin` (not a hardcoded `'self'`-only policy) on `/api/auth/*` responses |
 
 ## What this runbook does not cover
 

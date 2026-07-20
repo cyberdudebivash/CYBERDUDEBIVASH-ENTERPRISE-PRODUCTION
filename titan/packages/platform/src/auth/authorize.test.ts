@@ -4,6 +4,7 @@ import {
   requireAssessmentAccess,
   requireLeadsAccess,
   requireOrganizationAccess,
+  requirePlatformAdministrator,
 } from "./authorize.js";
 
 function makeProfile(overrides: Partial<UserProfileRecord> = {}): UserProfileRecord {
@@ -58,6 +59,28 @@ describe("requireOrganizationAccess", () => {
 
     const allowedResponse = hypotheticalProtectedHandler([makeProfile({ role: "admin" })], "org_1");
     expect(await allowedResponse.json()).toEqual({ ok: true });
+  });
+});
+
+describe("requirePlatformAdministrator", () => {
+  it("returns null (proceed) for a Platform Administrator", () => {
+    const profiles = [makeProfile({ organizationId: null, role: "owner" })];
+    expect(requirePlatformAdministrator(profiles, "req-1")).toBeNull();
+  });
+
+  it("returns 403 for an organization owner who is not a Platform Administrator", async () => {
+    const profiles = [makeProfile({ organizationId: "org_1", role: "owner" })];
+    const response = requirePlatformAdministrator(profiles, "req-1");
+    expect(response?.status).toBe(403);
+    expect(await response!.json()).toMatchObject({
+      error: { code: "forbidden" },
+      requestId: "req-1",
+    });
+  });
+
+  it("returns 403 for an anonymous caller (no profiles at all)", () => {
+    const response = requirePlatformAdministrator([], "req-1");
+    expect(response?.status).toBe(403);
   });
 });
 
