@@ -138,6 +138,19 @@ export function checkSitemapAndRobots(distDir) {
   return { ok: true, message: 'sitemap.xml and robots.txt present and well-formed' };
 }
 
+/** repo-root _headers must have made it into dist/ (assemble-site copies it) — otherwise
+ *  security headers silently stop working the moment Cloudflare serves dist/ instead of root. */
+export function checkHeaders(distDir) {
+  const headersPath = join(distDir, '_headers');
+  if (!existsSync(headersPath)) {
+    return { ok: false, message: 'dist/_headers missing — security headers would not survive a source-build deploy' };
+  }
+  if (readText(headersPath).trim().length === 0) {
+    return { ok: false, message: 'dist/_headers is empty' };
+  }
+  return { ok: true, message: 'dist/_headers present' };
+}
+
 export function verifyDist(distDir) {
   const results = {};
   results.assetReferences = checkAssetReferencesResolve(distDir);
@@ -148,6 +161,7 @@ export function verifyDist(distDir) {
   results.metadataAndSchema = checkMetadataAndSchema(distDir);
   results.favicon = checkFavicon(distDir);
   results.sitemapAndRobots = checkSitemapAndRobots(distDir);
+  results.headers = checkHeaders(distDir);
   return results;
 }
 

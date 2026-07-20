@@ -10,6 +10,7 @@ import {
   checkMetadataAndSchema,
   checkFavicon,
   checkSitemapAndRobots,
+  checkHeaders,
   verifyDist,
 } from "../verify-dist.mjs";
 
@@ -40,6 +41,7 @@ function writeGoodDist(distDir: string) {
   writeFileSync(join(distDir, "sitemap.xml"), '<?xml version="1.0"?><urlset></urlset>');
   writeFileSync(join(distDir, "robots.txt"), "User-agent: *\nAllow: /");
   writeFileSync(join(distDir, "favicon.ico"), "fake-icon-bytes");
+  writeFileSync(join(distDir, "_headers"), "/*\n  X-Frame-Options: SAMEORIGIN");
 }
 
 test("checkAssetReferencesResolve: passes when every referenced file exists", (t) => {
@@ -143,6 +145,30 @@ test("checkSitemapAndRobots: passes when both present and well-formed", (t) => {
   const distDir = makeDist(t);
   writeGoodDist(distDir);
   assert.equal(checkSitemapAndRobots(distDir).ok, true);
+});
+
+test("checkHeaders: fails when _headers is missing", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  rmSync(join(distDir, "_headers"));
+  const result = checkHeaders(distDir);
+  assert.equal(result.ok, false);
+  assert.match(result.message, /missing/);
+});
+
+test("checkHeaders: fails when _headers is empty", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  writeFileSync(join(distDir, "_headers"), "");
+  const result = checkHeaders(distDir);
+  assert.equal(result.ok, false);
+  assert.match(result.message, /empty/);
+});
+
+test("checkHeaders: passes when _headers is present and non-empty", (t) => {
+  const distDir = makeDist(t);
+  writeGoodDist(distDir);
+  assert.equal(checkHeaders(distDir).ok, true);
 });
 
 test("verifyDist: every check passes on a fully correct dist/", (t) => {
