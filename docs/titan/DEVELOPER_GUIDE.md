@@ -12,7 +12,7 @@ titan/
   packages/
     design-system/        # @titan/design-system — tokens + reusable UI components (for the authenticated app shell only)
     assessment-core/       # @titan/assessment-core — question banks + risk-scoring engine (framework-agnostic)
-    platform/               # @titan/platform — Cloudflare Worker + Repository Pattern (D1-backed, tested against a fake D1)
+    platform/               # @titan/platform — Cloudflare Worker, D1 migrations, Repository Pattern, Auth.js foundation
     config/                # @titan/config — shared tsconfig/eslint, not a runtime package
   package.json             # workspace root — npm workspaces, scoped to titan/ only
 ```
@@ -24,8 +24,27 @@ This is a separate npm workspace from the repository root — `titan/` has its o
 ```bash
 cd titan
 npm install
-npm run dev          # starts @titan/web on Vite's default dev port
+npm run dev          # starts @titan/web on Vite's default dev port (5173)
 ```
+
+That starts the frontend only. To exercise the real backend too, see "Running the Cloudflare backend locally" below — `titan/apps/web`'s DPDP lead capture calls the Worker API for real (Workstream 4), so without it running, lead submission will fail with a network error (by design — this is not silently falling back to `localStorage` anymore).
+
+## Running the Cloudflare backend locally
+
+Everything below is local-only. This project has never had Cloudflare account credentials in any environment — nothing here deploys anywhere, and none of it should be read as implying otherwise. See `docs/titan/OPERATIONAL_RUNBOOK.md` for the full step-by-step, including troubleshooting; this is the short version.
+
+```bash
+cd titan/packages/platform
+cp .dev.vars.example .dev.vars   # generate a real AUTH_SECRET yourself: openssl rand -base64 32
+
+npm run db:migrations:apply:local   # applies migrations/*.sql against a local D1 SQLite instance
+npm run db:seed:local                # applies seed.sql (idempotent — safe to re-run)
+npm run dev                          # starts `wrangler dev` on :8787
+```
+
+Then, in `titan/apps/web`, create `.env.local` with `VITE_API_BASE_URL=http://localhost:8787` and run `npm run dev` as usual — the frontend (port 5173, the Worker's default `ALLOWED_ORIGIN`) will call the real local Worker.
+
+To reset local state entirely (e.g. after a migration change): delete `titan/packages/platform/.wrangler/` and re-run the two `db:*` commands above. `.wrangler/` and `.dev.vars` are both gitignored — never commit either.
 
 ## Everyday commands (from `titan/`)
 
@@ -98,9 +117,24 @@ async function handle(leads: import("@titan/platform").LeadRepository) {
 }
 ```
 
-Both implementations (`repositories/leadRepository.memory.ts`, `repositories/leadRepository.d1.ts`) are proven interchangeable by one shared assertion suite (`repositories/leadRepository.contract.ts`, run against each in its own thin `*.test.ts` file) — when adding a second repository implementation for anything, write the contract once and run it against every implementation, rather than writing separate ad hoc tests per implementation that could silently drift apart.
+Five repositories exist now (`Lead`, `Organization`, `Assessment`, `UserProfile`, `Audit`), each following the same shape: `*Record`/`New*` types + a `*Repository` interface in `repositories/types.ts`, an in-memory implementation, a D1 implementation, one shared contract test suite (`*.contract.ts`) run against both. When adding a sixth (e.g. `ReportRepository` — the `reports` table already exists, migrations/0006), follow that same pattern rather than writing ad hoc tests per implementation that could silently drift apart.
 
-The D1 implementation is tested against a hand-written fake (`repositories/testUtils/fakeD1.ts`), not real D1/`workerd` — real enough to prove this package's own SQL/binding/row-mapping code is correct, not a substitute for testing against actual D1 semantics. `@cloudflare/vitest-pool-workers` is the right tool for that gap but needs Vitest 4; this workspace is on Vitest 3 everywhere else (`DECISION_LOG.md` has the reasoning for not bumping that silently).
+D1 implementations are tested against real SQLite (`repositories/testUtils/testD1.ts`, backed by `sql.js` — SQLite compiled to WASM — running this package's actual `migrations/*.sql`), not a hand-written fake. This is real SQL parsing/constraints/joins, not string matching, but it is still not `workerd`/real D1 itself — `@cloudflare/vitest-pool-workers` is the right tool for that remaining gap, but needs Vitest 4; this workspace is on Vitest 3 everywhere else (`DECISION_LOG.md` has the reasoning for not bumping that silently). Local `wrangler dev` verification (see above) covers real Workers-runtime behavior manually in the meantime.
+
+## Auth.js usage (`@titan/platform`)
+
+```ts
+import { createAuthConfig, getSession, hasAtLeastRole } from "@titan/platform";
+
+const authConfig = createAuthConfig({ db: env.DB, secret: env.AUTH_SECRET });
+// Mount this in a Worker: any request to /api/auth/* is handled by Auth.js
+// directly once `authConfig` is passed through Dependencies.authConfig
+// (router.ts). getSession(request, authConfig) reads the current session;
+// hasAtLeastRole/findProfileForOrganization/canAccessOrganization (auth/rbac.ts)
+// check a UserProfileRecord's role once you have one.
+```
+
+Google/GitHub only appear in the provider list when real credentials are configured (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` in `.dev.vars`) — this project has never had either. The Email provider works today in a dev-mode configuration that logs the sign-in link instead of emailing it (no email provider decided yet — `DECISION_LOG.md`).
 
 ## Adding a new component to the design system
 
@@ -109,10 +143,11 @@ The D1 implementation is tested against a hand-written fake (`repositories/testU
 3. Tests: rendering, every interactive behavior, an `axe()` check with `color-contrast` disabled (see existing components for the pattern).
 4. `npm run ci`-equivalent locally (`typecheck && lint && format && build && test`) before opening a PR — matches exactly what `titan-ci.yml` will run.
 
-## What NOT to do (things this phase deliberately doesn't have yet)
+## What NOT to do (things this stage deliberately doesn't have yet)
 
-- Don't add auth-shaped code (protected routes, session context, login forms) — the approach is decided (self-hosted Auth.js, `DECISION_LOG.md`) but nothing is built. Adding a "temporary" auth stub risks it quietly becoming permanent and shaping the real implementation around an assumption nobody actually chose.
-- Don't wire `titan/apps/web` to call `@titan/platform`'s API yet. The Worker exists and is tested, but isn't deployed anywhere reachable — there's nowhere for a real fetch call to go. `leadStore.ts` stays `localStorage`-backed until that changes.
-- Don't add a second repository (`AssessmentRepository`, etc.) ahead of a real, already-built consumer needing one — `LeadRepository` exists because the lead-capture UI already does; follow that pattern (interface + contract test + two implementations) when the next one has an actual reason to exist, per `DECISION_LOG.md`.
-- Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`).
+- Don't build protected routes/session context/login UI in `@titan/web` yet — the backend (Auth.js, sessions, RBAC) exists and is tested, but no frontend consumes it yet. That's real remaining work (an Admin/Customer Portal, `ROADMAP.md`), not something to stub ahead of a real screen needing it.
+- Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`). sql.js-backed repository tests close most of the practical gap in the meantime.
+- Don't add a Credentials (username/password) auth provider — only Email/Google/GitHub were asked for (Stage 4's own scope); a fourth provider nobody requested is exactly the kind of unrequested parallel implementation this program's rules warn against (`DECISION_LOG.md`).
+- Don't add real email sending to the Auth.js Email provider without an actual email-provider decision first (`ARCHITECTURE.md`'s "still open" list) — the dev-mode logger is a deliberate placeholder, not an oversight to "fix" unilaterally.
+- Don't claim CSRF protection exists on `POST /api/leads`/`POST /api/assessments` — it doesn't yet (`ROADMAP.md`'s "What Stage 5 needs"). Auth.js's own `/api/auth/*` actions have their own CSRF handling; the custom JSON endpoints don't inherit that.
 - Don't reach for the main repository's `node:test`/`tsx` conventions inside `titan/` — this workspace has its own toolchain, documented above.
