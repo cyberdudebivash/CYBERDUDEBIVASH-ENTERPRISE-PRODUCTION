@@ -1,21 +1,24 @@
-# Blocks direct access to raw application source and build config, currently
+# Intended to block direct access to raw application source and build config,
 # reachable only because Cloudflare Pages deploys the repository root as-is
-# (no build step configured). Temporary mitigation — resolves permanently and
-# automatically once Cloudflare is reconfigured to build from source and serve
-# dist/ instead, which never contains these files under any build outcome.
-# See docs/audit/FINAL_PRODUCTION_CERTIFICATION.md §8 / MASTER_PRODUCTION_CERTIFICATION.md.
-#
-# Scope is deliberately narrow: only paths directly confirmed exposed this
-# engagement. Status 404 rewrites the response to "/" with a 404 status code —
-# the real file's bytes are never sent back for a request matching these rules.
-#
-# The trailing "!" forces the rule even though a real file exists at each of
-# these paths — Cloudflare Pages (like Netlify, whose _redirects syntax this
-# follows) otherwise gives existing static files precedence over redirect
-# rules, silently. Confirmed live: without "!", all six paths kept serving
-# real file content after this file's first deploy (2026-07-20) — this is
-# not a hypothetical, it's what the unforced version actually did in
-# production.
+# (no build step configured). NOT CONFIRMED WORKING as of 2026-07-20 — see
+# docs/audit/MASTER_PRODUCTION_CERTIFICATION.md and
+# PRODUCTION_INCIDENT_REGISTER.md #8 for the full account. Two live attempts
+# both failed:
+#   1. Unforced rules (`404`) — real file content still served, unchanged.
+#   2. Forced rules (`404!`, current) — still no change, AND a control test
+#      against a path with no competing real file (/src/<nonexistent>.tsx)
+#      also fell through to the generic SPA-fallback instead of this rule's
+#      404. That rules out "existing file wins" as the cause: this file does
+#      not appear to be read/applied at all under the current no-build
+#      Cloudflare configuration, unlike _headers (confirmed effective,
+#      repeatedly, byte-for-byte). Root cause not further diagnosed without
+#      Cloudflare dashboard/support access.
+# Left in place (harmless either way) because it is expected to become
+# effective once Cloudflare is reconfigured to build from source — dist/
+# never contains these files under any build outcome, and a standard
+# Cloudflare Pages build+deploy is the well-documented, normal way _redirects
+# is meant to be consumed. Until then, this file provides NO protection —
+# do not treat the source-exposure finding as mitigated.
 /src/*               /  404!
 /server.ts           /  404!
 /vite.config.ts      /  404!

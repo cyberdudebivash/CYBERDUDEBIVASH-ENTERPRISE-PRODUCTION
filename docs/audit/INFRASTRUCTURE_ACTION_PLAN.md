@@ -31,7 +31,7 @@ Stage 5, Phase 5. Every action in this document requires access this session doe
 6. `curl -sI https://www.cyberdudebivash.com/_headers` → confirm this itself returns something reasonable (it's not meant to be publicly fetched as content, but its *effects* — check item 8 below — are what matter).
 7. `curl -sI https://www.cyberdudebivash.com/.well-known/security.txt | grep content-type` → should be `text/plain`, not `text/html`.
 8. `curl -sI https://www.cyberdudebivash.com/ | grep -i content-security-policy` → confirm still present (this is the check that matters most — Stage 5 fixed `dist/_headers` specifically so this keeps passing after this action).
-9. `curl -s -o /dev/null -w '%{http_code}' https://www.cyberdudebivash.com/src/App.tsx` → should already be `404` regardless of this action (the Stage 5 `_redirects` mitigation is independent of it), but confirm it's still `404` after, not something else.
+9. `curl -s -o /dev/null -w '%{http_code}' https://www.cyberdudebivash.com/src/App.tsx` → currently returns `200` (real file content) — the Stage 5 `_redirects` mitigation did not work live (see `PRODUCTION_INCIDENT_REGISTER.md` #8). This action, once applied, is expected to fix it anyway: `dist/` never contains `src/**` under any build outcome, and `_redirects` inside `dist/` is exactly how Cloudflare Pages is meant to consume it in a normal build. Confirm it's `404` after this action — if it's still `200`, that's a second, independent finding worth its own investigation.
 
 If any of 2–8 does not flip as expected, that's a new finding requiring its own investigation — not a reason to assume the configuration is wrong, since the same prediction has now been made and held twice (`ARTIFACT_PARITY_REPORT.md`, `PRODUCTION_OPERATIONALIZATION_REPORT.md`).
 
@@ -65,9 +65,9 @@ Once — and only once — Action 1 is confirmed live and correct:
 
 ## What does NOT require infrastructure action
 
-For completeness — these are explicitly **not** blocked on Cloudflare and should not be bundled into "waiting on the dashboard":
+For completeness — these are explicitly **not** blocked on Cloudflare dashboard access, though one of them turned out to be blocked on something else:
 
-- The raw-source-exposure mitigation (`_redirects`) — already live in the repository as of commit `2915d00`, takes effect the moment it merges to `main` and Cloudflare re-serves root (no dashboard change needed).
-- The `_headers`-survives-cutover fix — already resolved, repository-only.
+- The `_headers`-survives-cutover fix — repository-only, confirmed resolved and live.
+- The raw-source-exposure mitigation (`_redirects`) — repository-only in principle, but **live-verified twice (2026-07-20) and confirmed not currently effective**: neither an unforced nor a forced (`404!`) rule stopped production from serving the real files. Unlike `_headers`, Cloudflare does not appear to read `_redirects` at all under the current no-build configuration — a control test against a nonexistent path under the same rule's scope also fell through to the ordinary fallback rather than the rule's 404. This is not a dashboard action Action 1 will separately require, but it does mean issue #8 in `PRODUCTION_INCIDENT_REGISTER.md` is not resolved by anything currently in the repository — full detail there.
 - GA4 property verification — requires `analytics.google.com` access, not Cloudflare.
 - Blogger secrets verification — requires GitHub repository secrets or Blogger account access, not Cloudflare.
