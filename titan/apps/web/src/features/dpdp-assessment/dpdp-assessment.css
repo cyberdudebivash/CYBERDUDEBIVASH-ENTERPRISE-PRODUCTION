@@ -23,7 +23,14 @@
   --dpdp-bg-elevated: #1f2937;
   --dpdp-text-primary: #f9fafb;
   --dpdp-text-secondary: #9ca3af;
-  --dpdp-text-muted: #6b7280;
+  /* ERP-1: was #6b7280 (3.99:1 against --dpdp-bg-dark) — a real WCAG AA
+     failure, found by running Lighthouse against a real Chromium build
+     (not just jsdom+axe, which can't check contrast — DEVELOPER_GUIDE.md's
+     documented limitation). #828b99 measures 5.61:1, clears the 4.5:1
+     minimum with margin, and stays visually darker than --dpdp-text-secondary
+     (7.6:1) so the two-tier muted/secondary hierarchy this page uses is
+     preserved, not collapsed into one shade. */
+  --dpdp-text-muted: #828b99;
   --dpdp-border: #374151;
   --dpdp-glass: rgba(17, 24, 39, 0.85);
 
