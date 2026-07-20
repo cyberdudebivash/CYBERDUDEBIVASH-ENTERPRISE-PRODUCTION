@@ -73,7 +73,18 @@ CI (`.github/workflows/titan-ci.yml`) runs typecheck → lint → format → bui
 - **Caught**: missing/incorrect ARIA attributes, invalid roles, missing accessible names, invalid nesting patterns axe can detect structurally.
 - **Not caught**: color contrast (explicitly disabled in every `axe()` call in this codebase, with a comment at each call site — don't remove the disable without understanding why it's there), real focus-order/visibility issues, anything that depends on actual rendering.
 
-Closing that gap for good needs a real browser test runner wired into CI (Playwright, which this environment already has available) or a recurring manual/automated review — not implemented as a standing part of this phase's CI; not implied to be covered by "accessibility passes" in CI. (One golden-path run of the DPDP assessment flow has been checked manually in real Chromium as part of Stage 3 — see `PLATFORM_FOUNDATION.md` — which is real signal for that one flow, not a substitute for the gap above closing generally.)
+Closing that gap for good needs a real browser test runner wired into CI or a recurring manual/automated review — not implemented as a standing part of CI; not implied to be covered by "accessibility passes" in CI. As of RC1, a real Playwright suite now exists (`apps/web/e2e/`) and is verified passing locally — see below — but it isn't wired into `titan-ci.yml` yet, so don't assume every CI run exercises it.
+
+### Running the Playwright E2E suite (`apps/web/e2e/`)
+
+```bash
+cd titan/apps/web
+npm run test:e2e
+```
+
+`playwright.config.ts`'s `webServer` array starts the real backend (migrations + `wrangler dev`, port 8787) and the real frontend (`vite`, port 5173) itself — you don't need either running beforehand, though it'll reuse them if they already are (`reuseExistingServer`). If a run hangs with no output, check for a stale `wrangler dev`/`workerd` process already bound to port 8787 from an earlier manual session (`lsof -i :8787`) and kill it first — a stale server whose `.wrangler/` state has since been deleted is a real way to hang a run silently, not a Playwright bug.
+
+Not yet wired into `titan-ci.yml` — see `DECISION_LOG.md`'s RC1 entry for why (a GitHub Actions runner needs its own Playwright browser download; this sandbox's pre-installed Chromium at `/opt/pw-browsers` is environment-specific).
 
 ## Design system usage
 

@@ -78,99 +78,105 @@ export function DpdpAssessmentPage() {
           </div>
         </header>
 
-        {phase === "landing" && (
-          <section className="dpdp-hero" aria-labelledby="dpdp-hero-heading">
-            <p className="dpdp-hero-badge">DPDP Act 2023 Compliant Scan</p>
-            <h1 id="dpdp-hero-heading">
-              Is Your Startup <span className="dpdp-gradient">DPDP-Compliant?</span>
-            </h1>
-            <p className="dpdp-hero-subtitle">
-              The DPDP Act 2023 deadline is <strong>May 2027</strong>. Penalties go up to{" "}
-              <strong className="dpdp-danger-text">₹250 crore</strong>. Find your compliance gaps in
-              5 minutes — free, instant, no spam.
-            </p>
-            <div className="dpdp-hero-stats">
-              <div className="dpdp-stat">
-                <div className="dpdp-stat__value">5 min</div>
-                <div className="dpdp-stat__label">Duration</div>
+        <main>
+          {phase === "landing" && (
+            <section className="dpdp-hero" aria-labelledby="dpdp-hero-heading">
+              <p className="dpdp-hero-badge">DPDP Act 2023 Compliant Scan</p>
+              <h1 id="dpdp-hero-heading">
+                Is Your Startup <span className="dpdp-gradient">DPDP-Compliant?</span>
+              </h1>
+              <p className="dpdp-hero-subtitle">
+                The DPDP Act 2023 deadline is <strong>May 2027</strong>. Penalties go up to{" "}
+                <strong className="dpdp-danger-text">₹250 crore</strong>. Find your compliance gaps
+                in 5 minutes — free, instant, no spam.
+              </p>
+              <div className="dpdp-hero-stats">
+                <div className="dpdp-stat">
+                  <div className="dpdp-stat__value">5 min</div>
+                  <div className="dpdp-stat__label">Duration</div>
+                </div>
+                <div className="dpdp-stat">
+                  <div className="dpdp-stat__value">{questions.length}</div>
+                  <div className="dpdp-stat__label">Questions</div>
+                </div>
+                <div className="dpdp-stat">
+                  <div className="dpdp-stat__value">100%</div>
+                  <div className="dpdp-stat__label">Free</div>
+                </div>
               </div>
-              <div className="dpdp-stat">
-                <div className="dpdp-stat__value">{questions.length}</div>
-                <div className="dpdp-stat__label">Questions</div>
-              </div>
-              <div className="dpdp-stat">
-                <div className="dpdp-stat__value">100%</div>
-                <div className="dpdp-stat__label">Free</div>
-              </div>
-            </div>
-            <button type="button" className="dpdp-cta-button" onClick={() => setPhase("questions")}>
-              Start Free Risk Scan
-            </button>
-            {/* "No Data Stored" (the original's badge here) was contradicted by
+              <button
+                type="button"
+                className="dpdp-cta-button"
+                onClick={() => setPhase("questions")}
+              >
+                Start Free Risk Scan
+              </button>
+              {/* "No Data Stored" (the original's badge here) was contradicted by
                 the lead-capture step storing exactly that — Discovery,
                 ARCHITECTURE.md. This describes what the scoring step itself
                 actually does, which stays true regardless of what happens later. */}
-            <div className="dpdp-trust-badges">
-              <span>Scored Instantly In Your Browser</span>
-              <span>Enterprise-Grade Security</span>
-              <span>Instant PDF Report</span>
-            </div>
-          </section>
-        )}
+              <div className="dpdp-trust-badges">
+                <span>Scored Instantly In Your Browser</span>
+                <span>Enterprise-Grade Security</span>
+                <span>Instant PDF Report</span>
+              </div>
+            </section>
+          )}
 
-        {phase === "questions" && currentQuestion && (
-          <div className="dpdp-scanner-card">
-            <div className="dpdp-scanner-header">
-              <h2>DPDP Compliance Risk Scanner</h2>
-              <p>
-                Answer {questions.length} questions about your data practices. Get your personalized
-                risk report instantly.
+          {phase === "questions" && currentQuestion && (
+            <div className="dpdp-scanner-card">
+              <div className="dpdp-scanner-header">
+                <h2>DPDP Compliance Risk Scanner</h2>
+                <p>
+                  Answer {questions.length} questions about your data practices. Get your
+                  personalized risk report instantly.
+                </p>
+              </div>
+              <ProgressBar current={index + 1} total={questions.length} />
+              <QuestionStep
+                question={currentQuestion}
+                position={index + 1}
+                value={answers[currentQuestion.id]}
+                onChange={handleAnswerChange}
+              />
+              <div className="dpdp-nav-buttons">
+                <button
+                  type="button"
+                  className="dpdp-btn dpdp-btn--secondary"
+                  onClick={goPrev}
+                  style={{ visibility: index === 0 ? "hidden" : "visible" }}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="dpdp-btn dpdp-btn--primary"
+                  onClick={goNext}
+                  disabled={!canAdvance}
+                >
+                  {index === questions.length - 1 ? "Get My Report" : "Next"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {phase === "loading" && (
+            <div className="dpdp-loading" role="status">
+              <span className="dpdp-spinner" aria-hidden="true" />
+              <p>Analyzing your compliance posture...</p>
+              <p className="dpdp-loading__subtext">
+                Cross-referencing against DPDP Act 2023 sections
               </p>
             </div>
-            <ProgressBar current={index + 1} total={questions.length} />
-            <QuestionStep
-              question={currentQuestion}
-              position={index + 1}
-              value={answers[currentQuestion.id]}
-              onChange={handleAnswerChange}
-            />
-            <div className="dpdp-nav-buttons">
-              <button
-                type="button"
-                className="dpdp-btn dpdp-btn--secondary"
-                onClick={goPrev}
-                style={{ visibility: index === 0 ? "hidden" : "visible" }}
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                className="dpdp-btn dpdp-btn--primary"
-                onClick={goNext}
-                disabled={!canAdvance}
-              >
-                {index === questions.length - 1 ? "Get My Report" : "Next"}
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {phase === "loading" && (
-          <div className="dpdp-loading" role="status">
-            <span className="dpdp-spinner" aria-hidden="true" />
-            <p>Analyzing your compliance posture...</p>
-            <p className="dpdp-loading__subtext">
-              Cross-referencing against DPDP Act 2023 sections
-            </p>
-          </div>
-        )}
-
-        {phase === "results" && result && (
-          <>
-            <RiskResults result={result} />
-            <LeadCaptureForm answers={answers} result={result} />
-          </>
-        )}
+          {phase === "results" && result && (
+            <>
+              <RiskResults result={result} />
+              <LeadCaptureForm answers={answers} result={result} />
+            </>
+          )}
+        </main>
 
         <footer className="dpdp-footer">
           <p>© 2026 CYBERDUDEBIVASH® Private Limited. All rights reserved.</p>
