@@ -20,18 +20,29 @@ A later master prompt ("Project Titan — Phase 2 — Enterprise DPDP Platform I
 | H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started — PDF generation is still real but client-side only (`pdfReport.ts`, lazy-loaded jsPDF). A `reports` table exists (migrations/0006) but nothing writes to it yet |
 | I — Admin Portal | Dashboard, assessments, companies, leads, reports | ⛔ Not started — now has somewhere real to read from (E/F), which it didn't before |
 | J — Customer Portal | Org history, reports, roadmaps, bookings | ⛔ Not started |
-| K — Security | Input validation, XSS/CSRF, rate limiting, headers | 🟡 Mostly done — input/schema validation, security headers (CSP, X-Frame-Options, etc.) on every response, a rate-limiting hook (real but per-isolate, not a global production control — `DECISION_LOG.md`), CORS. **Still open: CSRF protection on the custom JSON endpoints** (`POST /api/leads`/`POST /api/assessments`) — Auth.js's own `/api/auth/*` actions have built-in CSRF handling, the rest of the API doesn't yet |
-| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | ✅ Passes for everything that exists — 196 tests across 4 packages (up from 119), full CI green, real `wrangler dev` + real Chromium browser verification this stage, not just jsdom |
+| K — Security | Input validation, XSS/CSRF, rate limiting, headers | ✅ Done for what's actually deployed-testable — input/schema validation, route-scoped security headers (strict CSP for the JSON API, relaxed-but-locked-down for Auth.js's own HTML pages, HSTS, Permissions-Policy, Cross-Origin-Opener/Resource-Policy), **CSRF (Origin validation on the custom JSON endpoints — RC1, closes the gap this row used to flag)**, rate limiting (general + a separate, stricter limiter for `/api/auth/*`), cookie hardening reviewed, secret rotation support. A full threat model + OWASP ASVS review exists (`SECURITY_GUIDE.md`, RC1) naming the one real remaining gap: client-submitted risk scores aren't recomputed server-side |
+| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | ✅ Passes for everything that exists — 222 tests across 4 packages (up from 119 at Stage 4's start), full CI green, real `wrangler dev` + real Chromium browser verification (both manual and, as of RC1, a committed Playwright E2E suite) |
 
-## What Stage 5 needs
+## RC1 pass: what it covered, what it explicitly didn't
 
-Stage 4 closed both items this section used to name (frontend/API wiring, a real local Cloudflare dev environment). What's left, worth naming precisely:
+The "Titan RC1 — Ultra Enterprise Master Implementation Program" master prompt asked for twelve workstreams in one pass: architecture audit, security hardening, Admin Portal, Customer Portal, a reporting platform, observability, a deployment pipeline, performance, enterprise testing, compliance (SOC 2/ISO 27001/GDPR/DPDP), commercial readiness (billing/licensing/plans), and documentation. Given the choice between shallow progress across all twelve or real depth on a scoped subset, the chosen scope was: architecture audit, security hardening, observability, testing, documentation (`DECISION_LOG.md` has the full reasoning). Status:
 
-1. **CSRF protection on `POST /api/leads`/`POST /api/assessments`.** Not urgent while nothing is deployed and every caller is same-origin-trusted local dev, but it should land before either endpoint takes real cross-origin traffic.
-2. **The Vitest 3→4 decision, if real Workers-runtime testing (`@cloudflare/vitest-pool-workers`, real `workerd`) becomes a priority.** Still deferred, same reasoning as before (`DECISION_LOG.md`) — sql.js (Stage 4) closed most of the practical gap for repository-level SQL correctness without requiring this upgrade.
-3. **Admin Portal (I).** Now has somewhere real to read from — Stage 4 built the repositories and API it needs.
-4. **A real email provider decision**, to make Auth.js's Email sign-in actually send mail instead of logging it.
-5. **Deploying somewhere real** (Cloudflare account/credentials still don't exist in any environment this project has run in) — everything verified so far is local-only, by design and by necessity.
+- **Architecture audit, security hardening, observability, testing, documentation** — done this pass, see `PLATFORM_FOUNDATION.md`'s RC1 section and `SECURITY_GUIDE.md`.
+- **Admin Portal (I), Customer Portal (J)** — not started. Real product surfaces needing real UX decisions; `auth/rbac.ts`/`auth/authorize.ts` exist so whichever is built first has a real authorization mechanism to call.
+- **Reporting Platform (H, server-side)** — not started. Blocked on the still-undecided email provider.
+- **Deployment Pipeline, Cloudflare Turnstile** — not started. Need a real Cloudflare account, which has never existed in any environment this project has run in.
+- **Commercial Readiness** (plans/licensing/billing/tenant isolation) — not started. Blocked on the still-undecided payments provider.
+- **Compliance** (SOC 2/ISO 27001 readiness, formal GDPR/DPDP compliance) — not started. Organizational/legal work (external audits, legal review, retention-policy decisions), not something a code session completes.
+- **Performance workstream** (bundle analysis, Lighthouse, Core Web Vitals beyond what Stage 3 already measured) — not attempted this pass; no new evidence to report beyond what `PLATFORM_FOUNDATION.md` already documents from Stage 3.
+
+## What Stage 5 / the next RC pass needs
+
+1. **The client-submitted-risk-score tampering finding (`SECURITY_GUIDE.md`).** The highest-value next security fix: recompute `result` server-side from `answers` on `POST /api/leads`/`POST /api/assessments` instead of trusting the client's value.
+2. **Admin Portal (I).** Now has somewhere real to read from — Stage 4/RC1 built the repositories, API, and authorization mechanism it needs.
+3. **A real email provider decision**, to make Auth.js's Email sign-in actually send mail, and to unblock server-side reporting/delivery.
+4. **A real payments provider decision**, to unblock commercial readiness (plans/licensing/billing).
+5. **The Vitest 3→4 decision**, if real Workers-runtime testing (`@cloudflare/vitest-pool-workers`, real `workerd`) becomes a priority. Still deferred (`DECISION_LOG.md`) — sql.js closed most of the practical gap for repository-level SQL correctness without requiring this upgrade.
+6. **Deploying somewhere real** (Cloudflare account/credentials still don't exist in any environment this project has run in) — everything verified so far is local-only, by design and by necessity. Needed before Turnstile, a real deployment pipeline, or a global (not per-isolate) rate limiter can exist.
 
 ## Phase 0 — Foundation
 
