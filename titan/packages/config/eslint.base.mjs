@@ -11,9 +11,12 @@ const browserGlobals = {
   document: "readonly",
   navigator: "readonly",
   fetch: "readonly",
+  Request: "readonly",
+  Response: "readonly",
   URL: "readonly",
   console: "readonly",
   requestAnimationFrame: "readonly",
+  crypto: "readonly",
 };
 
 const nodeGlobals = {

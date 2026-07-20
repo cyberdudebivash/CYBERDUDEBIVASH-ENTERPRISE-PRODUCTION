@@ -1,6 +1,6 @@
 # Project Titan — CyberDudeBivash Compliance Platform
 
-**Status: Phase 1 (Platform Foundation), partially complete. Phase 2 (DPDP Platform Integration) discovery done, first module extraction started.** Read in this order:
+**Status: Phase 1 (Platform Foundation), partially complete. Phase 2 (DPDP Platform Integration): the DPDP scanner is rebuilt as a real, tested module in Titan, with a Cloudflare Workers/D1 backend skeleton tested against fakes but not yet deployed or wired to the frontend.** Read in this order:
 
 1. [`PRODUCT_VISION.md`](./PRODUCT_VISION.md) — what this is, who it's for, business model, explicit scope boundaries
 2. [`ARCHITECTURE.md`](./ARCHITECTURE.md) — technical design, including which decisions are settled and which are still open
@@ -13,7 +13,7 @@
 
 ## What actually exists right now
 
-Real code, under `titan/` — a separate npm workspace, fully isolated from the marketing site's build (confirmed: adding it doesn't change the existing site's `verify-dist` result). Three packages now: the app shell and design system from Phase 1, plus `@titan/assessment-core` (Phase 2's first extracted module — the DPDP question bank and risk-scoring engine, pulled out of the uploaded scanner asset and tested, including a fix for a scoring bug that asset had). `npm run typecheck && npm run lint && npm run format && npm run build && npm run test` all pass, fresh, this pass — 53/53 tests. Full detail and honest gaps: `PLATFORM_FOUNDATION.md`.
+Real code, under `titan/` — a separate npm workspace, fully isolated from the marketing site's build (confirmed: adding it doesn't change the existing site's `verify-dist` result). Four packages now: the app shell and design system from Phase 1; `@titan/assessment-core` (the DPDP question bank and risk-scoring engine, pulled out of the uploaded scanner asset and tested, including a fix for a scoring bug that asset had); and `@titan/platform` (a Repository Pattern + Cloudflare Worker skeleton, tested against a fake D1 double, not deployed). `@titan/web` now has a real, working `/assessment/dpdp` route — the scanner rebuilt in React, consuming `assessment-core` directly, verified once end-to-end in a real browser. `npm run typecheck && npm run lint && npm run format && npm run build && npm run test` all pass, fresh, this pass — 119/119 tests. Full detail and honest gaps: `PLATFORM_FOUNDATION.md`.
 
 ## What's still blocked
 
