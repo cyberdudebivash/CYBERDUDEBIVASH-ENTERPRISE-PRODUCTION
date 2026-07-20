@@ -107,5 +107,33 @@ export function createAuthConfig(options: AuthConfigOptions): AuthConfig {
     // with the `__Secure-`/`__Host-` name prefixes applied automatically
     // once `secure` is on. There is no hardening left to add without a
     // concrete reason to diverge from a well-reviewed default.
+    callbacks: {
+      // @auth/core's own default session callback (lib/init.js) deliberately
+      // strips `id` from `session.user`, keeping only name/email/image —
+      // verified directly against its source, not assumed. Authorization
+      // (auth/authorize.ts) needs the caller's user id to look up their
+      // UserProfileRecord[], so it must be copied through explicitly.
+      //
+      // Mirrors the default callback's own construction (a fresh, minimal
+      // object) rather than mutating and returning the `session` argument
+      // as-is — confirmed by direct probing against a real adapter session
+      // that for the database strategy, `session` here is `{...rawRow,
+      // user}`, i.e. it also carries the raw `sessionToken` and `userId`
+      // columns. Returning it wholesale would leak the session token itself
+      // into GET /api/auth/session's JSON body — already present in an
+      // httpOnly cookie, it has no business also appearing in a response a
+      // page's own JS can read.
+      async session({ session, user }) {
+        return {
+          user: {
+            id: user.id,
+            name: session.user?.name,
+            email: session.user?.email,
+            image: session.user?.image,
+          },
+          expires: session.expires?.toISOString?.() ?? session.expires,
+        };
+      },
+    },
   };
 }

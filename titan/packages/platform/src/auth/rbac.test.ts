@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { UserProfileRecord } from "../repositories/types.js";
-import { canAccessOrganization, findProfileForOrganization, hasAtLeastRole } from "./rbac.js";
+import {
+  canAccessOrganization,
+  findProfileForOrganization,
+  hasAtLeastRole,
+  isPlatformAdministrator,
+} from "./rbac.js";
 
 function makeProfile(overrides: Partial<UserProfileRecord> = {}): UserProfileRecord {
   return {
@@ -52,5 +57,34 @@ describe("canAccessOrganization", () => {
   it("denies access when the user has no membership in that organization", () => {
     const profiles = [makeProfile({ organizationId: "org_1", role: "owner" })];
     expect(canAccessOrganization(profiles, "org_2", "member")).toBe(false);
+  });
+});
+
+describe("isPlatformAdministrator", () => {
+  it("grants platform-administrator status for an organizationId: null, role: owner profile", () => {
+    const profiles = [makeProfile({ organizationId: null, role: "owner" })];
+    expect(isPlatformAdministrator(profiles)).toBe(true);
+  });
+
+  it("denies it for a null-organization profile below owner", () => {
+    const profiles = [makeProfile({ organizationId: null, role: "admin" })];
+    expect(isPlatformAdministrator(profiles)).toBe(false);
+  });
+
+  it("denies it for an owner role that is scoped to a real organization", () => {
+    const profiles = [makeProfile({ organizationId: "org_1", role: "owner" })];
+    expect(isPlatformAdministrator(profiles)).toBe(false);
+  });
+
+  it("recognizes it alongside other, organization-scoped profiles for the same user", () => {
+    const profiles = [
+      makeProfile({ organizationId: "org_1", role: "member" }),
+      makeProfile({ organizationId: null, role: "owner" }),
+    ];
+    expect(isPlatformAdministrator(profiles)).toBe(true);
+  });
+
+  it("denies it for an empty profile list", () => {
+    expect(isPlatformAdministrator([])).toBe(false);
   });
 });

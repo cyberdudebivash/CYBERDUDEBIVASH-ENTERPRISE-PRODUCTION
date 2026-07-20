@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { UserProfileRecord } from "../repositories/types.js";
-import { requireOrganizationAccess } from "./authorize.js";
+import {
+  requireAssessmentAccess,
+  requireLeadsAccess,
+  requireOrganizationAccess,
+} from "./authorize.js";
 
 function makeProfile(overrides: Partial<UserProfileRecord> = {}): UserProfileRecord {
   return {
@@ -54,5 +58,57 @@ describe("requireOrganizationAccess", () => {
 
     const allowedResponse = hypotheticalProtectedHandler([makeProfile({ role: "admin" })], "org_1");
     expect(await allowedResponse.json()).toEqual({ ok: true });
+  });
+});
+
+describe("requireLeadsAccess", () => {
+  it("returns null (proceed) for a Platform Administrator", () => {
+    const profiles = [makeProfile({ organizationId: null, role: "owner" })];
+    expect(requireLeadsAccess(profiles, "req-1")).toBeNull();
+  });
+
+  it("returns 403 for an organization owner who is not a Platform Administrator", async () => {
+    // Deliberately the strongest non-platform-admin role, to prove org
+    // ownership alone still isn't enough — leads span every organization,
+    // and this route has no per-organization filtering to lean on.
+    const profiles = [makeProfile({ organizationId: "org_1", role: "owner" })];
+    const response = requireLeadsAccess(profiles, "req-1");
+    expect(response?.status).toBe(403);
+    expect(await response!.json()).toMatchObject({ error: { code: "forbidden" } });
+  });
+
+  it("returns 403 for an anonymous caller (no profiles at all)", () => {
+    const response = requireLeadsAccess([], "req-1");
+    expect(response?.status).toBe(403);
+  });
+});
+
+describe("requireAssessmentAccess", () => {
+  it("returns null (proceed) for a Platform Administrator regardless of the assessment's organization", () => {
+    const profiles = [makeProfile({ organizationId: null, role: "owner" })];
+    expect(requireAssessmentAccess(profiles, "org_1", "req-1")).toBeNull();
+    expect(requireAssessmentAccess(profiles, null, "req-1")).toBeNull();
+  });
+
+  it("returns null (proceed) for any member of the assessment's own organization", () => {
+    const profiles = [makeProfile({ organizationId: "org_1", role: "member" })];
+    expect(requireAssessmentAccess(profiles, "org_1", "req-1")).toBeNull();
+  });
+
+  it("returns 403 for a member of a different organization", () => {
+    const profiles = [makeProfile({ organizationId: "org_2", role: "owner" })];
+    const response = requireAssessmentAccess(profiles, "org_1", "req-1");
+    expect(response?.status).toBe(403);
+  });
+
+  it("returns 403 for a non-platform-administrator when the assessment has no organizationId", () => {
+    const profiles = [makeProfile({ organizationId: "org_1", role: "owner" })];
+    const response = requireAssessmentAccess(profiles, null, "req-1");
+    expect(response?.status).toBe(403);
+  });
+
+  it("returns 403 for an anonymous caller (no profiles at all)", () => {
+    const response = requireAssessmentAccess([], "org_1", "req-1");
+    expect(response?.status).toBe(403);
   });
 });

@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { AssessmentResult } from "@titan/assessment-core";
+import { scoreAssessment, dpdpV1 } from "@titan/assessment-core";
 import { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
 import { createInMemoryAssessmentRepository } from "./repositories/assessmentRepository.memory.js";
 import { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";
+import { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
 import type { Logger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createAuthConfig } from "./auth/config.js";
+import { createTestCaller } from "./auth/testUtils/testSession.js";
 import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
+import type { UserProfileRepository } from "./repositories/types.js";
 
 const createAuthDb = await createTestD1Factory();
 
@@ -25,6 +29,22 @@ function createTestDeps(): Dependencies {
     // a tight one, and a shared low default would make every other test
     // flaky depending on how many requests ran before it.
     rateLimiter: createInMemoryRateLimiter({ limit: 1000, windowMs: 60_000 }),
+  };
+}
+
+/**
+ * Security Release Blocker Sprint: `GET /api/leads` and
+ * `GET /api/assessments/:id` need a real session (resolveCaller does a real
+ * `getSession` call against `deps.authConfig`), so these tests can't reuse
+ * the plain in-memory `createTestDeps()` — they need a real Auth.js
+ * adapter (`createAuthDb`, this file's shared sql.js D1 instance) plus a
+ * `userProfiles` repository to grant roles against.
+ */
+function createAuthorizedTestDeps(): Dependencies & { userProfiles: UserProfileRepository } {
+  return {
+    ...createTestDeps(),
+    authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+    userProfiles: createInMemoryUserProfileRepository(),
   };
 }
 
@@ -48,11 +68,16 @@ const validLeadBody = {
 
 const validAssessmentBody = {
   framework: "dpdp",
-  frameworkVersion: "v1",
+  frameworkVersion: dpdpV1.version,
   answers: { has_dpo: false },
   result: sampleResult,
   createdAt: "2026-07-20T00:00:00.000Z",
 };
+
+/** The real recomputed result for `{ has_dpo: false }` — computed via the
+ * same `scoreAssessment` router.ts itself calls, not a hand-derived magic
+ * number, so this stays correct if the DPDP question bank ever changes. */
+const recomputedResultForHasDpoFalse = scoreAssessment(dpdpV1.questions, { has_dpo: false });
 
 describe("handleRequest", () => {
   describe("GET /health", () => {
@@ -153,13 +178,76 @@ describe("handleRequest", () => {
       );
       expect(response.status).toBe(400);
     });
+
+    it("recomputes the risk result server-side from answers, discarding a tampered client result", async () => {
+      // Security Release Blocker Sprint: the client claims a maximal,
+      // obviously-fabricated CRITICAL/100 result alongside real DPDP
+      // answers ({ has_dpo: false } and nothing else) that don't remotely
+      // support it. The persisted result must be the server's own real
+      // computation, not the client's claim — proven two ways: it equals
+      // the real recomputation, and it is not the tampered value.
+      const tamperedResult = { ...sampleResult, score: 100, riskLevel: "critical" as const };
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", {
+          method: "POST",
+          body: JSON.stringify({
+            ...validLeadBody,
+            answers: { has_dpo: false },
+            result: tamperedResult,
+          }),
+        }),
+        deps,
+      );
+
+      expect(response.status).toBe(201);
+      const savedLeads = await deps.leads.list();
+      expect(savedLeads).toHaveLength(1);
+      expect(savedLeads[0]?.result).toEqual(recomputedResultForHasDpoFalse);
+      expect(savedLeads[0]?.result).not.toEqual(tamperedResult);
+    });
   });
 
   describe("GET /api/leads", () => {
-    it("returns previously saved leads", async () => {
-      const deps = createTestDeps();
+    it("returns 401 for an anonymous caller (no session)", async () => {
+      const deps = createAuthorizedTestDeps();
       await deps.leads.save({ ...validLeadBody });
       const response = await handleRequest(new Request("https://example.com/api/leads"), deps);
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller who is not a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 with every lead for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({ ...validLeadBody });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
       expect(response.status).toBe(200);
       const body = (await response.json()) as unknown[];
       expect(body).toHaveLength(1);
@@ -198,31 +286,149 @@ describe("handleRequest", () => {
       );
       expect(response.status).toBe(400);
     });
+
+    it("recomputes the risk result server-side from answers, discarding a tampered client result", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments", {
+          method: "POST",
+          body: JSON.stringify({
+            ...validAssessmentBody,
+            answers: { has_dpo: false },
+            result: { ...sampleResult, score: 0, riskLevel: "low" },
+          }),
+        }),
+        deps,
+      );
+
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as { result: AssessmentResult };
+      expect(body.result).toEqual(recomputedResultForHasDpoFalse);
+    });
+
+    it("returns 400 for an unrecognized framework/frameworkVersion (can't recompute what it can't score)", async () => {
+      const deps = createTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments", {
+          method: "POST",
+          body: JSON.stringify({
+            ...validAssessmentBody,
+            frameworkVersion: "0.0.1-does-not-exist",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ error: { code: "unsupported_framework" } });
+    });
   });
 
   describe("GET /api/assessments/:id", () => {
-    it("returns a previously saved assessment", async () => {
-      const deps = createTestDeps();
+    it("returns 401 for an anonymous caller (no session)", async () => {
+      const deps = createAuthorizedTestDeps();
       const saved = await deps.assessments.save({
-        organizationId: null,
+        organizationId: "org_1",
         createdBy: null,
         framework: "dpdp",
-        frameworkVersion: "v1",
+        frameworkVersion: dpdpV1.version,
         answers: { has_dpo: false },
         result: sampleResult,
         createdAt: "2026-07-20T00:00:00.000Z",
       });
-
       const response = await handleRequest(
         new Request(`https://example.com/api/assessments/${saved.id}`),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 200 for a member of the assessment's own organization", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/assessments/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
         deps,
       );
       expect(response.status).toBe(200);
       expect(await response.json()).toMatchObject({ id: saved.id, framework: "dpdp" });
     });
 
-    it("returns 404 for an unknown id", async () => {
-      const deps = createTestDeps();
+    it("returns 403 for a member of a different organization", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_2",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/assessments/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 for a Platform Administrator regardless of organization", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: null,
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/assessments/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+    });
+
+    it("returns 404 for an unknown id, even for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
       const response = await handleRequest(
         new Request("https://example.com/api/assessments/does-not-exist"),
         deps,
