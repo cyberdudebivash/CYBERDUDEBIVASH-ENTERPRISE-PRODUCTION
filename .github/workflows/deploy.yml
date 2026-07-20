@@ -40,8 +40,10 @@ jobs:
 
       # TEMPORARY — Phase 1 bridge only. Remove once Cloudflare Pages is confirmed
       # building from source itself (build command `npm ci --ignore-scripts && npm
-      # run build`, output directory `dist`) — see docs/audit/BUILD_PIPELINE_MIGRATION.md
-      # for the exact Phase 2 cleanup. Cloudflare currently has no build step of its
+      # run build`, output directory `dist`) — see docs/audit/PROGRAM_BACKLOG.md
+      # (items 11-12) for the exact Phase 2 cleanup, and
+      # docs/audit/history/BUILD_PIPELINE_MIGRATION.md for the original rationale.
+      # Cloudflare currently has no build step of its
       # own and just deploys the repo root as committed, so this keeps that root
       # mirror current in the meantime. Deliberately full-file replacement (not a
       # sed patch), and deliberately no skip-ci tag: Cloudflare's own Git integration
