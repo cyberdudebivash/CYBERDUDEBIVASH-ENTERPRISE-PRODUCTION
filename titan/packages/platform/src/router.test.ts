@@ -7,6 +7,7 @@ import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
 import type { Logger } from "./observability/logger.js";
+import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createAuthConfig } from "./auth/config.js";
 import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
 
@@ -245,6 +246,26 @@ describe("handleRequest", () => {
     expect(response.headers.get("X-Frame-Options")).toBe("DENY");
     expect(response.headers.get("Content-Security-Policy")).toBe("default-src 'none'");
     expect(response.headers.get("X-Request-Id")).toBeTruthy();
+  });
+
+  it("records a request count and duration metric for every request", async () => {
+    const metrics = createInMemoryMetrics();
+    await handleRequest(new Request("https://example.com/health"), {
+      ...createTestDeps(),
+      metrics,
+    });
+
+    const counts = metrics.getCounts();
+    expect(counts).toHaveLength(1);
+    expect(counts[0]).toMatchObject({
+      name: "http.request",
+      tags: { method: "GET", path: "/health", status: "200" },
+      count: 1,
+    });
+
+    const durations = metrics.getDurations();
+    expect(durations).toHaveLength(1);
+    expect(durations[0]?.durations[0]).toBeGreaterThanOrEqual(0);
   });
 
   it("reuses an inbound X-Request-Id instead of minting a new one", async () => {

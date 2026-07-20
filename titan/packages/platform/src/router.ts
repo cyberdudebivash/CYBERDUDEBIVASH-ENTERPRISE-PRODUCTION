@@ -11,6 +11,7 @@ import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { finalizeResponse } from "./http/finalizeResponse.js";
 import { createLogger, type Logger } from "./observability/logger.js";
+import { createInMemoryMetrics, type Metrics } from "./observability/metrics.js";
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
 import {
@@ -28,6 +29,7 @@ export interface Dependencies {
   audit: AuditRepository;
   logger?: Logger;
   rateLimiter?: RateLimiter;
+  metrics?: Metrics;
   allowedOrigin?: string;
   /** Workstream 5. Optional so every existing router test (and any caller
    * that doesn't need auth yet) keeps working unchanged — /api/auth/* only
@@ -37,6 +39,7 @@ export interface Dependencies {
 }
 
 const defaultRateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
+const defaultMetrics = createInMemoryMetrics();
 
 /**
  * Pure request -> response routing, independent of the Cloudflare Workers
@@ -55,6 +58,7 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
   const requestId = resolveRequestId(request);
   const logger = deps.logger ?? createLogger();
   const rateLimiter = deps.rateLimiter ?? defaultRateLimiter;
+  const metrics = deps.metrics ?? defaultMetrics;
   const allowedOrigin = resolveAllowedOrigin(deps.allowedOrigin);
   const url = new URL(request.url);
   const startedAt = Date.now();
@@ -81,13 +85,22 @@ export async function handleRequest(request: Request, deps: Dependencies): Promi
   }
 
   response = finalizeResponse(response, requestId, allowedOrigin);
+  const durationMs = Date.now() - startedAt;
+
+  const metricTags = {
+    method: request.method,
+    path: url.pathname,
+    status: String(response.status),
+  };
+  metrics.increment("http.request", metricTags);
+  metrics.recordDuration("http.request.duration_ms", durationMs, metricTags);
 
   logger.info("request completed", {
     requestId,
     method: request.method,
     path: url.pathname,
     status: response.status,
-    durationMs: Date.now() - startedAt,
+    durationMs,
   });
 
   return response;

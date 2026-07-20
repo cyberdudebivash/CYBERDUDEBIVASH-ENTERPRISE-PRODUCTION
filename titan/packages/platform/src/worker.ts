@@ -5,6 +5,7 @@ import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 import { createD1LeadRepository } from "./repositories/leadRepository.d1.js";
 import { handleRequest } from "./router.js";
 import { createLogger } from "./observability/logger.js";
+import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
 
 export interface Env {
@@ -24,6 +25,7 @@ export interface Env {
 // only a per-isolate one, not a global production control.
 const logger = createLogger({ service: "titan-platform" });
 const rateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
+const metrics = createInMemoryMetrics();
 
 // Not deployed anywhere (no Cloudflare account/credentials in this
 // environment — DECISION_LOG.md), but verified against a real local D1
@@ -57,6 +59,7 @@ export default {
       audit: createD1AuditRepository(env.DB),
       logger,
       rateLimiter,
+      metrics,
       allowedOrigin: env.ALLOWED_ORIGIN,
       authConfig,
     });
