@@ -11,7 +11,12 @@ export function createInMemoryLeadRepository(): LeadRepository {
 
   return {
     async save(lead: NewLead): Promise<LeadRecord> {
-      const record: LeadRecord = { id: crypto.randomUUID(), ...lead };
+      const record: LeadRecord = {
+        id: crypto.randomUUID(),
+        organizationId: lead.organizationId ?? null,
+        assessmentId: lead.assessmentId ?? null,
+        ...lead,
+      };
       leads.push(record);
       return record;
     },

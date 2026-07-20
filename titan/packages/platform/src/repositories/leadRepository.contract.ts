@@ -65,5 +65,26 @@ export function describeLeadRepositoryContract(
       await repo.save({ ...sampleLead, email: "second@acme.in" });
       expect(await repo.list()).toHaveLength(2);
     });
+
+    it("defaults organizationId and assessmentId to null when omitted", async () => {
+      const repo = createRepository();
+      const saved = await repo.save(sampleLead);
+      expect(saved.organizationId).toBeNull();
+      expect(saved.assessmentId).toBeNull();
+    });
+
+    it("persists organizationId and assessmentId when provided", async () => {
+      const repo = createRepository();
+      const saved = await repo.save({
+        ...sampleLead,
+        organizationId: "org_1",
+        assessmentId: "assessment_1",
+      });
+      expect(saved.organizationId).toBe("org_1");
+      expect(saved.assessmentId).toBe("assessment_1");
+      const [listed] = await repo.list();
+      expect(listed?.organizationId).toBe("org_1");
+      expect(listed?.assessmentId).toBe("assessment_1");
+    });
   });
 }

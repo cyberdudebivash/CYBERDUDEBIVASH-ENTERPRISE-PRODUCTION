@@ -3,6 +3,8 @@ import type { LeadRecord, LeadRepository, NewLead } from "./types.js";
 
 interface LeadRow {
   id: string;
+  organization_id: string | null;
+  assessment_id: string | null;
   name: string;
   email: string;
   company: string;
@@ -13,21 +15,29 @@ interface LeadRow {
 }
 
 /**
- * D1-backed implementation (db/schema.sql). Never used directly by anything
- * outside this file — everything else depends on the LeadRepository interface
- * (types.ts), per the Repository Pattern decision in DECISION_LOG.md.
+ * D1-backed implementation (migrations/0005_leads.sql). Never used directly
+ * by anything outside this file — everything else depends on the
+ * LeadRepository interface (types.ts), per the Repository Pattern decision
+ * in DECISION_LOG.md.
  */
 export function createD1LeadRepository(db: D1Database): LeadRepository {
   return {
     async save(lead: NewLead): Promise<LeadRecord> {
-      const record: LeadRecord = { id: crypto.randomUUID(), ...lead };
+      const record: LeadRecord = {
+        id: crypto.randomUUID(),
+        organizationId: lead.organizationId ?? null,
+        assessmentId: lead.assessmentId ?? null,
+        ...lead,
+      };
       await db
         .prepare(
-          `INSERT INTO leads (id, name, email, company, answers_json, result_json, source, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO leads (id, organization_id, assessment_id, name, email, company, answers_json, result_json, source, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           record.id,
+          record.organizationId,
+          record.assessmentId,
           record.name,
           record.email,
           record.company,
@@ -52,6 +62,8 @@ export function createD1LeadRepository(db: D1Database): LeadRepository {
 function rowToLeadRecord(row: LeadRow): LeadRecord {
   return {
     id: row.id,
+    organizationId: row.organization_id,
+    assessmentId: row.assessment_id,
     name: row.name,
     email: row.email,
     company: row.company,

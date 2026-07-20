@@ -1,0 +1,20 @@
+name = "titan-platform"
+main = "src/worker.ts"
+compatibility_date = "2026-07-20"
+
+# Local development only. This has never been deployed — no Cloudflare
+# account/credentials exist in any environment this project has run in
+# (DECISION_LOG.md). database_id is a placeholder: `wrangler dev --local`
+# and `wrangler d1 migrations apply --local` don't call the Cloudflare API,
+# they operate entirely on a local SQLite file under .wrangler/state, so a
+# real database_id is only required the day this actually gets deployed.
+[[d1_databases]]
+binding = "DB"
+database_name = "titan-platform-db"
+database_id = "local-dev-placeholder-see-decision-log"
+migrations_dir = "migrations"
+
+[vars]
+# titan/apps/web's Vite dev server origin (Workstream 4). Override this the
+# day a real frontend origin exists — it is not a production value.
+ALLOWED_ORIGIN = "http://localhost:5173"
