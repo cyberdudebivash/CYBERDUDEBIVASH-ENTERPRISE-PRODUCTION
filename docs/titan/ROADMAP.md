@@ -11,19 +11,26 @@ A later master prompt ("Project Titan — Phase 2 — Enterprise DPDP Platform I
 | Sub-phase | Covers | Status |
 |---|---|---|
 | A — Discovery | Review the scanner, document findings, no rewriting | ✅ Done — `ARCHITECTURE.md`'s Module 1 discovery section |
-| B — Modularization | Break the scanner into production modules | 🟡 Started — `titan/packages/assessment-core` is the first extracted module |
+| B — Modularization | Break the scanner into production modules | ✅ Done for the DPDP flow — `titan/packages/assessment-core` (data/logic) + `titan/apps/web/src/features/dpdp-assessment` (UI), the original `dpdpriskscan.html` untouched alongside it |
 | C — Question Engine | Data-driven question config, no hardcoded logic | ✅ Done for the DPDP v1 bank — typed, versioned, tested |
 | D — Risk Engine | Separated business rules/scoring, tested | ✅ Done — the source asset's `maxScore` bug fixed, regression-tested, 100% statement coverage |
-| E — Cloudflare Backend | Workers API, D1, repository layer, audit logging | ⛔ Not started |
+| E — Cloudflare Backend | Workers API, D1, repository layer, audit logging | 🟡 Started — `titan/packages/platform`: a Repository Pattern (`LeadRepository`, in-memory + D1 implementations, proven interchangeable by a shared contract test suite) and a Worker (`/health`, `POST /api/leads`), tested against a fake D1 double, not real D1 or a deployed Worker — see "What Stage 4 needs" below |
 | F — Authentication | Auth.js integration, orgs/users/RBAC/sessions | ⛔ Not started |
-| G — Lead Management | Real persistence, pipeline, admin search | ⛔ Not started |
-| H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started |
+| G — Lead Management | Real persistence, pipeline, admin search | 🟡 Started — the repository + API shape exist (E); `titan/apps/web`'s `LeadCaptureForm` still writes to `localStorage` (`leadStore.ts`), not yet wired to call the API |
+| H — Reporting | Server-side PDF support, storage, email workflow | ⛔ Not started — PDF generation is real but client-side only (`pdfReport.ts`, lazy-loaded jsPDF) |
 | I — Admin Portal | Dashboard, assessments, companies, leads, reports | ⛔ Not started |
 | J — Customer Portal | Org history, reports, roadmaps, bookings | ⛔ Not started |
-| K — Security | Input validation, XSS/CSRF, rate limiting, headers | ⛔ Not started (findings documented in `ARCHITECTURE.md`; only the risk-engine class of bug is actually fixed so far) |
-| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | 🟡 Passes for what exists (`assessment-core`); nothing built yet for E–K to run it against |
+| K — Security | Input validation, XSS/CSRF, rate limiting, headers | 🟡 Started — the Discovery findings that had a concrete fix in this pass's scope are fixed (real email validation, no `innerHTML`/XSS surface — React's default escaping, real `POST /api/leads` request-body validation). CSRF, rate limiting, and security headers all need a deployed Worker to mean anything and remain ⛔ |
+| L — Quality | Full build/typecheck/lint/test/a11y/perf/security/regression pass | ✅ Passes for everything that exists — 119 tests across 4 packages, full CI green, one golden-path run verified in a real Chromium browser (not just jsdom) |
 
-Phase E onward needs an explicit answer to a question nobody's made yet: does the scanner's UI get rebuilt inside `@titan/web`, or does `dpdpriskscan.html` get progressively wired to import from `assessment-core` in place? Either is workable; picking one is the next real decision on this track, separate from (and blocking progress on top of) the hosting/database/auth decisions already made.
+## What Stage 4 needs
+
+Two things block E from going further, both worth naming precisely rather than leaving as a vague "not started":
+
+1. **Wiring `titan/apps/web` to call the real API instead of `localStorage`** (closes G, most of H). Needs the hosting decision (`DECISION_LOG.md`: Cloudflare Pages + Workers) to actually be stood up somewhere reachable, or at minimum a local `wrangler dev` loop to develop against.
+2. **Real Cloudflare Workers runtime verification** (real D1, real `workerd`, not the fake-D1 test double `titan/packages/platform` uses today). The natural tool is `@cloudflare/vitest-pool-workers`, but it currently requires Vitest 4, while every other package in this workspace is on Vitest 3 — upgrading is a real, workspace-wide decision (it touches `titan/apps/web` and `titan/packages/design-system` too, not just the new package), not something to bump silently as a side effect of adding one Worker. Recommend deciding this explicitly before Stage 4 starts building more on top of `titan/packages/platform`.
+
+Auth.js integration (F) is still genuinely unstarted — the abstraction-layer decision is made (`DECISION_LOG.md`), no code exists yet.
 
 ## Phase 0 — Foundation
 

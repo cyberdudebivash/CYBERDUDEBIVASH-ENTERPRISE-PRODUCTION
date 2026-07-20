@@ -8,9 +8,11 @@ How to work in `titan/`. Assumes you're already set up for the main repository (
 titan/
   apps/
     web/                  # @titan/web — the application shell (routing, layout, error handling)
+      src/features/dpdp-assessment/  # the public DPDP scan route (/assessment/dpdp) — its own visual system, not @titan/design-system
   packages/
-    design-system/        # @titan/design-system — tokens + reusable UI components
+    design-system/        # @titan/design-system — tokens + reusable UI components (for the authenticated app shell only)
     assessment-core/       # @titan/assessment-core — question banks + risk-scoring engine (framework-agnostic)
+    platform/               # @titan/platform — Cloudflare Worker + Repository Pattern (D1-backed, tested against a fake D1)
     config/                # @titan/config — shared tsconfig/eslint, not a runtime package
   package.json             # workspace root — npm workspaces, scoped to titan/ only
 ```
@@ -52,7 +54,7 @@ CI (`.github/workflows/titan-ci.yml`) runs typecheck → lint → format → bui
 - **Caught**: missing/incorrect ARIA attributes, invalid roles, missing accessible names, invalid nesting patterns axe can detect structurally.
 - **Not caught**: color contrast (explicitly disabled in every `axe()` call in this codebase, with a comment at each call site — don't remove the disable without understanding why it's there), real focus-order/visibility issues, anything that depends on actual rendering.
 
-Closing that gap needs either a real browser test runner (Playwright, which this environment already has available) or manual/automated review with real browsers — not implemented in this phase; not implied to be covered by "accessibility passes" in CI.
+Closing that gap for good needs a real browser test runner wired into CI (Playwright, which this environment already has available) or a recurring manual/automated review — not implemented as a standing part of this phase's CI; not implied to be covered by "accessibility passes" in CI. (One golden-path run of the DPDP assessment flow has been checked manually in real Chromium as part of Stage 3 — see `PLATFORM_FOUNDATION.md` — which is real signal for that one flow, not a substitute for the gap above closing generally.)
 
 ## Design system usage
 
@@ -81,7 +83,24 @@ const result = scoreAssessment(dpdpV1.questions, answers);
 // result.breakdown (counts per level), result.gaps (failed questions with penalty/section)
 ```
 
-No UI in `@titan/web` calls this yet — it exists as a standalone, fully tested package because Phase 2's Discovery pass (`ARCHITECTURE.md`) found the original scanner's scoring logic had zero test coverage and a real off-by-one bug in it. `scoreAssessment` always derives its denominator from the question bank (`getScoredQuestions`) rather than a hardcoded count — don't reintroduce a hardcoded count anywhere that consumes this; that's the exact bug this module exists to not repeat. Adding a second framework (ISO/SOC/etc., per `PRODUCT_VISION.md`'s "DPDP is the first module, not the whole product") means adding a new file next to `questions/dpdp-v1.ts`, not changing anything in `risk-engine/` — the engine takes a `Question[]` and doesn't know what framework it's scoring.
+`titan/apps/web/src/features/dpdp-assessment/DpdpAssessmentPage.tsx` is the real consumer — it imports `dpdpV1`/`scoreAssessment` directly, holds no question data or scoring logic of its own. `scoreAssessment` always derives its denominator from the question bank (`getScoredQuestions`) rather than a hardcoded count — don't reintroduce a hardcoded count anywhere that consumes this; that's the exact bug Phase 2's Discovery pass (`ARCHITECTURE.md`) found in the original scanner, and the reason this module exists as tested code instead of inline `<script>`. Adding a second framework (ISO/SOC/etc., per `PRODUCT_VISION.md`'s "DPDP is the first module, not the whole product") means adding a new file next to `questions/dpdp-v1.ts`, not changing anything in `risk-engine/` — the engine takes a `Question[]` and doesn't know what framework it's scoring.
+
+## Repository Pattern usage (`@titan/platform`)
+
+```ts
+import { createInMemoryLeadRepository, createD1LeadRepository } from "@titan/platform";
+
+// Anything that needs leads depends on the LeadRepository interface, never a
+// concrete store:
+async function handle(leads: import("@titan/platform").LeadRepository) {
+  const saved = await leads.save({ name, email, company, answers, result, timestamp, source });
+  const all = await leads.list();
+}
+```
+
+Both implementations (`repositories/leadRepository.memory.ts`, `repositories/leadRepository.d1.ts`) are proven interchangeable by one shared assertion suite (`repositories/leadRepository.contract.ts`, run against each in its own thin `*.test.ts` file) — when adding a second repository implementation for anything, write the contract once and run it against every implementation, rather than writing separate ad hoc tests per implementation that could silently drift apart.
+
+The D1 implementation is tested against a hand-written fake (`repositories/testUtils/fakeD1.ts`), not real D1/`workerd` — real enough to prove this package's own SQL/binding/row-mapping code is correct, not a substitute for testing against actual D1 semantics. `@cloudflare/vitest-pool-workers` is the right tool for that gap but needs Vitest 4; this workspace is on Vitest 3 everywhere else (`DECISION_LOG.md` has the reasoning for not bumping that silently).
 
 ## Adding a new component to the design system
 
@@ -92,6 +111,8 @@ No UI in `@titan/web` calls this yet — it exists as a standalone, fully tested
 
 ## What NOT to do (things this phase deliberately doesn't have yet)
 
-- Don't add auth-shaped code (protected routes, session context, login forms) — Workstream 4 is blocked on an open architecture decision (`ARCHITECTURE.md`). Adding a "temporary" auth stub risks it quietly becoming permanent and shaping the real implementation around an assumption nobody actually chose.
-- Don't add a database client or API calls — Workstreams 6/7 are blocked on hosting/database decisions.
+- Don't add auth-shaped code (protected routes, session context, login forms) — the approach is decided (self-hosted Auth.js, `DECISION_LOG.md`) but nothing is built. Adding a "temporary" auth stub risks it quietly becoming permanent and shaping the real implementation around an assumption nobody actually chose.
+- Don't wire `titan/apps/web` to call `@titan/platform`'s API yet. The Worker exists and is tested, but isn't deployed anywhere reachable — there's nowhere for a real fetch call to go. `leadStore.ts` stays `localStorage`-backed until that changes.
+- Don't add a second repository (`AssessmentRepository`, etc.) ahead of a real, already-built consumer needing one — `LeadRepository` exists because the lead-capture UI already does; follow that pattern (interface + contract test + two implementations) when the next one has an actual reason to exist, per `DECISION_LOG.md`.
+- Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`).
 - Don't reach for the main repository's `node:test`/`tsx` conventions inside `titan/` — this workspace has its own toolchain, documented above.

@@ -45,4 +45,11 @@ describe("AppRoutes", () => {
     await user.click(screen.getByRole("link", { name: "Home" }));
     expect(screen.getByRole("heading", { name: "Titan platform foundation" })).toBeInTheDocument();
   });
+
+  it("renders the DPDP assessment at its own route, outside the admin shell", () => {
+    renderAt("/assessment/dpdp");
+    expect(screen.getByRole("heading", { name: /Is Your Startup/ })).toBeInTheDocument();
+    // Not wrapped in Layout: no header "Titan" wordmark, no sidebar nav landmark.
+    expect(screen.queryByRole("navigation", { name: "Main" })).not.toBeInTheDocument();
+  });
 });
