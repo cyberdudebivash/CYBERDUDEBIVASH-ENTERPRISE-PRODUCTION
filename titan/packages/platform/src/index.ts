@@ -35,6 +35,9 @@ export type {
   AuditEventRecord,
   AuditRepository,
   NewAuditEvent,
+  AuditSearchOptions,
+  AuditSearchResult,
+  AuditSortField,
 } from "./repositories/types.js";
 export {
   LEAD_STATUSES,

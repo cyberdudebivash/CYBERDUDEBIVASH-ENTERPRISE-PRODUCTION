@@ -1,0 +1,161 @@
+.titan-audit-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-audit-workspace__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titan-audit-workspace__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-audit-workspace__export {
+  display: flex;
+  gap: 8px;
+}
+
+.titan-audit-workspace__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.titan-audit-workspace__text-filter,
+.titan-audit-workspace__date-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-audit-workspace__text-filter input,
+.titan-audit-workspace__date-filter input {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0a1628;
+}
+
+.titan-audit-workspace__save-filter {
+  align-self: flex-end;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.titan-audit-workspace__save-filter:hover {
+  background-color: #f1f5f9;
+}
+
+.titan-audit-workspace__saved-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.titan-audit-workspace__saved-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 999px;
+  background-color: #f0f9ff;
+  border: 1px solid #0ea5e9;
+}
+
+.titan-audit-workspace__saved-filter button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #075985;
+  padding: 4px 8px;
+}
+
+.titan-audit-workspace__columns summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  width: fit-content;
+}
+
+.titan-audit-workspace__columns-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.titan-audit-workspace__columns-list label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.titan-audit-workspace__view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.titan-audit-workspace__view-button {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.titan-audit-workspace__view-button--active {
+  background-color: #0a1628;
+  border-color: #0a1628;
+  color: #ffffff;
+}
+
+.titan-audit-workspace__row-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #00a8e8;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.titan-audit-workspace__row-button:hover {
+  text-decoration: underline;
+}
+
+.titan-audit-workspace__note {
+  font-size: 14px;
+  color: #64748b;
+}

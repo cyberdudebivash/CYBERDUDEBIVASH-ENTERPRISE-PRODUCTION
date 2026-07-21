@@ -25,6 +25,17 @@ const DEFAULT_ALLOWED_ORIGIN = "http://localhost:5173";
 // assumed safe from this comment alone.
 const ALLOWED_METHODS = "GET, POST, PATCH, DELETE, OPTIONS";
 const ALLOWED_HEADERS = "Content-Type, X-Request-Id";
+// EAP-6: `Content-Disposition` isn't one of the CORS-safelisted response
+// headers a cross-origin `fetch()` exposes to JS by default — without this,
+// `response.headers.get("content-disposition")` silently returns null for
+// every real browser request (`apiClient.ts`'s `getBlob`), even though a
+// same-process router test or curl sees the header just fine. Found by real
+// Playwright/Chromium E2E verification (`audit-center.spec.ts`), not a unit
+// test — the exact same class of gap EAP-2's missing
+// Access-Control-Allow-Methods entry was (see that comment above): a real
+// cross-origin browser behavior no jsdom-mocked-fetch component test
+// exercises.
+const EXPOSED_HEADERS = "Content-Disposition";
 
 export function resolveAllowedOrigin(configuredOrigin: string | undefined): string {
   return configuredOrigin ?? DEFAULT_ALLOWED_ORIGIN;
@@ -35,6 +46,7 @@ export function corsHeaders(allowedOrigin: string): Record<string, string> {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": ALLOWED_METHODS,
     "Access-Control-Allow-Headers": ALLOWED_HEADERS,
+    "Access-Control-Expose-Headers": EXPOSED_HEADERS,
     // EAP-1: the admin app reads the Auth.js session cookie cross-origin
     // (fetch(..., {credentials: "include"})). The Fetch spec requires this
     // exact header for a browser to expose a credentialed cross-origin

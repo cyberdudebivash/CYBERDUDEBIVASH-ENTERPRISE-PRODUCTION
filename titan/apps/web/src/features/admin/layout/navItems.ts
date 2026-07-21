@@ -32,5 +32,9 @@ export function adminNavItems(me: MeResponse): SidebarItem[] {
     // links to (GET /api/users/search and friends) is
     // Platform-Administrator-only (SECURITY_GUIDE.md).
     ...(me.isPlatformAdministrator ? [{ label: "Users", to: "/admin/users" }] : []),
+    // EAP-6: same gating reasoning as every entry above — every route it
+    // links to (GET /api/audit/search, GET /api/audit/export, and GET
+    // /api/audit itself) is Platform-Administrator-only (SECURITY_GUIDE.md).
+    ...(me.isPlatformAdministrator ? [{ label: "Audit", to: "/admin/audit" }] : []),
   ];
 }

@@ -1,0 +1,7 @@
+.titan-audit-entity-badge__link {
+  text-decoration: none;
+}
+
+.titan-audit-entity-badge__link:hover {
+  text-decoration: underline;
+}

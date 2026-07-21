@@ -84,3 +84,36 @@ export function getJson<T>(path: string): Promise<T> {
 export function deleteJson<T = void>(path: string): Promise<T> {
   return request<T>(path, { method: "DELETE" });
 }
+
+export interface Download {
+  blob: Blob;
+  filename: string;
+}
+
+/** EAP-6: Audit Export — the one response in this app that isn't JSON
+ * (`request`'s `response.json()` would throw on a CSV body), so this is a
+ * genuinely separate helper, not a variant of `getJson`. Reads the filename
+ * the server already chose (`Content-Disposition`, `router.ts`'s
+ * `exportAuditEvents`) rather than the caller inventing its own — one place
+ * decides the export's name. */
+export async function getBlob(path: string): Promise<Download> {
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl()}${path}`, { credentials: "include" });
+  } catch {
+    throw new ApiError("Could not reach the server. Check your connection and try again.");
+  }
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as ErrorEnvelope | null;
+    throw new ApiError(
+      body?.error?.message ?? `Request failed with status ${response.status}`,
+      response.status,
+    );
+  }
+
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const filename = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? "export";
+  const blob = await response.blob();
+  return { blob, filename };
+}

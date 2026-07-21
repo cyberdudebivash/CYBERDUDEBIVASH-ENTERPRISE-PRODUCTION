@@ -1,0 +1,87 @@
+.titan-audit-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.titan-audit-detail-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titan-audit-detail-panel__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-audit-detail-panel__close {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.titan-audit-detail-panel__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.titan-audit-detail-panel__fields dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.titan-audit-detail-panel__fields dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
+
+.titan-audit-detail-panel__subheading {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.titan-audit-detail-panel__metadata {
+  margin: 0;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #0f172a;
+  color: #e2e8f0;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.titan-audit-detail-panel__note {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.titan-audit-detail-panel__entity-link {
+  font-size: 13px;
+  color: #00a8e8;
+  text-decoration: none;
+}
+
+.titan-audit-detail-panel__entity-link:hover {
+  text-decoration: underline;
+}

@@ -2714,4 +2714,250 @@ describe("handleRequest", () => {
       expect(body).toHaveLength(1);
     });
   });
+
+  describe("GET /api/audit/search (EAP-6)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a paginated envelope filtered by action for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "assessment.created",
+        entityType: "assessment",
+        entityId: "assessment_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:01.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/search?action=lead.created", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number; events: Array<{ action: string }> };
+      expect(body.total).toBe(1);
+      expect(body.events[0]?.action).toBe("lead.created");
+    });
+
+    it("filters by an actorId/organizationId/entityType/entityId and a date range", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: "user_1",
+        organizationId: "org_1",
+        action: "organization.viewed",
+        entityType: "organization",
+        entityId: "org_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.audit.record({
+        actorId: "user_2",
+        organizationId: "org_2",
+        action: "organization.viewed",
+        entityType: "organization",
+        entityId: "org_2",
+        metadata: null,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(
+          "https://example.com/api/audit/search?actorId=user_1&organizationId=org_1&entityType=organization&entityId=org_1&dateFrom=2026-07-01T00:00:00.000Z&dateTo=2026-07-31T23:59:59.999Z",
+          { headers: { cookie: caller.cookie } },
+        ),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(1);
+    });
+
+    it("returns 400 for an invalid sortDirection", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/search?sortDirection=sideways", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("GET /api/audit/export (EAP-6)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a CSV file with a header row and one row per matching event by default", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: "user_1",
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: { source: "dpdp-scan" },
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("text/csv");
+      expect(response.headers.get("content-disposition")).toContain("attachment");
+      // A real cross-origin browser fetch() hides Content-Disposition from
+      // JS unless the server exposes it explicitly — verified the hard way
+      // by real Playwright/Chromium E2E (audit-center.spec.ts) before this
+      // assertion existed; see http/cors.ts's EXPOSED_HEADERS comment.
+      expect(response.headers.get("access-control-expose-headers")).toContain(
+        "Content-Disposition",
+      );
+      const body = await response.text();
+      const lines = body.trim().split("\r\n");
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toBe(
+        "id,actorId,organizationId,action,entityType,entityId,metadata,createdAt",
+      );
+      expect(lines[1]).toContain("lead.created");
+    });
+
+    it("returns a JSON file when format=json", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export?format=json", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      const body = (await response.json()) as unknown[];
+      expect(body).toHaveLength(1);
+    });
+
+    it("returns 400 for an invalid format", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export?format=pdf", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("respects the same filters as GET /api/audit/search", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "assessment.created",
+        entityType: "assessment",
+        entityId: "assessment_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:01.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/audit/export?entityType=lead", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = await response.text();
+      expect(body).toContain("lead.created");
+      expect(body).not.toContain("assessment.created");
+    });
+  });
 });

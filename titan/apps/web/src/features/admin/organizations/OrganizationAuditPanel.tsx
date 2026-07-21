@@ -1,18 +1,10 @@
 import { Timeline, type TimelineEntry } from "@titan/design-system";
 import type { AuditEventRecord } from "@titan/platform";
+import { auditActionLabel } from "../audit/auditActionLabels.js";
 
 export interface OrganizationAuditPanelProps {
   events: AuditEventRecord[];
 }
-
-const ACTION_LABELS: Record<string, string> = {
-  "organization.created": "Organization created",
-  "organization.viewed": "Organization viewed",
-  "organization.updated": "Organization details updated",
-  "organization.archived": "Organization archived",
-  "organization.restored": "Organization restored",
-  "organization.note_added": "Note added",
-};
 
 /**
  * An organization's own audit trail (`GET /api/audit?entityType=organization&
@@ -27,7 +19,7 @@ export function OrganizationAuditPanel({ events }: OrganizationAuditPanelProps) 
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((event) => ({
       id: event.id,
-      label: ACTION_LABELS[event.action] ?? event.action,
+      label: auditActionLabel(event.action),
       timestamp: new Date(event.createdAt).toLocaleString(),
     }));
 

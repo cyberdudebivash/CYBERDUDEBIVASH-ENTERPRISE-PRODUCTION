@@ -16,6 +16,7 @@ import { OrganizationWorkspacePage } from "../features/admin/organizations/Organ
 import { OrganizationDetailPage } from "../features/admin/organizations/OrganizationDetailPage.js";
 import { UserWorkspacePage } from "../features/admin/users/UserWorkspacePage.js";
 import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
+import { AuditWorkspacePage } from "../features/admin/audit/AuditWorkspacePage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -67,6 +68,14 @@ export function AppRoutes() {
             above, not a route-level block. */}
         <Route path="users" element={<UserWorkspacePage />} />
         <Route path="users/:id" element={<UserDetailPage />} />
+        {/* EAP-6: the Enterprise Audit Center — same Platform-
+            Administrator-gated-server-side pattern as every module above,
+            not a route-level block. No `/admin/audit/:id` route: an audit
+            event has no standalone detail page (Audit Details is an inline
+            panel within the Workspace itself — AuditEventDetailPanel), same
+            reasoning `ARCHITECTURE.md`'s EAP-6 section records for GET
+            /api/audit not gaining an `:id` sibling either. */}
+        <Route path="audit" element={<AuditWorkspacePage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

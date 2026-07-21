@@ -1,5 +1,12 @@
 import type { D1Database } from "@cloudflare/workers-types";
-import type { AuditEventRecord, AuditListFilter, AuditRepository, NewAuditEvent } from "./types.js";
+import type {
+  AuditEventRecord,
+  AuditListFilter,
+  AuditRepository,
+  AuditSearchOptions,
+  AuditSearchResult,
+  NewAuditEvent,
+} from "./types.js";
 
 interface AuditEventRow {
   id: string;
@@ -57,6 +64,72 @@ export function createD1AuditRepository(db: D1Database): AuditRepository {
         .bind(...params)
         .all<AuditEventRow>();
       return results.map(rowToRecord);
+    },
+
+    async search(options: AuditSearchOptions): Promise<AuditSearchResult> {
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+
+      if (options.search) {
+        conditions.push(
+          `(LOWER(action) LIKE ? OR LOWER(entity_type) LIKE ? OR LOWER(entity_id) LIKE ?)`,
+        );
+        const needle = `%${options.search.toLowerCase()}%`;
+        params.push(needle, needle, needle);
+      }
+      if (options.actorId) {
+        conditions.push(`actor_id = ?`);
+        params.push(options.actorId);
+      }
+      if (options.organizationId) {
+        conditions.push(`organization_id = ?`);
+        params.push(options.organizationId);
+      }
+      if (options.action) {
+        conditions.push(`action = ?`);
+        params.push(options.action);
+      }
+      if (options.entityType) {
+        conditions.push(`entity_type = ?`);
+        params.push(options.entityType);
+      }
+      if (options.entityId) {
+        conditions.push(`entity_id = ?`);
+        params.push(options.entityId);
+      }
+      if (options.dateFrom) {
+        conditions.push(`created_at >= ?`);
+        params.push(options.dateFrom);
+      }
+      if (options.dateTo) {
+        conditions.push(`created_at <= ?`);
+        params.push(options.dateTo);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+      const direction = options.sortDirection === "asc" ? "ASC" : "DESC";
+      const page = Math.max(1, options.page ?? 1);
+      const pageSize = Math.max(1, options.pageSize ?? 25);
+      const offset = (page - 1) * pageSize;
+
+      const countRow = await db
+        .prepare(`SELECT COUNT(*) as count FROM audit_events ${whereClause}`)
+        .bind(...params)
+        .first<{ count: number }>();
+
+      const { results } = await db
+        .prepare(
+          `SELECT * FROM audit_events ${whereClause} ORDER BY created_at ${direction} LIMIT ? OFFSET ?`,
+        )
+        .bind(...params, pageSize, offset)
+        .all<AuditEventRow>();
+
+      return {
+        events: results.map(rowToRecord),
+        total: countRow?.count ?? 0,
+        page,
+        pageSize,
+      };
     },
   };
 }
