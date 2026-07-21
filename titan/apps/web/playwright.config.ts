@@ -21,6 +21,21 @@ const WEB_PORT = 5173;
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
+  // EAP-2: `fullyParallel: false` only serializes tests *within* one spec
+  // file — Playwright still ran different files in separate worker
+  // processes concurrently (confirmed: "Running 8 tests using 2 workers").
+  // All three spec files share one real, persistent local D1 instance with
+  // no per-test transaction/isolation (by design — see
+  // admin-dashboard.spec.ts's own top comment on why an absolute count is
+  // fragile). Adding a third data-inserting spec file (lead-workspace.spec.ts,
+  // EAP-2) made that cross-file race real: a concurrent worker's lead insert
+  // landed between admin-dashboard.spec.ts's own leadsBefore snapshot and its
+  // assertion, and its "leadsBefore + 1" check saw someone else's row too.
+  // `workers: 1` makes every test in this suite strictly serial, matching
+  // this suite's actual concurrency model (shared mutable state, not
+  // independent per-test databases) — the correct fix, not a looser
+  // assertion papering over a real cross-file data race.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
   timeout: 30_000,

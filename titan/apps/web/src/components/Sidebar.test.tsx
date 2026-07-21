@@ -42,6 +42,24 @@ describe("Sidebar", () => {
     );
   });
 
+  it("does not mark '/admin' (Dashboard) active while viewing a sub-route like '/admin/leads' (EAP-2)", () => {
+    render(
+      <MemoryRouter initialEntries={["/admin/leads"]}>
+        <Sidebar
+          items={[
+            { label: "Dashboard", to: "/admin" },
+            { label: "Leads", to: "/admin/leads" },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveClass(
+      "titan-sidebar__link--active",
+    );
+    expect(screen.getByRole("link", { name: "Leads" })).toHaveClass("titan-sidebar__link--active");
+  });
+
   it("renders nothing but the nav landmark when given no items", () => {
     render(
       <MemoryRouter>

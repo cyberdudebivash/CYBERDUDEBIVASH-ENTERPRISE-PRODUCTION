@@ -1,0 +1,99 @@
+.titan-lead-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-lead-workspace__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-lead-workspace__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.titan-lead-workspace__save-filter {
+  align-self: flex-end;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.titan-lead-workspace__save-filter:hover {
+  background-color: #f1f5f9;
+}
+
+.titan-lead-workspace__saved-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.titan-lead-workspace__saved-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 999px;
+  background-color: #f0f9ff;
+  border: 1px solid #0ea5e9;
+}
+
+.titan-lead-workspace__saved-filter button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #075985;
+  padding: 4px 8px;
+}
+
+.titan-lead-workspace__columns summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  width: fit-content;
+}
+
+.titan-lead-workspace__columns-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.titan-lead-workspace__columns-list label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.titan-lead-workspace__name-link {
+  color: #00a8e8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.titan-lead-workspace__name-link:hover {
+  text-decoration: underline;
+}
+
+.titan-lead-workspace__note {
+  font-size: 14px;
+  color: #64748b;
+}

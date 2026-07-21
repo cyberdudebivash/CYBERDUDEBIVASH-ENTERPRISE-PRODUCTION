@@ -1,4 +1,4 @@
-import type { AuditEventRecord, AuditRepository, NewAuditEvent } from "./types.js";
+import type { AuditEventRecord, AuditListFilter, AuditRepository, NewAuditEvent } from "./types.js";
 
 export function createInMemoryAuditRepository(): AuditRepository {
   const events: AuditEventRecord[] = [];
@@ -10,8 +10,13 @@ export function createInMemoryAuditRepository(): AuditRepository {
       return record;
     },
 
-    async list(): Promise<AuditEventRecord[]> {
-      return [...events].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    async list(filter?: AuditListFilter): Promise<AuditEventRecord[]> {
+      const matched = events.filter(
+        (event) =>
+          (!filter?.entityType || event.entityType === filter.entityType) &&
+          (!filter?.entityId || event.entityId === filter.entityId),
+      );
+      return matched.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
   };
 }

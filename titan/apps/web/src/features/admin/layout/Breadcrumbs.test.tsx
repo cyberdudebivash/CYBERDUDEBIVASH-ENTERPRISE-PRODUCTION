@@ -40,4 +40,11 @@ describe("Breadcrumbs", () => {
     renderAt("/admin/dashboard");
     expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
   });
+
+  it("renders an opaque id segment (EAP-2: /admin/leads/:id) as 'Details', not garbled hex", () => {
+    renderAt("/admin/leads/9ad1b513-2189-44da-a770-8a72e46a33a9");
+    expect(screen.getByText("Leads")).toBeInTheDocument();
+    expect(screen.getByText("Details")).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByText(/9ad1b513/)).not.toBeInTheDocument();
+  });
 });

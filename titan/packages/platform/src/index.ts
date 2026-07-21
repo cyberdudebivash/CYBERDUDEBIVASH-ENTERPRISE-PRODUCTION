@@ -2,6 +2,12 @@ export type {
   LeadRecord,
   LeadRepository,
   NewLead,
+  LeadStatus,
+  LeadPriority,
+  LeadLifecyclePatch,
+  LeadSearchOptions,
+  LeadSearchResult,
+  LeadSortField,
   OrganizationRecord,
   OrganizationRepository,
   NewOrganization,
@@ -16,6 +22,7 @@ export type {
   AuditRepository,
   NewAuditEvent,
 } from "./repositories/types.js";
+export { LEAD_STATUSES, LEAD_PRIORITIES } from "./repositories/types.js";
 
 export { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
 export { createD1LeadRepository } from "./repositories/leadRepository.d1.js";

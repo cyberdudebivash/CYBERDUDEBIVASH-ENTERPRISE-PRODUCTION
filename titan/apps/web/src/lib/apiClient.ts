@@ -64,6 +64,14 @@ export function postJson<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, { method: "POST", body: JSON.stringify(body) });
 }
 
+/** EAP-2: the admin app's first write past creation (`PATCH /api/leads/:id`)
+ * — a real, authenticated update, unlike postJson's public, anonymous
+ * writes. Shares the same `request` helper (credentials, error handling),
+ * so it inherits the cross-origin cookie behavior for free. */
+export function patchJson<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, { method: "PATCH", body: JSON.stringify(body) });
+}
+
 export function getJson<T>(path: string): Promise<T> {
   return request<T>(path);
 }

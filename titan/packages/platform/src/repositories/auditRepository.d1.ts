@@ -1,5 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
-import type { AuditEventRecord, AuditRepository, NewAuditEvent } from "./types.js";
+import type { AuditEventRecord, AuditListFilter, AuditRepository, NewAuditEvent } from "./types.js";
 
 interface AuditEventRow {
   id: string;
@@ -37,9 +37,24 @@ export function createD1AuditRepository(db: D1Database): AuditRepository {
       return record;
     },
 
-    async list(): Promise<AuditEventRecord[]> {
+    async list(filter?: AuditListFilter): Promise<AuditEventRecord[]> {
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+      if (filter?.entityType) {
+        conditions.push("entity_type = ?");
+        params.push(filter.entityType);
+      }
+      if (filter?.entityId) {
+        conditions.push("entity_id = ?");
+        params.push(filter.entityId);
+      }
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+      // Uses idx_audit_events_entity (migrations/0007) when both filters are
+      // given — the exact (entity_type, entity_id) shape it was created for.
       const { results } = await db
-        .prepare(`SELECT * FROM audit_events ORDER BY created_at DESC`)
+        .prepare(`SELECT * FROM audit_events ${whereClause} ORDER BY created_at DESC`)
+        .bind(...params)
         .all<AuditEventRow>();
       return results.map(rowToRecord);
     },

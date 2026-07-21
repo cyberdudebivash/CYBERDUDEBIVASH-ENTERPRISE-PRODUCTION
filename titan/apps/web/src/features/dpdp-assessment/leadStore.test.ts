@@ -24,12 +24,18 @@ function makeLead(overrides: Partial<NewLead> = {}): NewLead {
 }
 
 /** What `fetchLeads()` actually reads back — a real, server-assigned
- * `id`/`organizationId`/`assessmentId`, not just what was submitted. */
+ * `id`/`organizationId`/`assessmentId`, plus EAP-2's lifecycle fields
+ * (defaulted server-side for a lead captured through the public scan flow,
+ * which never sets them itself — repositories/types.ts's NewLead). */
 function makeLeadRecord(overrides: Partial<LeadRecord> = {}): LeadRecord {
   return {
     id: "lead_1",
     organizationId: null,
     assessmentId: null,
+    status: "new",
+    priority: "medium",
+    assignedTo: null,
+    tags: [],
     ...makeLead(),
     ...overrides,
   };

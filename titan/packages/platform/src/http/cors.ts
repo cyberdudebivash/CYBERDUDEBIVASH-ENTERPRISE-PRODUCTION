@@ -9,7 +9,16 @@
  */
 const DEFAULT_ALLOWED_ORIGIN = "http://localhost:5173";
 
-const ALLOWED_METHODS = "GET, POST, OPTIONS";
+// EAP-2: PATCH added for /api/leads/:id (the Lead Lifecycle panel's real
+// write). A real, non-hypothetical gap this exact change exposed — a
+// cross-origin PATCH's browser-issued preflight OPTIONS request checks the
+// *response's* Access-Control-Allow-Methods against the actual method it's
+// about to send, and rejects the real request client-side (before it ever
+// reaches this Worker) if the method it wants isn't listed, regardless of
+// whether the route itself would have allowed it. Found by real-browser
+// verification, not a unit test — jsdom's fetch mock in this codebase's
+// component tests doesn't enforce real CORS preflight semantics at all.
+const ALLOWED_METHODS = "GET, POST, PATCH, OPTIONS";
 const ALLOWED_HEADERS = "Content-Type, X-Request-Id";
 
 export function resolveAllowedOrigin(configuredOrigin: string | undefined): string {

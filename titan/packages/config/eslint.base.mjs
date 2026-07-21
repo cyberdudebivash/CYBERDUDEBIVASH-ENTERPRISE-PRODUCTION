@@ -14,9 +14,19 @@ const browserGlobals = {
   Request: "readonly",
   Response: "readonly",
   URL: "readonly",
+  URLSearchParams: "readonly",
   console: "readonly",
   requestAnimationFrame: "readonly",
   crypto: "readonly",
+  // EAP-2: found the same way the .wrangler/ ignore below was — real new
+  // code (useLeadSearch.ts's search debounce, leadWorkspacePreferences.ts's
+  // localStorage-backed saved filters/columns) was the first in this
+  // workspace to actually need them, surfacing a real gap in this
+  // hand-curated list rather than a config file with everything
+  // pre-declared speculatively.
+  setTimeout: "readonly",
+  clearTimeout: "readonly",
+  localStorage: "readonly",
 };
 
 const nodeGlobals = {

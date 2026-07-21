@@ -1,0 +1,33 @@
+.titan-filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titan-filter-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.titan-filter-panel__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-filter-panel__select {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0a1628;
+}
+
+.titan-filter-panel__select:focus-visible {
+  outline: 2px solid #00a8e8;
+  outline-offset: 1px;
+}

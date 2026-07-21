@@ -1,0 +1,31 @@
+.titan-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.titan-search-bar__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-search-bar__input {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0a1628;
+}
+
+.titan-search-bar__input:focus-visible {
+  outline: 2px solid #00a8e8;
+  outline-offset: 1px;
+}
+
+.titan-search-bar__input::placeholder {
+  color: #94a3b8;
+}
