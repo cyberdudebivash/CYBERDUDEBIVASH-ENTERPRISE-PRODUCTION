@@ -1,0 +1,31 @@
+.titan-portal-support__title {
+  margin: 0 0 1rem;
+}
+
+.titan-portal-support__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 32rem;
+}
+
+.titan-portal-support__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.titan-portal-support__field input,
+.titan-portal-support__field textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+}
+
+.titan-portal-support__note {
+  margin: 0;
+  color: #64748b;
+}

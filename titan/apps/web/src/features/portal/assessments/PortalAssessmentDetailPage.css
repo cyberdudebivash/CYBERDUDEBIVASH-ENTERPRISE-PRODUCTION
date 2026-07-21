@@ -1,0 +1,9 @@
+.titan-portal-assessment-detail__back {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.titan-portal-assessment-detail__note {
+  margin: 0;
+  color: #64748b;
+}

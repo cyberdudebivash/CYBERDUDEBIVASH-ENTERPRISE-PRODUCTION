@@ -1,0 +1,15 @@
+.titan-portal-account__title {
+  margin: 0 0 1rem;
+}
+
+.titan-portal-account__meta dt {
+  font-weight: 600;
+}
+
+.titan-portal-account__note {
+  margin: 0 0 0.75rem;
+}
+
+.titan-portal-account__sign-out {
+  display: inline-block;
+}

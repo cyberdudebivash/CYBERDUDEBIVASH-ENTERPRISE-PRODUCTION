@@ -266,9 +266,40 @@ curl -s -b cookies.txt -X DELETE "http://localhost:8787/api/users/<that user-id>
 
 curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=user&entityId=<that user-id>"
 # shows user.viewed, user.role_granted, user.role_changed, user.role_revoked.
+
+# 10. GET/POST /api/portal/* (CPP-1) require a real organization membership,
+#     not a Platform Administrator grant — a pure Platform Administrator with
+#     no organization profile of their own gets 403 from every one of these,
+#     the same "No organization membership" state any other non-member sees
+#     (SECURITY_GUIDE.md's "Authorization model"). Nothing stops one user
+#     holding both kinds of profile at once, so the same already-signed-in
+#     session from step 3 can also become a real organization member of the
+#     organization created in step 8, via the same grant endpoint step 9 used:
+curl -s -b cookies.txt -X POST "http://localhost:8787/api/users/<user-id from step 3>/profiles" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"organizationId":"<org id from step 8>","role":"member"}'
+# 201. This same cookie jar can now reach every /api/portal/* route, scoped
+# to exactly this organization — never any other, regardless of what id is
+# supplied:
+curl -s -b cookies.txt "http://localhost:8787/api/portal/organization"
+curl -s -b cookies.txt "http://localhost:8787/api/portal/assessments"
+curl -s -b cookies.txt "http://localhost:8787/api/portal/reports/summary"
+curl -s -b cookies.txt "http://localhost:8787/api/portal/reports/export?format=csv"
+curl -s -b cookies.txt "http://localhost:8787/api/portal/activity"
+
+# POST /api/portal/support is CPP-1's one write route — same Origin
+# requirement as every other authenticated write above:
+curl -s -b cookies.txt -X POST "http://localhost:8787/api/portal/support" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"subject":"Cannot download my report","message":"The export button spins but nothing downloads."}'
+# 201, returns the new request (status "open"). Retrievable by this same
+# caller only, never another user's:
+curl -s -b cookies.txt "http://localhost:8787/api/portal/support"
 ```
 
-Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the *very first* Platform Administrator) is a direct database write, because no route can exist to do that one any other way — every subsequent grant (step 9) is a real, audited endpoint call instead (EAP-5).
+Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the *very first* Platform Administrator) is a direct database write, because no route can exist to do that one any other way — every subsequent grant (steps 9 and 10) is a real, audited endpoint call instead (EAP-5).
 
 To check what actually landed in the database (not just trusting the HTTP response):
 
@@ -380,6 +411,18 @@ With a Platform Administrator session (above), the sidebar shows a **Reporting**
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/reporting-center.spec.ts`) that seeds a real lead directly in D1 and drives a real Executive Dashboard/Business Reports/Analytics/Export round trip through a real browser, asserting the exported CSV's actual downloaded content — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
+## Using the Enterprise Customer Portal (`/portal`, CPP-1)
+
+Unlike every `/admin/*` module above, `/portal` requires a real **organization member** (`member`/`admin`/`owner`), not a Platform Administrator — see "Provisioning a local Platform Administrator" above, step 10, for how to grant a locally-provisioned session an organization membership too. A caller with only a Platform Administrator grant and no organization profile of their own sees the same honest "No organization membership" state as any other non-member — this is expected, not a bug, and the sidebar shows no portal navigation links at all in that case (`portalNavItems` returns nothing, rather than a link that would 403 when clicked).
+
+1. **Dashboard** (`/portal`): Organization Overview (name/industry/region/status), Compliance Summary (assessment counts by risk level/framework via `AssessmentSummaryCard`, driven by `GET /api/portal/reports/summary`), and Recent Activity (this organization's own real audit events, driven by `GET /api/portal/activity`) — three independently-loading sections, each showing its own honest error state if its own request fails.
+2. **Assessments** (`/portal/assessments`): a read-only, paginated table of this organization's own assessments (`GET /api/portal/assessments`) — no admin editing controls anywhere on this page. Selecting one opens Assessment Detail, which reuses the *existing* `GET /api/assessments/:id` unchanged; navigating directly to another organization's assessment by id shows "This assessment is not available to your organization." instead of the data — the same real 403 `requireAssessmentAccess` has produced since EAP-2/EAP-3, not a new check.
+3. **Reports** (`/portal/reports`): the same compliance summary the Dashboard's Compliance Summary section shows, with real **Export CSV**/**Export JSON** buttons (`GET /api/portal/reports/export`) — contains only aggregate counts for this organization, never an individual assessment's own fields.
+4. **Support** (`/portal/support`): a subject/message form (`POST /api/portal/support`, CSRF-checked) and this caller's own submission history (`GET /api/portal/support`, scoped to the requesting user, not the whole organization) — there is no ticketing/resolution workflow; a submitted request stays `"open"`.
+5. **Account** (`/portal/account`): Profile (email, organization role) and Session (a real sign-out link) only — no password change, notification preferences, or multi-session management, none of which this deployment has a real backing service for yet.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/customer-portal.spec.ts`) that seeds two real organizations with one assessment each and proves, in a real browser, that a real organization member's Dashboard/Assessments/Reports never surface the other organization's data — including navigating directly to the other organization's assessment by id — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
 ## Structured logs
 
 Every request produces one JSON log line (`observability/logger.ts`) with `level`, `message`, `timestamp`, and a `requestId` that also appears as an `X-Request-Id` response header — grep `wrangler dev`'s output for a specific `requestId` to trace one request, or for `"level":"error"` to find failures. Audit-write failures log at `error` level but never fail the request they describe (`router.ts`'s `recordAuditEvent`).
@@ -396,6 +439,7 @@ Every request produces one JSON log line (`observability/logger.ts`) with `level
 | Signing in to `/admin` succeeds, but the browser never lands back on the app (session/CORS errors in the console, or the fetch to `/api/me` fails) | `ALLOWED_ORIGIN` doesn't match `/admin`'s real origin, or `.dev.vars`/`wrangler.toml` predates EAP-1's CORS-credentials change | Confirm `ALLOWED_ORIGIN` matches Vite's real origin exactly (scheme+host+port); restart `wrangler dev` after any `.dev.vars`/`wrangler.toml` edit — CORS/redirect/CSP allowlists are all read once at request time from the same `env.ALLOWED_ORIGIN` |
 | Sign-out on `/admin` appears to hang, or lands somewhere unexpected, after clicking the Auth.js confirmation page's own "Sign out" button | If this ever regresses: the CSP `form-action` directive also restricts the *redirect* a form submission causes, not just its POST target — `http/finalizeResponse.ts`'s `authPagesCsp` must allowlist the admin app's origin, not just `'self'` (`DECISION_LOG.md`'s EAP-1 entry has the full finding) | Confirm `authPagesCsp(allowedOrigin)` is actually being passed the real `allowedOrigin` (not a hardcoded `'self'`-only policy) on `/api/auth/*` responses |
 | A lifecycle change on `/admin/leads/:id` (status/priority/assignment/tags/notes) silently has no effect, and the browser console shows `Method PATCH is not allowed by Access-Control-Allow-Methods` | If this ever regresses: a browser's CORS preflight (`OPTIONS`) checks the real request's method against the `Access-Control-Allow-Methods` response header and blocks the real request client-side if it's missing — invisible to any test that calls `handleRequest`/`worker.fetch` directly, since neither implements real preflight enforcement (`DECISION_LOG.md`'s EAP-2 entry has the full finding, first caught by this feature's own real-browser Playwright verification) | Confirm `http/cors.ts`'s `ALLOWED_METHODS` lists every method any route actually uses, including `PATCH` |
+| `/portal` shows "No organization membership" for a session that already has a Platform Administrator grant | Expected, not a bug (CPP-1) — a Platform Administrator profile has `organization_id: NULL`; `/portal` requires a *separate* profile with a real, non-null `organization_id` | Grant that same user id an organization-member profile too (`POST /api/users/:id/profiles` with a real `organizationId`, "Provisioning a local Platform Administrator" step 10 above) — one user can hold both kinds of profile at once |
 
 ## What this runbook does not cover
 
