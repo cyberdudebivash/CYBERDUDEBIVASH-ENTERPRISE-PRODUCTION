@@ -1,0 +1,30 @@
+.titan-analytics-panel__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.titan-analytics-panel__control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.titan-analytics-panel__control select {
+  font: inherit;
+  font-weight: 400;
+  color: #0a1628;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.titan-analytics-panel__note {
+  margin: 0;
+  color: #64748b;
+}
