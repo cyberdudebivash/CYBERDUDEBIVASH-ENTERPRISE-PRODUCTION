@@ -75,3 +75,12 @@ export function patchJson<T>(path: string, body: unknown): Promise<T> {
 export function getJson<T>(path: string): Promise<T> {
   return request<T>(path);
 }
+
+/** EAP-5: Role Assignment's revoke action
+ * (`DELETE /api/users/:id/profiles/:profileId`) — this application's first
+ * real deletion (`UserProfileRepository.remove`, `@titan/platform`). Shares
+ * `request`'s CORS/credentials/error handling exactly like every other verb
+ * here. */
+export function deleteJson<T = void>(path: string): Promise<T> {
+  return request<T>(path, { method: "DELETE" });
+}

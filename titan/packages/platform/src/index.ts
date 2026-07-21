@@ -19,7 +19,13 @@ export type {
   UserRole,
   UserProfileRecord,
   UserProfileRepository,
+  UserProfilePatch,
   NewUserProfile,
+  UserRecord,
+  UserRepository,
+  UserSearchOptions,
+  UserSearchResult,
+  UserSortField,
   AssessmentRecord,
   AssessmentRepository,
   NewAssessment,
@@ -30,7 +36,12 @@ export type {
   AuditRepository,
   NewAuditEvent,
 } from "./repositories/types.js";
-export { LEAD_STATUSES, LEAD_PRIORITIES, ORGANIZATION_STATUSES } from "./repositories/types.js";
+export {
+  LEAD_STATUSES,
+  LEAD_PRIORITIES,
+  ORGANIZATION_STATUSES,
+  USER_ROLES,
+} from "./repositories/types.js";
 
 export { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
 export { createD1LeadRepository } from "./repositories/leadRepository.d1.js";
@@ -38,6 +49,8 @@ export { createInMemoryOrganizationRepository } from "./repositories/organizatio
 export { createD1OrganizationRepository } from "./repositories/organizationRepository.d1.js";
 export { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
 export { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
+export { createInMemoryUserRepository } from "./repositories/userRepository.memory.js";
+export { createD1UserRepository } from "./repositories/userRepository.d1.js";
 export { createInMemoryAssessmentRepository } from "./repositories/assessmentRepository.memory.js";
 export { createD1AssessmentRepository } from "./repositories/assessmentRepository.d1.js";
 export { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";

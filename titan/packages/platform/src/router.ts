@@ -15,10 +15,19 @@ import type {
   OrganizationPatch,
   OrganizationRepository,
   OrganizationSearchOptions,
+  UserProfilePatch,
   UserProfileRecord,
   UserProfileRepository,
+  UserRepository,
+  UserRole,
+  UserSearchOptions,
 } from "./repositories/types.js";
-import { LEAD_PRIORITIES, LEAD_STATUSES, ORGANIZATION_STATUSES } from "./repositories/types.js";
+import {
+  LEAD_PRIORITIES,
+  LEAD_STATUSES,
+  ORGANIZATION_STATUSES,
+  USER_ROLES,
+} from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
@@ -76,6 +85,13 @@ export interface Dependencies {
    * anonymous rather than throwing, so existing tests that don't need auth
    * are unaffected. */
   userProfiles?: UserProfileRepository;
+  /** EAP-5: backs the Enterprise User Directory (`GET /api/users/search`,
+   * `GET /api/users/:id`) — read-only identity data from Auth.js's own
+   * `users` table. Optional for the same reason `organizations` is: an
+   * unconfigured deployment fails these specific routes with a 503, not a
+   * silent empty result (same reasoning as `organizationsNotConfigured` —
+   * every route this dependency backs is unusable without it). */
+  users?: UserRepository;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -207,6 +223,9 @@ async function withOperationTiming<T>(
 const ASSESSMENT_ID_PATTERN = /^\/api\/assessments\/([^/]+)$/;
 const LEAD_ID_PATTERN = /^\/api\/leads\/([^/]+)$/;
 const ORGANIZATION_ID_PATTERN = /^\/api\/organizations\/([^/]+)$/;
+const USER_ID_PATTERN = /^\/api\/users\/([^/]+)$/;
+const USER_PROFILES_PATTERN = /^\/api\/users\/([^/]+)\/profiles$/;
+const USER_PROFILE_ID_PATTERN = /^\/api\/users\/([^/]+)\/profiles\/([^/]+)$/;
 
 async function route(
   request: Request,
@@ -385,6 +404,62 @@ async function route(
     return updateOrganization(organizationMatch[1], request, caller, deps, ctx);
   }
 
+  // EAP-5: checked before USER_ID_PATTERN below, or "search" would be parsed
+  // as a user id. Same cross-organization, Platform-Administrator-only
+  // policy as GET /api/organizations/search — the Enterprise User
+  // Directory reads across every user regardless of organization.
+  if (url.pathname === "/api/users/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchUsers(url, deps, ctx);
+  }
+
+  const userProfileMatch = USER_PROFILE_ID_PATTERN.exec(url.pathname);
+  if (userProfileMatch?.[1] && userProfileMatch[2] && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return updateUserProfile(userProfileMatch[1], userProfileMatch[2], request, caller, deps, ctx);
+  }
+
+  if (userProfileMatch?.[1] && userProfileMatch[2] && request.method === "DELETE") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return revokeUserProfile(userProfileMatch[1], userProfileMatch[2], caller, deps, ctx);
+  }
+
+  const userProfilesMatch = USER_PROFILES_PATTERN.exec(url.pathname);
+  if (userProfilesMatch?.[1] && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return grantUserProfile(userProfilesMatch[1], request, caller, deps, ctx);
+  }
+
+  const userMatch = USER_ID_PATTERN.exec(url.pathname);
+  if (userMatch?.[1] && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return getUser(userMatch[1], caller, deps, ctx);
+  }
+
   if (url.pathname === "/api/audit" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -461,6 +536,27 @@ function forbiddenOrigin(requestId: string): Response {
 function organizationsNotConfigured(requestId: string): Response {
   return jsonError(
     { code: "not_configured", message: "Organizations are not configured" },
+    requestId,
+    503,
+  );
+}
+
+/** EAP-5: same reasoning as `organizationsNotConfigured` — every route
+ * `deps.users` backs (search, get) is unusable without it, so a missing
+ * dependency is a real 503, not a silently empty result. */
+function usersNotConfigured(requestId: string): Response {
+  return jsonError({ code: "not_configured", message: "Users are not configured" }, requestId, 503);
+}
+
+/** EAP-5: same reasoning, for `deps.userProfiles` specifically on the
+ * profile-write routes (grant/change/revoke) — `resolveCaller` already
+ * requires `userProfiles` to authenticate anyone at all, so in practice this
+ * only guards a request that got past `resolveCaller` some other way (there
+ * isn't one today), matching the same defensive-not-reachable posture
+ * `readinessResponse`'s missing `readinessCheck` branch already has. */
+function userProfilesNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "User profiles are not configured" },
     requestId,
     503,
   );
@@ -711,6 +807,8 @@ const ASSESSMENT_RISK_LEVELS = ["low", "medium", "high", "critical"] as const;
 
 const ORGANIZATION_SORT_FIELDS = ["name", "createdAt", "updatedAt"] as const;
 
+const USER_SORT_FIELDS = ["name", "email"] as const;
+
 /** EAP-2: the Lead Workspace's table — search/filter/sort/pagination, all
  * server-side (`LeadRepository.search`). Query-param parsing is validated
  * the same strictness as a POST body: an unrecognized enum value or a
@@ -855,6 +953,12 @@ async function searchAssessments(
   // assessment already carries, not a new concept.
   const organizationId = params.get("organizationId");
   if (organizationId) options.organizationId = organizationId;
+
+  // EAP-5: backs User Relationships' "assessments created by this user"
+  // panel — an exact match on the same `AssessmentRecord.createdBy` every
+  // assessment already carries, not a new concept.
+  const createdBy = params.get("createdBy");
+  if (createdBy) options.createdBy = createdBy;
 
   const sortBy = params.get("sortBy");
   if (sortBy !== null) {
@@ -1176,6 +1280,355 @@ async function updateOrganization(
   }
 
   return jsonSuccess(after);
+}
+
+/** EAP-5: the User Workspace's table — search/filter/sort/pagination over
+ * Auth.js's own `users` table, same query-param validation strictness as
+ * `searchLeads`/`searchAssessments`/`searchOrganizations`. Unlike
+ * `listOrganizations`, there is no unfiltered `GET /api/users` this mirrors
+ * (see `UserRepository`'s own doc comment, types.ts, for why an unfiltered
+ * list has no consumer yet) — a missing `deps.users` is therefore always a
+ * real 503 here, same reasoning as `searchOrganizations`. */
+async function searchUsers(url: URL, deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  if (!deps.users) return usersNotConfigured(ctx.requestId);
+  const params = url.searchParams;
+  const options: UserSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (!USER_SORT_FIELDS.includes(sortBy as (typeof USER_SORT_FIELDS)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as UserSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "users.search", () =>
+    deps.users!.search(options),
+  );
+  return jsonSuccess(result);
+}
+
+/** EAP-5: User Details — identity (`UserRecord`) composed with this user's
+ * own `UserProfileRecord[]` (role/organization grants), the same
+ * composition `resolveCaller`/`meResponse` already do for the *caller's
+ * own* identity, now exposed for any user a Platform Administrator looks
+ * up. Records a `user.viewed` audit event under `entityType: "user"`, same
+ * pattern as `getLead`/`getAssessment`/`getOrganization` — findable via the
+ * same `GET /api/audit?entityType=user&entityId=...` shape every other
+ * detail page's audit panel already uses. `organizationId: null` on the
+ * event itself: a user isn't scoped to one organization the way a lead or
+ * assessment is. */
+async function getUser(
+  id: string,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.users) return usersNotConfigured(ctx.requestId);
+  if (!deps.userProfiles) return userProfilesNotConfigured(ctx.requestId);
+
+  const user = await withOperationTiming(ctx.metrics, "users.findById", () =>
+    deps.users!.findById(id),
+  );
+  if (!user) {
+    return jsonError({ code: "not_found", message: "User not found" }, ctx.requestId, 404);
+  }
+
+  const profiles = await withOperationTiming(ctx.metrics, "userProfiles.findByUserId", () =>
+    deps.userProfiles!.findByUserId(id),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: null,
+    action: "user.viewed",
+    entityType: "user",
+    entityId: user.id,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+  });
+
+  return jsonSuccess({ ...user, profiles });
+}
+
+/** EAP-5: Role Assignment's grant action — creates a new `UserProfileRecord`
+ * (an organization membership, or a platform-wide grant when
+ * `organizationId` is null/omitted). This is the first real, self-service
+ * way to grant the Platform Administrator role — previously "provisioned
+ * via direct SQL only" (`OPERATIONAL_RUNBOOK.md`, `FEATURE_MATRIX.md`'s
+ * not-yet-features list). Not a privilege-escalation risk: only an existing
+ * Platform Administrator can reach this route at all
+ * (`requirePlatformAdministrator`), and granting the same authority you
+ * already hold to another real, already-authenticated person is the whole
+ * point of an admin's own role-management console, not a way past it.
+ * Rejects a duplicate (user, organization) grant with 409 rather than
+ * letting the database's own unique index (migrations/0003) surface as an
+ * unhandled constraint error — same pattern as `createOrganization`'s slug
+ * check. */
+async function grantUserProfile(
+  userId: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.users) return usersNotConfigured(ctx.requestId);
+  if (!deps.userProfiles) return userProfilesNotConfigured(ctx.requestId);
+
+  const targetUser = await deps.users.findById(userId);
+  if (!targetUser) {
+    return jsonError({ code: "not_found", message: "User not found" }, ctx.requestId, 404);
+  }
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const validation = validateUserProfileGrant(body.value);
+  if (!validation.ok) {
+    return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
+  }
+  const { organizationId, role } = validation.value;
+
+  if (organizationId) {
+    if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+    const organization = await deps.organizations.findById(organizationId);
+    if (!organization) {
+      return jsonError(
+        { code: "not_found", message: "Organization not found" },
+        ctx.requestId,
+        404,
+      );
+    }
+  }
+
+  const existingProfiles = await deps.userProfiles.findByUserId(userId);
+  const conflict = existingProfiles.find((profile) => profile.organizationId === organizationId);
+  if (conflict) {
+    return jsonError(
+      { code: "profile_conflict", message: "This user already has a role for this organization" },
+      ctx.requestId,
+      409,
+    );
+  }
+
+  const saved = await withOperationTiming(ctx.metrics, "userProfiles.save", () =>
+    deps.userProfiles!.save({ userId, organizationId, role, createdAt: new Date().toISOString() }),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: saved.organizationId,
+    action: "user.role_granted",
+    entityType: "user",
+    entityId: userId,
+    metadata: { profileId: saved.id, organizationId: saved.organizationId, role: saved.role },
+    createdAt: saved.createdAt,
+  });
+
+  return jsonSuccess(saved, 201);
+}
+
+/** EAP-5: Role Assignment's change-role action, and Administrative User
+ * Lifecycle's demotion path. Validates the profile actually belongs to
+ * `userId` (the URL's own path segment, not just the profile's own id)
+ * before touching it — a caller can't repoint a PATCH at a profile under
+ * the wrong user's URL. Guarded by `wouldRemoveLastPlatformAdministrator` —
+ * see its own doc comment for why a role *change* needs the same lockout
+ * guard a revoke does (demoting the last Platform Administrator away from
+ * "owner" is exactly as much a lockout as removing them outright). */
+async function updateUserProfile(
+  userId: string,
+  profileId: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.userProfiles) return userProfilesNotConfigured(ctx.requestId);
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const validation = validateUserProfilePatch(body.value);
+  if (!validation.ok) {
+    return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
+  }
+
+  const before = await deps.userProfiles.findById(profileId);
+  if (!before || before.userId !== userId) {
+    return jsonError(
+      { code: "not_found", message: "Role assignment not found" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  if (validation.value.role !== before.role) {
+    const wouldLockOut = await wouldRemoveLastPlatformAdministrator(
+      deps.userProfiles,
+      before,
+      validation.value,
+    );
+    if (wouldLockOut) {
+      return jsonError(
+        {
+          code: "last_platform_administrator",
+          message: "Cannot change the role of the only remaining Platform Administrator",
+        },
+        ctx.requestId,
+        409,
+      );
+    }
+  }
+
+  const after = await withOperationTiming(ctx.metrics, "userProfiles.update", () =>
+    deps.userProfiles!.update(profileId, validation.value),
+  );
+  if (!after) {
+    return jsonError(
+      { code: "not_found", message: "Role assignment not found" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  if (after.role !== before.role) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "user.role_changed",
+      entityType: "user",
+      entityId: userId,
+      metadata: { profileId, from: before.role, to: after.role },
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  return jsonSuccess(after);
+}
+
+/** EAP-5: Role Assignment's revoke action, and Administrative User
+ * Lifecycle's one true deletion — `UserProfileRepository.remove` (see its
+ * own doc comment, types.ts, for why this repository alone in this system
+ * has a real delete). Guarded the same way `updateUserProfile`'s demotion
+ * path is. The audit event is written *before* the row is removed so the
+ * revoked role is still known to record — matching how `updateOrganization`
+ * captures `before`'s values in its own diff before they're gone. */
+async function revokeUserProfile(
+  userId: string,
+  profileId: string,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.userProfiles) return userProfilesNotConfigured(ctx.requestId);
+
+  const existing = await deps.userProfiles.findById(profileId);
+  if (!existing || existing.userId !== userId) {
+    return jsonError(
+      { code: "not_found", message: "Role assignment not found" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  const wouldLockOut = await wouldRemoveLastPlatformAdministrator(
+    deps.userProfiles,
+    existing,
+    null,
+  );
+  if (wouldLockOut) {
+    return jsonError(
+      {
+        code: "last_platform_administrator",
+        message: "Cannot remove the only remaining Platform Administrator",
+      },
+      ctx.requestId,
+      409,
+    );
+  }
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: existing.organizationId,
+    action: "user.role_revoked",
+    entityType: "user",
+    entityId: userId,
+    metadata: { profileId, organizationId: existing.organizationId, role: existing.role },
+    createdAt: new Date().toISOString(),
+  });
+
+  await withOperationTiming(ctx.metrics, "userProfiles.remove", () =>
+    deps.userProfiles!.remove(profileId),
+  );
+
+  return jsonSuccess({ id: profileId, revoked: true });
+}
+
+/** EAP-5: prevents a Platform Administrator action from locking every
+ * Platform Administrator (including the caller) out of the system — a real
+ * failure mode this system has no recovery path for today (the role is
+ * granted "via direct SQL only" absent this very endpoint,
+ * `OPERATIONAL_RUNBOOK.md`; there is no break-glass account). `before` is
+ * the profile being changed or removed; `patch` is the new role for an
+ * update, or `null` for a revoke. Only matters when `before` itself is a
+ * Platform Administrator profile (`organizationId: null, role: "owner"`)
+ * and the change would make it stop being one — changing or removing any
+ * other profile is always safe and this returns `false` immediately. */
+async function wouldRemoveLastPlatformAdministrator(
+  userProfiles: UserProfileRepository,
+  before: UserProfileRecord,
+  patch: { role: UserRole } | null,
+): Promise<boolean> {
+  const wasPlatformAdministrator = before.organizationId === null && before.role === "owner";
+  if (!wasPlatformAdministrator) return false;
+
+  const staysPlatformAdministrator = patch !== null && patch.role === "owner";
+  if (staysPlatformAdministrator) return false;
+
+  const allProfiles = await userProfiles.list();
+  const platformAdministratorCount = allProfiles.filter(
+    (profile) => profile.organizationId === null && profile.role === "owner",
+  ).length;
+  return platformAdministratorCount <= 1;
 }
 
 /** EAP-1: backs the admin Dashboard's recent-activity/audit-summary
@@ -1510,4 +1963,44 @@ function validateOrganizationPatch(
   const note = typeof record.note === "string" && record.note.trim() !== "" ? record.note : null;
 
   return ok({ patch, note });
+}
+
+/** EAP-5. Unlike a PATCH validator, every field here is required — there's
+ * nothing pre-existing on a brand-new grant to "leave unchanged".
+ * `organizationId` uses the same `optionalNullableString` helper every other
+ * nullable-string field in this file's POST validators uses (`validateNewLead`'s
+ * `organizationId`/`assessmentId`) — absent or explicit `null` both mean "a
+ * platform-wide grant", not "leave unchanged" (there's nothing to leave). */
+function validateUserProfileGrant(
+  value: unknown,
+): ValidationResult<{ organizationId: string | null; role: UserRole }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  if (!USER_ROLES.includes(record.role as (typeof USER_ROLES)[number])) {
+    return fail(`Invalid role: ${String(record.role)}`);
+  }
+
+  return ok({
+    organizationId: optionalNullableString(record, "organizationId"),
+    role: record.role as UserRole,
+  });
+}
+
+/** EAP-5. `role` is the only field `UserProfilePatch` has, and it's
+ * required, not optional — unlike `OrganizationPatch`/`LeadLifecyclePatch`
+ * (real multi-field patches where each field can be left unchanged), a
+ * profile's only mutable property is its role, so a PATCH with no role to
+ * set isn't a valid partial update, it's an empty one. */
+function validateUserProfilePatch(value: unknown): ValidationResult<UserProfilePatch> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  if (!USER_ROLES.includes(record.role as (typeof USER_ROLES)[number])) {
+    return fail(`Invalid role: ${String(record.role)}`);
+  }
+
+  return ok({ role: record.role as UserRole });
 }

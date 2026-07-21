@@ -151,7 +151,7 @@ curl -s -X PATCH http://localhost:8787/api/organizations/some-org-id \
 
 ### Provisioning a local Platform Administrator
 
-`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `POST /api/organizations`, `GET /api/organizations/search`, `GET /api/organizations/:id`, `PATCH /api/organizations/:id` (EAP-4), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
+`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `POST /api/organizations`, `GET /api/organizations/search`, `GET /api/organizations/:id`, `PATCH /api/organizations/:id` (EAP-4), `GET /api/users/search`, `GET /api/users/:id`, `POST /api/users/:id/profiles`, `PATCH`/`DELETE /api/users/:id/profiles/:profileId` (EAP-5), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants the *very first* one — deliberately, since an endpoint that lets a caller grant themselves platform-wide access from zero privileges would itself be a privilege-escalation vulnerability. Provisioning the first one locally is a real sign-in followed by a direct SQL insert; **every Platform Administrator grant after that first one can go through `POST /api/users/:id/profiles` instead (EAP-5, step 9 below)** — a real, audited endpoint call, not a second direct SQL insert:
 
 ```bash
 # 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
@@ -233,9 +233,42 @@ curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/organizations/<org id
 curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=organization&entityId=<org id>"
 # shows organization.created, organization.viewed, organization.archived, and
 # organization.note_added.
+
+# 9. GET /api/users/search, GET /api/users/:id (EAP-5) resolve through the
+#    same gate. GET /api/users/:id additionally records a real user.viewed
+#    audit event, and returns the target's own real UserProfileRecord[]:
+curl -s -b cookies.txt "http://localhost:8787/api/users/search?search=admin"
+curl -s -b cookies.txt "http://localhost:8787/api/users/<user-id from step 3, or any other real user id>"
+
+# POST/PATCH/DELETE /api/users/:id/profiles (EAP-5) are Role Assignment's
+# real write surface — same Origin requirement as steps 6/8's writes. This
+# is the real, self-service replacement for step 4's direct SQL insert, for
+# every grant *after* the very first Platform Administrator:
+curl -s -b cookies.txt -X POST "http://localhost:8787/api/users/<some other real user-id>/profiles" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"organizationId":null,"role":"owner"}'
+# 201, returns the new profile. Records a real user.role_granted audit event.
+
+curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/users/<that user-id>/profiles/<profile id from the response above>" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"role":"admin"}'
+# 200, returns the updated profile. Records a real user.role_changed event —
+# unless this profile is the *only* remaining Platform Administrator, in
+# which case this (and DELETE below) return 409, not 200
+# (wouldRemoveLastPlatformAdministrator, router.ts).
+
+curl -s -b cookies.txt -X DELETE "http://localhost:8787/api/users/<that user-id>/profiles/<profile id>" \
+  -H "Origin: http://localhost:5173"
+# 200 if at least one other Platform Administrator still exists. Records a
+# real user.role_revoked event — this system's first real deletion.
+
+curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=user&entityId=<that user-id>"
+# shows user.viewed, user.role_granted, user.role_changed, user.role_revoked.
 ```
 
-Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the role) is a direct database write, because no route exists to do it any other way.
+Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the *very first* Platform Administrator) is a direct database write, because no route can exist to do that one any other way — every subsequent grant (step 9) is a real, audited endpoint call instead (EAP-5).
 
 To check what actually landed in the database (not just trusting the HTTP response):
 
@@ -301,6 +334,17 @@ With a Platform Administrator session (above), the sidebar shows an **Organizati
 4. **Archiving does not delete anything** — an archived organization stays fully visible (filterable by status in the Workspace, still reachable at its own Details URL) and can be restored at any time. There is no delete operation anywhere in this module, matching every other repository in this codebase.
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/organization-workspace.spec.ts`) that drives a real create-via-form flow and seeds a real organization/assessment/lead directly in D1 for the Health/Relationships/Administration/audit checks — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
+## Managing users through the Admin Application (`/admin/users`, EAP-5)
+
+With a Platform Administrator session (above), the sidebar shows a **Users** link (`adminNavItems`), hidden entirely for a non-Platform-Administrator, the same convention as **Leads**/**Assessments**/**Organizations**.
+
+1. **User Workspace** (`/admin/users`): a real, server-backed table — search (debounced 300ms, matches name/email substrings) and sortable Name/Email columns, driven by `GET /api/users/search`. **No "New user" control exists** — a person appears here only after they've actually signed in for the first time (Auth.js's own real sign-in is the only path that creates a row in `users`), and the page says so in plain text rather than offering a control that couldn't work.
+2. **User Details** (`/admin/users/:id`): click any row's name to navigate here. Shows Identity (email, email-verified timestamp, user id), **Role Assignment** (every organization or platform-wide role this user currently holds, each with its own role-change dropdown and Revoke button, plus a grant form to add a new one — organization or "Platform-wide"), **Relationships** (real leads assigned to this user and real assessments they created, each a working link into the existing Lead Details/Assessment Details pages), and **Activity & audit history** (a real timeline sourced from `GET /api/audit?entityType=user&entityId=...`).
+3. **Every Role Assignment change is a real server round-trip** — granting calls `POST /api/users/:id/profiles`, changing a role calls `PATCH /api/users/:id/profiles/:profileId`, and revoking calls `DELETE /api/users/:id/profiles/:profileId`, each re-rendering from the server's own re-read, never an optimistic local-only update. Each lands as its own `audit_events` row (`user.role_granted`/`user.role_changed`/`user.role_revoked` — `router.ts`).
+4. **Revoking is a real deletion, not an archive** — the one exception to every other module's archive-not-delete pattern in this codebase, because a role grant (unlike a lead or an organization) has no dependent data of its own to preserve (`DECISION_LOG.md`'s EAP-5 entry). Changing or revoking the system's *only* remaining Platform Administrator grant is refused with a real error message instead — `wouldRemoveLastPlatformAdministrator` (router.ts) will not let a caller lock every Platform Administrator, including themselves, out of the system.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/user-management.spec.ts`) that seeds a real user/organization directly in D1 and drives a real search→detail→grant→change→revoke round trip through a real browser, including this codebase's first real `DELETE` request — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
 ## Structured logs
 

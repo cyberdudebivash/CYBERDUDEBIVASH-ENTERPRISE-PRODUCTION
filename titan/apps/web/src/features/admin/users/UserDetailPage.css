@@ -1,0 +1,61 @@
+.titan-user-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-user-detail__back {
+  align-self: flex-start;
+  font-size: 14px;
+  color: #00a8e8;
+  text-decoration: none;
+}
+
+.titan-user-detail__back:hover {
+  text-decoration: underline;
+}
+
+.titan-user-detail__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titan-user-detail__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-user-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.titan-user-detail__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.titan-user-detail__fields dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #64748b;
+}
+
+.titan-user-detail__fields dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
+
+.titan-user-detail__note {
+  font-size: 14px;
+  color: #64748b;
+}

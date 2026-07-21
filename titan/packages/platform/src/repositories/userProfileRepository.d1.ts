@@ -1,6 +1,7 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import type {
   NewUserProfile,
+  UserProfilePatch,
   UserProfileRecord,
   UserProfileRepository,
   UserRole,
@@ -35,6 +36,41 @@ export function createD1UserProfileRepository(db: D1Database): UserProfileReposi
         .bind(userId)
         .all<UserProfileRow>();
       return results.map(rowToRecord);
+    },
+
+    async findById(id: string): Promise<UserProfileRecord | null> {
+      const row = await db
+        .prepare(`SELECT * FROM user_profiles WHERE id = ?`)
+        .bind(id)
+        .first<UserProfileRow>();
+      return row ? rowToRecord(row) : null;
+    },
+
+    async list(): Promise<UserProfileRecord[]> {
+      const { results } = await db.prepare(`SELECT * FROM user_profiles`).all<UserProfileRow>();
+      return results.map(rowToRecord);
+    },
+
+    async update(id: string, patch: UserProfilePatch): Promise<UserProfileRecord | null> {
+      const existing = await db
+        .prepare(`SELECT * FROM user_profiles WHERE id = ?`)
+        .bind(id)
+        .first<UserProfileRow>();
+      if (!existing) return null;
+
+      await db.prepare(`UPDATE user_profiles SET role = ? WHERE id = ?`).bind(patch.role, id).run();
+
+      return { ...rowToRecord(existing), role: patch.role };
+    },
+
+    async remove(id: string): Promise<boolean> {
+      const existing = await db
+        .prepare(`SELECT id FROM user_profiles WHERE id = ?`)
+        .bind(id)
+        .first<{ id: string }>();
+      if (!existing) return false;
+      await db.prepare(`DELETE FROM user_profiles WHERE id = ?`).bind(id).run();
+      return true;
     },
   };
 }

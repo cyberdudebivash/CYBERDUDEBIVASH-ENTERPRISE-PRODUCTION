@@ -1,0 +1,90 @@
+.titan-role-assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-role-assignment__note {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.titan-role-assignment__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.titan-role-assignment__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.titan-role-assignment__item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titan-role-assignment__org-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a1628;
+}
+
+.titan-role-assignment__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titan-role-assignment__role-select {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0a1628;
+}
+
+.titan-role-assignment__grant-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.titan-role-assignment__grant-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-role-assignment__grant-form select {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #0a1628;
+}

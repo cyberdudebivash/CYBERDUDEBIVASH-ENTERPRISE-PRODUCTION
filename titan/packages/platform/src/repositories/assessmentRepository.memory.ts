@@ -47,6 +47,9 @@ export function createInMemoryAssessmentRepository(): AssessmentRepository {
           (assessment) => assessment.organizationId === options.organizationId,
         );
       }
+      if (options.createdBy) {
+        matched = matched.filter((assessment) => assessment.createdBy === options.createdBy);
+      }
 
       const direction = options.sortDirection === "asc" ? 1 : -1;
       const sortBy = options.sortBy ?? "createdAt";
