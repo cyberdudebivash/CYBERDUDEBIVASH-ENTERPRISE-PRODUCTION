@@ -239,6 +239,15 @@ export function describeLeadRepositoryContract(
       expect(result.leads[0]?.assessmentId).toBe("assessment_1");
     });
 
+    it("search filters by organizationId (EAP-4 organization relationships)", async () => {
+      const repo = createRepository();
+      await repo.save({ ...sampleLead, organizationId: "org_1" });
+      await repo.save({ ...sampleLead, email: "b@acme.in", organizationId: "org_2" });
+      const result = await repo.search({ organizationId: "org_1" });
+      expect(result.total).toBe(1);
+      expect(result.leads[0]?.organizationId).toBe("org_1");
+    });
+
     it("search paginates", async () => {
       const repo = createRepository();
       for (let i = 0; i < 5; i += 1) {

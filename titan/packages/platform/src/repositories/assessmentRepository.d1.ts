@@ -87,6 +87,10 @@ export function createD1AssessmentRepository(db: D1Database): AssessmentReposito
         conditions.push(`json_extract(result_json, '$.riskLevel') = ?`);
         params.push(options.riskLevel);
       }
+      if (options.organizationId) {
+        conditions.push(`organization_id = ?`);
+        params.push(options.organizationId);
+      }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
       const sortExpression = SORT_EXPRESSIONS[options.sortBy ?? "createdAt"];

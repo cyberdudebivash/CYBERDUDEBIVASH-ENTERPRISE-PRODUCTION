@@ -1,0 +1,61 @@
+.titan-organization-health {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-organization-health__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.titan-organization-health__note {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.titan-organization-health__risk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titan-organization-health__risk-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 4px 0 4px 8px;
+  border-left: 3px solid transparent;
+}
+
+.titan-organization-health__risk-label {
+  text-transform: capitalize;
+  color: #334155;
+}
+
+.titan-organization-health__risk-count {
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-organization-health__risk-item--critical {
+  border-left-color: #991b1b;
+}
+
+.titan-organization-health__risk-item--high {
+  border-left-color: #ea580c;
+}
+
+.titan-organization-health__risk-item--medium {
+  border-left-color: #eab308;
+}
+
+.titan-organization-health__risk-item--low {
+  border-left-color: #22c55e;
+}

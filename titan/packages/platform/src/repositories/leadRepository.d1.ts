@@ -148,6 +148,10 @@ export function createD1LeadRepository(db: D1Database): LeadRepository {
         conditions.push(`assessment_id = ?`);
         params.push(options.assessmentId);
       }
+      if (options.organizationId) {
+        conditions.push(`organization_id = ?`);
+        params.push(options.organizationId);
+      }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
       const sortExpression = SORT_EXPRESSIONS[options.sortBy ?? "createdAt"];

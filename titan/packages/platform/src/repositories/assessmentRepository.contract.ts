@@ -115,6 +115,15 @@ export function describeAssessmentRepositoryContract(
       expect(result.assessments.map((assessment) => assessment.result.score)).toEqual([90, 20]);
     });
 
+    it("search filters by organizationId (EAP-4 organization relationships)", async () => {
+      const repo = createRepository();
+      await repo.save({ ...sampleAssessment, organizationId: "org_1" });
+      await repo.save({ ...sampleAssessment, organizationId: "org_2" });
+      const result = await repo.search({ organizationId: "org_1" });
+      expect(result.total).toBe(1);
+      expect(result.assessments[0]?.organizationId).toBe("org_1");
+    });
+
     it("search paginates", async () => {
       const repo = createRepository();
       for (let i = 0; i < 5; i += 1) {

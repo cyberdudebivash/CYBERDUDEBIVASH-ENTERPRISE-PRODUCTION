@@ -42,6 +42,11 @@ export function createInMemoryAssessmentRepository(): AssessmentRepository {
       if (options.riskLevel) {
         matched = matched.filter((assessment) => assessment.result.riskLevel === options.riskLevel);
       }
+      if (options.organizationId) {
+        matched = matched.filter(
+          (assessment) => assessment.organizationId === options.organizationId,
+        );
+      }
 
       const direction = options.sortDirection === "asc" ? 1 : -1;
       const sortBy = options.sortBy ?? "createdAt";

@@ -1445,6 +1445,9 @@ describe("handleRequest", () => {
       await deps.organizations.save({
         name: "Acme Fintech",
         slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
         createdAt: "2026-07-20T00:00:00.000Z",
       });
       const caller = await createTestCaller(deps.authConfig!);
@@ -1485,6 +1488,456 @@ describe("handleRequest", () => {
       );
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual([]);
+    });
+  });
+
+  describe("POST /api/organizations (EAP-4)", () => {
+    const validOrganizationBody = {
+      name: "Acme Fintech",
+      slug: "acme-fintech",
+      industry: "Financial Services",
+      region: "APAC",
+      tags: ["enterprise"],
+      createdAt: "2026-07-20T00:00:00.000Z",
+    };
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          body: JSON.stringify(validOrganizationBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify(validOrganizationBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+          body: JSON.stringify(validOrganizationBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("saves the organization, records an organization.created audit event, and returns 201", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify(validOrganizationBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as { id: string; status: string };
+      expect(body.id).toBeTruthy();
+      expect(body.status).toBe("active");
+
+      const events = await deps.audit.list();
+      const created = events.find((event) => event.action === "organization.created");
+      expect(created).toMatchObject({ entityId: body.id, actorId: caller.userId });
+    });
+
+    it("with a missing field returns 400", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ ...validOrganizationBody, slug: undefined }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 409 when the slug already exists", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      await deps.organizations.save({
+        name: "Existing Org",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify(validOrganizationBody),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+    });
+  });
+
+  describe("GET /api/organizations/search (EAP-4)", () => {
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a paginated envelope filtered by status for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const saved = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.organizations.update(saved.id, { status: "archived" });
+      await deps.organizations.save({
+        name: "Beta Health",
+        slug: "beta-health",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations/search?status=archived", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        total: number;
+        organizations: Array<{ id: string }>;
+      };
+      expect(body.total).toBe(1);
+      expect(body.organizations[0]?.id).toBe(saved.id);
+    });
+
+    it("returns 400 for an invalid status", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations/search?status=not-a-real-status", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("GET /api/organizations/:id (EAP-4)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 404 for an unknown organization id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations/does-not-exist", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns the organization and records an organization.viewed audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { id: string };
+      expect(body.id).toBe(saved.id);
+
+      const events = await deps.audit.list();
+      const viewed = events.find((event) => event.action === "organization.viewed");
+      expect(viewed).toMatchObject({ entityId: saved.id, actorId: caller.userId });
+    });
+  });
+
+  describe("PATCH /api/organizations/:id (EAP-4)", () => {
+    async function seedOrganization(
+      deps: Dependencies & { organizations: OrganizationRepository },
+    ) {
+      return deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ industry: "Healthcare" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ industry: "Healthcare" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+          body: JSON.stringify({ industry: "Healthcare" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown organization id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/organizations/does-not-exist", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ industry: "Healthcare" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 400 for an invalid status", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "not-a-real-status" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("updates metadata, persists it, and records a single organization.updated audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ industry: "Healthcare", region: "EMEA" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { industry: string; region: string };
+      expect(body.industry).toBe("Healthcare");
+      expect(body.region).toBe("EMEA");
+
+      const reread = await deps.organizations.findById(saved.id);
+      expect(reread?.industry).toBe("Healthcare");
+
+      const events = await deps.audit.list();
+      const updated = events.filter((event) => event.action === "organization.updated");
+      expect(updated).toHaveLength(1);
+      expect(updated[0]).toMatchObject({
+        entityId: saved.id,
+        actorId: caller.userId,
+        metadata: {
+          industry: { from: null, to: "Healthcare" },
+          region: { from: null, to: "EMEA" },
+        },
+      });
+    });
+
+    it("does not record an organization.updated event when nothing actually changed", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ name: saved.name }),
+        }),
+        deps,
+      );
+
+      const events = await deps.audit.list();
+      expect(events.find((event) => event.action === "organization.updated")).toBeUndefined();
+    });
+
+    it("archives and restores via status, recording organization.archived/organization.restored", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const archiveResponse = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "archived" }),
+        }),
+        deps,
+      );
+      expect(archiveResponse.status).toBe(200);
+      expect(((await archiveResponse.json()) as { status: string }).status).toBe("archived");
+
+      const restoreResponse = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "active" }),
+        }),
+        deps,
+      );
+      expect(restoreResponse.status).toBe(200);
+      expect(((await restoreResponse.json()) as { status: string }).status).toBe("active");
+
+      const events = await deps.audit.list();
+      expect(events.find((event) => event.action === "organization.archived")).toMatchObject({
+        entityId: saved.id,
+        metadata: { from: "active", to: "archived" },
+      });
+      expect(events.find((event) => event.action === "organization.restored")).toMatchObject({
+        entityId: saved.id,
+        metadata: { from: "archived", to: "active" },
+      });
+    });
+
+    it("adds a note as an audit event without mutating the organization record", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedOrganization(deps);
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/organizations/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ note: "Renewed enterprise contract." }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const reread = await deps.organizations.findById(saved.id);
+      expect(reread?.name).toBe("Acme Fintech"); // unchanged — a note isn't a metadata field
+
+      const events = await deps.audit.list();
+      const noteEvent = events.find((event) => event.action === "organization.note_added");
+      expect(noteEvent).toMatchObject({
+        entityId: saved.id,
+        actorId: caller.userId,
+        metadata: { note: "Renewed enterprise contract." },
+      });
     });
   });
 
