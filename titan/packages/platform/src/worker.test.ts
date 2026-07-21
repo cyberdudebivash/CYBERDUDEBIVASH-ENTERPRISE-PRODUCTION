@@ -567,4 +567,189 @@ describe("worker (default export)", () => {
     const linkedAssessments = (await linkedAssessmentsResponse.json()) as { total: number };
     expect(linkedAssessments.total).toBe(1);
   });
+
+  it("EAP-5: wires a real env.DB through the Enterprise User Directory (search, get) and Role Assignment (grant/change/revoke) end to end", async () => {
+    const env = { DB: createDb(), AUTH_SECRET: "test-secret" };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    // A real second user, distinct from the Platform Administrator caller —
+    // created the same way any real sign-in would populate the users table
+    // (createTestCaller uses the real @auth/d1-adapter, not a fixture).
+    const authConfig = createAuthConfig({ db: env.DB, secret: "test-secret" });
+    const target = await createTestCaller(authConfig, {
+      name: "Priya Sharma",
+      email: "priya@acme.in",
+    });
+
+    const searchResponse = await worker.fetch(
+      new Request("https://example.com/api/users/search?search=priya", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(searchResponse.status).toBe(200);
+    const searched = (await searchResponse.json()) as {
+      total: number;
+      users: Array<{ id: string }>;
+    };
+    expect(searched.total).toBe(1);
+    expect(searched.users[0]?.id).toBe(target.userId);
+
+    const getResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}`, { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(getResponse.status).toBe(200);
+    expect(await getResponse.json()).toMatchObject({
+      id: target.userId,
+      email: "priya@acme.in",
+      profiles: [],
+    });
+
+    // Role Assignment's grant action, against a real organization.
+    const orgResponse = await worker.fetch(
+      new Request("https://example.com/api/organizations", {
+        method: "POST",
+        headers: { cookie, origin: "http://localhost:5173" },
+        body: JSON.stringify({
+          name: "Acme Fintech",
+          slug: "acme-fintech",
+          industry: null,
+          region: null,
+          tags: [],
+          createdAt: "2026-07-20T00:00:00.000Z",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(orgResponse.status).toBe(201);
+    const org = (await orgResponse.json()) as { id: string };
+
+    const grantResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+        method: "POST",
+        headers: { cookie, origin: "http://localhost:5173" },
+        body: JSON.stringify({ organizationId: org.id, role: "member" }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(grantResponse.status).toBe(201);
+    const granted = (await grantResponse.json()) as { id: string; role: string };
+    expect(granted.role).toBe("member");
+
+    // Real D1 round trip, not just trusting the grant response.
+    const rereadResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}`, { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(await rereadResponse.json()).toMatchObject({
+      profiles: [{ organizationId: org.id, role: "member" }],
+    });
+
+    // Role Assignment's change-role action.
+    const changeResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}/profiles/${granted.id}`, {
+        method: "PATCH",
+        headers: { cookie, origin: "http://localhost:5173" },
+        body: JSON.stringify({ role: "admin" }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(changeResponse.status).toBe(200);
+    expect(await changeResponse.json()).toMatchObject({ role: "admin" });
+
+    // Role Assignment's revoke action.
+    const revokeResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}/profiles/${granted.id}`, {
+        method: "DELETE",
+        headers: { cookie, origin: "http://localhost:5173" },
+      }),
+      env,
+      noopContext,
+    );
+    expect(revokeResponse.status).toBe(200);
+
+    const finalReadResponse = await worker.fetch(
+      new Request(`https://example.com/api/users/${target.userId}`, { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(await finalReadResponse.json()).toMatchObject({ profiles: [] });
+
+    // A single user's own real activity trail — user.viewed (x3, from the
+    // three GETs above), user.role_granted, user.role_changed,
+    // user.role_revoked — through the actual Worker, not a mock.
+    const auditResponse = await worker.fetch(
+      new Request(`https://example.com/api/audit?entityType=user&entityId=${target.userId}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    const events = (await auditResponse.json()) as Array<{ action: string }>;
+    expect(events.filter((event) => event.action === "user.viewed")).toHaveLength(3);
+    expect(events.map((event) => event.action)).toEqual(
+      expect.arrayContaining(["user.role_granted", "user.role_changed", "user.role_revoked"]),
+    );
+
+    // User Relationships: GET /api/assessments/search?createdBy=... finds
+    // only assessments this specific user actually created.
+    await worker.fetch(
+      new Request("https://example.com/api/assessments", {
+        method: "POST",
+        body: JSON.stringify({
+          framework: "dpdp",
+          frameworkVersion: dpdpV1.version,
+          answers: { has_dpo: false },
+          result: {
+            score: 33,
+            riskLevel: "medium",
+            breakdown: { critical: 0, high: 1, medium: 1, low: 10, total: 2 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          createdAt: "2026-07-20T00:00:00.000Z",
+          createdBy: target.userId,
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    await worker.fetch(
+      new Request("https://example.com/api/assessments", {
+        method: "POST",
+        body: JSON.stringify({
+          framework: "dpdp",
+          frameworkVersion: dpdpV1.version,
+          answers: { has_dpo: false },
+          result: {
+            score: 10,
+            riskLevel: "low",
+            breakdown: { critical: 0, high: 0, medium: 0, low: 12, total: 0 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          createdAt: "2026-07-20T00:00:00.000Z",
+          createdBy: "someone_else",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+
+    const createdByResponse = await worker.fetch(
+      new Request(`https://example.com/api/assessments/search?createdBy=${target.userId}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(createdByResponse.status).toBe(200);
+    const createdByResult = (await createdByResponse.json()) as { total: number };
+    expect(createdByResult.total).toBe(1);
+  });
 });

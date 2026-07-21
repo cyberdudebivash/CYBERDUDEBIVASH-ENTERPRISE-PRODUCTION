@@ -231,6 +231,11 @@ export interface OrganizationRepository {
  * matching Workstream 5's "RBAC foundation", not full enterprise RBAC. */
 export type UserRole = "owner" | "admin" | "member";
 
+/** EAP-5: query-param/request-body validation list, same role as
+ * `LEAD_STATUSES`/`ORGANIZATION_STATUSES` — a fixed, explicit array so an
+ * unrecognized role string is a real 400, not silently coerced. */
+export const USER_ROLES: readonly UserRole[] = ["owner", "admin", "member"];
+
 export interface UserProfileRecord {
   id: string;
   userId: string;
@@ -241,9 +246,98 @@ export interface UserProfileRecord {
 
 export type NewUserProfile = Omit<UserProfileRecord, "id">;
 
+/** EAP-5: a role reassignment (`PATCH /api/users/:id/profiles/:profileId`) —
+ * `role` is the only mutable field. Unlike `organizationId`, changing which
+ * organization a grant belongs to isn't "updating" it, it's a different
+ * grant entirely — `save`/`remove` cover creating and revoking one. */
+export interface UserProfilePatch {
+  role: UserRole;
+}
+
 export interface UserProfileRepository {
   save(profile: NewUserProfile): Promise<UserProfileRecord>;
   findByUserId(userId: string): Promise<UserProfileRecord[]>;
+  /** EAP-5: single-record lookup by the profile's own id — backs Role
+   * Assignment's update/revoke actions, same null-not-throw contract as
+   * every other repository's `findById`. */
+  findById(id: string): Promise<UserProfileRecord | null>;
+  /** EAP-5: every profile system-wide, unfiltered — backs the
+   * last-Platform-Administrator guard (`router.ts`'s
+   * `wouldRemoveLastPlatformAdministrator`), which needs to count every
+   * `organizationId: null, role: "owner"` profile across every user, not
+   * just one user's or one organization's own. No caller needs this sorted
+   * or paginated (it's a guard check, not a listing UI), so it stays exactly
+   * as small as `LeadRepository.list`'s own unfiltered shape. */
+  list(): Promise<UserProfileRecord[]>;
+  /** EAP-5: role reassignment — same null-not-throw contract as
+   * `LeadRepository.update`/`OrganizationRepository.update`. */
+  update(id: string, patch: UserProfilePatch): Promise<UserProfileRecord | null>;
+  /** EAP-5: revokes a membership/grant — this repository's one real
+   * deletion, deliberately different from every other repository in this
+   * system (Lead/Assessment/Organization/Audit never delete anything). A
+   * `UserProfileRecord` is a thin (user, organization, role) grant with no
+   * dependent data of its own — unlike an organization (real linked leads/
+   * assessments) or a lead (a real business record), there is nothing here
+   * an archive-not-delete pattern would actually be preserving. The audit
+   * trail (`user.role_revoked`, written before this runs) is what preserves
+   * the historical record; this table only ever reflects current grants.
+   * Returns `false` (not an error) if the id doesn't exist — the caller
+   * already resolved the record before calling this, so a false here would
+   * only mean a concurrent revoke raced it, not a caller bug. */
+  remove(id: string): Promise<boolean>;
+}
+
+/** EAP-5: read-only view over Auth.js's own `users` table
+ * (migrations/0001_authjs_core.sql) — the real identity record (name/email),
+ * distinct from `UserProfileRecord` (this application's own role/membership
+ * grants). Deliberately has no `save`: the `@auth/d1-adapter` is the only
+ * writer to `users` (a session provider's real sign-in creates the row) —
+ * inventing a parallel user-creation path here would fabricate an identity
+ * with no real authenticated principal behind it, which this system's own
+ * "never fabricate implementation" discipline rules out. A user's name/email
+ * are therefore never edited through this application either (they belong to
+ * whichever OAuth/email provider authenticated them) — only their
+ * `UserProfileRecord`s (role/organization grants) are administrable. */
+export interface UserRecord {
+  id: string;
+  name: string | null;
+  email: string | null;
+  /** ISO 8601, or null if unverified — mirrors the adapter's own
+   * `emailVerified` column exactly (a `datetime`, not a boolean). */
+  emailVerified: string | null;
+  image: string | null;
+}
+
+export type UserSortField = "name" | "email";
+
+/** EAP-5: the User Workspace's server-side search — same shape and reasoning
+ * as `OrganizationSearchOptions`, scoped to the two identity fields `users`
+ * actually has. No `organizationId`/`role` filter here deliberately: those
+ * live on a different repository (`UserProfileRecord`), and every other
+ * repository in this system is constructed independently with its own
+ * private store (`ARCHITECTURE.md`'s Repository Pattern) — the same
+ * cross-repository-join line `DECISION_LOG.md`'s EAP-4 entry already drew
+ * for Organization search and `riskLevel`. */
+export interface UserSearchOptions {
+  /** Case-insensitive substring match against name/email. */
+  search?: string;
+  sortBy?: UserSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface UserSearchResult {
+  users: UserRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface UserRepository {
+  findById(id: string): Promise<UserRecord | null>;
+  search(options: UserSearchOptions): Promise<UserSearchResult>;
 }
 
 export interface AssessmentRecord {
@@ -274,6 +368,15 @@ export interface AssessmentSearchOptions {
    * Organization Relationships' "associated assessments" panel. Same
    * exact-match reasoning as `LeadSearchOptions.assessmentId`. */
   organizationId?: string;
+  /** EAP-5: narrows to one user's own created assessments — backs User
+   * Relationships' "assessments created by this user" panel, the same
+   * exact-match reasoning as `organizationId` above (a real column every
+   * assessment already carries, not a new concept). Distinct from `search`,
+   * which only ever substring-matches `createdBy` alongside id/
+   * organizationId — a caller that already knows the exact user id (this
+   * panel does) shouldn't depend on substring semantics happening to behave
+   * like an exact match. */
+  createdBy?: string;
   sortBy?: AssessmentSortField;
   sortDirection?: "asc" | "desc";
   /** 1-based. */

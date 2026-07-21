@@ -14,6 +14,8 @@ import { AssessmentWorkspacePage } from "../features/admin/assessments/Assessmen
 import { AssessmentDetailPage } from "../features/admin/assessments/AssessmentDetailPage.js";
 import { OrganizationWorkspacePage } from "../features/admin/organizations/OrganizationWorkspacePage.js";
 import { OrganizationDetailPage } from "../features/admin/organizations/OrganizationDetailPage.js";
+import { UserWorkspacePage } from "../features/admin/users/UserWorkspacePage.js";
+import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -60,6 +62,11 @@ export function AppRoutes() {
             Assessments above, not a route-level block. */}
         <Route path="organizations" element={<OrganizationWorkspacePage />} />
         <Route path="organizations/:id" element={<OrganizationDetailPage />} />
+        {/* EAP-5: the Enterprise Identity & User Management module — same
+            Platform-Administrator-gated-server-side pattern as every module
+            above, not a route-level block. */}
+        <Route path="users" element={<UserWorkspacePage />} />
+        <Route path="users/:id" element={<UserDetailPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

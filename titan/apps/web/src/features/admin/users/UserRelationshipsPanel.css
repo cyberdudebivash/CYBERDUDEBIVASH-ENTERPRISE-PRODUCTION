@@ -1,0 +1,45 @@
+.titan-user-relationships {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.titan-user-relationships__heading {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-user-relationships__note {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.titan-user-relationships__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titan-user-relationships__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.titan-user-relationships__list a {
+  color: #00a8e8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.titan-user-relationships__list a:hover {
+  text-decoration: underline;
+}

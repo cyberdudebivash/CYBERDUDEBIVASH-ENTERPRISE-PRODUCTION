@@ -124,6 +124,15 @@ export function describeAssessmentRepositoryContract(
       expect(result.assessments[0]?.organizationId).toBe("org_1");
     });
 
+    it("search filters by createdBy (EAP-5 user relationships)", async () => {
+      const repo = createRepository();
+      await repo.save({ ...sampleAssessment, createdBy: "user_1" });
+      await repo.save({ ...sampleAssessment, createdBy: "user_2" });
+      const result = await repo.search({ createdBy: "user_1" });
+      expect(result.total).toBe(1);
+      expect(result.assessments[0]?.createdBy).toBe("user_1");
+    });
+
     it("search paginates", async () => {
       const repo = createRepository();
       for (let i = 0; i < 5; i += 1) {

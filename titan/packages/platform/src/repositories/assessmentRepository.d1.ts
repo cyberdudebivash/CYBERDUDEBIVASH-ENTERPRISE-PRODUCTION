@@ -91,6 +91,10 @@ export function createD1AssessmentRepository(db: D1Database): AssessmentReposito
         conditions.push(`organization_id = ?`);
         params.push(options.organizationId);
       }
+      if (options.createdBy) {
+        conditions.push(`created_by = ?`);
+        params.push(options.createdBy);
+      }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
       const sortExpression = SORT_EXPRESSIONS[options.sortBy ?? "createdAt"];

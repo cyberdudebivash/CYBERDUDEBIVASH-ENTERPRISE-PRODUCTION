@@ -18,7 +18,12 @@ const DEFAULT_ALLOWED_ORIGIN = "http://localhost:5173";
 // whether the route itself would have allowed it. Found by real-browser
 // verification, not a unit test — jsdom's fetch mock in this codebase's
 // component tests doesn't enforce real CORS preflight semantics at all.
-const ALLOWED_METHODS = "GET, POST, PATCH, OPTIONS";
+// EAP-5: DELETE added for /api/users/:id/profiles/:profileId (Role
+// Assignment's revoke action) — added proactively in the same change that
+// introduces the method, precisely because EAP-2's own PATCH omission above
+// was only ever found after shipping. Verified by real-browser E2E, not
+// assumed safe from this comment alone.
+const ALLOWED_METHODS = "GET, POST, PATCH, DELETE, OPTIONS";
 const ALLOWED_HEADERS = "Content-Type, X-Request-Id";
 
 export function resolveAllowedOrigin(configuredOrigin: string | undefined): string {

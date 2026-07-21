@@ -6,6 +6,7 @@ import { createInMemoryAssessmentRepository } from "./repositories/assessmentRep
 import { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";
 import { createInMemoryOrganizationRepository } from "./repositories/organizationRepository.memory.js";
 import { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
+import { createD1UserRepository } from "./repositories/userRepository.d1.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
@@ -14,7 +15,11 @@ import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createAuthConfig } from "./auth/config.js";
 import { createTestCaller } from "./auth/testUtils/testSession.js";
 import { createTestD1Factory } from "./repositories/testUtils/testD1.js";
-import type { OrganizationRepository, UserProfileRepository } from "./repositories/types.js";
+import type {
+  OrganizationRepository,
+  UserProfileRepository,
+  UserRepository,
+} from "./repositories/types.js";
 
 const createAuthDb = await createTestD1Factory();
 
@@ -44,12 +49,20 @@ function createTestDeps(): Dependencies {
 function createAuthorizedTestDeps(): Dependencies & {
   userProfiles: UserProfileRepository;
   organizations: OrganizationRepository;
+  users: UserRepository;
 } {
+  // EAP-5: `users` reads the *same* D1 instance `authConfig`'s adapter
+  // writes real rows into (`createTestCaller`'s `adapter.createUser`) — the
+  // same relationship worker.ts's real wiring has (both point at one
+  // `env.DB`). Capturing `db` once, rather than calling `createAuthDb()`
+  // twice, is what makes that true here too.
+  const db = createAuthDb();
   return {
     ...createTestDeps(),
-    authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+    authConfig: createAuthConfig({ db, secret: "test-secret" }),
     userProfiles: createInMemoryUserProfileRepository(),
     organizations: createInMemoryOrganizationRepository(),
+    users: createD1UserRepository(db),
   };
 }
 
@@ -1938,6 +1951,658 @@ describe("handleRequest", () => {
         actorId: caller.userId,
         metadata: { note: "Renewed enterprise contract." },
       });
+    });
+  });
+
+  describe("GET /api/users/search (EAP-5)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a paginated envelope matching a case-insensitive name/email substring", async () => {
+      const deps = createAuthorizedTestDeps();
+      const admin = await createPlatformAdministratorCaller(deps);
+      const target = await createTestCaller(deps.authConfig!, {
+        name: "Zephyr Analytics Lead",
+        email: "zephyr@example.com",
+      });
+      await createTestCaller(deps.authConfig!, { name: "Someone Else", email: "else@example.com" });
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/search?search=zephyr", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number; users: Array<{ id: string }> };
+      expect(body.total).toBe(1);
+      expect(body.users[0]?.id).toBe(target.userId);
+    });
+
+    it("returns 400 for an invalid sortBy", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/search?sortBy=notAField", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("GET /api/users/:id (EAP-5)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}`),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown user id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/does-not-exist", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns the user composed with their profiles, and records a user.viewed audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!, {
+        name: "Asha Rao",
+        email: "asha@example.com",
+      });
+      await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        id: string;
+        email: string;
+        profiles: Array<{ organizationId: string | null }>;
+      };
+      expect(body.id).toBe(target.userId);
+      expect(body.email).toBe("asha@example.com");
+      expect(body.profiles).toHaveLength(1);
+      expect(body.profiles[0]?.organizationId).toBe("org_1");
+
+      const events = await deps.audit.list();
+      const viewed = events.find((event) => event.action === "user.viewed");
+      expect(viewed).toMatchObject({ entityId: target.userId, actorId: caller.userId });
+    });
+  });
+
+  describe("POST /api/users/:id/profiles (EAP-5)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          body: JSON.stringify({ organizationId: "org_1", role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: "org_1", role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+          body: JSON.stringify({ organizationId: "org_1", role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown target user id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/users/does-not-exist/profiles", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: "org_1", role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 400 for an invalid role", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: "org_1", role: "superuser" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("grants a role, records a user.role_granted audit event, and returns 201", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const org = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: org.id, role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as { id: string; organizationId: string; role: string };
+      expect(body.organizationId).toBe(org.id);
+      expect(body.role).toBe("admin");
+
+      const profiles = await deps.userProfiles.findByUserId(target.userId);
+      expect(profiles).toHaveLength(1);
+
+      const events = await deps.audit.list();
+      const granted = events.find((event) => event.action === "user.role_granted");
+      expect(granted).toMatchObject({ entityId: target.userId, actorId: caller.userId });
+    });
+
+    it("grants a platform-wide role when organizationId is null — the self-service path for Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: null, role: "owner" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as { organizationId: string | null; role: string };
+      expect(body.organizationId).toBeNull();
+      expect(body.role).toBe("owner");
+    });
+
+    it("returns 409 when the user already has a role for this organization", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const org = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: org.id,
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: org.id, role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+    });
+
+    it("returns 404 when organizationId names an organization that doesn't exist", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles`, {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ organizationId: "does-not-exist", role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("PATCH /api/users/:id/profiles/:profileId (EAP-5)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+          body: JSON.stringify({ role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 when the profile id doesn't belong to the user in the URL", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const someoneElse = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: someoneElse.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 400 for an invalid role", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ role: "superuser" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("changes the role and records a single user.role_changed audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ role: "admin" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(((await response.json()) as { role: string }).role).toBe("admin");
+
+      const reread = await deps.userProfiles.findById(profile.id);
+      expect(reread?.role).toBe("admin");
+
+      const events = await deps.audit.list();
+      const changed = events.filter((event) => event.action === "user.role_changed");
+      expect(changed).toHaveLength(1);
+      expect(changed[0]).toMatchObject({
+        entityId: target.userId,
+        actorId: caller.userId,
+        metadata: { profileId: profile.id, from: "member", to: "admin" },
+      });
+    });
+
+    it("does not record a user.role_changed event when the role is unchanged", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ role: "member" }),
+        }),
+        deps,
+      );
+
+      const events = await deps.audit.list();
+      expect(events.find((event) => event.action === "user.role_changed")).toBeUndefined();
+    });
+
+    it("returns 409 when demoting the only remaining Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const [onlyProfile] = await deps.userProfiles.findByUserId(caller.userId);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${caller.userId}/profiles/${onlyProfile!.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ role: "member" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+      expect(await deps.userProfiles.findById(onlyProfile!.id)).toMatchObject({ role: "owner" });
+    });
+
+    it("allows demoting a Platform Administrator when another one still exists", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const [callerProfile] = await deps.userProfiles.findByUserId(caller.userId);
+      const secondAdmin = await createPlatformAdministratorCaller(deps);
+      const [secondProfile] = await deps.userProfiles.findByUserId(secondAdmin.userId);
+
+      const response = await handleRequest(
+        new Request(
+          `https://example.com/api/users/${secondAdmin.userId}/profiles/${secondProfile!.id}`,
+          {
+            method: "PATCH",
+            headers: { cookie: caller.cookie },
+            body: JSON.stringify({ role: "member" }),
+          },
+        ),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await deps.userProfiles.findById(callerProfile!.id)).toMatchObject({ role: "owner" });
+    });
+  });
+
+  describe("DELETE /api/users/:id/profiles/:profileId (EAP-5)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "DELETE",
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_2",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "DELETE",
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "DELETE",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 when the profile id doesn't belong to the user in the URL", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const someoneElse = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: someoneElse.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "DELETE",
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("revokes the profile and records a user.role_revoked audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const target = await createTestCaller(deps.authConfig!);
+      const profile = await deps.userProfiles.save({
+        userId: target.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${target.userId}/profiles/${profile.id}`, {
+          method: "DELETE",
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await deps.userProfiles.findById(profile.id)).toBeNull();
+
+      const events = await deps.audit.list();
+      const revoked = events.find((event) => event.action === "user.role_revoked");
+      expect(revoked).toMatchObject({
+        entityId: target.userId,
+        actorId: caller.userId,
+        metadata: { profileId: profile.id, organizationId: "org_1", role: "member" },
+      });
+    });
+
+    it("returns 409 when revoking the only remaining Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const [onlyProfile] = await deps.userProfiles.findByUserId(caller.userId);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/users/${caller.userId}/profiles/${onlyProfile!.id}`, {
+          method: "DELETE",
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+      expect(await deps.userProfiles.findById(onlyProfile!.id)).not.toBeNull();
+    });
+
+    it("allows revoking a Platform Administrator grant when another one still exists", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const secondAdmin = await createPlatformAdministratorCaller(deps);
+      const [secondProfile] = await deps.userProfiles.findByUserId(secondAdmin.userId);
+
+      const response = await handleRequest(
+        new Request(
+          `https://example.com/api/users/${secondAdmin.userId}/profiles/${secondProfile!.id}`,
+          { method: "DELETE", headers: { cookie: caller.cookie } },
+        ),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await deps.userProfiles.findById(secondProfile!.id)).toBeNull();
     });
   });
 

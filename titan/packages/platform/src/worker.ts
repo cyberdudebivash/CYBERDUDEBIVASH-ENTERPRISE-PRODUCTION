@@ -5,6 +5,7 @@ import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 import { createD1LeadRepository } from "./repositories/leadRepository.d1.js";
 import { createD1OrganizationRepository } from "./repositories/organizationRepository.d1.js";
 import { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
+import { createD1UserRepository } from "./repositories/userRepository.d1.js";
 import { handleRequest } from "./router.js";
 import { resolveAllowedOrigin } from "./http/cors.js";
 import { createLogger } from "./observability/logger.js";
@@ -69,6 +70,7 @@ export default {
       organizations: createD1OrganizationRepository(env.DB),
       audit: createD1AuditRepository(env.DB),
       userProfiles: createD1UserProfileRepository(env.DB),
+      users: createD1UserRepository(env.DB),
       logger,
       rateLimiter,
       authRateLimiter,
