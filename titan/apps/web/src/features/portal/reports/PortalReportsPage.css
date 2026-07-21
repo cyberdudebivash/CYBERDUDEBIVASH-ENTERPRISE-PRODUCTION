@@ -1,0 +1,27 @@
+.titan-portal-reports__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.titan-portal-reports__title {
+  margin: 0;
+}
+
+.titan-portal-reports__export {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.titan-portal-reports__note {
+  margin: 0;
+  color: #64748b;
+}
+
+.titan-portal-reports__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

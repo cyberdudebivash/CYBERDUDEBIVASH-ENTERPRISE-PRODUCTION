@@ -481,3 +481,46 @@ export interface AuditRepository {
    * a plain unfiltered/unpaginated array. */
   search(options: AuditSearchOptions): Promise<AuditSearchResult>;
 }
+
+// CPP-1: Support Requests — the one genuinely new entity the Customer
+// Portal needs (everything else it shows is composed from repositories
+// that already exist). A real, closed single-value status, not a
+// speculative multi-state workflow: there is no admin-side resolution
+// endpoint anywhere in this codebase yet, so "open" is the only status any
+// request can ever actually have today. Extending this enum is real,
+// named future work for the day a resolution flow exists — not built
+// speculatively ahead of one (the same discipline `AssessmentRecord`'s
+// honest, single "Completed" status already established, EAP-3).
+export const SUPPORT_REQUEST_STATUSES = ["open"] as const;
+export type SupportRequestStatus = (typeof SUPPORT_REQUEST_STATUSES)[number];
+
+export interface SupportRequestRecord {
+  id: string;
+  /** Nullable for the same reason `AssessmentRecord.organizationId` is —
+   * a caller with no organization membership can't reach any CPP-1 portal
+   * route to create one (`resolvePortalOrganizationId`, router.ts), but the
+   * column stays nullable rather than assumed-always-present, matching
+   * every other organization-scoped record in this schema. */
+  organizationId: string | null;
+  createdBy: string;
+  subject: string;
+  message: string;
+  status: SupportRequestStatus;
+  createdAt: string;
+}
+
+export type NewSupportRequest = Omit<SupportRequestRecord, "id" | "status"> & {
+  status?: SupportRequestStatus;
+};
+
+export interface SupportRequestRepository {
+  save(request: NewSupportRequest): Promise<SupportRequestRecord>;
+  /** No unfiltered `list()` — the only real consumer this phase has is a
+   * customer viewing their own request history (`GET /api/portal/support`),
+   * the same "search-only, no consumer for an unfiltered read" reasoning
+   * `UserRepository.search()` already established (EAP-5) for not building
+   * a method with no real caller. An admin-facing, cross-customer view is
+   * real, deferred follow-up (`DECISION_LOG.md`'s CPP-1 entry), not this
+   * phase's scope — "Do NOT implement: Administration Console". */
+  listByUser(userId: string): Promise<SupportRequestRecord[]>;
+}

@@ -19,6 +19,13 @@ import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
 import { AuditWorkspacePage } from "../features/admin/audit/AuditWorkspacePage.js";
 import { OperationsWorkspacePage } from "../features/admin/operations/OperationsWorkspacePage.js";
 import { ReportingWorkspacePage } from "../features/admin/reporting/ReportingWorkspacePage.js";
+import { PortalLayout } from "../features/portal/layout/PortalLayout.js";
+import { PortalDashboardPage } from "../features/portal/dashboard/PortalDashboardPage.js";
+import { PortalAssessmentsPage } from "../features/portal/assessments/PortalAssessmentsPage.js";
+import { PortalAssessmentDetailPage } from "../features/portal/assessments/PortalAssessmentDetailPage.js";
+import { PortalReportsPage } from "../features/portal/reports/PortalReportsPage.js";
+import { PortalAccountPage } from "../features/portal/account/PortalAccountPage.js";
+import { PortalSupportPage } from "../features/portal/support/PortalSupportPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -90,6 +97,33 @@ export function AppRoutes() {
             the Executive Dashboard/Business Reports/Analytics are all
             summary views, none with a standalone per-record detail page. */}
         <Route path="reporting" element={<ReportingWorkspacePage />} />
+      </Route>
+      {/* CPP-1: the Enterprise Customer Portal — a real Organization Member/
+          Admin/Owner viewing their own organization's data, not a new role
+          and not an extension of the admin route tree above. A separate
+          top-level route (its own SessionProvider/RequireAuth/PortalLayout),
+          not nested under /admin, since a customer should never see the
+          admin console's own nav or share its RBAC framing (any
+          authenticated session may reach /admin's shell; /portal's own
+          PortalLayout instead draws its honest "no organization
+          membership" line, since that's the real gate a customer caller
+          needs, not "not a Platform Administrator"). */}
+      <Route
+        path="/portal"
+        element={
+          <SessionProvider>
+            <RequireAuth>
+              <PortalLayout />
+            </RequireAuth>
+          </SessionProvider>
+        }
+      >
+        <Route index element={<PortalDashboardPage />} />
+        <Route path="assessments" element={<PortalAssessmentsPage />} />
+        <Route path="assessments/:id" element={<PortalAssessmentDetailPage />} />
+        <Route path="reports" element={<PortalReportsPage />} />
+        <Route path="support" element={<PortalSupportPage />} />
+        <Route path="account" element={<PortalAccountPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

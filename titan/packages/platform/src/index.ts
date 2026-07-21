@@ -38,12 +38,17 @@ export type {
   AuditSearchOptions,
   AuditSearchResult,
   AuditSortField,
+  SupportRequestRecord,
+  SupportRequestRepository,
+  NewSupportRequest,
+  SupportRequestStatus,
 } from "./repositories/types.js";
 export {
   LEAD_STATUSES,
   LEAD_PRIORITIES,
   ORGANIZATION_STATUSES,
   USER_ROLES,
+  SUPPORT_REQUEST_STATUSES,
 } from "./repositories/types.js";
 
 export { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
@@ -58,6 +63,8 @@ export { createInMemoryAssessmentRepository } from "./repositories/assessmentRep
 export { createD1AssessmentRepository } from "./repositories/assessmentRepository.d1.js";
 export { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";
 export { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
+export { createInMemorySupportRequestRepository } from "./repositories/supportRequestRepository.memory.js";
+export { createD1SupportRequestRepository } from "./repositories/supportRequestRepository.d1.js";
 
 export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
 export type {
@@ -71,6 +78,8 @@ export type {
   ReportTrendEntity,
   TrendPoint,
   TrendSeries,
+  PortalAssessmentsReport,
+  PortalComplianceSummary,
 } from "./router.js";
 export { handleRequest, REPORT_TREND_ENTITIES } from "./router.js";
 export type { Env } from "./worker.js";

@@ -20,6 +20,8 @@ import type {
   OrganizationRepository,
   OrganizationSearchOptions,
   OrganizationStatus,
+  NewSupportRequest,
+  SupportRequestRepository,
   UserProfilePatch,
   UserProfileRecord,
   UserProfileRepository,
@@ -102,6 +104,12 @@ export interface Dependencies {
    * silent empty result (same reasoning as `organizationsNotConfigured` —
    * every route this dependency backs is unusable without it). */
   users?: UserRepository;
+  /** CPP-1 (Customer Portal): backs Support Requests (`GET`/`POST
+   * /api/portal/support`) — the one genuinely new entity the portal needs.
+   * Optional for the same reason `organizations`/`users` are: an
+   * unconfigured deployment fails these two routes with a 503, not a
+   * silent empty result. */
+  supportRequests?: SupportRequestRepository;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -552,6 +560,88 @@ async function route(
     return exportReportSummary(url, deps, ctx);
   }
 
+  // CPP-1: Enterprise Customer Portal — a real Organization Member/Admin/
+  // Owner accessing their OWN organization's data, not a new role. Every
+  // route below derives its organizationId server-side from the caller's
+  // own real profile (never a client-supplied id, path param, or query
+  // string) via resolvePortalOrganizationId, so there is no way for one
+  // customer to view another organization's data by supplying a different
+  // id — the exact tenant-isolation property SECURITY_GUIDE.md's own
+  // known-gaps list has flagged as missing for every admin list/search
+  // endpoint since EAP-1. These are new, dedicated routes rather than
+  // authorization changes to the existing admin-facing endpoints
+  // (GET /api/organizations/:id, GET /api/assessments/search, etc.),
+  // deliberately: the admin console's own tested behavior stays untouched
+  // by this phase, and a customer-scoped read is a genuinely different
+  // caller/policy than a Platform-Administrator cross-organization one —
+  // the same reasoning that already splits every "list" from "search" and
+  // "search" from "export" elsewhere in this file.
+  if (url.pathname === "/api/portal/organization" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return getPortalOrganization(organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/assessments" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return listPortalAssessments(url, organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/reports/summary" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return portalReportSummaryResponse(organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/reports/export" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return exportPortalReportSummary(url, organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/activity" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return getPortalActivity(organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/support" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return listPortalSupportRequests(caller, deps, ctx);
+  }
+
+  // CPP-1: a real authenticated write — same Origin/CSRF check every other
+  // authenticated write in this file already gets (PATCH /api/leads/:id,
+  // POST /api/organizations, etc.). No rate limit, matching this
+  // codebase's own convention that rate limiting exists specifically for
+  // the anonymous, unauthenticated POST routes (POST /api/leads,
+  // POST /api/assessments) — an authenticated write already requires a
+  // real session, a materially weaker abuse vector.
+  if (url.pathname === "/api/portal/support" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return createPortalSupportRequest(request, caller, organizationId, deps, ctx);
+  }
+
   if (url.pathname === "/api/me" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -641,6 +731,16 @@ function usersNotConfigured(requestId: string): Response {
 function userProfilesNotConfigured(requestId: string): Response {
   return jsonError(
     { code: "not_configured", message: "User profiles are not configured" },
+    requestId,
+    503,
+  );
+}
+
+/** CPP-1: same reasoning as `organizationsNotConfigured` — every route
+ * `deps.supportRequests` backs is unusable without it. */
+function supportRequestsNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "Support requests are not configured" },
     requestId,
     503,
   );
@@ -2534,6 +2634,315 @@ async function exportReportSummary(
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
+}
+
+// CPP-1: Enterprise Customer Portal — a real Organization Member/Admin/
+// Owner viewing their own organization's data. No new role: this reuses
+// the exact `user_profiles` row (a real, non-null `organizationId`) every
+// existing `canAccessOrganization` check already reads.
+
+/** Derives "my own organization" for a Customer Portal route — never a
+ * client-suppliable id, always the caller's own real membership. A caller
+ * with no organization membership at all (an Authenticated User with no
+ * `user_profiles` row, or a Platform Administrator with only a
+ * platform-wide `organizationId: null` grant) has nothing to view here —
+ * a genuinely different caller shape from every existing Platform-
+ * Administrator-only route, hence its own gate rather than reusing
+ * `requirePlatformAdministrator`/`requireOrganizationAccess` as-is (the
+ * latter already assumes the organization id comes from elsewhere, e.g. a
+ * path param — here it's the very thing being resolved).
+ *
+ * Multi-organization membership (a user with more than one real
+ * `organizationId`) resolves to the first membership found — a real,
+ * named scope limit (`DECISION_LOG.md`'s CPP-1 entry), not an oversight:
+ * there is no organization switcher in this phase. */
+function resolvePortalOrganizationId(caller: Caller, requestId: string): string | Response {
+  const membership = caller.profiles.find((profile) => profile.organizationId !== null);
+  if (!membership?.organizationId) {
+    return jsonError(
+      {
+        code: "forbidden",
+        message:
+          "No organization membership — the Customer Portal requires a real organization member profile",
+      },
+      requestId,
+      403,
+    );
+  }
+  return membership.organizationId;
+}
+
+async function getPortalOrganization(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  const organization = await withOperationTiming(ctx.metrics, "portal.organizations.findById", () =>
+    deps.organizations!.findById(organizationId),
+  );
+  if (!organization) {
+    return jsonError({ code: "not_found", message: "Organization not found" }, ctx.requestId, 404);
+  }
+  return jsonSuccess(organization);
+}
+
+const PORTAL_PAGE_SIZE_DEFAULT = 20;
+const PORTAL_PAGE_SIZE_MAX = 100;
+// CPP-1: the same real-file-sized cap `AUDIT_EXPORT_MAX_ROWS`/
+// `REPORT_TREND_MAX_SAMPLE_ROWS` already establish for a bounded read —
+// used here to fetch "every one of this organization's own assessments"
+// in one page for the Reports summary/export, since no real customer
+// organization in this data model approaches this volume.
+const PORTAL_ASSESSMENTS_SAMPLE_SIZE = 1000;
+
+function parsePortalPagination(url: URL): { page: number; pageSize: number } {
+  const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+  const pageSize = Math.min(
+    PORTAL_PAGE_SIZE_MAX,
+    Math.max(1, Number(url.searchParams.get("pageSize")) || PORTAL_PAGE_SIZE_DEFAULT),
+  );
+  return { page, pageSize };
+}
+
+/** The Customer Portal's own Assessment History — the same
+ * `AssessmentRepository.search` the admin Assessment Workspace already
+ * calls, with `organizationId` forced to the caller's own resolved
+ * organization rather than accepted from the query string (unlike the
+ * admin-facing `GET /api/assessments/search`, where a Platform
+ * Administrator may pass any organization's id, or none). */
+async function listPortalAssessments(
+  url: URL,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const { page, pageSize } = parsePortalPagination(url);
+  const result = await withOperationTiming(ctx.metrics, "portal.assessments.search", () =>
+    deps.assessments.search({
+      organizationId,
+      page,
+      pageSize,
+      sortBy: "createdAt",
+      sortDirection: "desc",
+    }),
+  );
+  return jsonSuccess(result);
+}
+
+export interface PortalAssessmentsReport {
+  total: number;
+  byRiskLevel: Record<RiskLevel, number>;
+  byFramework: Record<string, number>;
+  /** ISO 8601, or null when this organization has no assessments yet. */
+  latestAssessmentAt: string | null;
+}
+
+export interface PortalComplianceSummary {
+  organizationId: string;
+  assessments: PortalAssessmentsReport;
+  generatedAt: string;
+}
+
+/** CPP-1's own, deliberately smaller sibling to EAP-8's `ExecutiveSummary`
+ * — not the same type reused with a filter, because most of
+ * `ExecutiveSummary`'s sections don't have a meaningful single-organization
+ * form: leads are never associated with an organization in this data
+ * model (`SECURITY_GUIDE.md`'s own note on `LeadRecord.organizationId`),
+ * "identity" (Platform Administrator counts) is a platform-wide concept
+ * with no per-organization analogue, and reusing "audit" as a
+ * platform-wide rollup here would leak cross-tenant activity counts
+ * through what looks like an organization-scoped endpoint. What *does*
+ * have a real, honest per-organization form is this organization's own
+ * assessments — the same real counts `buildExecutiveSummary`/
+ * `ComplianceIntelligencePanel.tsx` (EAP-3, computed client-side) already
+ * derive, just scoped here via the repository's own existing
+ * `organizationId` filter instead of an unfiltered fetch. */
+async function buildPortalComplianceSummary(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<PortalComplianceSummary> {
+  const result = await withOperationTiming(ctx.metrics, "portal.reports.assessments.search", () =>
+    deps.assessments.search({
+      organizationId,
+      page: 1,
+      pageSize: PORTAL_ASSESSMENTS_SAMPLE_SIZE,
+      sortBy: "createdAt",
+      sortDirection: "desc",
+    }),
+  );
+  const assessments = result.assessments;
+
+  return {
+    organizationId,
+    assessments: {
+      total: assessments.length,
+      byRiskLevel: countByEnum(
+        assessments,
+        RISK_LEVELS,
+        (assessment) => assessment.result.riskLevel,
+      ),
+      byFramework: countByFreeform(assessments, (assessment) => assessment.framework),
+      latestAssessmentAt: assessments[0]?.createdAt ?? null,
+    },
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+async function portalReportSummaryResponse(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const summary = await buildPortalComplianceSummary(organizationId, deps, ctx);
+  return jsonSuccess(summary);
+}
+
+/** CPP-1: the same `PortalComplianceSummary` `GET /api/portal/reports/summary`
+ * returns, as a real downloadable file — same shape and reasoning as
+ * `exportReportSummary` (EAP-8). Contains only aggregate counts for the
+ * caller's own organization, nothing individually identifying, so it needs
+ * no row cap the way `GET /api/audit/export` does. */
+async function exportPortalReportSummary(
+  url: URL,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const format = url.searchParams.get("format") ?? "csv";
+  if (format !== "csv" && format !== "json") {
+    return jsonError(
+      { code: "validation_error", message: `Invalid format: ${format}` },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const summary = await buildPortalComplianceSummary(organizationId, deps, ctx);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `compliance-summary-${timestamp}.${format}`;
+  const body =
+    format === "csv" ? toPortalComplianceSummaryCsv(summary) : JSON.stringify(summary, null, 2);
+  const contentType =
+    format === "csv" ? "text/csv; charset=utf-8" : "application/json; charset=utf-8";
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    },
+  });
+}
+
+function toPortalComplianceSummaryCsv(summary: PortalComplianceSummary): string {
+  const rows: string[][] = [
+    ["assessments", "total", String(summary.assessments.total)],
+    ...Object.entries(summary.assessments.byRiskLevel).map(([level, count]) => [
+      "assessments",
+      `riskLevel.${level}`,
+      String(count),
+    ]),
+    ...Object.entries(summary.assessments.byFramework).map(([framework, count]) => [
+      "assessments",
+      `framework.${framework}`,
+      String(count),
+    ]),
+    ["assessments", "latestAssessmentAt", summary.assessments.latestAssessmentAt ?? ""],
+  ];
+  const header = REPORT_SUMMARY_CSV_HEADER.join(",");
+  const csvRows = rows.map((row) => row.map(csvField).join(","));
+  return [header, ...csvRows].join("\r\n");
+}
+
+const PORTAL_ACTIVITY_PAGE_SIZE = 20;
+
+/** "Recent Activity"/"Notifications" on the Customer Portal Dashboard — a
+ * real, organization-scoped slice of the exact same `audit_events` table
+ * every admin module already writes to (`AuditRepository.search`'s
+ * pre-existing `organizationId` filter, EAP-6), not a fabricated
+ * notifications table with no real producer. This organization's own
+ * `assessment.created`/`assessment.viewed`/`organization.*` events are
+ * already recorded with a real `organizationId` (`recordAuditEvent`,
+ * unchanged) — reading them back is additive, not a new writer. */
+async function getPortalActivity(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const result = await withOperationTiming(ctx.metrics, "portal.activity.search", () =>
+    deps.audit.search({ organizationId, page: 1, pageSize: PORTAL_ACTIVITY_PAGE_SIZE }),
+  );
+  return jsonSuccess(result.events);
+}
+
+async function listPortalSupportRequests(
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.supportRequests) return supportRequestsNotConfigured(ctx.requestId);
+  const requests = await withOperationTiming(ctx.metrics, "portal.supportRequests.listByUser", () =>
+    deps.supportRequests!.listByUser(caller.userId),
+  );
+  return jsonSuccess(requests);
+}
+
+function validateSupportRequestInput(
+  value: unknown,
+): ValidationResult<{ subject: string; message: string }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  const subject = requireNonEmptyString(record, "subject");
+  if (!subject.ok) return subject;
+  const message = requireNonEmptyString(record, "message");
+  if (!message.ok) return message;
+
+  return ok({ subject: subject.value, message: message.value });
+}
+
+/** CPP-1's one real write: a customer submitting a support request. No
+ * ticketing platform — `status` starts (and, today, stays) `"open"`; there
+ * is no admin-side resolution endpoint anywhere in this codebase yet
+ * (`SupportRequestStatus`'s own doc comment, `repositories/types.ts`). */
+async function createPortalSupportRequest(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.supportRequests) return supportRequestsNotConfigured(ctx.requestId);
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonError(
+      { code: "validation_error", message: "Invalid JSON body" },
+      ctx.requestId,
+      400,
+    );
+  }
+  const parsed = validateSupportRequestInput(body);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const newRequest: NewSupportRequest = {
+    organizationId,
+    createdBy: caller.userId,
+    subject: parsed.value.subject,
+    message: parsed.value.message,
+    createdAt: new Date().toISOString(),
+  };
+  const saved = await withOperationTiming(ctx.metrics, "portal.supportRequests.save", () =>
+    deps.supportRequests!.save(newRequest),
+  );
+  return jsonSuccess(saved, 201);
 }
 
 /** EAP-1: "who am I" for the frontend — the piece role-aware navigation

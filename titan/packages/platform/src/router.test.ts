@@ -7,6 +7,7 @@ import { createInMemoryAuditRepository } from "./repositories/auditRepository.me
 import { createInMemoryOrganizationRepository } from "./repositories/organizationRepository.memory.js";
 import { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
 import { createD1UserRepository } from "./repositories/userRepository.d1.js";
+import { createInMemorySupportRequestRepository } from "./repositories/supportRequestRepository.memory.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
@@ -63,7 +64,29 @@ function createAuthorizedTestDeps(): Dependencies & {
     userProfiles: createInMemoryUserProfileRepository(),
     organizations: createInMemoryOrganizationRepository(),
     users: createD1UserRepository(db),
+    // CPP-1: every portal test needs this configured, the same reasoning
+    // `userProfiles`/`organizations` are always included here too.
+    supportRequests: createInMemorySupportRequestRepository(),
   };
+}
+
+/** CPP-1: the Customer Portal's own caller shape — a real organization
+ * member/admin/owner, the same setup `describe("GET /api/assessments/:id",
+ * ...)`'s own "member of the assessment's own organization" case already
+ * establishes, factored out since every portal describe block below needs
+ * it. */
+async function createOrganizationMemberCaller(
+  deps: Dependencies & { userProfiles: UserProfileRepository },
+  organizationId: string,
+) {
+  const caller = await createTestCaller(deps.authConfig!);
+  await deps.userProfiles.save({
+    userId: caller.userId,
+    organizationId,
+    role: "member",
+    createdAt: "2026-07-20T00:00:00.000Z",
+  });
+  return caller;
 }
 
 /** EAP-2: several new describe blocks below each need a signed-in Platform
@@ -3456,6 +3479,434 @@ describe("handleRequest", () => {
       expect(response.headers.get("content-type")).toContain("application/json");
       const body = (await response.json()) as { leads: { total: number } };
       expect(body.leads.total).toBe(0);
+    });
+  });
+
+  describe("GET /api/portal/organization (CPP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller with no organization membership", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 200 with the caller's own organization, derived server-side", async () => {
+      const deps = createAuthorizedTestDeps();
+      const org = await deps.organizations.save({
+        name: "Acme Fintech",
+        slug: "acme-fintech",
+        industry: "Financial Services",
+        region: "APAC",
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, org.id);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ id: org.id, name: "Acme Fintech" });
+    });
+
+    it("ignores any organizationId the client tries to supply and always resolves the caller's own", async () => {
+      const deps = createAuthorizedTestDeps();
+      const ownOrg = await deps.organizations.save({
+        name: "Own Org",
+        slug: "own-org",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const otherOrg = await deps.organizations.save({
+        name: "Other Org",
+        slug: "other-org",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, ownOrg.id);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/portal/organization?organizationId=${otherOrg.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ id: ownOrg.id });
+    });
+
+    it("returns 503 when organizations is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          headers: { cookie: caller.cookie },
+        }),
+        { ...deps, organizations: undefined },
+      );
+      expect(response.status).toBe(503);
+    });
+  });
+
+  describe("GET /api/portal/assessments (CPP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/assessments"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller with no organization membership", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/assessments", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns only the caller's own organization's assessments, never another organization's", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: true },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.assessments.save({
+        organizationId: "org_2",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/assessments", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        assessments: { organizationId: string | null }[];
+        total: number;
+      };
+      expect(body.total).toBe(1);
+      expect(body.assessments.every((assessment) => assessment.organizationId === "org_1")).toBe(
+        true,
+      );
+    });
+  });
+
+  describe("GET /api/portal/reports/summary (CPP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/summary"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller with no organization membership", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns real counts scoped to the caller's own organization only", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: true },
+        result: { ...sampleResult, riskLevel: "critical" },
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.assessments.save({
+        organizationId: "org_2",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: { ...sampleResult, riskLevel: "low" },
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        organizationId: string;
+        assessments: { total: number; byRiskLevel: Record<string, number> };
+      };
+      expect(body.organizationId).toBe("org_1");
+      expect(body.assessments.total).toBe(1);
+      expect(body.assessments.byRiskLevel.critical).toBe(1);
+      expect(body.assessments.byRiskLevel.low).toBe(0);
+    });
+  });
+
+  describe("GET /api/portal/reports/export (CPP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 400 for an invalid format", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export?format=xml", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns a CSV file with only aggregate counts — no individual assessment fields", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: "user_creator_1",
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: true },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-disposition")).toContain("compliance-summary-");
+      const body = await response.text();
+      expect(body).toContain("assessments,total,1");
+      // No individual-record field (a creator id, an answer, an org id
+      // other than the header row) ever appears — only known enum keys
+      // and counts, the same conservatism `SECURITY_GUIDE.md`'s CPP-1
+      // paragraph documents.
+      expect(body).not.toContain("user_creator_1");
+    });
+  });
+
+  describe("GET /api/portal/activity (CPP-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/activity"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns only this organization's own audit events, never another organization's", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: "org_1",
+        action: "assessment.created",
+        entityType: "assessment",
+        entityId: "assessment_1",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.audit.record({
+        actorId: null,
+        organizationId: "org_2",
+        action: "assessment.created",
+        entityType: "assessment",
+        entityId: "assessment_2",
+        metadata: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/activity", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const events = (await response.json()) as { organizationId: string | null }[];
+      expect(events).toHaveLength(1);
+      expect(events[0]?.organizationId).toBe("org_1");
+    });
+  });
+
+  describe("GET/POST /api/portal/support (CPP-1)", () => {
+    it("returns 401 for an anonymous caller on both GET and POST", async () => {
+      const deps = createAuthorizedTestDeps();
+      const getResponse = await handleRequest(
+        new Request("https://example.com/api/portal/support"),
+        deps,
+      );
+      expect(getResponse.status).toBe(401);
+
+      const postResponse = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          method: "POST",
+          body: JSON.stringify({ subject: "Help", message: "Something's wrong" }),
+        }),
+        deps,
+      );
+      expect(postResponse.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller with no organization membership", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ subject: "Help", message: "Something's wrong" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 for a missing subject or message", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          method: "POST",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ subject: "Help" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("creates a real request, retrievable via GET, scoped to the requesting user only", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const otherCaller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const createResponse = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            subject: "Can't download my report",
+            message: "The export button spins but nothing downloads.",
+          }),
+        }),
+        deps,
+      );
+      expect(createResponse.status).toBe(201);
+      const created = (await createResponse.json()) as {
+        id: string;
+        status: string;
+        organizationId: string | null;
+      };
+      expect(created.status).toBe("open");
+      expect(created.organizationId).toBe("org_1");
+
+      const ownResponse = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const ownRequests = (await ownResponse.json()) as { id: string }[];
+      expect(ownRequests).toHaveLength(1);
+      expect(ownRequests[0]?.id).toBe(created.id);
+
+      const otherResponse = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          headers: { cookie: otherCaller.cookie },
+        }),
+        deps,
+      );
+      expect(await otherResponse.json()).toEqual([]);
+    });
+
+    it("returns 503 when supportRequests is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/support", {
+          headers: { cookie: caller.cookie },
+        }),
+        { ...deps, supportRequests: undefined },
+      );
+      expect(response.status).toBe(503);
     });
   });
 });
