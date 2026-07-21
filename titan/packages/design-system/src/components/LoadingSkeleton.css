@@ -1,0 +1,36 @@
+.titan-loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.titan-loading-skeleton__line {
+  height: 14px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  animation: titan-loading-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.titan-loading-skeleton__line:nth-child(3n + 2) {
+  width: 85%;
+}
+.titan-loading-skeleton__line:nth-child(3n + 3) {
+  width: 65%;
+}
+
+@keyframes titan-loading-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titan-loading-skeleton__line {
+    animation: none;
+  }
+}

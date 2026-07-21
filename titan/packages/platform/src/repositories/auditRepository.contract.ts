@@ -48,5 +48,25 @@ export function describeAuditRepositoryContract(
       await repo.record({ ...sampleEvent, action: "assessment.created" });
       expect(await repo.list()).toHaveLength(2);
     });
+
+    // EAP-2: entity-scoped filtering (a single lead's own activity trail).
+    it("filters by entityType and entityId together", async () => {
+      const repo = createRepository();
+      await repo.record(sampleEvent); // lead / lead_1
+      await repo.record({ ...sampleEvent, entityId: "lead_2" });
+      await repo.record({ ...sampleEvent, entityType: "assessment", entityId: "lead_1" });
+
+      const result = await repo.list({ entityType: "lead", entityId: "lead_1" });
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ entityType: "lead", entityId: "lead_1" });
+    });
+
+    it("with no filter (or an empty one) behaves exactly like list() with no arguments", async () => {
+      const repo = createRepository();
+      await repo.record(sampleEvent);
+      await repo.record({ ...sampleEvent, entityId: "lead_2" });
+      expect(await repo.list({})).toHaveLength(2);
+      expect(await repo.list(undefined)).toHaveLength(2);
+    });
   });
 }

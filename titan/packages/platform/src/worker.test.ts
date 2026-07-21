@@ -197,4 +197,94 @@ describe("worker (default export)", () => {
     expect(events).toHaveLength(1);
     expect(events[0]?.action).toBe("lead.created");
   });
+
+  it("EAP-2: wires a real env.DB through GET /api/leads/:id, PATCH /api/leads/:id, and GET /api/leads/search end to end", async () => {
+    const env = { DB: createDb(), AUTH_SECRET: "test-secret" };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const createResponse = await worker.fetch(
+      new Request("https://example.com/api/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Asha Rao",
+          email: "asha@acme.in",
+          company: "Acme Fintech",
+          answers: {},
+          result: {
+            score: 0,
+            riskLevel: "low",
+            breakdown: { critical: 0, high: 0, medium: 0, low: 12, total: 0 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          timestamp: "2026-07-20T00:00:00.000Z",
+          source: "dpdp-scan",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(createResponse.status).toBe(201);
+    const created = (await createResponse.json()) as { id: string };
+
+    const getResponse = await worker.fetch(
+      new Request(`https://example.com/api/leads/${created.id}`, { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(getResponse.status).toBe(200);
+    expect(await getResponse.json()).toMatchObject({ id: created.id, status: "new" });
+
+    const patchResponse = await worker.fetch(
+      new Request(`https://example.com/api/leads/${created.id}`, {
+        method: "PATCH",
+        headers: { cookie, origin: "http://localhost:5173" },
+        body: JSON.stringify({ status: "qualified", priority: "urgent", tags: ["enterprise"] }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(patchResponse.status).toBe(200);
+    expect(await patchResponse.json()).toMatchObject({ status: "qualified", priority: "urgent" });
+
+    // Real D1 round trip, not just trusting the PATCH response.
+    const rereadResponse = await worker.fetch(
+      new Request(`https://example.com/api/leads/${created.id}`, { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(await rereadResponse.json()).toMatchObject({
+      status: "qualified",
+      priority: "urgent",
+      tags: ["enterprise"],
+    });
+
+    const searchResponse = await worker.fetch(
+      new Request("https://example.com/api/leads/search?status=qualified", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(searchResponse.status).toBe(200);
+    const searched = (await searchResponse.json()) as { total: number };
+    expect(searched.total).toBe(1);
+
+    // lead.viewed (x2, from the two GETs above), lead.status_changed,
+    // lead.priority_changed, lead.tags_changed, lead.created — a real,
+    // cumulative activity trail through the actual Worker, not a mock.
+    const auditResponse = await worker.fetch(
+      new Request("https://example.com/api/audit", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    const events = (await auditResponse.json()) as Array<{ action: string }>;
+    expect(events.filter((event) => event.action === "lead.viewed")).toHaveLength(2);
+    expect(events.map((event) => event.action)).toEqual(
+      expect.arrayContaining([
+        "lead.created",
+        "lead.status_changed",
+        "lead.priority_changed",
+        "lead.tags_changed",
+      ]),
+    );
+  });
 });

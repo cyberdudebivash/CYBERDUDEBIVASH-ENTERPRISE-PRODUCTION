@@ -8,6 +8,8 @@ import { SessionProvider } from "../features/admin/auth/SessionContext.js";
 import { RequireAuth } from "../features/admin/auth/RequireAuth.js";
 import { AdminLayout } from "../features/admin/layout/AdminLayout.js";
 import { DashboardPage } from "../features/admin/dashboard/DashboardPage.js";
+import { LeadWorkspacePage } from "../features/admin/leads/LeadWorkspacePage.js";
+import { LeadDetailPage } from "../features/admin/leads/LeadDetailPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -37,6 +39,13 @@ export function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        {/* EAP-2: the first module past Dashboard — Platform-Administrator-
+            gated server-side (SECURITY_GUIDE.md), not by the route itself
+            (RequireAuth only checks for a session, matching Dashboard's own
+            precedent of showing an honest "forbidden" state per-section
+            rather than blocking the route). */}
+        <Route path="leads" element={<LeadWorkspacePage />} />
+        <Route path="leads/:id" element={<LeadDetailPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

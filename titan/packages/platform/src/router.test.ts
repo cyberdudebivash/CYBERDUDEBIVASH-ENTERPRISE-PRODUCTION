@@ -53,6 +53,25 @@ function createAuthorizedTestDeps(): Dependencies & {
   };
 }
 
+/** EAP-2: several new describe blocks below each need a signed-in Platform
+ * Administrator — the exact setup `describe("GET /api/leads", ...)` above
+ * already inlines once. Factored out here since EAP-2 repeats it well
+ * beyond the three-times-is-fine threshold this codebase otherwise holds
+ * to (DEVELOPER_GUIDE.md). Existing call sites above are left as they are
+ * — untouched, still-passing tests aren't worth churning for this alone. */
+async function createPlatformAdministratorCaller(
+  deps: Dependencies & { userProfiles: UserProfileRepository },
+) {
+  const caller = await createTestCaller(deps.authConfig!);
+  await deps.userProfiles.save({
+    userId: caller.userId,
+    organizationId: null,
+    role: "owner",
+    createdAt: "2026-07-20T00:00:00.000Z",
+  });
+  return caller;
+}
+
 const sampleResult: AssessmentResult = {
   score: 50,
   riskLevel: "medium",
@@ -256,6 +275,361 @@ describe("handleRequest", () => {
       expect(response.status).toBe(200);
       const body = (await response.json()) as unknown[];
       expect(body).toHaveLength(1);
+    });
+  });
+
+  describe("GET /api/leads/:id (EAP-2)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown lead id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/does-not-exist", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 200 with the real lead and records a lead.viewed audit event with a real actor", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { id: string };
+      expect(body.id).toBe(saved.id);
+
+      const events = await deps.audit.list();
+      const viewed = events.find((event) => event.action === "lead.viewed");
+      expect(viewed).toMatchObject({
+        entityType: "lead",
+        entityId: saved.id,
+        actorId: caller.userId,
+      });
+    });
+  });
+
+  describe("PATCH /api/leads/:id (EAP-2)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "contacted" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "contacted" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a forged cross-origin request even with a valid session cookie", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, origin: "https://evil.example.com" },
+          body: JSON.stringify({ status: "contacted" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown lead id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/does-not-exist", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "contacted" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 400 for an invalid status", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "not-a-real-status" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("updates status, persists it, and records a lead.status_changed audit event with from/to", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "qualified" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { status: string };
+      expect(body.status).toBe("qualified");
+
+      const reread = await deps.leads.findById(saved.id);
+      expect(reread?.status).toBe("qualified");
+
+      const events = await deps.audit.list();
+      const changed = events.find((event) => event.action === "lead.status_changed");
+      expect(changed).toMatchObject({
+        entityId: saved.id,
+        actorId: caller.userId,
+        metadata: { from: "new", to: "qualified" },
+      });
+    });
+
+    it("does not record a status-changed event when status is patched to its current value", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody, status: "qualified" });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ status: "qualified" }),
+        }),
+        deps,
+      );
+
+      const events = await deps.audit.list();
+      expect(events.find((event) => event.action === "lead.status_changed")).toBeUndefined();
+    });
+
+    it("updates assignment, including clearing it back to unassigned", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ assignedTo: "user_42" }),
+        }),
+        deps,
+      );
+      expect((await deps.leads.findById(saved.id))?.assignedTo).toBe("user_42");
+
+      await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ assignedTo: null }),
+        }),
+        deps,
+      );
+      expect((await deps.leads.findById(saved.id))?.assignedTo).toBeNull();
+
+      const events = await deps.audit.list();
+      expect(events.filter((event) => event.action === "lead.assigned")).toHaveLength(2);
+    });
+
+    it("adds a note as an audit event without mutating the lead record", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.leads.save({ ...validLeadBody });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/leads/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie },
+          body: JSON.stringify({ note: "Called, left voicemail." }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const reread = await deps.leads.findById(saved.id);
+      expect(reread?.status).toBe("new"); // unchanged — a note isn't a lifecycle field
+
+      const events = await deps.audit.list();
+      const noteEvent = events.find((event) => event.action === "lead.note_added");
+      expect(noteEvent).toMatchObject({
+        entityId: saved.id,
+        actorId: caller.userId,
+        metadata: { note: "Called, left voicemail." },
+      });
+    });
+  });
+
+  describe("GET /api/leads/search (EAP-2)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a paginated envelope with every lead when no filters are given", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({ ...validLeadBody });
+      await deps.leads.save({ ...validLeadBody, email: "second@acme.in" });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { leads: unknown[]; total: number; page: number };
+      expect(body.total).toBe(2);
+      expect(body.leads).toHaveLength(2);
+      expect(body.page).toBe(1);
+    });
+
+    it("filters by status via a query param", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({ ...validLeadBody, status: "qualified" });
+      await deps.leads.save({ ...validLeadBody, email: "second@acme.in" });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search?status=qualified", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(1);
+    });
+
+    it("returns 400 for an invalid status filter", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search?status=bogus", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for a non-numeric page", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search?page=not-a-number", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("searches by name/email/company substring", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({ ...validLeadBody, company: "Acme Fintech" });
+      await deps.leads.save({ ...validLeadBody, email: "b@example.com", company: "Globex Retail" });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search?search=fintech", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { total: number; leads: Array<{ company: string }> };
+      expect(body.total).toBe(1);
+      expect(body.leads[0]?.company).toBe("Acme Fintech");
     });
   });
 

@@ -9,7 +9,7 @@ titan/
   apps/
     web/                  # @titan/web — the application shell (routing, layout, error handling)
       src/features/dpdp-assessment/  # the public DPDP scan route (/assessment/dpdp) — its own visual system, not @titan/design-system
-      src/features/admin/            # the authenticated admin app (/admin, EAP-1) — auth/, layout/, dashboard/, uses @titan/design-system
+      src/features/admin/            # the authenticated admin app (/admin, EAP-1) — auth/, layout/, dashboard/, leads/ (EAP-2), uses @titan/design-system
   packages/
     design-system/        # @titan/design-system — tokens + reusable UI components (for the authenticated app shell only)
     assessment-core/       # @titan/assessment-core — question banks + risk-scoring engine (framework-agnostic)
@@ -85,7 +85,11 @@ npm run test:e2e
 
 `playwright.config.ts`'s `webServer` array starts the real backend (migrations + `wrangler dev`, port 8787) and the real frontend (`vite`, port 5173) itself — you don't need either running beforehand, though it'll reuse them if they already are (`reuseExistingServer`). If a run hangs with no output, check for a stale `wrangler dev`/`workerd` process already bound to port 8787 from an earlier manual session (`lsof -i :8787`) and kill it first — a stale server whose `.wrangler/` state has since been deleted is a real way to hang a run silently, not a Playwright bug.
 
-Two specs exist: `dpdp-assessment.spec.ts` (the public assessment flow, RC1) and `admin-dashboard.spec.ts` (the admin app's sign-in-required redirect, a full Platform Administrator flow including real cross-origin sign-out, and a non-admin's honest forbidden messaging — EAP-1). The latter seeds an Auth.js session directly in D1 (`seedSession()`, its own top-of-file comment explains why) rather than driving the Email provider's sign-in UI, to stay fast and focused on what EAP-1 actually changed rather than re-testing Auth.js's own already-verified sign-in mechanics.
+Three specs exist: `dpdp-assessment.spec.ts` (the public assessment flow, RC1), `admin-dashboard.spec.ts` (the admin app's sign-in-required redirect, a full Platform Administrator flow including real cross-origin sign-out, and a non-admin's honest forbidden messaging — EAP-1), and `lead-workspace.spec.ts` (real search/filter/pagination against real seeded D1 leads, navigation into Lead Details, and a lifecycle update that persists across a real page reload — EAP-2). The latter two seed an Auth.js session directly in D1 (`seedSession()`, its own top-of-file comment explains why) rather than driving the Email provider's sign-in UI, to stay fast and focused on what each phase actually changed rather than re-testing Auth.js's own already-verified sign-in mechanics.
+
+`lead-workspace.spec.ts`'s own top comment documents two real findings its own real-browser verification caught that no unit/jsdom test could have: a CORS `Access-Control-Allow-Methods` gap that silently broke every real `PATCH /api/leads/:id` call (`SECURITY_GUIDE.md`'s Surface 2 table has the full finding), and a React 19 `StrictMode` double-invocation race in `useLeadDetail.ts`'s data-fetching effect. Both `admin-dashboard.spec.ts` and `lead-workspace.spec.ts` pass `waitUntil: "domcontentloaded"` to `page.goto`/`page.reload` rather than Playwright's default (`"load"`) — the default additionally blocks on this sandbox's external Google Fonts request settling, which can be slow through the environment's outbound proxy and isn't something any assertion here depends on; every navigation is already followed by a real, specific `expect(...).toBeVisible()`, which is what actually proves the app loaded.
+
+`playwright.config.ts` also sets `workers: 1` — all three spec files share one real, persistent local D1 instance with no per-test transaction isolation, and `fullyParallel: false` alone only serializes tests *within* one file, not across files. With the default multi-worker behavior, a test in one file (e.g. `lead-workspace.spec.ts` inserting a lead) can run concurrently with another file's test that snapshots-then-asserts a global count (`admin-dashboard.spec.ts`'s Dashboard metrics test) and race it — a real, reproduced failure (`DECISION_LOG.md`'s EAP-2 entry), not a hypothetical one. If you add a fourth spec file, keep `workers: 1` rather than removing it for speed; these tests were never designed for cross-file isolation.
 
 Not yet wired into `titan-ci.yml` — see `DECISION_LOG.md`'s RC1 entry for why (a GitHub Actions runner needs its own Playwright browser download; this sandbox's pre-installed Chromium at `/opt/pw-browsers` is environment-specific).
 
@@ -167,8 +171,9 @@ Google/GitHub only appear in the provider list when real credentials are configu
   }
 >
   <Route index element={<DashboardPage />} />
-  {/* a future module's route nests here, e.g.: */}
-  {/* <Route path="leads" element={<LeadsPage />} /> */}
+  <Route path="leads" element={<LeadWorkspacePage />} /> {/* EAP-2 */}
+  <Route path="leads/:id" element={<LeadDetailPage />} /> {/* EAP-2 */}
+  {/* a future module's route nests here the same way */}
 </Route>
 ```
 
@@ -187,6 +192,24 @@ import { useSession } from "../auth/SessionContext.js";
 // rather than calling fetchMe() again itself.
 ```
 
+## Lead Intelligence usage (`@titan/web`'s `/admin/leads`, EAP-2)
+
+The first real business module built on top of EAP-1's shell — the pattern a future module (Assessment Management, Organization Management, etc.) should follow, not a one-off.
+
+```ts
+import { fetchLead, updateLead, searchLeads, fetchLeadAuditTrail } from "../leads/leadApi.js";
+// Thin wrappers over apiClient's getJson/patchJson — no fetch() calls
+// anywhere else in features/admin/leads/. searchLeads builds a
+// URLSearchParams from a LeadSearchOptions object; fetchLeadAuditTrail
+// calls GET /api/audit?entityType=lead&entityId=... server-side, never
+// filters a client-side copy of the whole audit table.
+```
+
+- **`useLeadSearch.ts`** owns the Lead Workspace's filters/sort/page state and re-fetches via `searchLeads` on change — the same `SectionState<T>` pattern as `useDashboardData.ts`, reused, not reimplemented. Only `search` is debounced (300ms); filter/sort/page changes apply immediately.
+- **`useLeadDetail.ts`** owns a single lead's fetch/refetch — its data-fetching `useEffect` uses a `let cancelled = false` guard checked before every `setState` in every `.then()`/`.catch()`. This isn't defensive boilerplate: an earlier version without it shipped a real bug, only visible under React 19's `<StrictMode>` double-invocation in a real browser (jsdom-based tests never trigger it) — see `DECISION_LOG.md`'s EAP-2 entry. Match this shape in any new data-fetching hook under `features/admin/`, not a bespoke pattern per hook.
+- **`leadWorkspacePreferences.ts`** is the one place saved filters/visible columns are read from/written to `localStorage` — both wrapped in `try/catch` (a corrupt or disabled `localStorage` degrades to "no saved preferences," never a crash). A future module persisting its own per-browser preferences should follow this same isolated-module shape rather than reading `localStorage` inline in a component.
+- **`StatusBadge.tsx`/`RiskBadge.tsx`/`PriorityBadge.tsx`** live in `features/admin/leads/`, not `@titan/design-system`, even though they render as badges — `@titan/design-system` is a leaf package with zero `@titan/*` dependencies (`ARCHITECTURE.md`'s audit), and these three need the `LeadStatus`/`RiskLevel`/`LeadPriority` domain types from `@titan/platform`. Each wraps the design system's generic `Badge` with a domain-specific label/tone map. Follow the same split for any future domain-aware badge: the generic primitive lives in the design system, the domain mapping lives in the feature.
+
 ## Adding a new component to the design system
 
 1. `packages/design-system/src/components/YourComponent.tsx` + co-located `.css` + `.test.tsx`.
@@ -197,7 +220,8 @@ import { useSession } from "../auth/SessionContext.js";
 ## What NOT to do (things this stage deliberately doesn't have yet)
 
 - Protected routes/session context/sign-in-and-out are now real (`features/admin/auth/`, EAP-1) — don't build a second, parallel version of any of it for a new module. A new admin page nests under the existing `/admin` route tree (`AdminLayout`'s `<Outlet/>`) and reads `useSession()`/`GET /api/me` the way `DashboardPage.tsx` does, rather than re-resolving "who's signed in" itself. Don't build a custom login/sign-out form either — `RequireAuth`/`Header`'s sign-out link deliberately link to Auth.js's own hosted pages instead (`ARCHITECTURE.md`'s "Admin Application architecture" section has the reasoning).
-- Don't build Lead Management, Assessment Management, Organization Management, User Management, an Audit Center, or an Operations Center as full modules without a real go-ahead for that EAP phase — Phase 1 (EAP-1) deliberately built only the shell and one module (Dashboard); the rest are sequenced, not forgotten (`ROADMAP.md`'s EAP-1 section).
+- Don't build Assessment Management, Organization Management, User Management, an Audit Center, or an Operations Center (or a Customer Portal, or any commercial/billing/licensing surface) as full modules without a real go-ahead for that EAP phase — EAP-1 deliberately built only the shell and one module (Dashboard); EAP-2 deliberately built exactly one more (Lead Intelligence); the rest are sequenced, not forgotten (`ROADMAP.md`).
+- Don't rebuild the Lead Workspace/Lead Details UI, `LeadRepository`, or the lead lifecycle data model from scratch for a future module that happens to touch leads (e.g. linking a lead to a future Assessment Management module) — extend what EAP-2 built (`features/admin/leads/`, `LeadRepository.findById`/`update`/`search`) the same additive way EAP-2 itself extended `LeadRepository` without touching `list()` (`DECISION_LOG.md`'s EAP-2 entry).
 - Don't widen `ALLOWED_ORIGIN`/the Auth.js `redirect` callback allowlist/the CSP `form-action` allowlist (`auth/config.ts`, `http/finalizeResponse.ts`) to more than one real, known frontend origin, and don't switch any of them to a wildcard for convenience — each is a deliberately closed allowlist of exactly the origins this project actually controls (`SECURITY_GUIDE.md`'s "Authorization model"), and widening any one without the other two changes the security properties silently.
 - Don't bump this workspace's Vitest 3 → 4 as a side effect of some other task, even though `@cloudflare/vitest-pool-workers` wants it — that's a deliberate, workspace-wide decision on its own, not a dependency bump to absorb quietly (`DECISION_LOG.md`). sql.js-backed repository tests close most of the practical gap in the meantime.
 - Don't add a Credentials (username/password) auth provider — only Email/Google/GitHub were asked for (Stage 4's own scope); a fourth provider nobody requested is exactly the kind of unrequested parallel implementation this program's rules warn against (`DECISION_LOG.md`).

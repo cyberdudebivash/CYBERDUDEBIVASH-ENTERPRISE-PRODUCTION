@@ -18,6 +18,14 @@ import { expect, test } from "@playwright/test";
  * Auth.js sign-out confirmation page's cross-origin redirect back to this
  * app until `authPagesCsp` widened `form-action` to the admin app's own
  * origin (`http/finalizeResponse.ts`).
+ *
+ * `page.goto` calls below pass `waitUntil: "domcontentloaded"` (EAP-2) —
+ * Playwright's own default (`"load"`) additionally blocks on this
+ * sandbox's external Google Fonts request settling, which can be slow/
+ * flaky through this environment's outbound proxy and isn't something any
+ * assertion here actually depends on; every navigation is already followed
+ * by a real, specific `expect(...).toBeVisible()`, which is what actually
+ * proves the app loaded.
  */
 const PLATFORM_DIR = fileURLToPath(new URL("../../../packages/platform", import.meta.url));
 
@@ -96,7 +104,7 @@ test.describe("Admin shell and Dashboard (EAP-1)", () => {
   test("redirects an unauthenticated visit to /admin to the real Auth.js sign-in page, with a callback URL back to /admin", async ({
     page,
   }) => {
-    await page.goto("/admin");
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
     await page.waitForURL(/\/api\/auth\/signin/, { timeout: 10_000 });
     expect(page.url()).toContain("localhost:8787");
     expect(decodeURIComponent(page.url())).toContain("callbackUrl=http://localhost:5173/admin");
@@ -120,7 +128,7 @@ test.describe("Admin shell and Dashboard (EAP-1)", () => {
 
     await context.addCookies([{ name: name!, value: value!, url: "http://localhost:8787" }]);
 
-    await page.goto("/admin");
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({
       timeout: 10_000,
     });
@@ -166,7 +174,7 @@ test.describe("Admin shell and Dashboard (EAP-1)", () => {
     const [name, value] = cookie.split("=");
     await context.addCookies([{ name: name!, value: value!, url: "http://localhost:8787" }]);
 
-    await page.goto("/admin");
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({
       timeout: 10_000,
     });

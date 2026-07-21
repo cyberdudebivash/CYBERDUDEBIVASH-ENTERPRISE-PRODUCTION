@@ -1,0 +1,55 @@
+.titan-lead-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-lead-detail__back {
+  align-self: flex-start;
+  font-size: 14px;
+  color: #00a8e8;
+  text-decoration: none;
+}
+
+.titan-lead-detail__back:hover {
+  text-decoration: underline;
+}
+
+.titan-lead-detail__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-lead-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.titan-lead-detail__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.titan-lead-detail__fields dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #64748b;
+}
+
+.titan-lead-detail__fields dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
+
+.titan-lead-detail__note {
+  font-size: 14px;
+  color: #64748b;
+}

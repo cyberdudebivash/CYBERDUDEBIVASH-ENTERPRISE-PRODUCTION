@@ -5,13 +5,16 @@ import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
   AssessmentRepository,
   AuditRepository,
+  LeadLifecyclePatch,
   LeadRepository,
+  LeadSearchOptions,
   NewAssessment,
   NewLead,
   OrganizationRepository,
   UserProfileRecord,
   UserProfileRepository,
 } from "./repositories/types.js";
+import { LEAD_PRIORITIES, LEAD_STATUSES } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
@@ -28,6 +31,7 @@ import {
 } from "./auth/authorize.js";
 import { isPlatformAdministrator } from "./auth/rbac.js";
 import {
+  fail,
   ok,
   requireJsonObject,
   requireNonEmptyString,
@@ -197,6 +201,7 @@ async function withOperationTiming<T>(
 }
 
 const ASSESSMENT_ID_PATTERN = /^\/api\/assessments\/([^/]+)$/;
+const LEAD_ID_PATTERN = /^\/api\/leads\/([^/]+)$/;
 
 async function route(
   request: Request,
@@ -241,6 +246,44 @@ async function route(
     return listLeads(deps, ctx);
   }
 
+  // EAP-2: checked before LEAD_ID_PATTERN below, or "search" would be
+  // parsed as a lead id. Same Platform-Administrator policy as GET
+  // /api/leads (requireLeadsAccess === requirePlatformAdministrator) — this
+  // is the same cross-organization, unfiltered-by-tenant read, just
+  // filtered/sorted/paginated instead of returned whole.
+  if (url.pathname === "/api/leads/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requireLeadsAccess(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchLeads(url, deps, ctx);
+  }
+
+  const leadMatch = LEAD_ID_PATTERN.exec(url.pathname);
+  if (leadMatch?.[1] && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requireLeadsAccess(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return getLead(leadMatch[1], caller, deps, ctx);
+  }
+
+  // EAP-2: a real write on an authenticated route — the same cross-origin
+  // forgery risk isTrustedOrigin already closes for the anonymous
+  // POST /api/leads/POST /api/assessments (security/csrf.ts), except here a
+  // forged request would also carry the caller's own session cookie along
+  // with it, which makes the check more important, not less.
+  if (leadMatch?.[1] && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requireLeadsAccess(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return updateLead(leadMatch[1], request, caller, deps, ctx);
+  }
+
   if (url.pathname === "/api/assessments" && request.method === "POST") {
     if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
       return forbiddenOrigin(ctx.requestId);
@@ -277,7 +320,7 @@ async function route(
     if (!caller) return unauthorized(ctx.requestId);
     const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
     if (denied) return denied;
-    return listAuditEvents(deps, ctx);
+    return listAuditEvents(url, deps, ctx);
   }
 
   if (url.pathname === "/api/me" && request.method === "GET") {
@@ -433,6 +476,235 @@ async function listLeads(deps: Dependencies, ctx: RouteContext): Promise<Respons
   return jsonSuccess(leads);
 }
 
+/** EAP-2: Lead Details. Records a `lead.viewed` audit event on every real
+ * read — the "Lead access" trail Workstream 5 asks for — with a real
+ * actorId, unlike lead.created/assessment.created (which happen on the
+ * anonymous public flow and have never had one). An audit-write failure
+ * here follows the same never-fail-the-request contract as
+ * recordAuditEvent everywhere else. */
+async function getLead(
+  id: string,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const lead = await withOperationTiming(ctx.metrics, "leads.findById", () =>
+    deps.leads.findById(id),
+  );
+  if (!lead) {
+    return jsonError({ code: "not_found", message: "Lead not found" }, ctx.requestId, 404);
+  }
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: lead.organizationId,
+    action: "lead.viewed",
+    entityType: "lead",
+    entityId: lead.id,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+  });
+
+  return jsonSuccess(lead);
+}
+
+/** EAP-2: Lead Lifecycle. Diffs the patch against the pre-update record so
+ * only fields that actually changed produce an audit event — a PATCH that
+ * repeats the current status shouldn't manufacture a fake "status changed"
+ * entry in the activity timeline. `note` is not a field on LeadRecord at
+ * all (types.ts's LeadLifecyclePatch deliberately excludes it) — a note is
+ * always just an audit event (`lead.note_added`), never mutates the lead
+ * row, consistent with audit_events being this system's one append-only,
+ * immutable log (DECISION_LOG.md's EAP-2 entry). */
+async function updateLead(
+  id: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const validation = validateLeadLifecyclePatch(body.value);
+  if (!validation.ok) {
+    return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
+  }
+  const { patch, note } = validation.value;
+
+  const before = await withOperationTiming(ctx.metrics, "leads.findById", () =>
+    deps.leads.findById(id),
+  );
+  if (!before) {
+    return jsonError({ code: "not_found", message: "Lead not found" }, ctx.requestId, 404);
+  }
+
+  const after = await withOperationTiming(ctx.metrics, "leads.update", () =>
+    deps.leads.update(id, patch),
+  );
+  // Can't actually be null here (before's existence was just confirmed and
+  // nothing else deletes leads) — guarded anyway per LeadRepository.update's
+  // own contract rather than asserting past it with a non-null `!`.
+  if (!after) {
+    return jsonError({ code: "not_found", message: "Lead not found" }, ctx.requestId, 404);
+  }
+
+  const now = new Date().toISOString();
+  if (patch.status !== undefined && patch.status !== before.status) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "lead.status_changed",
+      entityType: "lead",
+      entityId: id,
+      metadata: { from: before.status, to: after.status },
+      createdAt: now,
+    });
+  }
+  if (patch.priority !== undefined && patch.priority !== before.priority) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "lead.priority_changed",
+      entityType: "lead",
+      entityId: id,
+      metadata: { from: before.priority, to: after.priority },
+      createdAt: now,
+    });
+  }
+  if (patch.assignedTo !== undefined && patch.assignedTo !== before.assignedTo) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "lead.assigned",
+      entityType: "lead",
+      entityId: id,
+      metadata: { from: before.assignedTo, to: after.assignedTo },
+      createdAt: now,
+    });
+  }
+  if (patch.tags !== undefined && JSON.stringify(patch.tags) !== JSON.stringify(before.tags)) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "lead.tags_changed",
+      entityType: "lead",
+      entityId: id,
+      metadata: { from: before.tags, to: after.tags },
+      createdAt: now,
+    });
+  }
+  if (note) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "lead.note_added",
+      entityType: "lead",
+      entityId: id,
+      metadata: { note },
+      createdAt: now,
+    });
+  }
+
+  return jsonSuccess(after);
+}
+
+const LEAD_SORT_FIELDS = [
+  "createdAt",
+  "name",
+  "company",
+  "riskScore",
+  "status",
+  "priority",
+] as const;
+
+/** EAP-2: the Lead Workspace's table — search/filter/sort/pagination, all
+ * server-side (`LeadRepository.search`). Query-param parsing is validated
+ * the same strictness as a POST body: an unrecognized enum value or a
+ * non-numeric page/pageSize is a real 400, not silently ignored, so a
+ * frontend bug surfaces instead of quietly returning the wrong page. */
+async function searchLeads(url: URL, deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const params = url.searchParams;
+  const options: LeadSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const status = params.get("status");
+  if (status !== null) {
+    if (!LEAD_STATUSES.includes(status as (typeof LEAD_STATUSES)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid status: ${status}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.status = status as LeadSearchOptions["status"];
+  }
+
+  const priority = params.get("priority");
+  if (priority !== null) {
+    if (!LEAD_PRIORITIES.includes(priority as (typeof LEAD_PRIORITIES)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid priority: ${priority}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.priority = priority as LeadSearchOptions["priority"];
+  }
+
+  const assignedTo = params.get("assignedTo");
+  if (assignedTo) options.assignedTo = assignedTo;
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (!LEAD_SORT_FIELDS.includes(sortBy as (typeof LEAD_SORT_FIELDS)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as LeadSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "leads.search", () =>
+    deps.leads.search(options),
+  );
+  return jsonSuccess(result);
+}
+
 /** EAP-1: backs the admin Dashboard's assessment metrics. Same cross-org,
  * unfiltered shape as `listLeads` — same Platform-Administrator-only gate,
  * same reasoning (`auth/authorize.ts`'s `requirePlatformAdministrator`). */
@@ -458,9 +730,20 @@ async function listOrganizations(deps: Dependencies, ctx: RouteContext): Promise
 }
 
 /** EAP-1: backs the admin Dashboard's recent-activity/audit-summary
- * sections. */
-async function listAuditEvents(deps: Dependencies, ctx: RouteContext): Promise<Response> {
-  const events = await withOperationTiming(ctx.metrics, "audit.list", () => deps.audit.list());
+ * sections (no query params: every event). EAP-2: also backs a single
+ * lead's own audit-history panel via `?entityType=lead&entityId=...`,
+ * reusing this same endpoint rather than a nested `/api/leads/:id/audit`
+ * route — the response shape (`AuditEventRecord[]`) never changes, only
+ * which events match, so one endpoint with optional filters is the
+ * simpler, equally RESTful choice here (unlike `GET /api/leads`, where a
+ * filtered/paginated view has a genuinely different response envelope —
+ * `GET /api/leads/search`'s reason for being a separate endpoint). */
+async function listAuditEvents(url: URL, deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const entityType = url.searchParams.get("entityType") ?? undefined;
+  const entityId = url.searchParams.get("entityId") ?? undefined;
+  const events = await withOperationTiming(ctx.metrics, "audit.list", () =>
+    deps.audit.list({ entityType, entityId }),
+  );
   return jsonSuccess(events);
 }
 
@@ -604,6 +887,54 @@ function validateNewLead(value: unknown): ValidationResult<NewLead> {
     organizationId: optionalNullableString(record, "organizationId"),
     assessmentId: optionalNullableString(record, "assessmentId"),
   });
+}
+
+/** EAP-2. Every field is optional (a PATCH), but a *present* field must be
+ * well-formed — an unrecognized status/priority string, or a non-array
+ * `tags`, is a real 400, not silently dropped. `assignedTo` distinguishes
+ * "not present" (leave unchanged) from "present as null" (clear the
+ * assignment) via `in`, not `!== undefined` — the latter can't tell those
+ * two cases apart once the value itself is `null`. */
+function validateLeadLifecyclePatch(
+  value: unknown,
+): ValidationResult<{ patch: LeadLifecyclePatch; note: string | null }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  const patch: LeadLifecyclePatch = {};
+
+  if ("status" in record) {
+    if (!LEAD_STATUSES.includes(record.status as (typeof LEAD_STATUSES)[number])) {
+      return fail(`Invalid status: ${String(record.status)}`);
+    }
+    patch.status = record.status as LeadLifecyclePatch["status"];
+  }
+
+  if ("priority" in record) {
+    if (!LEAD_PRIORITIES.includes(record.priority as (typeof LEAD_PRIORITIES)[number])) {
+      return fail(`Invalid priority: ${String(record.priority)}`);
+    }
+    patch.priority = record.priority as LeadLifecyclePatch["priority"];
+  }
+
+  if ("assignedTo" in record) {
+    if (record.assignedTo !== null && typeof record.assignedTo !== "string") {
+      return fail("assignedTo must be a string or null");
+    }
+    patch.assignedTo = record.assignedTo;
+  }
+
+  if ("tags" in record) {
+    if (!Array.isArray(record.tags) || !record.tags.every((tag) => typeof tag === "string")) {
+      return fail("tags must be an array of strings");
+    }
+    patch.tags = record.tags;
+  }
+
+  const note = typeof record.note === "string" && record.note.trim() !== "" ? record.note : null;
+
+  return ok({ patch, note });
 }
 
 function validateNewAssessment(value: unknown): ValidationResult<NewAssessment> {

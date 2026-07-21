@@ -1,0 +1,29 @@
+.titan-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.titan-empty-state__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-empty-state__description {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  max-width: 40ch;
+}
+
+.titan-empty-state__action {
+  margin-top: 8px;
+}
