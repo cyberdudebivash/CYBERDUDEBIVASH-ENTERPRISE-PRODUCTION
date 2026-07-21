@@ -1,0 +1,86 @@
+.titan-assessment-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-assessment-detail__back {
+  align-self: flex-start;
+  font-size: 14px;
+  color: #00a8e8;
+  text-decoration: none;
+}
+
+.titan-assessment-detail__back:hover {
+  text-decoration: underline;
+}
+
+.titan-assessment-detail__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-assessment-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.titan-assessment-detail__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.titan-assessment-detail__fields dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #64748b;
+}
+
+.titan-assessment-detail__fields dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
+
+.titan-assessment-detail__note {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.titan-assessment-detail__lead-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titan-assessment-detail__lead-links li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.titan-assessment-detail__lead-links a {
+  color: #00a8e8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.titan-assessment-detail__lead-links a:hover {
+  text-decoration: underline;
+}
+
+.titan-assessment-detail__lead-company {
+  color: #64748b;
+}

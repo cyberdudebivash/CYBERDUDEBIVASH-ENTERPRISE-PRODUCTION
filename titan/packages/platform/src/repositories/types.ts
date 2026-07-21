@@ -1,4 +1,4 @@
-import type { Answers, AssessmentResult } from "@titan/assessment-core";
+import type { Answers, AssessmentResult, RiskLevel } from "@titan/assessment-core";
 
 /** CRM-style lead lifecycle (EAP-2). A small, fixed vocabulary — not a
  * freeform string — so every consumer (filters, badges, board columns in a
@@ -70,6 +70,11 @@ export interface LeadSearchOptions {
   priority?: LeadPriority;
   /** A real user id, or the sentinel "unassigned" for `assignedTo IS NULL`. */
   assignedTo?: string;
+  /** EAP-3: narrows to the one assessment a lead links to
+   * (`LeadRecord.assessmentId`) — backs Assessment Details' "Lead linkage"
+   * panel. Exact match, not a substring — an assessment id is opaque, never
+   * partially typed by a caller the way `search` is. */
+  assessmentId?: string;
   sortBy?: LeadSortField;
   sortDirection?: "asc" | "desc";
   /** 1-based. */
@@ -150,10 +155,40 @@ export interface AssessmentRecord {
 
 export type NewAssessment = Omit<AssessmentRecord, "id">;
 
+export type AssessmentSortField = "createdAt" | "riskScore" | "framework";
+
+/** EAP-3: the Assessment Workspace's server-side search — same shape and
+ * reasoning as `LeadSearchOptions` (EAP-2). `search` matches the fields an
+ * assessment actually has an identity through — it has no name/email/company
+ * the way a lead does, so this is a substring match against
+ * id/organizationId/createdBy rather than a business-facing field. */
+export interface AssessmentSearchOptions {
+  search?: string;
+  framework?: string;
+  riskLevel?: RiskLevel;
+  sortBy?: AssessmentSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AssessmentSearchResult {
+  assessments: AssessmentRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface AssessmentRepository {
   save(assessment: NewAssessment): Promise<AssessmentRecord>;
   findById(id: string): Promise<AssessmentRecord | null>;
+  /** Unfiltered, full list — kept exactly as-is (EAP-1's Dashboard and
+   * EAP-3's Compliance Intelligence panel both depend on this shape) rather
+   * than folding pagination/filtering into it, same reasoning as
+   * `LeadRepository.list`/`search`'s split (DECISION_LOG.md). */
   list(): Promise<AssessmentRecord[]>;
+  search(options: AssessmentSearchOptions): Promise<AssessmentSearchResult>;
 }
 
 export interface AuditEventRecord {

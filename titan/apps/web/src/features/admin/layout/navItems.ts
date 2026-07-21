@@ -20,5 +20,9 @@ export function adminNavItems(me: MeResponse): SidebarItem[] {
   return [
     { label: "Dashboard", to: "/admin" },
     ...(me.isPlatformAdministrator ? [{ label: "Leads", to: "/admin/leads" }] : []),
+    // EAP-3: same gating reasoning as Leads above — every route it links to
+    // (GET /api/assessments/search and friends) is Platform-Administrator-only
+    // (SECURITY_GUIDE.md).
+    ...(me.isPlatformAdministrator ? [{ label: "Assessments", to: "/admin/assessments" }] : []),
   ];
 }

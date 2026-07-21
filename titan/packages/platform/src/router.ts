@@ -4,6 +4,7 @@ import type { QuestionBank } from "@titan/assessment-core";
 import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
   AssessmentRepository,
+  AssessmentSearchOptions,
   AuditRepository,
   LeadLifecyclePatch,
   LeadRepository,
@@ -300,6 +301,19 @@ async function route(
     const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
     if (denied) return denied;
     return listAssessments(deps, ctx);
+  }
+
+  // EAP-3: checked before ASSESSMENT_ID_PATTERN below, or "search" would be
+  // parsed as an assessment id. Same cross-organization, unfiltered-by-tenant
+  // shape and policy as GET /api/assessments (list) — requirePlatformAdministrator,
+  // not requireAssessmentAccess (that gate is for a single already-scoped
+  // record, this is a global search over every organization's assessments).
+  if (url.pathname === "/api/assessments/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchAssessments(url, deps, ctx);
   }
 
   const assessmentMatch = ASSESSMENT_ID_PATTERN.exec(url.pathname);
@@ -619,6 +633,12 @@ const LEAD_SORT_FIELDS = [
   "priority",
 ] as const;
 
+const ASSESSMENT_SORT_FIELDS = ["createdAt", "riskScore", "framework"] as const;
+// Router-local, not re-exported from @titan/assessment-core (EAP-3): purely a
+// query-param validation list, the same role LEAD_SORT_FIELDS already plays
+// for leads — never touches the risk engine's own scoring logic.
+const ASSESSMENT_RISK_LEVELS = ["low", "medium", "high", "critical"] as const;
+
 /** EAP-2: the Lead Workspace's table — search/filter/sort/pagination, all
  * server-side (`LeadRepository.search`). Query-param parsing is validated
  * the same strictness as a POST body: an unrecognized enum value or a
@@ -657,6 +677,13 @@ async function searchLeads(url: URL, deps: Dependencies, ctx: RouteContext): Pro
 
   const assignedTo = params.get("assignedTo");
   if (assignedTo) options.assignedTo = assignedTo;
+
+  // EAP-3: backs Assessment Details' "Lead linkage" panel (which leads, if
+  // any, this assessment produced) — an exact match on the same
+  // `LeadRecord.assessmentId` `POST /api/leads` already accepts, not a new
+  // concept.
+  const assessmentId = params.get("assessmentId");
+  if (assessmentId) options.assessmentId = assessmentId;
 
   const sortBy = params.get("sortBy");
   if (sortBy !== null) {
@@ -713,6 +740,83 @@ async function listAssessments(deps: Dependencies, ctx: RouteContext): Promise<R
     deps.assessments.list(),
   );
   return jsonSuccess(assessments);
+}
+
+/** EAP-3: the Assessment Workspace's table — search/filter/sort/pagination,
+ * all server-side (`AssessmentRepository.search`), same query-param
+ * validation strictness as `searchLeads` (EAP-2): an unrecognized enum
+ * value or non-numeric page/pageSize is a real 400, not silently ignored. */
+async function searchAssessments(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const params = url.searchParams;
+  const options: AssessmentSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const framework = params.get("framework");
+  if (framework) options.framework = framework;
+
+  const riskLevel = params.get("riskLevel");
+  if (riskLevel !== null) {
+    if (!ASSESSMENT_RISK_LEVELS.includes(riskLevel as (typeof ASSESSMENT_RISK_LEVELS)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid riskLevel: ${riskLevel}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.riskLevel = riskLevel as AssessmentSearchOptions["riskLevel"];
+  }
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (!ASSESSMENT_SORT_FIELDS.includes(sortBy as (typeof ASSESSMENT_SORT_FIELDS)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as AssessmentSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "assessments.search", () =>
+    deps.assessments.search(options),
+  );
+  return jsonSuccess(result);
 }
 
 /** EAP-1: backs the admin Dashboard's organization metrics. Missing
@@ -826,6 +930,19 @@ async function getAssessment(
   if (!caller) return unauthorized(ctx.requestId);
   const denied = requireAssessmentAccess(caller.profiles, assessment.organizationId, ctx.requestId);
   if (denied) return denied;
+
+  // EAP-3: the "Assessment viewed" trail Workstream 6 asks for — same
+  // pattern as getLead's lead.viewed event (EAP-2), recorded only on the
+  // real success path (found + authorized), with a real actorId.
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: assessment.organizationId,
+    action: "assessment.viewed",
+    entityType: "assessment",
+    entityId: assessment.id,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+  });
 
   return jsonSuccess(assessment);
 }

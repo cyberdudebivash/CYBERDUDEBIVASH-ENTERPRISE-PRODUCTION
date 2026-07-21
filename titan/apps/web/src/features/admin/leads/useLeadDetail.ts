@@ -67,6 +67,17 @@ export function useLeadDetail(id: string): UseLeadDetail {
   // error. Every setState below is guarded the same way
   // `useDashboardData`/`useLeadSearch` already guard theirs — this hook
   // had simply drifted from that established pattern.
+  //
+  // EAP-3 finding: fetchLead and fetchLeadAuditTrail used to fire in
+  // parallel here. getLead (router.ts) awaits its own lead.viewed audit
+  // write before returning, but that guarantee is only about *this*
+  // request's own response — a second, independently-dispatched request
+  // (the audit-trail read) has no ordering guarantee against it at all, and
+  // could reach the server and complete before the view-write does,
+  // silently missing the caller's own just-created event on that same page
+  // load. Sequencing the audit-trail fetch to start only after fetchLead
+  // resolves closes that race (found while building useAssessmentDetail's
+  // identical shape honestly, then confirmed this hook has the same gap).
   useEffect(() => {
     let cancelled = false;
 
@@ -75,18 +86,21 @@ export function useLeadDetail(id: string): UseLeadDetail {
 
     fetchLead(id)
       .then((data) => {
-        if (!cancelled) setLead({ status: "ready", data });
+        if (cancelled) return;
+        setLead({ status: "ready", data });
+        return fetchLeadAuditTrail(id)
+          .then((auditData) => {
+            if (!cancelled) setAuditTrail({ status: "ready", data: auditData });
+          })
+          .catch((error: unknown) => {
+            if (!cancelled) setAuditTrail(toSectionState(error));
+          });
       })
       .catch((error: unknown) => {
-        if (!cancelled) setLead(toSectionState(error));
-      });
-
-    fetchLeadAuditTrail(id)
-      .then((data) => {
-        if (!cancelled) setAuditTrail({ status: "ready", data });
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setAuditTrail(toSectionState(error));
+        if (cancelled) return;
+        const state = toSectionState(error);
+        setLead(state);
+        setAuditTrail(state);
       });
 
     getJson<OrganizationRecord[]>("/api/organizations")

@@ -159,6 +159,18 @@ describe("LeadWorkspacePage", () => {
     });
   });
 
+  it("sorts by the real backend field riskScore when the Risk header is clicked, never the bare 'risk' column id", async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(() => Promise.resolve(searchResponse([makeLead()])));
+    renderWorkspace();
+    await screen.findByRole("link", { name: "Asha Rao" });
+
+    await user.click(screen.getByRole("button", { name: /Risk/ }));
+    await vi.waitFor(() => {
+      expect(String(vi.mocked(fetch).mock.calls.at(-1)?.[0])).toContain("sortBy=riskScore");
+    });
+  });
+
   it("requests the next page from Pagination", async () => {
     const user = userEvent.setup();
     vi.mocked(fetch).mockImplementation(() =>

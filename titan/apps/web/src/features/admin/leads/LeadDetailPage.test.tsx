@@ -143,6 +143,42 @@ describe("LeadDetailPage", () => {
     expect(screen.getByText("Lead viewed")).toBeInTheDocument();
   });
 
+  it("fetches the audit trail only after the lead fetch resolves, not in parallel with it (EAP-3 finding)", async () => {
+    const callOrder: string[] = [];
+    let resolveLead!: (value: Response) => void;
+    const leadPromise = new Promise<Response>((resolve) => {
+      resolveLead = resolve;
+    });
+
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes("/api/leads/lead_1")) {
+        callOrder.push("lead");
+        return leadPromise;
+      }
+      if (url.includes("/api/audit")) {
+        callOrder.push("audit");
+        return Promise.resolve(jsonResponse([]));
+      }
+      if (url.includes("/api/organizations")) {
+        return Promise.resolve(jsonResponse([]));
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`));
+    });
+
+    renderDetail();
+
+    // The lead fetch has fired, but its response is still pending — the
+    // audit-trail fetch must not have fired yet.
+    await vi.waitFor(() => expect(callOrder).toContain("lead"));
+    expect(callOrder).not.toContain("audit");
+
+    resolveLead(jsonResponse(makeLead()));
+
+    await screen.findByRole("heading", { name: "Asha Rao" });
+    expect(callOrder).toEqual(["lead", "audit"]);
+  });
+
   it("shows an honest 'Platform Administrator role required' message on a 403", async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse(

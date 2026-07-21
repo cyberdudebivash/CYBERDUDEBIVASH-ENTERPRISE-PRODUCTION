@@ -230,6 +230,15 @@ export function describeLeadRepositoryContract(
       expect(result.leads.map((lead) => lead.result.score)).toEqual([90, 20]);
     });
 
+    it("search filters by assessmentId (EAP-3 lead linkage)", async () => {
+      const repo = createRepository();
+      await repo.save({ ...sampleLead, assessmentId: "assessment_1" });
+      await repo.save({ ...sampleLead, email: "b@acme.in", assessmentId: "assessment_2" });
+      const result = await repo.search({ assessmentId: "assessment_1" });
+      expect(result.total).toBe(1);
+      expect(result.leads[0]?.assessmentId).toBe("assessment_1");
+    });
+
     it("search paginates", async () => {
       const repo = createRepository();
       for (let i = 0; i < 5; i += 1) {

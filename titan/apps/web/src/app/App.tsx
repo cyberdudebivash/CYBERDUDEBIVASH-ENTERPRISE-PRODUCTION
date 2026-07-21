@@ -10,6 +10,8 @@ import { AdminLayout } from "../features/admin/layout/AdminLayout.js";
 import { DashboardPage } from "../features/admin/dashboard/DashboardPage.js";
 import { LeadWorkspacePage } from "../features/admin/leads/LeadWorkspacePage.js";
 import { LeadDetailPage } from "../features/admin/leads/LeadDetailPage.js";
+import { AssessmentWorkspacePage } from "../features/admin/assessments/AssessmentWorkspacePage.js";
+import { AssessmentDetailPage } from "../features/admin/assessments/AssessmentDetailPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -46,6 +48,11 @@ export function AppRoutes() {
             rather than blocking the route). */}
         <Route path="leads" element={<LeadWorkspacePage />} />
         <Route path="leads/:id" element={<LeadDetailPage />} />
+        {/* EAP-3: the Enterprise Assessment Center — same Platform-
+            Administrator-gated-server-side pattern as Leads above, not a
+            route-level block. */}
+        <Route path="assessments" element={<AssessmentWorkspacePage />} />
+        <Route path="assessments/:id" element={<AssessmentDetailPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

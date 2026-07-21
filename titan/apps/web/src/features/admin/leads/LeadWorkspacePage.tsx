@@ -113,7 +113,13 @@ export function LeadWorkspaceContent({ me }: { me: MeResponse }) {
       render: (lead) => <PriorityBadge priority={lead.priority} />,
     },
     {
-      id: "risk",
+      // id is "riskScore", not "risk": DataTable passes the column id
+      // straight through to onSortChange (EAP-3 finding — this column had
+      // drifted from that), and only "riskScore" is a LeadSearchOptions
+      // sortBy value the backend accepts (router.ts's LEAD_SORT_FIELDS) —
+      // "risk" would 400 the whole table's next fetch the moment this
+      // header was clicked.
+      id: "riskScore",
       header: "Risk",
       sortable: true,
       render: (lead) => <RiskBadge riskLevel={lead.result.riskLevel} />,

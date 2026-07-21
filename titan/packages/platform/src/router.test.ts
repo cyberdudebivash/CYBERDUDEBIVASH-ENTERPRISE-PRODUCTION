@@ -631,6 +631,30 @@ describe("handleRequest", () => {
       expect(body.total).toBe(1);
       expect(body.leads[0]?.company).toBe("Acme Fintech");
     });
+
+    it("EAP-3: filters by assessmentId (Assessment Details' lead-linkage panel)", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({ ...validLeadBody, assessmentId: "assessment_1" });
+      await deps.leads.save({
+        ...validLeadBody,
+        email: "second@acme.in",
+        assessmentId: "assessment_2",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/leads/search?assessmentId=assessment_1", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        total: number;
+        leads: Array<{ assessmentId: string }>;
+      };
+      expect(body.total).toBe(1);
+      expect(body.leads[0]?.assessmentId).toBe("assessment_1");
+    });
   });
 
   describe("POST /api/assessments", () => {
@@ -813,6 +837,245 @@ describe("handleRequest", () => {
         deps,
       );
       expect(response.status).toBe(404);
+    });
+
+    it("EAP-3: records an assessment.viewed audit event with the real caller as actor", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "member",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/assessments/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const events = await deps.audit.list({ entityType: "assessment", entityId: saved.id });
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({ action: "assessment.viewed", actorId: caller.userId });
+    });
+
+    it("does not record assessment.viewed when the caller is forbidden", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await deps.assessments.save({
+        organizationId: "org_1",
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: { has_dpo: false },
+        result: sampleResult,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_2",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+
+      await handleRequest(
+        new Request(`https://example.com/api/assessments/${saved.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+
+      const events = await deps.audit.list({ entityType: "assessment", entityId: saved.id });
+      expect(events).toHaveLength(0);
+    });
+  });
+
+  describe("GET /api/assessments/search (EAP-3)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns a paginated envelope with every assessment when no filters are given", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+      });
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+        createdAt: "2026-07-21T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        assessments: unknown[];
+        total: number;
+        page: number;
+      };
+      expect(body.total).toBe(2);
+      expect(body.assessments).toHaveLength(2);
+      expect(body.page).toBe(1);
+    });
+
+    it("filters by framework via a query param", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+        framework: "dpdp",
+      });
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+        framework: "iso27001",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?framework=iso27001", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(1);
+    });
+
+    it("filters by riskLevel via a query param", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+        result: { ...sampleResult, riskLevel: "critical" },
+      });
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: null,
+        result: { ...sampleResult, riskLevel: "low" },
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?riskLevel=critical", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(1);
+    });
+
+    it("returns 400 for an invalid riskLevel filter", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?riskLevel=bogus", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for an invalid sortBy", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?sortBy=bogus", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for a non-numeric page", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?page=not-a-number", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("searches by id/organizationId/createdBy substring", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: "user_zenith",
+      });
+      await deps.assessments.save({
+        ...validAssessmentBody,
+        organizationId: null,
+        createdBy: "user_other",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/assessments/search?search=zenith", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        total: number;
+        assessments: Array<{ createdBy: string }>;
+      };
+      expect(body.total).toBe(1);
+      expect(body.assessments[0]?.createdBy).toBe("user_zenith");
     });
   });
 

@@ -1,0 +1,78 @@
+.titan-compliance-intelligence {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.titan-compliance-intelligence__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.titan-compliance-intelligence__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.titan-compliance-intelligence__note {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.titan-compliance-intelligence__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.titan-compliance-intelligence__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.titan-compliance-intelligence__risk-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.titan-compliance-intelligence__risk-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 4px 0 4px 8px;
+  border-left: 3px solid transparent;
+}
+.titan-compliance-intelligence__risk-label {
+  text-transform: capitalize;
+  color: #334155;
+}
+.titan-compliance-intelligence__risk-count {
+  font-weight: 700;
+  color: #0a1628;
+}
+.titan-compliance-intelligence__risk-item--critical {
+  border-left-color: #991b1b;
+}
+.titan-compliance-intelligence__risk-item--high {
+  border-left-color: #ea580c;
+}
+.titan-compliance-intelligence__risk-item--medium {
+  border-left-color: #eab308;
+}
+.titan-compliance-intelligence__risk-item--low {
+  border-left-color: #22c55e;
+}
