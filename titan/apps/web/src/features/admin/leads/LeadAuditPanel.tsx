@@ -1,19 +1,10 @@
 import { Timeline, type TimelineEntry } from "@titan/design-system";
 import type { AuditEventRecord } from "@titan/platform";
+import { auditActionLabel } from "../audit/auditActionLabels.js";
 
 export interface LeadAuditPanelProps {
   events: AuditEventRecord[];
 }
-
-const ACTION_LABELS: Record<string, string> = {
-  "lead.created": "Lead created",
-  "lead.viewed": "Lead viewed",
-  "lead.status_changed": "Status changed",
-  "lead.priority_changed": "Priority changed",
-  "lead.assigned": "Assignment changed",
-  "lead.tags_changed": "Tags changed",
-  "lead.note_added": "Note added",
-};
 
 function describeEvent(event: AuditEventRecord): string | undefined {
   const metadata = event.metadata as Record<string, unknown> | null;
@@ -42,7 +33,7 @@ export function LeadAuditPanel({ events }: LeadAuditPanelProps) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((event) => ({
       id: event.id,
-      label: ACTION_LABELS[event.action] ?? event.action,
+      label: auditActionLabel(event.action),
       detail: describeEvent(event),
       timestamp: new Date(event.createdAt).toLocaleString(),
     }));

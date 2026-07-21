@@ -5,7 +5,9 @@ import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
   AssessmentRepository,
   AssessmentSearchOptions,
+  AuditEventRecord,
   AuditRepository,
+  AuditSearchOptions,
   LeadLifecyclePatch,
   LeadRepository,
   LeadSearchOptions,
@@ -468,6 +470,30 @@ async function route(
     return listAuditEvents(url, deps, ctx);
   }
 
+  // EAP-6: the Enterprise Audit Center's filtered/paginated view over the
+  // same cross-organization data GET /api/audit already reads whole — same
+  // Platform-Administrator-only policy, same reasoning as every other
+  // */search endpoint (Organizations, Users) sitting alongside its own
+  // unfiltered list route.
+  if (url.pathname === "/api/audit/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchAuditEvents(url, deps, ctx);
+  }
+
+  // EAP-6: Audit Export — the same filters as GET /api/audit/search, real
+  // authorization (not just a different response shape), streamed as a
+  // downloadable file rather than a paginated JSON envelope.
+  if (url.pathname === "/api/audit/export" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return exportAuditEvents(url, deps, ctx);
+  }
+
   if (url.pathname === "/api/me" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -808,6 +834,14 @@ const ASSESSMENT_RISK_LEVELS = ["low", "medium", "high", "critical"] as const;
 const ORGANIZATION_SORT_FIELDS = ["name", "createdAt", "updatedAt"] as const;
 
 const USER_SORT_FIELDS = ["name", "email"] as const;
+
+const AUDIT_SORT_FIELDS = ["createdAt"] as const;
+
+// EAP-6: `GET /api/audit/export`'s hard cap — an export is a real file
+// download, not a paginated UI, so there's no page/pageSize from a caller to
+// bound it by. A fixed ceiling keeps one export request from attempting to
+// serialize this deployment's entire audit history in a single response.
+const AUDIT_EXPORT_MAX_ROWS = 10_000;
 
 /** EAP-2: the Lead Workspace's table — search/filter/sort/pagination, all
  * server-side (`LeadRepository.search`). Query-param parsing is validated
@@ -1647,6 +1681,177 @@ async function listAuditEvents(url: URL, deps: Dependencies, ctx: RouteContext):
     deps.audit.list({ entityType, entityId }),
   );
   return jsonSuccess(events);
+}
+
+/** EAP-6: shared between `searchAuditEvents` and `exportAuditEvents` — both
+ * read the exact same filter vocabulary, one paginated for the Workspace
+ * table, the other capped-and-whole for a file download. Same parsing (and
+ * the same validation errors for a bad sortBy/sortDirection/page/pageSize)
+ * either way, not two independent copies drifting apart. */
+function parseAuditSearchOptions(url: URL): ValidationResult<AuditSearchOptions> {
+  const params = url.searchParams;
+  const options: AuditSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const actorId = params.get("actorId");
+  if (actorId) options.actorId = actorId;
+
+  const organizationId = params.get("organizationId");
+  if (organizationId) options.organizationId = organizationId;
+
+  const action = params.get("action");
+  if (action) options.action = action;
+
+  const entityType = params.get("entityType");
+  if (entityType) options.entityType = entityType;
+
+  const entityId = params.get("entityId");
+  if (entityId) options.entityId = entityId;
+
+  const dateFrom = params.get("dateFrom");
+  if (dateFrom) options.dateFrom = dateFrom;
+
+  const dateTo = params.get("dateTo");
+  if (dateTo) options.dateTo = dateTo;
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (!AUDIT_SORT_FIELDS.includes(sortBy as (typeof AUDIT_SORT_FIELDS)[number])) {
+      return { ok: false, error: `Invalid sortBy: ${sortBy}` };
+    }
+    options.sortBy = sortBy as AuditSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return { ok: false, error: `Invalid sortDirection: ${sortDirection}` };
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return { ok: false, error: `Invalid ${param}: ${raw}` };
+    }
+    options[field] = parsed;
+  }
+
+  return ok(options);
+}
+
+async function searchAuditEvents(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const parsed = parseAuditSearchOptions(url);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+  const result = await withOperationTiming(ctx.metrics, "audit.search", () =>
+    deps.audit.search(parsed.value),
+  );
+  return jsonSuccess(result);
+}
+
+/** EAP-6: Audit Export. Content-Type/Content-Disposition make this a real
+ * file download, not a JSON envelope — `jsonSuccess`/`jsonError` are
+ * deliberately not used for the success path here (finalizeResponse.ts
+ * still layers the same security headers on afterward regardless of body
+ * shape, since it only ever adds headers, never replaces them). Every
+ * filter is the same `parseAuditSearchOptions` `searchAuditEvents` already
+ * validates — no separate, divergent parsing for the export path. */
+async function exportAuditEvents(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const parsed = parseAuditSearchOptions(url);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const format = url.searchParams.get("format") ?? "csv";
+  if (format !== "csv" && format !== "json") {
+    return jsonError(
+      { code: "validation_error", message: `Invalid format: ${format}` },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "audit.export", () =>
+    deps.audit.search({ ...parsed.value, page: 1, pageSize: AUDIT_EXPORT_MAX_ROWS }),
+  );
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `audit-export-${timestamp}.${format}`;
+  const body =
+    format === "csv" ? toAuditCsv(result.events) : JSON.stringify(result.events, null, 2);
+  const contentType =
+    format === "csv" ? "text/csv; charset=utf-8" : "application/json; charset=utf-8";
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    },
+  });
+}
+
+const AUDIT_CSV_COLUMNS = [
+  "id",
+  "actorId",
+  "organizationId",
+  "action",
+  "entityType",
+  "entityId",
+  "metadata",
+  "createdAt",
+] as const;
+
+/** Standard CSV quoting (RFC 4180): a field is wrapped in double quotes,
+ * with any embedded double quote doubled, whenever it contains a comma,
+ * quote, or newline — the only characters that would otherwise break the
+ * format. `metadata` is the one column that's a real risk of any of those
+ * (it's a JSON blob), everything else here is a UUID or a fixed enum value
+ * that structurally never contains them, but this doesn't special-case that
+ * — a single correct helper is simpler than reasoning about which columns
+ * "can't" need it. */
+function csvField(value: string): string {
+  if (/[",\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function toAuditCsv(events: AuditEventRecord[]): string {
+  const header = AUDIT_CSV_COLUMNS.join(",");
+  const rows = events.map((event) =>
+    [
+      event.id,
+      event.actorId ?? "",
+      event.organizationId ?? "",
+      event.action,
+      event.entityType,
+      event.entityId ?? "",
+      event.metadata ? JSON.stringify(event.metadata) : "",
+      event.createdAt,
+    ]
+      .map((value) => csvField(value))
+      .join(","),
+  );
+  return [header, ...rows].join("\r\n");
 }
 
 /** EAP-1: "who am I" for the frontend — the piece role-aware navigation

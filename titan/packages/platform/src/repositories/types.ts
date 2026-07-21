@@ -424,10 +424,60 @@ export interface AuditListFilter {
   entityId?: string;
 }
 
+/** EAP-6: `createdAt` is the only sortable field this system's audit trail
+ * actually has an opinion about ordering by — there is no numeric/business
+ * field on an audit event the way `riskScore`/`name` are for Lead/
+ * Organization, so unlike those `SortField` unions this one has exactly one
+ * member. Kept as its own type (not a hardcoded literal) purely for
+ * consistency with every other `*SortField` union's shape. */
+export type AuditSortField = "createdAt";
+
+/** EAP-6: the Enterprise Audit Center's server-side search — same shape and
+ * reasoning as `OrganizationSearchOptions`/`UserSearchOptions`, scoped to the
+ * fields `audit_events` actually has. Deliberately no "result status"
+ * filter: this table has no outcome/status column at all (every recorded
+ * event is, by construction, a successful authorized action — a denied or
+ * failed request is never written here), so exposing one would invent a
+ * concept the data model doesn't support. */
+export interface AuditSearchOptions {
+  /** Case-insensitive substring match against action/entityType/entityId. */
+  search?: string;
+  actorId?: string;
+  organizationId?: string;
+  /** Exact match — the fixed `entity.verb` vocabulary every `recordAuditEvent`
+   * call site already uses (e.g. "lead.created"), not a substring. */
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  /** Inclusive ISO 8601 lower bound on `createdAt`. */
+  dateFrom?: string;
+  /** Inclusive ISO 8601 upper bound on `createdAt`. */
+  dateTo?: string;
+  sortBy?: AuditSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AuditSearchResult {
+  events: AuditEventRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface AuditRepository {
   record(event: NewAuditEvent): Promise<AuditEventRecord>;
   /** No filter (or an empty one): every event, newest first — EAP-1's
    * Dashboard audit summary and the existing GET /api/audit both rely on
    * this exact no-args behavior, unchanged. */
   list(filter?: AuditListFilter): Promise<AuditEventRecord[]>;
+  /** EAP-6: the Audit Workspace's filtered/paginated/sorted view over the
+   * same table `list()` already reads — same split as
+   * `OrganizationRepository.list`/`.search`, kept as a genuinely separate
+   * entry point rather than folding pagination into `list()`, which
+   * Dashboard and every per-entity audit panel already depend on returning
+   * a plain unfiltered/unpaginated array. */
+  search(options: AuditSearchOptions): Promise<AuditSearchResult>;
 }

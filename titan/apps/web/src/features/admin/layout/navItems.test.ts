@@ -83,4 +83,22 @@ describe("adminNavItems", () => {
     });
     expect(nonAdmin).not.toContainEqual({ label: "Users", to: "/admin/users" });
   });
+
+  it("includes Audit (EAP-6) only for a Platform Administrator", () => {
+    const admin = adminNavItems({
+      userId: "u1",
+      email: "a@x.com",
+      profiles: [],
+      isPlatformAdministrator: true,
+    });
+    expect(admin).toContainEqual({ label: "Audit", to: "/admin/audit" });
+
+    const nonAdmin = adminNavItems({
+      userId: "u2",
+      email: "b@x.com",
+      profiles: [],
+      isPlatformAdministrator: false,
+    });
+    expect(nonAdmin).not.toContainEqual({ label: "Audit", to: "/admin/audit" });
+  });
 });

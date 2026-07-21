@@ -1,0 +1,73 @@
+.titan-audit-investigation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-audit-investigation__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titan-audit-investigation__controls-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-right: 4px;
+}
+
+.titan-audit-investigation__group-button {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.titan-audit-investigation__group-button--active {
+  background-color: #00a8e8;
+  border-color: #00a8e8;
+  color: #ffffff;
+}
+
+.titan-audit-investigation__empty {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.titan-audit-investigation__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titan-audit-investigation__group {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.titan-audit-investigation__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.titan-audit-investigation__group-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-audit-investigation__group-count {
+  font-size: 12px;
+  color: #64748b;
+}
