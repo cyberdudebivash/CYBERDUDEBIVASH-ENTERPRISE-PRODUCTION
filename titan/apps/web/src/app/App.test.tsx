@@ -316,4 +316,69 @@ describe("AppRoutes", () => {
       expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
     });
   });
+
+  describe("/admin/operations (EAP-7)", () => {
+    beforeEach(() => {
+      vi.stubGlobal("fetch", vi.fn());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("resolves the real literal /admin/operations route, with Operations in the nav, for a Platform Administrator", async () => {
+      vi.mocked(fetch).mockImplementation((input) => {
+        const url = String(input);
+        if (url.includes("/api/me")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                userId: "user_1",
+                email: "admin@acme.in",
+                profiles: [],
+                isPlatformAdministrator: true,
+              }),
+              { status: 200 },
+            ),
+          );
+        }
+        if (url.includes("/health/ready")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ status: "ready", service: "titan-platform" }), {
+              status: 200,
+            }),
+          );
+        }
+        if (url.includes("/health")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ status: "ok", service: "titan-platform" }), {
+              status: 200,
+            }),
+          );
+        }
+        if (url.includes("/api/operations/summary")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                services: [],
+                requestCounts: [],
+                repositoryOperations: [],
+                overview: { version: "0.1.0", environment: "local", modules: [] },
+              }),
+              { status: 200 },
+            ),
+          );
+        }
+        return Promise.reject(new Error(`unexpected fetch: ${url}`));
+      });
+
+      renderAt("/admin/operations");
+
+      expect(await screen.findByRole("heading", { name: "Operations Center" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Operations" })).toHaveClass(
+        "titan-sidebar__link--active",
+      );
+      expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
+    });
+  });
 });

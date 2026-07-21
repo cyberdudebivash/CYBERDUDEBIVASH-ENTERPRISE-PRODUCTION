@@ -34,7 +34,12 @@ import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
 import { createLogger, type Logger } from "./observability/logger.js";
-import { createInMemoryMetrics, type Metrics } from "./observability/metrics.js";
+import {
+  createInMemoryMetrics,
+  type Metrics,
+  type RecordedCount,
+  type RecordedDuration,
+} from "./observability/metrics.js";
 import { resolveRequestId } from "./observability/requestId.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
 import { isTrustedOrigin } from "./security/csrf.js";
@@ -492,6 +497,20 @@ async function route(
     const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
     if (denied) return denied;
     return exportAuditEvents(url, deps, ctx);
+  }
+
+  // EAP-7: the Enterprise Operations Center's one aggregating read —
+  // per-service reachability, real request/repository-operation metrics,
+  // and a static system overview. Same Platform-Administrator-only policy
+  // as every other cross-cutting endpoint (Audit, Users, Organizations):
+  // this composes signals from every module, so it carries the same
+  // cross-organization visibility those already do.
+  if (url.pathname === "/api/operations/summary" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return operationsSummary(deps, ctx);
   }
 
   if (url.pathname === "/api/me" && request.method === "GET") {
@@ -1852,6 +1871,182 @@ function toAuditCsv(events: AuditEventRecord[]): string {
       .join(","),
   );
   return [header, ...rows].join("\r\n");
+}
+
+export interface ServiceStatus {
+  name: string;
+  /** Whether this deployment wires the dependency at all — mirrors
+   * `Dependencies.organizations`/`.users`/`.userProfiles` being optional. */
+  configured: boolean;
+  /** Only meaningful when `configured` is true — a real read against the
+   * repository either succeeded or threw. */
+  ok: boolean;
+  latencyMs?: number;
+  /** The repository's own real row count (`search()`'s `total`, or
+   * `list()`'s length for `userProfiles`) — not a fabricated placeholder. */
+  total?: number;
+  error?: string;
+}
+
+export interface SystemOverview {
+  version: string;
+  environment: string;
+  modules: string[];
+}
+
+export interface OperationsSummary {
+  services: ServiceStatus[];
+  requestCounts: RecordedCount[];
+  repositoryOperations: RecordedDuration[];
+  overview: SystemOverview;
+}
+
+// EAP-7: manually kept in sync with every package.json's own `version`
+// field (0.1.0 across this workspace) — reading package.json at runtime
+// inside a Workers bundle isn't something this codebase does anywhere
+// else, so a literal checked against the real value is the honest choice
+// over a fragile new import path for one display field.
+const PLATFORM_VERSION = "0.1.0";
+
+// EAP-7: real, but only ever this one value — this project has never been
+// deployed anywhere in any environment it has run in (DECISION_LOG.md's
+// standing note, repeated every EAP phase), so "environment" has exactly
+// one honest answer today, not a placeholder for a tier that doesn't exist.
+const RUNTIME_ENVIRONMENT = "local development (never deployed)";
+
+// EAP-7: every repository this Worker registers, whether or not a given
+// deployment actually wires it (`ServiceStatus.configured` reports that per
+// service, for the genuinely optional ones — organizations/users/
+// userProfiles).
+const REGISTERED_MODULES = [
+  "leads",
+  "assessments",
+  "organizations",
+  "users",
+  "userProfiles",
+  "audit",
+] as const;
+
+interface SearchTotal {
+  search(options: { page: number; pageSize: number }): Promise<{ total: number }>;
+}
+
+/** EAP-7: a real read against the repository (page 1, pageSize 1 — the
+ * cheapest possible real query, not a fabricated ping) timed through the
+ * same `withOperationTiming` every other repository call in this file
+ * already uses, so this contributes real samples to
+ * `repositoryOperations` too, not a second, untracked timing path. Errors
+ * are caught here (not left to bubble) so one unreachable service can't
+ * fail the whole summary — the same "don't let one section's failure
+ * block the others" principle `useDashboardData.ts`'s own `loadSection`
+ * already established on the frontend. */
+async function checkSearchableService(
+  ctx: RouteContext,
+  name: string,
+  repository: SearchTotal,
+): Promise<ServiceStatus> {
+  const startedAt = Date.now();
+  try {
+    const result = await withOperationTiming(ctx.metrics, `operations.check.${name}`, () =>
+      repository.search({ page: 1, pageSize: 1 }),
+    );
+    return {
+      name,
+      configured: true,
+      ok: true,
+      latencyMs: Date.now() - startedAt,
+      total: result.total,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    // Same "must still be logged" discipline as `recordAuditEvent` — a
+    // service-check failure must not fail the whole summary, but the real
+    // cause belongs in server-side logs, not only in the response body.
+    ctx.logger.error("operations service check failed", {
+      requestId: ctx.requestId,
+      name,
+      message,
+    });
+    return { name, configured: true, ok: false, latencyMs: Date.now() - startedAt, error: message };
+  }
+}
+
+/** `UserProfileRepository` has no `search()` — its only unfiltered,
+ * count-capable method is `list()` (EAP-5's own reasoning: a guard check,
+ * not a listing UI, so it never needed pagination). Same timing/error
+ * handling as `checkSearchableService`, just reading a plain array's
+ * length instead of a `SearchResult.total`. */
+async function checkUserProfilesService(
+  ctx: RouteContext,
+  userProfiles: UserProfileRepository,
+): Promise<ServiceStatus> {
+  const startedAt = Date.now();
+  try {
+    const result = await withOperationTiming(ctx.metrics, "operations.check.userProfiles", () =>
+      userProfiles.list(),
+    );
+    return {
+      name: "userProfiles",
+      configured: true,
+      ok: true,
+      latencyMs: Date.now() - startedAt,
+      total: result.length,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    ctx.logger.error("operations service check failed", {
+      requestId: ctx.requestId,
+      name: "userProfiles",
+      message,
+    });
+    return {
+      name: "userProfiles",
+      configured: true,
+      ok: false,
+      latencyMs: Date.now() - startedAt,
+      error: message,
+    };
+  }
+}
+
+function notConfiguredService(name: string): ServiceStatus {
+  return { name, configured: false, ok: false };
+}
+
+/** EAP-7: the Enterprise Operations Center's one read — per-service
+ * reachability (real queries, not fabricated pings), the real request/
+ * repository-operation counters `ctx.metrics` has been accumulating since
+ * this isolate started (EAP-1's own Workstream 8 instrumentation, never
+ * read back anywhere until now), and a static, honestly-scoped system
+ * overview. No new writer anywhere — this only reads what already exists. */
+async function operationsSummary(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const services = await Promise.all([
+    checkSearchableService(ctx, "leads", deps.leads),
+    checkSearchableService(ctx, "assessments", deps.assessments),
+    deps.organizations
+      ? checkSearchableService(ctx, "organizations", deps.organizations)
+      : Promise.resolve(notConfiguredService("organizations")),
+    deps.users
+      ? checkSearchableService(ctx, "users", deps.users)
+      : Promise.resolve(notConfiguredService("users")),
+    deps.userProfiles
+      ? checkUserProfilesService(ctx, deps.userProfiles)
+      : Promise.resolve(notConfiguredService("userProfiles")),
+    checkSearchableService(ctx, "audit", deps.audit),
+  ]);
+
+  const summary: OperationsSummary = {
+    services,
+    requestCounts: ctx.metrics.getCounts(),
+    repositoryOperations: ctx.metrics.getDurations(),
+    overview: {
+      version: PLATFORM_VERSION,
+      environment: RUNTIME_ENVIRONMENT,
+      modules: [...REGISTERED_MODULES],
+    },
+  };
+
+  return jsonSuccess(summary);
 }
 
 /** EAP-1: "who am I" for the frontend — the piece role-aware navigation

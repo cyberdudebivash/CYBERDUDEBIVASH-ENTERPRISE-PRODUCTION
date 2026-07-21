@@ -1,0 +1,81 @@
+.titan-operations-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-operations-workspace__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-operations-workspace__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.titan-operations-workspace__note {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.titan-operations-workspace__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.titan-operations-workspace__status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.titan-operations-workspace__status-dot--ok {
+  background: #22c55e;
+}
+
+.titan-operations-workspace__status-dot--down {
+  background: #ef4444;
+}
+
+.titan-operations-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.titan-operations-metrics__subheading {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.titan-operations-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.titan-operations-overview dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.titan-operations-overview dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
