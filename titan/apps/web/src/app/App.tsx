@@ -18,6 +18,7 @@ import { UserWorkspacePage } from "../features/admin/users/UserWorkspacePage.js"
 import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
 import { AuditWorkspacePage } from "../features/admin/audit/AuditWorkspacePage.js";
 import { OperationsWorkspacePage } from "../features/admin/operations/OperationsWorkspacePage.js";
+import { ReportingWorkspacePage } from "../features/admin/reporting/ReportingWorkspacePage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -83,6 +84,12 @@ export function AppRoutes() {
             operations summary has no per-record detail the way a lead/
             organization/user does. */}
         <Route path="operations" element={<OperationsWorkspacePage />} />
+        {/* EAP-8: the Enterprise Reporting & Analytics module — same
+            Platform-Administrator-gated-server-side pattern as every module
+            above, not a route-level block. No `/admin/reporting/:id` route:
+            the Executive Dashboard/Business Reports/Analytics are all
+            summary views, none with a standalone per-record detail page. */}
+        <Route path="reporting" element={<ReportingWorkspacePage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

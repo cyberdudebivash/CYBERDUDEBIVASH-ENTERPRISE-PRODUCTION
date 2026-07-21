@@ -381,4 +381,80 @@ describe("AppRoutes", () => {
       expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
     });
   });
+
+  describe("/admin/reporting (EAP-8)", () => {
+    beforeEach(() => {
+      vi.stubGlobal("fetch", vi.fn());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("resolves the real literal /admin/reporting route, with Reporting in the nav, for a Platform Administrator", async () => {
+      vi.mocked(fetch).mockImplementation((input) => {
+        const url = String(input);
+        if (url.includes("/api/me")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                userId: "user_1",
+                email: "admin@acme.in",
+                profiles: [],
+                isPlatformAdministrator: true,
+              }),
+              { status: 200 },
+            ),
+          );
+        }
+        if (url.includes("/api/reports/summary")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                organizations: { configured: true, total: 0, byStatus: { active: 0, archived: 0 } },
+                leads: {
+                  total: 0,
+                  byStatus: { new: 0, contacted: 0, qualified: 0, disqualified: 0, converted: 0 },
+                  byPriority: { low: 0, medium: 0, high: 0, urgent: 0 },
+                  byRiskLevel: { critical: 0, high: 0, medium: 0, low: 0 },
+                },
+                assessments: {
+                  total: 0,
+                  byRiskLevel: { critical: 0, high: 0, medium: 0, low: 0 },
+                  byFramework: {},
+                },
+                identity: {
+                  configured: true,
+                  totalUsers: 0,
+                  totalProfiles: 0,
+                  platformAdministrators: 0,
+                },
+                audit: { total: 0, last24h: 0, last7d: 0, topActions: [] },
+                generatedAt: "2026-07-21T00:00:00.000Z",
+              }),
+              { status: 200 },
+            ),
+          );
+        }
+        if (url.includes("/api/reports/trends")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ entity: "leads", days: 30, points: [] }), {
+              status: 200,
+            }),
+          );
+        }
+        return Promise.reject(new Error(`unexpected fetch: ${url}`));
+      });
+
+      renderAt("/admin/reporting");
+
+      expect(
+        await screen.findByRole("heading", { name: "Reporting & Analytics" }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Reporting" })).toHaveClass(
+        "titan-sidebar__link--active",
+      );
+      expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
+    });
+  });
 });
