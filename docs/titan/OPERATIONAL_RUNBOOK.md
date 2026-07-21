@@ -130,11 +130,28 @@ curl -s "http://localhost:8787/api/leads/search?assessmentId=some-assessment-id"
 # 401 with no session cookie — EAP-3: GET /api/leads/search now accepts an
 # optional assessmentId filter (used by Assessment Details' "Lead linkage"
 # panel — which real leads, if any, this assessment produced).
+
+curl -s -X POST http://localhost:8787/api/organizations \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Acme Fintech","slug":"acme-fintech","industry":"Financial Services","region":"APAC","tags":["enterprise"],"createdAt":"2026-01-01T00:00:00.000Z"}'
+# 401 with no session cookie — EAP-4: unlike POST /api/leads/POST /api/assessments
+# (anonymous, public flows), POST /api/organizations is Platform-Administrator-only
+# and CSRF-checked. See "Provisioning a local Platform Administrator" below for an
+# authenticated example. A duplicate slug returns 409 slug_conflict, not a 500.
+
+curl -s "http://localhost:8787/api/organizations/search?status=active&sortBy=name&sortDirection=asc"
+curl -s http://localhost:8787/api/organizations/some-org-id
+curl -s -X PATCH http://localhost:8787/api/organizations/some-org-id \
+  -H "Content-Type: application/json" \
+  -d '{"industry":"Healthcare"}'
+# 401 for all three with no session cookie — EAP-4: same Platform Administrator
+# gate as the routes above. PATCH additionally requires a matching Origin header
+# once authenticated, same as PATCH /api/leads/:id.
 ```
 
 ### Provisioning a local Platform Administrator
 
-`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
+`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `POST /api/organizations`, `GET /api/organizations/search`, `GET /api/organizations/:id`, `PATCH /api/organizations/:id` (EAP-4), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
 
 ```bash
 # 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
@@ -191,6 +208,31 @@ curl -s -b cookies.txt "http://localhost:8787/api/assessments/<a real assessment
 curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=assessment&entityId=<assessment id>"
 # shows the real assessment.created (from creation) and assessment.viewed
 # (from the read just above) events.
+
+# 8. POST /api/organizations (EAP-4) resolves through the same gate, plus the
+#    same Origin requirement as step 6's PATCH (this is an authenticated
+#    write, unlike the anonymous POST /api/leads/POST /api/assessments):
+curl -s -b cookies.txt -X POST "http://localhost:8787/api/organizations" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"name":"Acme Fintech","slug":"acme-fintech","industry":"Financial Services","region":"APAC","tags":["enterprise"],"createdAt":"'"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"'"}'
+# 201, returns the saved organization (status defaults to "active"). Records
+# a real organization.created audit event.
+
+curl -s -b cookies.txt "http://localhost:8787/api/organizations/search?status=active"
+curl -s -b cookies.txt "http://localhost:8787/api/organizations/<the id from step 8's response>"
+# GET /api/organizations/:id also records a real organization.viewed event.
+
+curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/organizations/<org id>" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"status":"archived","note":"Contract lapsed"}'
+# 200, returns the updated organization. Records organization.archived and
+# organization.note_added audit_events rows (router.ts's updateOrganization),
+# visible via:
+curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=organization&entityId=<org id>"
+# shows organization.created, organization.viewed, organization.archived, and
+# organization.note_added.
 ```
 
 Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the role) is a direct database write, because no route exists to do it any other way.
@@ -248,6 +290,17 @@ With a Platform Administrator session (above), the sidebar shows an **Assessment
 3. **Nothing here is editable** — unlike Leads, an assessment has no lifecycle to change, so there is no "Save"/PATCH step anywhere on this page.
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/assessment-center.spec.ts`) that seeds real assessments/leads directly in D1 and drives real search/filter/detail-navigation/lead-linkage interactions through a real browser — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
+## Managing organizations through the Admin Application (`/admin/organizations`, EAP-4)
+
+With a Platform Administrator session (above), the sidebar shows an **Organizations** link (`adminNavItems`), hidden entirely for a non-Platform-Administrator, the same convention as **Leads**/**Assessments**.
+
+1. **Organization Workspace** (`/admin/organizations`): a real, server-backed table — search (debounced 300ms, matches name/slug/industry/region substrings), a status filter, sortable columns, and pagination, all driven by `GET /api/organizations/search`. **New organization** opens a real inline create form — name, identifier (auto-slugs from the name as you type, still directly editable), industry, region, and comma-separated tags — submitting calls the real `POST /api/organizations` and navigates straight to the new organization's Details page on success. **Save filter**/**Columns** work identically to Leads/Assessments (`localStorage`-backed, per-browser).
+2. **Organization Details** (`/admin/organizations/:id`): click any row's name to navigate here. Shows Metadata (identifier, industry, region, tags, created, last activity — a real `updatedAt` column, refreshed by the server on every edit, not a caller-supplied value), **Health** (current risk, average score, and a real risk distribution — all derived from this organization's own linked assessments, honestly showing "No assessments linked to this organization yet" when there are none rather than a fabricated zero), **Relationships** (real linked leads and assessments, each a working link into the existing Lead Details/Assessment Details pages — not a copy of either), **Administration** (edit name/industry/region on blur, add/remove tags, archive/restore, add internal notes — every change a real `PATCH`), and **Activity & audit history** (a real timeline sourced from `GET /api/audit?entityType=organization&entityId=...`).
+3. **Administrative changes apply immediately** — each metadata edit, tag change, archive/restore, or note is its own `PATCH /api/organizations/:id` call, not staged behind a separate "Save" step, and each lands as its own `audit_events` row (`organization.updated`, `organization.archived`, `organization.restored`, `organization.note_added` — `router.ts`'s `updateOrganization`), visible immediately in the same page's activity timeline.
+4. **Archiving does not delete anything** — an archived organization stays fully visible (filterable by status in the Workspace, still reachable at its own Details URL) and can be restored at any time. There is no delete operation anywhere in this module, matching every other repository in this codebase.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/organization-workspace.spec.ts`) that drives a real create-via-form flow and seeds a real organization/assessment/lead directly in D1 for the Health/Relationships/Administration/audit checks — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
 ## Structured logs
 

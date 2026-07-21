@@ -34,6 +34,16 @@ export function searchLeads(options: LeadSearchOptions): Promise<LeadSearchResul
   if (options.status) params.set("status", options.status);
   if (options.priority) params.set("priority", options.priority);
   if (options.assignedTo) params.set("assignedTo", options.assignedTo);
+  // EAP-4 fix: these two options existed on LeadSearchOptions (EAP-3's
+  // assessmentId, EAP-4's organizationId) but were never actually forwarded
+  // here — every caller (Assessment Details' "Lead linkage" panel,
+  // Organization Relationships' "associated leads" panel) was silently
+  // getting an unfiltered `GET /api/leads/search?pageSize=...` instead of
+  // the scoped query it asked for. Found while wiring the equivalent
+  // organizationId call for EAP-4; DECISION_LOG.md records this as a real,
+  // pre-existing EAP-3 defect, not new EAP-4 scope.
+  if (options.assessmentId) params.set("assessmentId", options.assessmentId);
+  if (options.organizationId) params.set("organizationId", options.organizationId);
   if (options.sortBy) params.set("sortBy", options.sortBy);
   if (options.sortDirection) params.set("sortDirection", options.sortDirection);
   if (options.page) params.set("page", String(options.page));

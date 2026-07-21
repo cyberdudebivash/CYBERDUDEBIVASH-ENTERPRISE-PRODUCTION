@@ -75,6 +75,10 @@ export interface LeadSearchOptions {
    * panel. Exact match, not a substring — an assessment id is opaque, never
    * partially typed by a caller the way `search` is. */
   assessmentId?: string;
+  /** EAP-4: narrows to one organization's own leads — backs Organization
+   * Relationships' "associated leads" panel. Same exact-match reasoning as
+   * `assessmentId`. */
+  organizationId?: string;
   sortBy?: LeadSortField;
   sortDirection?: "asc" | "desc";
   /** 1-based. */
@@ -107,19 +111,119 @@ export interface LeadRepository {
   search(options: LeadSearchOptions): Promise<LeadSearchResult>;
 }
 
+/** EAP-4: a closed, two-value lifecycle — an organization is archived and
+ * restorable, never deleted (no repository here has a `delete`, matching
+ * `audit_events`' own append-only guarantee — DECISION_LOG.md). */
+export type OrganizationStatus = "active" | "archived";
+
+export const ORGANIZATION_STATUSES: readonly OrganizationStatus[] = ["active", "archived"];
+
 export interface OrganizationRecord {
   id: string;
   name: string;
   slug: string;
+  /** EAP-4 (migrations/0009_organization_lifecycle.sql). Defaults to
+   * "active" for every organization saved before archive/restore existed. */
+  status: OrganizationStatus;
+  /** EAP-4. Free text, nullable — not every organization has a captured
+   * industry yet; NULL means "unknown", never an empty string. */
+  industry: string | null;
+  region: string | null;
+  /** EAP-4. Same reasoning and shape as `LeadRecord.tags` — a small,
+   * freeform label set, not a controlled vocabulary. */
+  tags: string[];
   createdAt: string;
+  /** EAP-4. Repository-owned (never caller-supplied, unlike `createdAt`) —
+   * set to `createdAt` on `save`, refreshed to "now" on every `update`. It
+   * exists so the Organization Workspace has a real "last activity" column
+   * without joining `audit_events`; letting a caller set their own
+   * "last modified" would make that column meaningless. */
+  updatedAt: string;
 }
 
-export type NewOrganization = Omit<OrganizationRecord, "id">;
+/** `status` defaults to "active" and `updatedAt` is repository-assigned
+ * (mirrors `createdAt`) — neither is ever supplied by a caller, unlike
+ * `NewLead`/`NewAssessment` where every field but `id` is caller-supplied.
+ * There is no anonymous/public organization-creation flow the way leads and
+ * assessments have one; every organization is created through the
+ * Platform-Administrator-only `POST /api/organizations` (Workstream 5). */
+export type NewOrganization = Omit<OrganizationRecord, "id" | "status" | "updatedAt"> & {
+  status?: OrganizationStatus;
+};
+
+/** EAP-4: a partial administrative update (`PATCH /api/organizations/:id`) —
+ * same shape and reasoning as `LeadLifecyclePatch`: every field optional,
+ * `industry`/`region` distinguish "leave unchanged" (absent) from "clear it"
+ * (present as null) at the router's validation layer, same as
+ * `LeadLifecyclePatch.assignedTo`. `name`/`slug` are deliberately excluded
+ * from `status`-only actions (archive/restore) but included here since,
+ * unlike a lead's captured name/email/company, an organization's own name is
+ * administrative metadata an owner is expected to correct over time. */
+export interface OrganizationPatch {
+  name?: string;
+  status?: OrganizationStatus;
+  industry?: string | null;
+  region?: string | null;
+  tags?: string[];
+}
+
+export type OrganizationSortField = "name" | "createdAt" | "updatedAt";
+
+/** EAP-4: the Organization Workspace's server-side search — same shape and
+ * reasoning as `LeadSearchOptions`/`AssessmentSearchOptions`, scoped to
+ * fields the `organizations` table itself actually has. Deliberately no
+ * `riskLevel` or `assessmentStatus` filter here: both would require a
+ * cross-repository join against assessments, which every repository in this
+ * system (Lead, Assessment, Organization, Audit, UserProfile) is
+ * structurally unable to do today — each is constructed independently with
+ * its own private store, in-memory and D1 alike (`ARCHITECTURE.md`'s
+ * Repository Pattern), and there is no precedent anywhere in this codebase
+ * for one repository depending on another's data. Threading assessments
+ * into organization search would be a real architectural change, not an
+ * additive extension, for a query volume (organization counts, not lead/
+ * assessment counts) that doesn't justify it. `assessmentStatus` also has no
+ * backing field at all — assessments have no status/lifecycle
+ * (`AssessmentRecord` is one immutable row per completed run) — so it would
+ * be inventing a concept that doesn't exist rather than exposing a real
+ * one. Risk information is surfaced instead at the single-organization
+ * scope Workstream 3 (Organization Health) actually asks for, via
+ * `AssessmentSearchOptions.organizationId` — see `useOrganizationHealth`. */
+export interface OrganizationSearchOptions {
+  /** Case-insensitive substring match against name/slug/industry/region. */
+  search?: string;
+  status?: OrganizationStatus;
+  industry?: string;
+  region?: string;
+  /** Exact match against one tag in the organization's tag list. */
+  tag?: string;
+  sortBy?: OrganizationSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface OrganizationSearchResult {
+  organizations: OrganizationRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 export interface OrganizationRepository {
   save(organization: NewOrganization): Promise<OrganizationRecord>;
   findBySlug(slug: string): Promise<OrganizationRecord | null>;
+  /** EAP-4: single-record lookup by id — backs Organization Details and
+   * every administrative write, same null-not-throw contract as
+   * `LeadRepository.findById`/`AssessmentRepository.findById`. */
+  findById(id: string): Promise<OrganizationRecord | null>;
+  /** Unfiltered, full list — kept exactly as-is (EAP-1's Dashboard already
+   * depends on this shape), same split as `LeadRepository.list`/`search`. */
   list(): Promise<OrganizationRecord[]>;
+  search(options: OrganizationSearchOptions): Promise<OrganizationSearchResult>;
+  /** Returns null if no organization with this id exists — mirrors
+   * `LeadRepository.update`'s null-not-throw contract. */
+  update(id: string, patch: OrganizationPatch): Promise<OrganizationRecord | null>;
 }
 
 /** RBAC + org-membership foundation (Workstream 5/6). Kept deliberately small:
@@ -166,6 +270,10 @@ export interface AssessmentSearchOptions {
   search?: string;
   framework?: string;
   riskLevel?: RiskLevel;
+  /** EAP-4: narrows to one organization's own assessments — backs
+   * Organization Relationships' "associated assessments" panel. Same
+   * exact-match reasoning as `LeadSearchOptions.assessmentId`. */
+  organizationId?: string;
   sortBy?: AssessmentSortField;
   sortDirection?: "asc" | "desc";
   /** 1-based. */

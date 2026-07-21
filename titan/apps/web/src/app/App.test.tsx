@@ -181,4 +181,49 @@ describe("AppRoutes", () => {
       expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
     });
   });
+
+  describe("/admin/organizations (EAP-4)", () => {
+    beforeEach(() => {
+      vi.stubGlobal("fetch", vi.fn());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("resolves the real literal /admin/organizations route, with Organizations in the nav, for a Platform Administrator", async () => {
+      vi.mocked(fetch).mockImplementation((input) => {
+        const url = String(input);
+        if (url.includes("/api/me")) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                userId: "user_1",
+                email: "admin@acme.in",
+                profiles: [],
+                isPlatformAdministrator: true,
+              }),
+              { status: 200 },
+            ),
+          );
+        }
+        if (url.includes("/api/organizations/search")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ organizations: [], total: 0, page: 1, pageSize: 25 }), {
+              status: 200,
+            }),
+          );
+        }
+        return Promise.reject(new Error(`unexpected fetch: ${url}`));
+      });
+
+      renderAt("/admin/organizations");
+
+      expect(await screen.findByRole("heading", { name: "Organizations" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Organizations" })).toHaveClass(
+        "titan-sidebar__link--active",
+      );
+      expect(screen.queryByRole("heading", { name: "Page not found" })).not.toBeInTheDocument();
+    });
+  });
 });

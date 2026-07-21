@@ -11,11 +11,14 @@ import type {
   LeadSearchOptions,
   NewAssessment,
   NewLead,
+  NewOrganization,
+  OrganizationPatch,
   OrganizationRepository,
+  OrganizationSearchOptions,
   UserProfileRecord,
   UserProfileRepository,
 } from "./repositories/types.js";
-import { LEAD_PRIORITIES, LEAD_STATUSES } from "./repositories/types.js";
+import { LEAD_PRIORITIES, LEAD_STATUSES, ORGANIZATION_STATUSES } from "./repositories/types.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
@@ -203,6 +206,7 @@ async function withOperationTiming<T>(
 
 const ASSESSMENT_ID_PATTERN = /^\/api\/assessments\/([^/]+)$/;
 const LEAD_ID_PATTERN = /^\/api\/leads\/([^/]+)$/;
+const ORGANIZATION_ID_PATTERN = /^\/api\/organizations\/([^/]+)$/;
 
 async function route(
   request: Request,
@@ -329,6 +333,58 @@ async function route(
     return listOrganizations(deps, ctx);
   }
 
+  // EAP-4: Organization Administration. Unlike leads/assessments, there is no
+  // anonymous public flow that creates an organization — every write here is
+  // an authenticated Platform Administrator action, so (unlike createLead/
+  // createAssessment) this checks CSRF *and* resolves+authorizes the caller
+  // before doing anything, the same ordering PATCH /api/leads/:id already
+  // uses for its own authenticated write.
+  if (url.pathname === "/api/organizations" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return createOrganization(request, caller, deps, ctx);
+  }
+
+  // EAP-4: checked before ORGANIZATION_ID_PATTERN below, or "search" would be
+  // parsed as an organization id. Same cross-organization, Platform-
+  // Administrator-only policy as GET /api/organizations (list) — this is the
+  // Organization Workspace's filtered/paginated view of the same data.
+  if (url.pathname === "/api/organizations/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchOrganizations(url, deps, ctx);
+  }
+
+  const organizationMatch = ORGANIZATION_ID_PATTERN.exec(url.pathname);
+  if (organizationMatch?.[1] && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return getOrganization(organizationMatch[1], caller, deps, ctx);
+  }
+
+  if (organizationMatch?.[1] && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return updateOrganization(organizationMatch[1], request, caller, deps, ctx);
+  }
+
   if (url.pathname === "/api/audit" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -393,6 +449,20 @@ function forbiddenOrigin(requestId: string): Response {
     { code: "forbidden_origin", message: "Request origin not allowed" },
     requestId,
     403,
+  );
+}
+
+/** EAP-4: every organization write/search/get route depends on
+ * `deps.organizations`, unlike `listOrganizations` (EAP-1), which can stay
+ * silent (an empty list) since it has always tolerated an unconfigured
+ * deployment. A real deployment always wires this (`worker.ts`) — this only
+ * guards the same theoretical gap `readinessResponse`'s missing
+ * `readinessCheck` does. */
+function organizationsNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "Organizations are not configured" },
+    requestId,
+    503,
   );
 }
 
@@ -639,6 +709,8 @@ const ASSESSMENT_SORT_FIELDS = ["createdAt", "riskScore", "framework"] as const;
 // for leads — never touches the risk engine's own scoring logic.
 const ASSESSMENT_RISK_LEVELS = ["low", "medium", "high", "critical"] as const;
 
+const ORGANIZATION_SORT_FIELDS = ["name", "createdAt", "updatedAt"] as const;
+
 /** EAP-2: the Lead Workspace's table — search/filter/sort/pagination, all
  * server-side (`LeadRepository.search`). Query-param parsing is validated
  * the same strictness as a POST body: an unrecognized enum value or a
@@ -684,6 +756,12 @@ async function searchLeads(url: URL, deps: Dependencies, ctx: RouteContext): Pro
   // concept.
   const assessmentId = params.get("assessmentId");
   if (assessmentId) options.assessmentId = assessmentId;
+
+  // EAP-4: backs Organization Relationships' "associated leads" panel — an
+  // exact match on the same `LeadRecord.organizationId` every lead already
+  // carries, not a new concept.
+  const organizationId = params.get("organizationId");
+  if (organizationId) options.organizationId = organizationId;
 
   const sortBy = params.get("sortBy");
   if (sortBy !== null) {
@@ -772,6 +850,12 @@ async function searchAssessments(
     options.riskLevel = riskLevel as AssessmentSearchOptions["riskLevel"];
   }
 
+  // EAP-4: backs Organization Relationships' "associated assessments" panel
+  // — an exact match on the same `AssessmentRecord.organizationId` every
+  // assessment already carries, not a new concept.
+  const organizationId = params.get("organizationId");
+  if (organizationId) options.organizationId = organizationId;
+
   const sortBy = params.get("sortBy");
   if (sortBy !== null) {
     if (!ASSESSMENT_SORT_FIELDS.includes(sortBy as (typeof ASSESSMENT_SORT_FIELDS)[number])) {
@@ -831,6 +915,267 @@ async function listOrganizations(deps: Dependencies, ctx: RouteContext): Promise
     deps.organizations!.list(),
   );
   return jsonSuccess(organizations);
+}
+
+/** EAP-4: the Organization Workspace's table — search/filter/sort/pagination,
+ * all server-side (`OrganizationRepository.search`), same query-param
+ * validation strictness as `searchLeads`/`searchAssessments`. Unlike
+ * `listOrganizations`, a missing `deps.organizations` here is a real 503 —
+ * every other route this deployment could take (list, get, create) is
+ * unusable too, and staying quiet would leave a caller believing an empty
+ * search result means "no organizations" rather than "not configured". */
+async function searchOrganizations(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  const params = url.searchParams;
+  const options: OrganizationSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const status = params.get("status");
+  if (status !== null) {
+    if (!ORGANIZATION_STATUSES.includes(status as (typeof ORGANIZATION_STATUSES)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid status: ${status}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.status = status as OrganizationSearchOptions["status"];
+  }
+
+  const industry = params.get("industry");
+  if (industry) options.industry = industry;
+
+  const region = params.get("region");
+  if (region) options.region = region;
+
+  const tag = params.get("tag");
+  if (tag) options.tag = tag;
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (!ORGANIZATION_SORT_FIELDS.includes(sortBy as (typeof ORGANIZATION_SORT_FIELDS)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as OrganizationSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "organizations.search", () =>
+    deps.organizations!.search(options),
+  );
+  return jsonSuccess(result);
+}
+
+/** EAP-4: Organization Administration's create. Platform-Administrator-only
+ * and CSRF-gated at the call site (`route`) — unlike `createLead`/
+ * `createAssessment`, there is no anonymous public flow this mirrors. Checks
+ * slug uniqueness explicitly (migrations/0002_organizations.sql's own
+ * unique index would otherwise surface as an unhandled D1 constraint error
+ * — a clean 409 is the honest, already-real constraint, not a new one). */
+async function createOrganization(
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+
+  const validation = validateNewOrganization(body.value);
+  if (!validation.ok) {
+    return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
+  }
+
+  const conflict = await deps.organizations.findBySlug(validation.value.slug);
+  if (conflict) {
+    return jsonError(
+      { code: "slug_conflict", message: "An organization with this slug already exists" },
+      ctx.requestId,
+      409,
+    );
+  }
+
+  const saved = await withOperationTiming(ctx.metrics, "organizations.save", () =>
+    deps.organizations!.save(validation.value),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: saved.id,
+    action: "organization.created",
+    entityType: "organization",
+    entityId: saved.id,
+    metadata: { name: saved.name, slug: saved.slug },
+    createdAt: saved.createdAt,
+  });
+
+  return jsonSuccess(saved, 201);
+}
+
+/** EAP-4: Organization Details. Records an `organization.viewed` audit event
+ * on every real read, same pattern as `getLead`/`getAssessment`. */
+async function getOrganization(
+  id: string,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  const organization = await withOperationTiming(ctx.metrics, "organizations.findById", () =>
+    deps.organizations!.findById(id),
+  );
+  if (!organization) {
+    return jsonError({ code: "not_found", message: "Organization not found" }, ctx.requestId, 404);
+  }
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: organization.id,
+    action: "organization.viewed",
+    entityType: "organization",
+    entityId: organization.id,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+  });
+
+  return jsonSuccess(organization);
+}
+
+/** EAP-4: Organization Administration's update — diffs the patch against the
+ * pre-update record so only fields that actually changed produce an audit
+ * event, same reasoning as `updateLead`. A `status` transition gets its own
+ * named event (`organization.archived`/`organization.restored`) rather than
+ * folding into `organization.updated` — the brief names archive/restore as
+ * their own administrative actions, distinct from metadata edits. `note` is
+ * not a field on `OrganizationRecord` at all, same as `LeadLifecyclePatch`'s
+ * `note` — always just an audit event, never a mutable column. */
+async function updateOrganization(
+  id: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const validation = validateOrganizationPatch(body.value);
+  if (!validation.ok) {
+    return jsonError({ code: "validation_error", message: validation.error }, ctx.requestId, 400);
+  }
+  const { patch, note } = validation.value;
+
+  const before = await withOperationTiming(ctx.metrics, "organizations.findById", () =>
+    deps.organizations!.findById(id),
+  );
+  if (!before) {
+    return jsonError({ code: "not_found", message: "Organization not found" }, ctx.requestId, 404);
+  }
+
+  const after = await withOperationTiming(ctx.metrics, "organizations.update", () =>
+    deps.organizations!.update(id, patch),
+  );
+  // Can't actually be null here (before's existence was just confirmed and
+  // nothing else deletes organizations) — guarded anyway per
+  // OrganizationRepository.update's own contract, same as updateLead.
+  if (!after) {
+    return jsonError({ code: "not_found", message: "Organization not found" }, ctx.requestId, 404);
+  }
+
+  const now = new Date().toISOString();
+  const metadataDiff: Record<string, { from: unknown; to: unknown }> = {};
+  if (patch.name !== undefined && patch.name !== before.name) {
+    metadataDiff.name = { from: before.name, to: after.name };
+  }
+  if (patch.industry !== undefined && patch.industry !== before.industry) {
+    metadataDiff.industry = { from: before.industry, to: after.industry };
+  }
+  if (patch.region !== undefined && patch.region !== before.region) {
+    metadataDiff.region = { from: before.region, to: after.region };
+  }
+  if (patch.tags !== undefined && JSON.stringify(patch.tags) !== JSON.stringify(before.tags)) {
+    metadataDiff.tags = { from: before.tags, to: after.tags };
+  }
+  if (Object.keys(metadataDiff).length > 0) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.id,
+      action: "organization.updated",
+      entityType: "organization",
+      entityId: id,
+      metadata: metadataDiff,
+      createdAt: now,
+    });
+  }
+
+  if (patch.status !== undefined && patch.status !== before.status) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.id,
+      action: after.status === "archived" ? "organization.archived" : "organization.restored",
+      entityType: "organization",
+      entityId: id,
+      metadata: { from: before.status, to: after.status },
+      createdAt: now,
+    });
+  }
+
+  if (note) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.id,
+      action: "organization.note_added",
+      entityType: "organization",
+      entityId: id,
+      metadata: { note },
+      createdAt: now,
+    });
+  }
+
+  return jsonSuccess(after);
 }
 
 /** EAP-1: backs the admin Dashboard's recent-activity/audit-summary
@@ -1077,4 +1422,92 @@ function validateNewAssessment(value: unknown): ValidationResult<NewAssessment> 
     organizationId: optionalNullableString(record, "organizationId"),
     createdBy: optionalNullableString(record, "createdBy"),
   });
+}
+
+function validateNewOrganization(value: unknown): ValidationResult<NewOrganization> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  for (const field of ["name", "slug", "createdAt"] as const) {
+    const result = requireNonEmptyString(record, field);
+    if (!result.ok) return result;
+  }
+
+  const tags = "tags" in record ? record.tags : [];
+  if (!Array.isArray(tags) || !tags.every((tag) => typeof tag === "string")) {
+    return fail("tags must be an array of strings");
+  }
+
+  const newOrganization: NewOrganization = {
+    name: record.name as string,
+    slug: record.slug as string,
+    industry: optionalNullableString(record, "industry"),
+    region: optionalNullableString(record, "region"),
+    tags: tags as string[],
+    createdAt: record.createdAt as string,
+  };
+
+  if ("status" in record) {
+    if (!ORGANIZATION_STATUSES.includes(record.status as (typeof ORGANIZATION_STATUSES)[number])) {
+      return fail(`Invalid status: ${String(record.status)}`);
+    }
+    newOrganization.status = record.status as NewOrganization["status"];
+  }
+
+  return ok(newOrganization);
+}
+
+/** EAP-4. Every field is optional (a PATCH), but a *present* field must be
+ * well-formed, same discipline as `validateLeadLifecyclePatch`.
+ * `industry`/`region` distinguish "not present" (leave unchanged) from
+ * "present as null" (clear it) via `in`, same reasoning as
+ * `LeadLifecyclePatch.assignedTo`. */
+function validateOrganizationPatch(
+  value: unknown,
+): ValidationResult<{ patch: OrganizationPatch; note: string | null }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  const patch: OrganizationPatch = {};
+
+  if ("name" in record) {
+    if (typeof record.name !== "string" || record.name.trim() === "") {
+      return fail("name must be a non-empty string");
+    }
+    patch.name = record.name;
+  }
+
+  if ("status" in record) {
+    if (!ORGANIZATION_STATUSES.includes(record.status as (typeof ORGANIZATION_STATUSES)[number])) {
+      return fail(`Invalid status: ${String(record.status)}`);
+    }
+    patch.status = record.status as OrganizationPatch["status"];
+  }
+
+  if ("industry" in record) {
+    if (record.industry !== null && typeof record.industry !== "string") {
+      return fail("industry must be a string or null");
+    }
+    patch.industry = record.industry as string | null;
+  }
+
+  if ("region" in record) {
+    if (record.region !== null && typeof record.region !== "string") {
+      return fail("region must be a string or null");
+    }
+    patch.region = record.region as string | null;
+  }
+
+  if ("tags" in record) {
+    if (!Array.isArray(record.tags) || !record.tags.every((tag) => typeof tag === "string")) {
+      return fail("tags must be an array of strings");
+    }
+    patch.tags = record.tags;
+  }
+
+  const note = typeof record.note === "string" && record.note.trim() !== "" ? record.note : null;
+
+  return ok({ patch, note });
 }

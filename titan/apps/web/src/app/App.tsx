@@ -12,6 +12,8 @@ import { LeadWorkspacePage } from "../features/admin/leads/LeadWorkspacePage.js"
 import { LeadDetailPage } from "../features/admin/leads/LeadDetailPage.js";
 import { AssessmentWorkspacePage } from "../features/admin/assessments/AssessmentWorkspacePage.js";
 import { AssessmentDetailPage } from "../features/admin/assessments/AssessmentDetailPage.js";
+import { OrganizationWorkspacePage } from "../features/admin/organizations/OrganizationWorkspacePage.js";
+import { OrganizationDetailPage } from "../features/admin/organizations/OrganizationDetailPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -53,6 +55,11 @@ export function AppRoutes() {
             route-level block. */}
         <Route path="assessments" element={<AssessmentWorkspacePage />} />
         <Route path="assessments/:id" element={<AssessmentDetailPage />} />
+        {/* EAP-4: the Enterprise Organization Management Platform — same
+            Platform-Administrator-gated-server-side pattern as Leads/
+            Assessments above, not a route-level block. */}
+        <Route path="organizations" element={<OrganizationWorkspacePage />} />
+        <Route path="organizations/:id" element={<OrganizationDetailPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

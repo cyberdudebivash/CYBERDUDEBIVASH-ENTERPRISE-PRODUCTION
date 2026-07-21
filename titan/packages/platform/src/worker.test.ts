@@ -164,6 +164,9 @@ describe("worker (default export)", () => {
     await createD1OrganizationRepository(env.DB).save({
       name: "Acme Fintech",
       slug: "acme-fintech",
+      industry: null,
+      region: null,
+      tags: [],
       createdAt: "2026-07-20T00:00:00.000Z",
     });
     const orgResponse = await worker.fetch(
@@ -414,5 +417,154 @@ describe("worker (default export)", () => {
     };
     expect(linkedLeads.total).toBe(1);
     expect(linkedLeads.leads[0]?.name).toBe("Asha Rao");
+  });
+
+  it("EAP-4: wires a real env.DB through POST/GET/PATCH /api/organizations, search, and the organization-relationship filters end to end", async () => {
+    const env = { DB: createDb(), AUTH_SECRET: "test-secret" };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const createResponse = await worker.fetch(
+      new Request("https://example.com/api/organizations", {
+        method: "POST",
+        headers: { cookie },
+        body: JSON.stringify({
+          name: "Acme Fintech",
+          slug: "acme-fintech",
+          industry: "Financial Services",
+          region: "APAC",
+          tags: ["enterprise"],
+          createdAt: "2026-07-20T00:00:00.000Z",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(createResponse.status).toBe(201);
+    const created = (await createResponse.json()) as { id: string; status: string };
+    expect(created.status).toBe("active");
+
+    // Two real reads through the real Worker — each should record its own
+    // organization.viewed event (router.ts's getOrganization, EAP-4).
+    for (let i = 0; i < 2; i += 1) {
+      const getResponse = await worker.fetch(
+        new Request(`https://example.com/api/organizations/${created.id}`, {
+          headers: { cookie },
+        }),
+        env,
+        noopContext,
+      );
+      expect(getResponse.status).toBe(200);
+    }
+
+    const archiveResponse = await worker.fetch(
+      new Request(`https://example.com/api/organizations/${created.id}`, {
+        method: "PATCH",
+        headers: { cookie },
+        body: JSON.stringify({ status: "archived" }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(archiveResponse.status).toBe(200);
+    expect(((await archiveResponse.json()) as { status: string }).status).toBe("archived");
+
+    const auditResponse = await worker.fetch(
+      new Request(`https://example.com/api/audit?entityType=organization&entityId=${created.id}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    const events = (await auditResponse.json()) as Array<{ action: string }>;
+    expect(events.filter((event) => event.action === "organization.viewed")).toHaveLength(2);
+    expect(events.map((event) => event.action)).toEqual(
+      expect.arrayContaining([
+        "organization.created",
+        "organization.viewed",
+        "organization.archived",
+      ]),
+    );
+
+    // GET /api/organizations/search, filtered by the real archived status.
+    const searchResponse = await worker.fetch(
+      new Request("https://example.com/api/organizations/search?status=archived", {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(searchResponse.status).toBe(200);
+    const searched = (await searchResponse.json()) as { total: number };
+    expect(searched.total).toBe(1);
+
+    // Organization Relationships: GET /api/leads/search?organizationId=... and
+    // GET /api/assessments/search?organizationId=... find only records
+    // actually linked to this organization, not every lead/assessment.
+    await worker.fetch(
+      new Request("https://example.com/api/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Asha Rao",
+          email: "asha@acme.in",
+          company: "Acme Fintech",
+          answers: {},
+          result: {
+            score: 0,
+            riskLevel: "low",
+            breakdown: { critical: 0, high: 0, medium: 0, low: 12, total: 0 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          timestamp: "2026-07-20T00:00:00.000Z",
+          source: "dpdp-scan",
+          organizationId: created.id,
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    await worker.fetch(
+      new Request("https://example.com/api/assessments", {
+        method: "POST",
+        body: JSON.stringify({
+          framework: "dpdp",
+          frameworkVersion: dpdpV1.version,
+          answers: { has_dpo: false },
+          result: {
+            score: 33,
+            riskLevel: "medium",
+            breakdown: { critical: 0, high: 1, medium: 1, low: 10, total: 2 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          createdAt: "2026-07-20T00:00:00.000Z",
+          organizationId: created.id,
+        }),
+      }),
+      env,
+      noopContext,
+    );
+
+    const linkedLeadsResponse = await worker.fetch(
+      new Request(`https://example.com/api/leads/search?organizationId=${created.id}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(linkedLeadsResponse.status).toBe(200);
+    const linkedLeads = (await linkedLeadsResponse.json()) as { total: number };
+    expect(linkedLeads.total).toBe(1);
+
+    const linkedAssessmentsResponse = await worker.fetch(
+      new Request(`https://example.com/api/assessments/search?organizationId=${created.id}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(linkedAssessmentsResponse.status).toBe(200);
+    const linkedAssessments = (await linkedAssessmentsResponse.json()) as { total: number };
+    expect(linkedAssessments.total).toBe(1);
   });
 });

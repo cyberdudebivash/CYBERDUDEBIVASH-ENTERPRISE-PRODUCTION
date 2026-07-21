@@ -22,6 +22,8 @@ export function searchAssessments(
   if (options.search) params.set("search", options.search);
   if (options.framework) params.set("framework", options.framework);
   if (options.riskLevel) params.set("riskLevel", options.riskLevel);
+  // EAP-4: backs Organization Relationships' "associated assessments" panel.
+  if (options.organizationId) params.set("organizationId", options.organizationId);
   if (options.sortBy) params.set("sortBy", options.sortBy);
   if (options.sortDirection) params.set("sortDirection", options.sortDirection);
   if (options.page) params.set("page", String(options.page));
