@@ -79,6 +79,9 @@ export function createInMemoryLeadRepository(): LeadRepository {
             ? matched.filter((lead) => lead.assignedTo === null)
             : matched.filter((lead) => lead.assignedTo === options.assignedTo);
       }
+      if (options.assessmentId) {
+        matched = matched.filter((lead) => lead.assessmentId === options.assessmentId);
+      }
 
       const direction = options.sortDirection === "asc" ? 1 : -1;
       const sortBy = options.sortBy ?? "createdAt";

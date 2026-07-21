@@ -287,4 +287,132 @@ describe("worker (default export)", () => {
       ]),
     );
   });
+
+  it("EAP-3: wires a real env.DB through GET /api/assessments/:id (with assessment.viewed), GET /api/assessments/search, and the lead-linkage filter end to end", async () => {
+    const env = { DB: createDb(), AUTH_SECRET: "test-secret" };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const createResponse = await worker.fetch(
+      new Request("https://example.com/api/assessments", {
+        method: "POST",
+        body: JSON.stringify({
+          framework: "dpdp",
+          frameworkVersion: dpdpV1.version,
+          answers: { has_dpo: false },
+          result: {
+            score: 33,
+            riskLevel: "medium",
+            breakdown: { critical: 0, high: 1, medium: 1, low: 10, total: 2 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          createdAt: "2026-07-20T00:00:00.000Z",
+          organizationId: "org_1",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    expect(createResponse.status).toBe(201);
+    const created = (await createResponse.json()) as { id: string };
+
+    // Two real reads through the real Worker — each should record its own
+    // assessment.viewed event (router.ts's getAssessment, EAP-3).
+    for (let i = 0; i < 2; i += 1) {
+      const getResponse = await worker.fetch(
+        new Request(`https://example.com/api/assessments/${created.id}`, { headers: { cookie } }),
+        env,
+        noopContext,
+      );
+      expect(getResponse.status).toBe(200);
+    }
+
+    const auditResponse = await worker.fetch(
+      new Request(`https://example.com/api/audit?entityType=assessment&entityId=${created.id}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    const events = (await auditResponse.json()) as Array<{ action: string }>;
+    expect(events.filter((event) => event.action === "assessment.viewed")).toHaveLength(2);
+    expect(events.map((event) => event.action)).toEqual(
+      expect.arrayContaining(["assessment.created", "assessment.viewed"]),
+    );
+
+    // GET /api/assessments/search, filtered by the real framework.
+    const searchResponse = await worker.fetch(
+      new Request("https://example.com/api/assessments/search?framework=dpdp", {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(searchResponse.status).toBe(200);
+    const searched = (await searchResponse.json()) as { total: number };
+    expect(searched.total).toBe(1);
+
+    // Assessment Details' "Lead linkage" panel: GET /api/leads/search?assessmentId=...
+    // finds only the lead actually linked to this assessment, not every lead.
+    await worker.fetch(
+      new Request("https://example.com/api/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Asha Rao",
+          email: "asha@acme.in",
+          company: "Acme Fintech",
+          answers: {},
+          result: {
+            score: 0,
+            riskLevel: "low",
+            breakdown: { critical: 0, high: 0, medium: 0, low: 12, total: 0 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          timestamp: "2026-07-20T00:00:00.000Z",
+          source: "dpdp-scan",
+          assessmentId: created.id,
+        }),
+      }),
+      env,
+      noopContext,
+    );
+    await worker.fetch(
+      new Request("https://example.com/api/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Other Lead",
+          email: "other@acme.in",
+          company: "Other Co",
+          answers: {},
+          result: {
+            score: 0,
+            riskLevel: "low",
+            breakdown: { critical: 0, high: 0, medium: 0, low: 12, total: 0 },
+            gaps: [],
+            scoredQuestionCount: 12,
+          },
+          timestamp: "2026-07-20T00:00:00.000Z",
+          source: "dpdp-scan",
+        }),
+      }),
+      env,
+      noopContext,
+    );
+
+    const linkedLeadsResponse = await worker.fetch(
+      new Request(`https://example.com/api/leads/search?assessmentId=${created.id}`, {
+        headers: { cookie },
+      }),
+      env,
+      noopContext,
+    );
+    expect(linkedLeadsResponse.status).toBe(200);
+    const linkedLeads = (await linkedLeadsResponse.json()) as {
+      total: number;
+      leads: Array<{ name: string }>;
+    };
+    expect(linkedLeads.total).toBe(1);
+    expect(linkedLeads.leads[0]?.name).toBe("Asha Rao");
+  });
 });

@@ -101,6 +101,13 @@ curl -s http://localhost:8787/api/audit
 # Administrator" below), backing the admin Dashboard's org/assessment/audit
 # metrics.
 
+curl -s "http://localhost:8787/api/assessments/search?riskLevel=critical&sortBy=riskScore&sortDirection=desc"
+# 401 with no session cookie — EAP-3: same Platform Administrator gate,
+# backing the Assessment Workspace. framework/riskLevel filter, sortBy
+# (createdAt/riskScore/framework)/sortDirection, page/pageSize all validated
+# the same strictness as GET /api/leads/search (an unrecognized value is a
+# real 400, not silently ignored).
+
 curl -s http://localhost:8787/api/leads/some-lead-id
 curl -s -X PATCH http://localhost:8787/api/leads/some-lead-id \
   -H "Content-Type: application/json" \
@@ -118,11 +125,16 @@ curl -s "http://localhost:8787/api/audit?entityType=lead&entityId=some-lead-id"
 # entityType/entityId query filters (used by the Lead Details page's
 # activity timeline). Omitting them still returns the full unfiltered list,
 # unchanged from EAP-1.
+
+curl -s "http://localhost:8787/api/leads/search?assessmentId=some-assessment-id"
+# 401 with no session cookie — EAP-3: GET /api/leads/search now accepts an
+# optional assessmentId filter (used by Assessment Details' "Lead linkage"
+# panel — which real leads, if any, this assessment produced).
 ```
 
 ### Provisioning a local Platform Administrator
 
-`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
+`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `GET /api/audit`, cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants this — deliberately, since an endpoint that lets a caller grant themselves platform-wide access would itself be a privilege-escalation vulnerability. Provisioning one locally is a real sign-in followed by a direct SQL insert:
 
 ```bash
 # 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
@@ -169,6 +181,16 @@ curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/leads/<lead id>" \
 # 200, returns the updated lead. Also records lead.status_changed and
 # lead.note_added audit_events rows (router.ts's updateLead) — visible via:
 curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=lead&entityId=<lead id>"
+
+# 7. GET /api/assessments/search (EAP-3) resolves through the same gate.
+#    GET /api/assessments/:id additionally records a real assessment.viewed
+#    audit event on this same authenticated read:
+curl -s -b cookies.txt "http://localhost:8787/api/assessments/search?riskLevel=critical"
+
+curl -s -b cookies.txt "http://localhost:8787/api/assessments/<a real assessment id>"
+curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=assessment&entityId=<assessment id>"
+# shows the real assessment.created (from creation) and assessment.viewed
+# (from the read just above) events.
 ```
 
 Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the role) is a direct database write, because no route exists to do it any other way.
@@ -216,6 +238,16 @@ With a Platform Administrator session (previous section), the sidebar shows a **
 4. **Assignment is "assign to me" or "unassign" only** — there is no user directory to pick a different real person from. Deliberate, not missing functionality; see `SECURITY_GUIDE.md`'s "Known, accepted gaps" for why.
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/lead-workspace.spec.ts`) that seeds real leads directly in D1 and drives real search/filter/lifecycle-update/reload interactions through a real browser — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
+## Managing assessments through the Admin Application (`/admin/assessments`, EAP-3)
+
+With a Platform Administrator session (above), the sidebar shows an **Assessments** link (`adminNavItems`), hidden entirely for a non-Platform-Administrator, the same convention as **Leads**.
+
+1. **Assessment Workspace** (`/admin/assessments`): a real, server-backed table — search (debounced 300ms, matches id/organizationId/createdBy substrings — an assessment has no name/email/company the way a lead does), framework/risk-level filters, sortable columns, and pagination, all driven by `GET /api/assessments/search`. A **Compliance Intelligence** panel above the table shows aggregate risk distribution, framework status, outstanding findings by DPDP section, and month-over-month risk trend — computed client-side from `GET /api/assessments` (the same full-list endpoint the Dashboard already uses), not a new aggregation endpoint. **Save filter**/**Columns** work identically to Leads (`localStorage`-backed, per-browser).
+2. **Assessment Details** (`/admin/assessments/:id`): click any row's reference link to navigate here. Shows metadata (framework/version, an honest "Completed" status — an assessment has no draft/in-progress lifecycle to represent, `DECISION_LOG.md`'s EAP-3 entry — completion timestamp, organization, owner), Risk & compliance results (risk badge/score, severity breakdown, findings by severity, category coverage by DPDP section, and every question's own real answer with a Pass/Gap status for scored questions — all from the assessment's own server-computed `result`, never recomputed here), Lead linkage (real leads this assessment produced, via `GET /api/leads/search?assessmentId=...`), and a real audit timeline (`assessment.created`/`assessment.viewed`) sourced from `GET /api/audit?entityType=assessment&entityId=...`.
+3. **Nothing here is editable** — unlike Leads, an assessment has no lifecycle to change, so there is no "Save"/PATCH step anywhere on this page.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/assessment-center.spec.ts`) that seeds real assessments/leads directly in D1 and drives real search/filter/detail-navigation/lead-linkage interactions through a real browser — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
 ## Structured logs
 
