@@ -2960,4 +2960,123 @@ describe("handleRequest", () => {
       expect(body).not.toContain("assessment.created");
     });
   });
+
+  describe("GET /api/operations/summary (EAP-7)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns real per-service status, real metrics, and a static overview for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({
+        name: "Asha Rao",
+        email: "asha@acme.in",
+        company: "Acme Fintech",
+        answers: {},
+        result: sampleResult,
+        timestamp: "2026-07-20T00:00:00.000Z",
+        source: "dpdp-scan",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      // A prior request so requestCounts/repositoryOperations have something
+      // real to report — not asserting on an empty-before-anything state.
+      await handleRequest(
+        new Request("https://example.com/api/audit", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        services: Array<{ name: string; configured: boolean; ok: boolean; total?: number }>;
+        requestCounts: Array<{ name: string }>;
+        repositoryOperations: Array<{ name: string }>;
+        overview: { version: string; environment: string; modules: string[] };
+      };
+
+      const leads = body.services.find((service) => service.name === "leads");
+      expect(leads).toMatchObject({ configured: true, ok: true, total: 1 });
+
+      const organizations = body.services.find((service) => service.name === "organizations");
+      expect(organizations).toMatchObject({ configured: true, ok: true });
+
+      expect(body.requestCounts.some((entry) => entry.name === "http.request")).toBe(true);
+      expect(body.repositoryOperations.length).toBeGreaterThan(0);
+
+      expect(body.overview.modules).toContain("leads");
+      expect(body.overview.modules).toContain("audit");
+      expect(typeof body.overview.version).toBe("string");
+      expect(body.overview.environment).toContain("local");
+    });
+
+    it("reports organizations/users/userProfiles as not configured when a deployment doesn't wire them", async () => {
+      const db = createAuthDb();
+      const deps: Dependencies = {
+        leads: createInMemoryLeadRepository(),
+        assessments: createInMemoryAssessmentRepository(),
+        audit: createInMemoryAuditRepository(),
+        logger: silentLogger,
+        rateLimiter: createInMemoryRateLimiter({ limit: 1000, windowMs: 60_000 }),
+        authConfig: createAuthConfig({ db, secret: "test-secret" }),
+        userProfiles: createInMemoryUserProfileRepository(),
+      };
+      const caller = await createPlatformAdministratorCaller(
+        deps as Dependencies & { userProfiles: UserProfileRepository },
+      );
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        services: Array<{ name: string; configured: boolean; ok: boolean }>;
+      };
+      // organizations/users are genuinely omitted from this deps object.
+      for (const name of ["organizations", "users"]) {
+        expect(body.services.find((service) => service.name === name)).toMatchObject({
+          configured: false,
+          ok: false,
+        });
+      }
+      // userProfiles IS wired here (resolveCaller needs it to authenticate
+      // the Platform Administrator caller at all), so it's genuinely
+      // configured — not the case this test is about.
+      const userProfiles = body.services.find((service) => service.name === "userProfiles");
+      expect(userProfiles).toMatchObject({ configured: true, ok: true });
+      const leads = body.services.find((service) => service.name === "leads");
+      expect(leads).toMatchObject({ configured: true, ok: true });
+    });
+  });
 });

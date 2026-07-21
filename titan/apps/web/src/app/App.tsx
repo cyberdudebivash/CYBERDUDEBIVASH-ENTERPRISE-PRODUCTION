@@ -17,6 +17,7 @@ import { OrganizationDetailPage } from "../features/admin/organizations/Organiza
 import { UserWorkspacePage } from "../features/admin/users/UserWorkspacePage.js";
 import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
 import { AuditWorkspacePage } from "../features/admin/audit/AuditWorkspacePage.js";
+import { OperationsWorkspacePage } from "../features/admin/operations/OperationsWorkspacePage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -76,6 +77,12 @@ export function AppRoutes() {
             reasoning `ARCHITECTURE.md`'s EAP-6 section records for GET
             /api/audit not gaining an `:id` sibling either. */}
         <Route path="audit" element={<AuditWorkspacePage />} />
+        {/* EAP-7: the Enterprise Operations Center — same Platform-
+            Administrator-gated-server-side pattern as every module above,
+            not a route-level block. No `/admin/operations/:id` route: an
+            operations summary has no per-record detail the way a lead/
+            organization/user does. */}
+        <Route path="operations" element={<OperationsWorkspacePage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

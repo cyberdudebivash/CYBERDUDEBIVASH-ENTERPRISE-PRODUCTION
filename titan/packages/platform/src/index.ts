@@ -59,7 +59,7 @@ export { createD1AssessmentRepository } from "./repositories/assessmentRepositor
 export { createInMemoryAuditRepository } from "./repositories/auditRepository.memory.js";
 export { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 
-export type { Dependencies } from "./router.js";
+export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
 export { handleRequest } from "./router.js";
 export type { Env } from "./worker.js";
 
@@ -71,5 +71,5 @@ export { requireOrganizationAccess } from "./auth/authorize.js";
 
 export type { Logger, LogFields, LogLevel } from "./observability/logger.js";
 export { createLogger } from "./observability/logger.js";
-export type { Metrics } from "./observability/metrics.js";
+export type { Metrics, RecordedCount, RecordedDuration } from "./observability/metrics.js";
 export { createInMemoryMetrics } from "./observability/metrics.js";

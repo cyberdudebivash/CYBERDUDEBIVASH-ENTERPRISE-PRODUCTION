@@ -36,5 +36,10 @@ export function adminNavItems(me: MeResponse): SidebarItem[] {
     // links to (GET /api/audit/search, GET /api/audit/export, and GET
     // /api/audit itself) is Platform-Administrator-only (SECURITY_GUIDE.md).
     ...(me.isPlatformAdministrator ? [{ label: "Audit", to: "/admin/audit" }] : []),
+    // EAP-7: same gating reasoning as every entry above — GET
+    // /api/operations/summary is Platform-Administrator-only
+    // (SECURITY_GUIDE.md); health/readiness underneath it are role-agnostic
+    // but the page itself composes every module's own data.
+    ...(me.isPlatformAdministrator ? [{ label: "Operations", to: "/admin/operations" }] : []),
   ];
 }

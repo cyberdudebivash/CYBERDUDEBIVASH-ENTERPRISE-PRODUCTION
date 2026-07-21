@@ -8,30 +8,37 @@
  * swapping the in-memory recorder for an Analytics Engine-backed one later
  * is a new implementation of Metrics, not a router rewrite.
  */
-export interface Metrics {
-  increment(name: string, tags?: Record<string, string>): void;
-  recordDuration(name: string, durationMs: number, tags?: Record<string, string>): void;
-}
-
-interface RecordedCount {
+export interface RecordedCount {
   name: string;
   tags: Record<string, string>;
   count: number;
 }
 
-interface RecordedDuration {
+export interface RecordedDuration {
   name: string;
   tags: Record<string, string>;
   durations: number[];
 }
 
+/** EAP-7: `getCounts`/`getDurations` are part of the contract itself, not
+ * an extra pair of methods bolted onto one concrete implementation — the
+ * Enterprise Operations Center's real runtime-metrics view (`GET
+ * /api/operations/summary`) needs to read these back, and any future
+ * Metrics backend (Workers Analytics Engine, the day a real binding
+ * exists) needs to support being read the same way. `createInMemoryMetrics`
+ * already implemented both before this interface change; this only makes
+ * that a promise every implementation keeps, not new behavior. */
+export interface Metrics {
+  increment(name: string, tags?: Record<string, string>): void;
+  recordDuration(name: string, durationMs: number, tags?: Record<string, string>): void;
+  getCounts(): RecordedCount[];
+  getDurations(): RecordedDuration[];
+}
+
 /** In-memory only — scoped to one Worker isolate, same limitation
  * security/rateLimiter.ts documents for the same reason. Good enough for
  * local dev/tests; not a production metrics backend. */
-export function createInMemoryMetrics(): Metrics & {
-  getCounts(): RecordedCount[];
-  getDurations(): RecordedDuration[];
-} {
+export function createInMemoryMetrics(): Metrics {
   const counts = new Map<string, RecordedCount>();
   const durations = new Map<string, RecordedDuration>();
 
