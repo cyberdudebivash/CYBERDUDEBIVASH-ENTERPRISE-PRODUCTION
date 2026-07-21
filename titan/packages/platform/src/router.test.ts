@@ -3079,4 +3079,383 @@ describe("handleRequest", () => {
       expect(leads).toMatchObject({ configured: true, ok: true });
     });
   });
+
+  describe("GET /api/reports/summary (EAP-8)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/summary"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns real, server-computed breakdowns for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({
+        name: "Asha Rao",
+        email: "asha@acme.in",
+        company: "Acme Fintech",
+        answers: {},
+        result: { ...sampleResult, riskLevel: "critical" },
+        timestamp: "2026-07-20T00:00:00.000Z",
+        source: "dpdp-scan",
+      });
+      await deps.assessments.save({
+        organizationId: null,
+        createdBy: null,
+        framework: "dpdp",
+        frameworkVersion: dpdpV1.version,
+        answers: {},
+        result: { ...sampleResult, riskLevel: "high" },
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.organizations.save({
+        name: "Acme",
+        slug: "acme",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: new Date().toISOString(),
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        organizations: { configured: boolean; total: number; byStatus: Record<string, number> };
+        leads: {
+          total: number;
+          byStatus: Record<string, number>;
+          byRiskLevel: Record<string, number>;
+        };
+        assessments: { total: number; byRiskLevel: Record<string, number> };
+        identity: { configured: boolean; totalProfiles: number; platformAdministrators: number };
+        audit: { total: number; last24h: number; topActions: Array<{ action: string }> };
+        generatedAt: string;
+      };
+
+      expect(body.organizations).toMatchObject({
+        configured: true,
+        total: 1,
+        byStatus: { active: 1, archived: 0 },
+      });
+      expect(body.leads.total).toBe(1);
+      expect(body.leads.byStatus.new).toBe(1);
+      expect(body.leads.byRiskLevel.critical).toBe(1);
+      expect(body.assessments.total).toBe(1);
+      expect(body.assessments.byRiskLevel.high).toBe(1);
+      // The Platform Administrator caller itself grants exactly one such
+      // profile — a real count from `deps.userProfiles.list()`, not a
+      // fabricated non-zero.
+      expect(body.identity.configured).toBe(true);
+      expect(body.identity.totalProfiles).toBe(1);
+      expect(body.identity.platformAdministrators).toBe(1);
+      expect(body.audit.total).toBe(1);
+      expect(body.audit.last24h).toBe(1);
+      expect(body.audit.topActions).toEqual([{ action: "lead.created", count: 1 }]);
+      expect(typeof body.generatedAt).toBe("string");
+    });
+
+    it("reports organizations/identity as not configured when a deployment doesn't wire them", async () => {
+      const db = createAuthDb();
+      const deps: Dependencies = {
+        leads: createInMemoryLeadRepository(),
+        assessments: createInMemoryAssessmentRepository(),
+        audit: createInMemoryAuditRepository(),
+        logger: silentLogger,
+        rateLimiter: createInMemoryRateLimiter({ limit: 1000, windowMs: 60_000 }),
+        authConfig: createAuthConfig({ db, secret: "test-secret" }),
+        userProfiles: createInMemoryUserProfileRepository(),
+        // organizations/users genuinely omitted.
+      };
+      const caller = await createPlatformAdministratorCaller(
+        deps as Dependencies & { userProfiles: UserProfileRepository },
+      );
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        organizations: { configured: boolean; total: number };
+        identity: { configured: boolean };
+      };
+      expect(body.organizations).toMatchObject({ configured: false, total: 0 });
+      // userProfiles IS wired (needed to authenticate the caller), but
+      // `users` is genuinely absent, so `identity` as a whole is reported
+      // not-configured — it needs both.
+      expect(body.identity.configured).toBe(false);
+    });
+  });
+
+  describe("GET /api/reports/trends (EAP-8)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=leads"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=leads", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 for a missing or invalid entity", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const missing = await handleRequest(
+        new Request("https://example.com/api/reports/trends", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(missing.status).toBe(400);
+      const invalid = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=leads_and_more", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(invalid.status).toBe(400);
+    });
+
+    it("returns 400 for an out-of-range days value", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=leads&days=91", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("buckets a real lead's timestamp into today's point, zero-filled for every other day", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({
+        name: "Asha Rao",
+        email: "asha@acme.in",
+        company: "Acme Fintech",
+        answers: {},
+        result: sampleResult,
+        timestamp: new Date().toISOString(),
+        source: "dpdp-scan",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=leads&days=7", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        entity: string;
+        days: number;
+        points: Array<{ date: string; count: number }>;
+      };
+      expect(body.entity).toBe("leads");
+      expect(body.points).toHaveLength(7);
+      const total = body.points.reduce((sum, point) => sum + point.count, 0);
+      expect(total).toBe(1);
+      // Today (the last bucket) is where the just-created lead lands.
+      expect(body.points.at(-1)?.count).toBe(1);
+    });
+
+    it("returns 503 for the organizations entity when organizations isn't configured", async () => {
+      const deps = createTestDeps();
+      const depsWithAuth: Dependencies = {
+        ...deps,
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        userProfiles: createInMemoryUserProfileRepository(),
+      };
+      const caller = await createPlatformAdministratorCaller(
+        depsWithAuth as Dependencies & { userProfiles: UserProfileRepository },
+      );
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=organizations", {
+          headers: { cookie: caller.cookie },
+        }),
+        depsWithAuth,
+      );
+      expect(response.status).toBe(503);
+    });
+
+    it("computes the identity entity from user-related audit events", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "user.role_granted",
+        entityType: "user",
+        entityId: "user_1",
+        metadata: null,
+        createdAt: new Date().toISOString(),
+      });
+      await deps.audit.record({
+        actorId: null,
+        organizationId: null,
+        action: "lead.created",
+        entityType: "lead",
+        entityId: "lead_1",
+        metadata: null,
+        createdAt: new Date().toISOString(),
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/trends?entity=identity&days=7", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { points: Array<{ count: number }> };
+      const total = body.points.reduce((sum, point) => sum + point.count, 0);
+      // Only the "user"-entityType event counts — the lead event doesn't.
+      expect(total).toBe(1);
+    });
+  });
+
+  describe("GET /api/reports/export (EAP-8)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/export"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-Platform-Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      await deps.userProfiles.save({
+        userId: caller.userId,
+        organizationId: "org_1",
+        role: "owner",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 for an invalid format", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/export?format=pdf", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns a CSV file with real section,metric,value rows by default", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.leads.save({
+        name: "Asha Rao",
+        email: "asha@acme.in",
+        company: "Acme Fintech",
+        answers: {},
+        result: sampleResult,
+        timestamp: "2026-07-20T00:00:00.000Z",
+        source: "dpdp-scan",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("text/csv");
+      expect(response.headers.get("content-disposition")).toContain("attachment");
+      expect(response.headers.get("access-control-expose-headers")).toContain(
+        "Content-Disposition",
+      );
+      const body = await response.text();
+      const lines = body.trim().split("\r\n");
+      expect(lines[0]).toBe("section,metric,value");
+      expect(lines).toContain("leads,total,1");
+    });
+
+    it("returns a JSON file of the Executive Summary when format=json", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/reports/export?format=json", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      const body = (await response.json()) as { leads: { total: number } };
+      expect(body.leads.total).toBe(0);
+    });
+  });
 });

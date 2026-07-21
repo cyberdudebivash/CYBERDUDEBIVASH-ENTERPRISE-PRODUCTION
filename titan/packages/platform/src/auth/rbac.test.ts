@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { UserProfileRecord } from "../repositories/types.js";
 import {
   canAccessOrganization,
+  countPlatformAdministrators,
   findProfileForOrganization,
   hasAtLeastRole,
   isPlatformAdministrator,
@@ -86,5 +87,21 @@ describe("isPlatformAdministrator", () => {
 
   it("denies it for an empty profile list", () => {
     expect(isPlatformAdministrator([])).toBe(false);
+  });
+});
+
+describe("countPlatformAdministrators", () => {
+  it("counts every organizationId: null, role: owner profile system-wide", () => {
+    const profiles = [
+      makeProfile({ userId: "user_1", organizationId: null, role: "owner" }),
+      makeProfile({ userId: "user_2", organizationId: null, role: "owner" }),
+      makeProfile({ userId: "user_3", organizationId: "org_1", role: "owner" }),
+      makeProfile({ userId: "user_4", organizationId: "org_1", role: "member" }),
+    ];
+    expect(countPlatformAdministrators(profiles)).toBe(2);
+  });
+
+  it("returns 0 for an empty profile list", () => {
+    expect(countPlatformAdministrators([])).toBe(0);
   });
 });

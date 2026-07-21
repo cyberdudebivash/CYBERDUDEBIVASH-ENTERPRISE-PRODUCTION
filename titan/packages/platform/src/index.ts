@@ -60,7 +60,19 @@ export { createInMemoryAuditRepository } from "./repositories/auditRepository.me
 export { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 
 export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
-export { handleRequest } from "./router.js";
+export type {
+  OrganizationsReport,
+  LeadsReport,
+  AssessmentsReport,
+  IdentityReport,
+  AuditActionCount,
+  AuditReport,
+  ExecutiveSummary,
+  ReportTrendEntity,
+  TrendPoint,
+  TrendSeries,
+} from "./router.js";
+export { handleRequest, REPORT_TREND_ENTITIES } from "./router.js";
 export type { Env } from "./worker.js";
 
 export type { AuthConfigOptions, OAuthCredentials } from "./auth/config.js";

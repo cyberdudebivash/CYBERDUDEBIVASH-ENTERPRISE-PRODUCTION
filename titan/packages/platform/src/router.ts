@@ -1,6 +1,6 @@
 import type { AuthConfig } from "@auth/core";
 import { Auth } from "@auth/core";
-import type { QuestionBank } from "@titan/assessment-core";
+import type { QuestionBank, RiskLevel } from "@titan/assessment-core";
 import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
   AssessmentRepository,
@@ -9,14 +9,17 @@ import type {
   AuditRepository,
   AuditSearchOptions,
   LeadLifecyclePatch,
+  LeadPriority,
   LeadRepository,
   LeadSearchOptions,
+  LeadStatus,
   NewAssessment,
   NewLead,
   NewOrganization,
   OrganizationPatch,
   OrganizationRepository,
   OrganizationSearchOptions,
+  OrganizationStatus,
   UserProfilePatch,
   UserProfileRecord,
   UserProfileRepository,
@@ -49,7 +52,7 @@ import {
   requireLeadsAccess,
   requirePlatformAdministrator,
 } from "./auth/authorize.js";
-import { isPlatformAdministrator } from "./auth/rbac.js";
+import { countPlatformAdministrators, isPlatformAdministrator } from "./auth/rbac.js";
 import {
   fail,
   ok,
@@ -511,6 +514,42 @@ async function route(
     const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
     if (denied) return denied;
     return operationsSummary(deps, ctx);
+  }
+
+  // EAP-8: the Enterprise Reporting & Analytics Executive Dashboard's one
+  // aggregating read — real counts/breakdowns computed server-side from the
+  // same repositories every prior module already reads, never a client-side
+  // count over a fetched-whole list. Same Platform-Administrator-only
+  // policy as Audit/Operations: this composes cross-organization data from
+  // every module.
+  if (url.pathname === "/api/reports/summary" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return reportSummaryResponse(deps, ctx);
+  }
+
+  // EAP-8: the Analytics Workspace's one time-bucketed series per entity —
+  // same authorization policy as GET /api/reports/summary.
+  if (url.pathname === "/api/reports/trends" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return reportTrends(url, deps, ctx);
+  }
+
+  // EAP-8: Report Export — the same Executive Summary GET /api/reports/summary
+  // returns, as a real downloadable file. Same shape and reasoning as Audit
+  // Export (GET /api/audit/export): real authorization, not just a
+  // different response shape.
+  if (url.pathname === "/api/reports/export" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return exportReportSummary(url, deps, ctx);
   }
 
   if (url.pathname === "/api/me" && request.method === "GET") {
@@ -2047,6 +2086,454 @@ async function operationsSummary(deps: Dependencies, ctx: RouteContext): Promise
   };
 
   return jsonSuccess(summary);
+}
+
+// EAP-8: this module's own fixed vocabulary for a lead/assessment's risk
+// outcome — same reasoning as `DashboardPage.tsx`'s own local
+// `RISK_LEVELS` constant: there is no shared, exported `RISK_LEVELS` array
+// anywhere in `@titan/assessment-core` (only the `RiskLevel` type), so
+// every consumer that needs to enumerate the four values keeps its own
+// copy rather than inventing a new shared export for one internal helper.
+const RISK_LEVELS: readonly RiskLevel[] = ["critical", "high", "medium", "low"];
+
+/** Every key present at 0 — the starting point for `countByEnum`, and also
+ * what an unconfigured `OrganizationsReport` reports on its own (there are
+ * no real organizations to count when `deps.organizations` was never
+ * wired, but every status is still a known, present key rather than an
+ * absent one). */
+function zeroCounts<K extends string>(keys: readonly K[]): Record<K, number> {
+  return Object.fromEntries(keys.map((key) => [key, 0])) as Record<K, number>;
+}
+
+/** Counts `items` into a fixed, known set of `keys` — every key is present
+ * in the result (starting at 0), so a caller never has to guard against a
+ * missing key the way a plain `Map` would require. Used for every
+ * closed-vocabulary breakdown (lead status/priority, risk level,
+ * organization status) the Executive Summary reports. */
+function countByEnum<T, K extends string>(
+  items: T[],
+  keys: readonly K[],
+  keyOf: (item: T) => K,
+): Record<K, number> {
+  const counts = zeroCounts(keys);
+  for (const item of items) counts[keyOf(item)] += 1;
+  return counts;
+}
+
+/** Same idea as `countByEnum`, but for an open-ended string (e.g. an
+ * assessment's `framework`, an audit event's `action`) — there is no fixed
+ * set of keys to pre-seed, so only keys that actually occur appear in the
+ * result. */
+function countByFreeform<T>(items: T[], keyOf: (item: T) => string): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const item of items) {
+    const key = keyOf(item);
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export interface OrganizationsReport {
+  /** Mirrors `ServiceStatus.configured` — false when this deployment never
+   * wired `deps.organizations` (EAP-4's own optional-dependency reasoning),
+   * distinct from a real, honest zero. */
+  configured: boolean;
+  total: number;
+  byStatus: Record<OrganizationStatus, number>;
+}
+
+export interface LeadsReport {
+  total: number;
+  byStatus: Record<LeadStatus, number>;
+  byPriority: Record<LeadPriority, number>;
+  byRiskLevel: Record<RiskLevel, number>;
+}
+
+export interface AssessmentsReport {
+  total: number;
+  byRiskLevel: Record<RiskLevel, number>;
+  /** Open-ended (only frameworks that actually occur appear) — this system
+   * has exactly one framework today (`dpdp`), the same honest reasoning
+   * `REGISTERED_MODULES` already applies to "what's real right now". */
+  byFramework: Record<string, number>;
+}
+
+export interface IdentityReport {
+  /** True only when both `deps.users` and `deps.userProfiles` are wired —
+   * this report needs both (identity records and role grants), same
+   * reasoning as `OrganizationsReport.configured`. */
+  configured: boolean;
+  totalUsers: number;
+  totalProfiles: number;
+  platformAdministrators: number;
+}
+
+export interface AuditActionCount {
+  action: string;
+  count: number;
+}
+
+export interface AuditReport {
+  total: number;
+  last24h: number;
+  last7d: number;
+  /** Highest-count actions first, capped to a handful — a full per-action
+   * breakdown belongs to the Audit Center's own Investigation View, not a
+   * summary card. */
+  topActions: AuditActionCount[];
+}
+
+export interface ExecutiveSummary {
+  organizations: OrganizationsReport;
+  leads: LeadsReport;
+  assessments: AssessmentsReport;
+  identity: IdentityReport;
+  audit: AuditReport;
+  generatedAt: string;
+}
+
+const AUDIT_TOP_ACTIONS_LIMIT = 5;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** EAP-8: the Enterprise Reporting & Analytics Executive Dashboard's real
+ * data source — every count here comes from a real repository read
+ * (`list()`/`search()`, exactly the same methods the Dashboard, Lead/
+ * Assessment/Organization Workspaces, and Operations Center already call),
+ * aggregated once, server-side, in this handler — never a client fetching a
+ * whole list and counting it itself the way `useDashboardData.ts` does
+ * today (a named, pre-existing limitation this module doesn't repeat, not
+ * one it fixes retroactively — `DECISION_LOG.md`). No new repository
+ * method, no new table: purely additive composition over what already
+ * exists. */
+async function buildExecutiveSummary(
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<ExecutiveSummary> {
+  const [leads, assessments, organizations, auditEvents, userProfiles, usersTotal] =
+    await Promise.all([
+      withOperationTiming(ctx.metrics, "reports.leads.list", () => deps.leads.list()),
+      withOperationTiming(ctx.metrics, "reports.assessments.list", () => deps.assessments.list()),
+      deps.organizations
+        ? withOperationTiming(ctx.metrics, "reports.organizations.list", () =>
+            deps.organizations!.list(),
+          )
+        : Promise.resolve(null),
+      // Same unfiltered read `listAuditEvents`/Dashboard's own audit summary
+      // already perform — one fetch backs total/last24h/last7d/topActions
+      // instead of four separate round trips.
+      withOperationTiming(ctx.metrics, "reports.audit.list", () => deps.audit.list()),
+      deps.userProfiles
+        ? withOperationTiming(ctx.metrics, "reports.userProfiles.list", () =>
+            deps.userProfiles!.list(),
+          )
+        : Promise.resolve(null),
+      deps.users
+        ? withOperationTiming(ctx.metrics, "reports.users.search", () =>
+            deps.users!.search({ page: 1, pageSize: 1 }),
+          )
+        : Promise.resolve(null),
+    ]);
+
+  const now = Date.now();
+  const cutoff24h = new Date(now - DAY_MS).toISOString();
+  const cutoff7d = new Date(now - 7 * DAY_MS).toISOString();
+  const actionCounts = countByFreeform(auditEvents, (event) => event.action);
+  const topActions = Object.entries(actionCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, AUDIT_TOP_ACTIONS_LIMIT)
+    .map(([action, count]) => ({ action, count }));
+
+  return {
+    organizations: organizations
+      ? {
+          configured: true,
+          total: organizations.length,
+          byStatus: countByEnum(organizations, ORGANIZATION_STATUSES, (org) => org.status),
+        }
+      : {
+          configured: false,
+          total: 0,
+          byStatus: zeroCounts(ORGANIZATION_STATUSES),
+        },
+    leads: {
+      total: leads.length,
+      byStatus: countByEnum(leads, LEAD_STATUSES, (lead) => lead.status),
+      byPriority: countByEnum(leads, LEAD_PRIORITIES, (lead) => lead.priority),
+      byRiskLevel: countByEnum(leads, RISK_LEVELS, (lead) => lead.result.riskLevel),
+    },
+    assessments: {
+      total: assessments.length,
+      byRiskLevel: countByEnum(
+        assessments,
+        RISK_LEVELS,
+        (assessment) => assessment.result.riskLevel,
+      ),
+      byFramework: countByFreeform(assessments, (assessment) => assessment.framework),
+    },
+    identity: {
+      configured: Boolean(deps.users && deps.userProfiles),
+      totalUsers: usersTotal?.total ?? 0,
+      totalProfiles: userProfiles?.length ?? 0,
+      platformAdministrators: userProfiles ? countPlatformAdministrators(userProfiles) : 0,
+    },
+    audit: {
+      total: auditEvents.length,
+      last24h: auditEvents.filter((event) => event.createdAt >= cutoff24h).length,
+      last7d: auditEvents.filter((event) => event.createdAt >= cutoff7d).length,
+      topActions,
+    },
+    generatedAt: new Date(now).toISOString(),
+  };
+}
+
+async function reportSummaryResponse(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const summary = await buildExecutiveSummary(deps, ctx);
+  return jsonSuccess(summary);
+}
+
+export interface TrendPoint {
+  /** YYYY-MM-DD (UTC). */
+  date: string;
+  count: number;
+}
+
+export const REPORT_TREND_ENTITIES = [
+  "leads",
+  "assessments",
+  "organizations",
+  "audit",
+  "identity",
+] as const;
+export type ReportTrendEntity = (typeof REPORT_TREND_ENTITIES)[number];
+
+export interface TrendSeries {
+  entity: ReportTrendEntity;
+  days: number;
+  points: TrendPoint[];
+}
+
+const REPORT_TREND_DEFAULT_DAYS = 30;
+const REPORT_TREND_MAX_DAYS = 90;
+// EAP-8: the same real-file-sized cap `AUDIT_EXPORT_MAX_ROWS` already
+// establishes for a bounded read over `audit_events` — used here for the
+// "audit"/"identity" trend entities, the two that read through
+// `AuditRepository.search` (date-filtered) rather than an unfiltered
+// `list()`.
+const REPORT_TREND_MAX_SAMPLE_ROWS = 10_000;
+
+function parseReportTrendsParams(
+  url: URL,
+): ValidationResult<{ entity: ReportTrendEntity; days: number }> {
+  const entityParam = url.searchParams.get("entity");
+  if (!entityParam || !REPORT_TREND_ENTITIES.includes(entityParam as ReportTrendEntity)) {
+    return fail(`Invalid entity: ${entityParam}`);
+  }
+
+  let days = REPORT_TREND_DEFAULT_DAYS;
+  const daysParam = url.searchParams.get("days");
+  if (daysParam !== null) {
+    const parsed = Number(daysParam);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > REPORT_TREND_MAX_DAYS) {
+      return fail(`Invalid days: ${daysParam}`);
+    }
+    days = parsed;
+  }
+
+  return ok({ entity: entityParam as ReportTrendEntity, days });
+}
+
+/** Buckets a list of ISO 8601 timestamps into one count per UTC calendar
+ * day over the trailing `days` days (today inclusive) — every day in the
+ * window is present in the result, at 0 if nothing happened that day, so a
+ * chart never has to guess whether a missing day means "zero" or "no data
+ * fetched for it". */
+function bucketByDay(timestamps: string[], days: number): TrendPoint[] {
+  const buckets = new Map<string, number>();
+  const today = new Date();
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setUTCDate(day.getUTCDate() - offset);
+    buckets.set(day.toISOString().slice(0, 10), 0);
+  }
+
+  for (const timestamp of timestamps) {
+    const key = timestamp.slice(0, 10);
+    if (buckets.has(key)) {
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    }
+  }
+
+  return [...buckets.entries()].map(([date, count]) => ({ date, count }));
+}
+
+/** EAP-8: the Analytics Workspace's one time-bucketed series per entity —
+ * "Lead Trends"/"Assessment Trends"/"Organization Growth" read the same
+ * unfiltered `list()` the Executive Summary and pre-existing Dashboard
+ * already call, filtered here to the requested window; "Audit Volume" and
+ * "Identity Activity" instead read `AuditRepository.search` with a real
+ * `dateFrom` filter (unfiltered for "Audit Volume", `entityType: "user"`
+ * for "Identity Activity" — the same `entityType` values `user.role_*`/
+ * `user.viewed` audit events already carry, EAP-5). There is no
+ * `Organization`/`Lead`/`Assessment` equivalent of a date-range filter
+ * (`OrganizationSearchOptions` etc. have none), so those three read their
+ * full list and filter in memory rather than inventing a new repository
+ * capability for it — the same reasoning `DECISION_LOG.md`'s EAP-4 entry
+ * already gave for not threading new filters into every `*SearchOptions`. */
+async function reportTrends(url: URL, deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const parsed = parseReportTrendsParams(url);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+  const { entity, days } = parsed.value;
+  const since = new Date(Date.now() - days * DAY_MS).toISOString();
+
+  let timestamps: string[];
+  switch (entity) {
+    case "leads": {
+      const leads = await withOperationTiming(ctx.metrics, "reports.trends.leads", () =>
+        deps.leads.list(),
+      );
+      timestamps = leads.map((lead) => lead.timestamp).filter((timestamp) => timestamp >= since);
+      break;
+    }
+    case "assessments": {
+      const assessments = await withOperationTiming(ctx.metrics, "reports.trends.assessments", () =>
+        deps.assessments.list(),
+      );
+      timestamps = assessments
+        .map((assessment) => assessment.createdAt)
+        .filter((timestamp) => timestamp >= since);
+      break;
+    }
+    case "organizations": {
+      if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+      const organizations = await withOperationTiming(
+        ctx.metrics,
+        "reports.trends.organizations",
+        () => deps.organizations!.list(),
+      );
+      timestamps = organizations
+        .map((organization) => organization.createdAt)
+        .filter((timestamp) => timestamp >= since);
+      break;
+    }
+    case "audit": {
+      const result = await withOperationTiming(ctx.metrics, "reports.trends.audit", () =>
+        deps.audit.search({ dateFrom: since, page: 1, pageSize: REPORT_TREND_MAX_SAMPLE_ROWS }),
+      );
+      timestamps = result.events.map((event) => event.createdAt);
+      break;
+    }
+    case "identity": {
+      const result = await withOperationTiming(ctx.metrics, "reports.trends.identity", () =>
+        deps.audit.search({
+          entityType: "user",
+          dateFrom: since,
+          page: 1,
+          pageSize: REPORT_TREND_MAX_SAMPLE_ROWS,
+        }),
+      );
+      timestamps = result.events.map((event) => event.createdAt);
+      break;
+    }
+  }
+
+  const series: TrendSeries = { entity, days, points: bucketByDay(timestamps, days) };
+  return jsonSuccess(series);
+}
+
+const REPORT_SUMMARY_CSV_HEADER = ["section", "metric", "value"] as const;
+
+/** Flattens the nested `ExecutiveSummary` into `section,metric,value` rows
+ * — the same RFC 4180 quoting (`csvField`) `toAuditCsv` already uses, the
+ * only reasonable tabular shape for a summary that isn't itself a list of
+ * uniform records the way audit events are. */
+function toExecutiveSummaryCsv(summary: ExecutiveSummary): string {
+  const rows: string[][] = [
+    ["organizations", "total", String(summary.organizations.total)],
+    ...Object.entries(summary.organizations.byStatus).map(([status, count]) => [
+      "organizations",
+      `status.${status}`,
+      String(count),
+    ]),
+    ["leads", "total", String(summary.leads.total)],
+    ...Object.entries(summary.leads.byStatus).map(([status, count]) => [
+      "leads",
+      `status.${status}`,
+      String(count),
+    ]),
+    ...Object.entries(summary.leads.byPriority).map(([priority, count]) => [
+      "leads",
+      `priority.${priority}`,
+      String(count),
+    ]),
+    ...Object.entries(summary.leads.byRiskLevel).map(([level, count]) => [
+      "leads",
+      `riskLevel.${level}`,
+      String(count),
+    ]),
+    ["assessments", "total", String(summary.assessments.total)],
+    ...Object.entries(summary.assessments.byRiskLevel).map(([level, count]) => [
+      "assessments",
+      `riskLevel.${level}`,
+      String(count),
+    ]),
+    ...Object.entries(summary.assessments.byFramework).map(([framework, count]) => [
+      "assessments",
+      `framework.${framework}`,
+      String(count),
+    ]),
+    ["identity", "totalUsers", String(summary.identity.totalUsers)],
+    ["identity", "totalProfiles", String(summary.identity.totalProfiles)],
+    ["identity", "platformAdministrators", String(summary.identity.platformAdministrators)],
+    ["audit", "total", String(summary.audit.total)],
+    ["audit", "last24h", String(summary.audit.last24h)],
+    ["audit", "last7d", String(summary.audit.last7d)],
+    ...summary.audit.topActions.map((entry) => [
+      "audit",
+      `action.${entry.action}`,
+      String(entry.count),
+    ]),
+  ];
+
+  const header = REPORT_SUMMARY_CSV_HEADER.join(",");
+  const csvRows = rows.map((row) => row.map(csvField).join(","));
+  return [header, ...csvRows].join("\r\n");
+}
+
+/** EAP-8: Report Export — the same `ExecutiveSummary` GET /api/reports/summary
+ * returns, as a real downloadable file. Same shape and reasoning as Audit
+ * Export (`exportAuditEvents`): `Content-Type`/`Content-Disposition` make
+ * this a real file, `finalizeResponse` still layers the same security
+ * headers on afterward regardless of body shape. */
+async function exportReportSummary(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const format = url.searchParams.get("format") ?? "csv";
+  if (format !== "csv" && format !== "json") {
+    return jsonError(
+      { code: "validation_error", message: `Invalid format: ${format}` },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const summary = await buildExecutiveSummary(deps, ctx);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `reporting-summary-${timestamp}.${format}`;
+  const body = format === "csv" ? toExecutiveSummaryCsv(summary) : JSON.stringify(summary, null, 2);
+  const contentType =
+    format === "csv" ? "text/csv; charset=utf-8" : "application/json; charset=utf-8";
+
+  return new Response(body, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    },
+  });
 }
 
 /** EAP-1: "who am I" for the frontend — the piece role-aware navigation

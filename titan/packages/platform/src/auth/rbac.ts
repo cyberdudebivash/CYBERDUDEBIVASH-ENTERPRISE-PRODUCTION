@@ -43,6 +43,22 @@ export function canAccessOrganization(
  * table's `(user_id, organization_id)` unique index (migrations/0003)
  * already guarantees at most one such row per user.
  */
+function isPlatformAdministratorProfile(profile: UserProfileRecord): boolean {
+  return profile.organizationId === null && profile.role === "owner";
+}
+
 export function isPlatformAdministrator(profiles: UserProfileRecord[]): boolean {
-  return profiles.some((profile) => profile.organizationId === null && profile.role === "owner");
+  return profiles.some(isPlatformAdministratorProfile);
+}
+
+/** EAP-8: counts every Platform Administrator grant across a full
+ * `UserProfileRecord[]` (e.g. `UserProfileRepository.list()`) — the same
+ * per-profile predicate `isPlatformAdministrator` checks for one user's own
+ * profiles, applied system-wide for the Enterprise Reporting & Analytics
+ * Executive Dashboard's identity KPI. The `(user_id, organization_id)`
+ * unique index (migrations/0003) already guarantees at most one such row
+ * per user, so this is also "distinct Platform Administrators", not just
+ * "matching rows". */
+export function countPlatformAdministrators(profiles: UserProfileRecord[]): number {
+  return profiles.filter(isPlatformAdministratorProfile).length;
 }

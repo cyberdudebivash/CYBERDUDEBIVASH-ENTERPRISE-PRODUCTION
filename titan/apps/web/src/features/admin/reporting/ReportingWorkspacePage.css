@@ -1,0 +1,29 @@
+.titan-reporting-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-reporting-workspace__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titan-reporting-workspace__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-reporting-workspace__export {
+  display: flex;
+  gap: 8px;
+}
+
+.titan-reporting-workspace__note {
+  margin: 0;
+  color: #64748b;
+}

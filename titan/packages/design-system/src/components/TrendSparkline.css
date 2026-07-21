@@ -1,0 +1,10 @@
+.titan-trend-sparkline {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: 48px;
+}
+
+.titan-trend-sparkline__line {
+  stroke: #0ea5e9;
+}

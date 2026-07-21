@@ -21,3 +21,8 @@ export {
 } from "./components/FilterPanel.js";
 export { Timeline, type TimelineProps, type TimelineEntry } from "./components/Timeline.js";
 export { DataTable, type DataTableProps, type DataTableColumn } from "./components/DataTable.js";
+export {
+  TrendSparkline,
+  type TrendSparklineProps,
+  type TrendSparklinePoint,
+} from "./components/TrendSparkline.js";
