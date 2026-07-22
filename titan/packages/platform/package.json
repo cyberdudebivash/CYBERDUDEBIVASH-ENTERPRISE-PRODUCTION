@@ -21,6 +21,7 @@
     "secrets:validate:staging": "node scripts/validate-secrets.mjs --env staging",
     "secrets:validate:production": "node scripts/validate-secrets.mjs --env production",
     "smoke-test": "node scripts/smoke-test.mjs",
+    "check-operational-thresholds": "node scripts/check-operational-thresholds.mjs",
     "deploy:dry-run:staging": "wrangler deploy --dry-run --env staging",
     "deploy:dry-run:production": "wrangler deploy --dry-run --env production",
     "release:staging": "node scripts/release.mjs --env staging",

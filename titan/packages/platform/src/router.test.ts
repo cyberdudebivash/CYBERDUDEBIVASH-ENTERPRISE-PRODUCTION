@@ -191,6 +191,51 @@ describe("handleRequest", () => {
       });
       expect(response.status).toBe(503);
     });
+
+    it("OPS-1: returns 503 when configValidation is invalid, even though readinessCheck resolves true", async () => {
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => true,
+        configValidation: {
+          environment: "production",
+          isProductionTier: true,
+          valid: false,
+          issues: [{ field: "AUTH_SECRET", severity: "error", message: "not set" }],
+        },
+      });
+      expect(response.status).toBe(503);
+      const body = (await response.json()) as { error: { message: string } };
+      expect(body.error.message).toContain("configuration");
+    });
+
+    it("OPS-1: returns 200 when configValidation is valid and readinessCheck resolves true", async () => {
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => true,
+        configValidation: {
+          environment: "production",
+          isProductionTier: true,
+          valid: true,
+          issues: [],
+        },
+      });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ status: "ready" });
+    });
+
+    it("OPS-1: a local/test deployment with no configValidation at all keeps its exact prior behavior", async () => {
+      // No `configValidation` key present, matching every pre-OPS-1 test and
+      // every real local-dev deployment (worker.ts only computes it at all;
+      // it's always present there, but router-level callers that never set
+      // it must behave exactly as they did before this phase).
+      const response = await handleRequest(new Request("https://example.com/health/ready"), {
+        ...createTestDeps(),
+        readinessCheck: async () => false,
+      });
+      expect(response.status).toBe(503);
+      const body = (await response.json()) as { error: { message: string } };
+      expect(body.error.message).not.toContain("configuration");
+    });
   });
 
   describe("POST /api/leads", () => {
@@ -3170,6 +3215,89 @@ describe("handleRequest", () => {
       expect(body.configuration?.issues).toEqual([
         expect.objectContaining({ field: "AUTH_SECRET" }),
       ]);
+    });
+
+    it("OPS-1: requestSummary reports a real error rate and latency percentiles, and alerts is empty when healthy", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+
+      // A real 404 first, so requestSummary.errorRate has a genuine non-zero
+      // sample to report — not asserting on an empty-before-anything state.
+      await handleRequest(new Request("https://example.com/api/does-not-exist"), deps);
+      await handleRequest(
+        new Request("https://example.com/api/audit", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        requestSummary: {
+          errorRate: { total: number; clientErrors: number };
+          latency: { count: number; p50: number; p95: number; p99: number };
+          repositoryLatency: { count: number };
+        };
+        alerts: unknown[];
+      };
+
+      expect(body.requestSummary.errorRate.total).toBeGreaterThan(0);
+      expect(body.requestSummary.errorRate.clientErrors).toBeGreaterThan(0);
+      expect(body.requestSummary.latency.count).toBeGreaterThan(0);
+      expect(body.requestSummary.latency.p95).toBeGreaterThanOrEqual(
+        body.requestSummary.latency.p50,
+      );
+      // No readinessCheck configured, no invalid config, no threshold breached.
+      expect(body.alerts).toEqual([]);
+    });
+
+    it("OPS-1: alerts reports a real, non-fabricated critical alert when configValidation is invalid", async () => {
+      const deps = createAuthorizedTestDeps();
+      deps.configValidation = {
+        environment: "production",
+        isProductionTier: true,
+        valid: false,
+        issues: [{ field: "ALLOWED_ORIGIN", severity: "error", message: "not set" }],
+      };
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        alerts: Array<{ id: string; severity: string }>;
+      };
+      expect(body.alerts).toEqual([
+        expect.objectContaining({ id: "configuration.invalid", severity: "critical" }),
+      ]);
+    });
+
+    it("OPS-1: alerts reports a real critical alert when a configured service is unreachable", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const brokenAudit: typeof deps.audit = {
+        ...deps.audit,
+        search: () => {
+          throw new Error("audit table missing");
+        },
+      };
+      deps.audit = brokenAudit;
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { alerts: Array<{ id: string; severity: string }> };
+      expect(body.alerts).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: "service.unreachable.audit" })]),
+      );
     });
   });
 

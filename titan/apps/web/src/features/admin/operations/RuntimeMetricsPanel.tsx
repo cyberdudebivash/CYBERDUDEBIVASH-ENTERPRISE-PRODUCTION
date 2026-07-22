@@ -1,13 +1,22 @@
 import { DataTable, EmptyState, type DataTableColumn } from "@titan/design-system";
-import type { RecordedCount, RecordedDuration } from "@titan/platform";
+import type { RecordedCount, RecordedDuration, RequestHealthSummary } from "@titan/platform";
 
 export interface RuntimeMetricsPanelProps {
   requestCounts: RecordedCount[];
   repositoryOperations: RecordedDuration[];
+  /** OPS-1 (Workstream 2): optional so this panel's own 3 pre-existing
+   * tests, which construct it without this prop, keep passing unchanged —
+   * every real caller (`OperationsWorkspacePage.tsx`) always has it, since
+   * `operationsSummary` (router.ts) always computes it. */
+  requestSummary?: RequestHealthSummary;
 }
 
 function average(durations: number[]): number {
   return Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length);
+}
+
+function formatRate(rate: number): string {
+  return `${(rate * 100).toFixed(1)}%`;
 }
 
 /**
@@ -23,6 +32,7 @@ function average(durations: number[]): number {
 export function RuntimeMetricsPanel({
   requestCounts,
   repositoryOperations,
+  requestSummary,
 }: RuntimeMetricsPanelProps) {
   const requestColumns: DataTableColumn<RecordedCount>[] = [
     { id: "method", header: "Method", render: (entry) => entry.tags.method ?? "—" },
@@ -40,6 +50,41 @@ export function RuntimeMetricsPanel({
 
   return (
     <div className="titan-operations-metrics">
+      {requestSummary && (
+        <div>
+          <h3 className="titan-operations-metrics__subheading">Request health</h3>
+          {requestSummary.latency.count === 0 ? (
+            <EmptyState
+              title="No requests recorded yet"
+              description="Error rate and latency percentiles need at least one recorded request on this isolate."
+            />
+          ) : (
+            <dl className="titan-operations-request-health">
+              <div>
+                <dt>5xx error rate</dt>
+                <dd>{formatRate(requestSummary.errorRate.serverErrorRate)}</dd>
+              </div>
+              <div>
+                <dt>4xx error rate</dt>
+                <dd>{formatRate(requestSummary.errorRate.clientErrorRate)}</dd>
+              </div>
+              <div>
+                <dt>p50 latency</dt>
+                <dd>{requestSummary.latency.p50} ms</dd>
+              </div>
+              <div>
+                <dt>p95 latency</dt>
+                <dd>{requestSummary.latency.p95} ms</dd>
+              </div>
+              <div>
+                <dt>p99 latency</dt>
+                <dd>{requestSummary.latency.p99} ms</dd>
+              </div>
+            </dl>
+          )}
+        </div>
+      )}
+
       <div>
         <h3 className="titan-operations-metrics__subheading">Request counts</h3>
         {requestCounts.length === 0 ? (

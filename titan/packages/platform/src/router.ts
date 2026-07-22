@@ -56,6 +56,14 @@ import {
   type RecordedDuration,
 } from "./observability/metrics.js";
 import { resolveRequestId } from "./observability/requestId.js";
+import {
+  collectDurations,
+  computeErrorRate,
+  computeLatencyPercentiles,
+  type ErrorRateSummary,
+  type LatencyPercentiles,
+} from "./observability/aggregate.js";
+import { evaluateAlerts, highestSeverity, type Alert } from "./observability/alerts.js";
 import { createInMemoryRateLimiter, type RateLimiter } from "./security/rateLimiter.js";
 import { isTrustedOrigin } from "./security/csrf.js";
 import { getSession } from "./auth/session.js";
@@ -898,29 +906,69 @@ function healthResponse(): Response {
   });
 }
 
-/** Real dependency check, not just "the process is running" — see
+interface ReadinessResult {
+  ready: boolean;
+  /** Absent when ready — only meaningful for choosing a 503 message/log.
+   * "configuration_invalid" takes priority over "database_unreachable" when
+   * both are true, since a misconfigured deployment is worth surfacing on
+   * its own terms rather than being masked by a generic dependency message. */
+  reason?: "configuration_invalid" | "database_unreachable";
+}
+
+/** OPS-1 (Workstream 4): shared by `readinessResponse` and
+ * `operationsSummary` so both report the exact same real answer to "is this
+ * deployment ready to serve traffic," not two independently-drifting
+ * checks. Real dependency check, not just "the process is running" — see
  * Dependencies.readinessCheck's doc comment. Absent readinessCheck (e.g. a
- * router test with no D1 wired up) reports ready:true — there is nothing
- * to fail against, matching /health's own no-dependency behavior. */
-async function readinessResponse(deps: Dependencies, ctx: RouteContext): Promise<Response> {
-  if (!deps.readinessCheck) {
-    return jsonSuccess({ status: "ready", service: "titan-platform" });
+ * router test with no D1 wired up) reports ready:true — there is nothing to
+ * fail against, matching /health's own no-dependency behavior.
+ *
+ * Config-validity is folded in here, not left as a fact only
+ * `operationsSummary` surfaces: `validateProductionConfig` (PRD-1) already
+ * treats a misconfigured `staging`/`production` deployment as broken (every
+ * real cross-origin request would fail CORS, or `/api/auth/*` wouldn't
+ * exist at all) — a real orchestrator honoring readiness should stop
+ * routing traffic to it for the same reason it would stop routing to an
+ * unreachable database. Deliberately still absent-safe: `deps
+ * .configValidation` stays optional, and every existing test that never set
+ * it keeps its exact prior behavior (`valid` is only ever `false` when the
+ * check actually ran and actually failed). */
+async function computeReadiness(deps: Dependencies, ctx: RouteContext): Promise<ReadinessResult> {
+  if (deps.configValidation && !deps.configValidation.valid) {
+    return { ready: false, reason: "configuration_invalid" };
   }
 
-  let ready: boolean;
+  if (!deps.readinessCheck) {
+    return { ready: true };
+  }
+
   try {
-    ready = await deps.readinessCheck();
+    const ready = await deps.readinessCheck();
+    return ready ? { ready: true } : { ready: false, reason: "database_unreachable" };
   } catch (error) {
     ctx.logger.error("readiness check threw", {
       requestId: ctx.requestId,
       error: error instanceof Error ? error.message : String(error),
     });
-    ready = false;
+    return { ready: false, reason: "database_unreachable" };
   }
+}
 
-  if (!ready) {
+const READINESS_FAILURE_MESSAGES: Record<NonNullable<ReadinessResult["reason"]>, string> = {
+  configuration_invalid:
+    "Production configuration is invalid — see GET /api/operations/summary's configuration field for details",
+  database_unreachable: "A required dependency is unreachable",
+};
+
+async function readinessResponse(deps: Dependencies, ctx: RouteContext): Promise<Response> {
+  const result = await computeReadiness(deps, ctx);
+
+  if (!result.ready) {
     return jsonError(
-      { code: "not_ready", message: "A required dependency is unreachable" },
+      {
+        code: "not_ready",
+        message: READINESS_FAILURE_MESSAGES[result.reason ?? "database_unreachable"],
+      },
       ctx.requestId,
       503,
     );
@@ -2181,6 +2229,19 @@ export interface SystemOverview {
   modules: string[];
 }
 
+/** OPS-1: real aggregates computed from the exact same `ctx.metrics`
+ * counters/durations `requestCounts`/`repositoryOperations` below already
+ * expose raw — p50/p95/p99 latency and a 4xx/5xx rate, not fabricated,
+ * derived by `observability/aggregate.ts`'s pure functions from whatever
+ * this isolate has genuinely recorded since it started (resets on isolate
+ * restart, the same honest limitation `requestCounts`/`repositoryOperations`
+ * already have). */
+export interface RequestHealthSummary {
+  errorRate: ErrorRateSummary;
+  latency: LatencyPercentiles;
+  repositoryLatency: LatencyPercentiles;
+}
+
 export interface OperationsSummary {
   services: ServiceStatus[];
   requestCounts: RecordedCount[];
@@ -2193,6 +2254,15 @@ export interface OperationsSummary {
    * same disclosure posture `ServiceStatus.error` already established for
    * this Platform-Administrator-only endpoint). */
   configuration?: ConfigValidationResult;
+  /** OPS-1: always present (unlike `configuration`) — computed from data
+   * this endpoint already gathers on every call, regardless of whether a
+   * deployment ever wired `configValidation`. */
+  requestSummary: RequestHealthSummary;
+  /** OPS-1 (Workstream 5): `observability/alerts.ts`'s `evaluateAlerts`
+   * applied to this exact response's own real services/readiness/config/
+   * error-rate/latency data — an empty array is a real, computed "nothing
+   * is currently breaching a threshold," not the absence of a check. */
+  alerts: Alert[];
 }
 
 // EAP-7: manually kept in sync with every package.json's own `version`
@@ -2334,16 +2404,54 @@ async function operationsSummary(deps: Dependencies, ctx: RouteContext): Promise
     checkSearchableService(ctx, "audit", deps.audit),
   ]);
 
+  const requestCounts = ctx.metrics.getCounts();
+  const repositoryOperations = ctx.metrics.getDurations();
+  const requestSummary: RequestHealthSummary = {
+    errorRate: computeErrorRate(requestCounts, "http.request"),
+    latency: computeLatencyPercentiles(
+      collectDurations(repositoryOperations, "http.request.duration_ms"),
+    ),
+    repositoryLatency: computeLatencyPercentiles(
+      collectDurations(repositoryOperations, "repository.duration_ms"),
+    ),
+  };
+
+  const readiness = await computeReadiness(deps, ctx);
+  const alerts = evaluateAlerts({
+    ready: readiness.ready,
+    services: services.map((service) => ({
+      name: service.name,
+      configured: service.configured,
+      ok: service.ok,
+    })),
+    errorRate: requestSummary.errorRate,
+    latency: requestSummary.latency,
+    configValidation: deps.configValidation,
+  });
+
+  if (alerts.length > 0) {
+    const severity = highestSeverity(alerts);
+    const logAlert = severity === "critical" ? ctx.logger.error : ctx.logger.warn;
+    logAlert("operational alert evaluated", {
+      requestId: ctx.requestId,
+      alertCount: alerts.length,
+      alertIds: alerts.map((alert) => alert.id),
+      severity,
+    });
+  }
+
   const summary: OperationsSummary = {
     services,
-    requestCounts: ctx.metrics.getCounts(),
-    repositoryOperations: ctx.metrics.getDurations(),
+    requestCounts,
+    repositoryOperations,
     overview: {
       version: PLATFORM_VERSION,
       environment: deps.configValidation?.environment ?? RUNTIME_ENVIRONMENT_FALLBACK,
       modules: [...REGISTERED_MODULES],
     },
     configuration: deps.configValidation,
+    requestSummary,
+    alerts,
   };
 
   return jsonSuccess(summary);

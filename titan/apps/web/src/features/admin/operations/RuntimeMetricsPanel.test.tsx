@@ -45,4 +45,58 @@ describe("RuntimeMetricsPanel", () => {
     expect(screen.getByText("No requests recorded yet")).toBeInTheDocument();
     expect(screen.getByText("No repository operations recorded yet")).toBeInTheDocument();
   });
+
+  it("does not render a Request health section at all when requestSummary is absent", () => {
+    render(<RuntimeMetricsPanel requestCounts={[]} repositoryOperations={[]} />);
+    expect(screen.queryByText("Request health")).not.toBeInTheDocument();
+  });
+
+  it("OPS-1: renders real error rate and latency percentiles when requestSummary is present", () => {
+    render(
+      <RuntimeMetricsPanel
+        requestCounts={[]}
+        repositoryOperations={[]}
+        requestSummary={{
+          errorRate: {
+            total: 20,
+            serverErrors: 1,
+            clientErrors: 2,
+            serverErrorRate: 0.05,
+            clientErrorRate: 0.1,
+          },
+          latency: { count: 20, p50: 10, p95: 40, p99: 55 },
+          repositoryLatency: { count: 0, p50: 0, p95: 0, p99: 0 },
+        }}
+      />,
+    );
+    expect(screen.getByText("Request health")).toBeInTheDocument();
+    expect(screen.getByText("5.0%")).toBeInTheDocument();
+    expect(screen.getByText("10.0%")).toBeInTheDocument();
+    expect(screen.getByText("40 ms")).toBeInTheDocument();
+  });
+
+  it("OPS-1: shows an honest empty state for request health when no requests have landed yet", () => {
+    render(
+      <RuntimeMetricsPanel
+        requestCounts={[]}
+        repositoryOperations={[]}
+        requestSummary={{
+          errorRate: {
+            total: 0,
+            serverErrors: 0,
+            clientErrors: 0,
+            serverErrorRate: 0,
+            clientErrorRate: 0,
+          },
+          latency: { count: 0, p50: 0, p95: 0, p99: 0 },
+          repositoryLatency: { count: 0, p50: 0, p95: 0, p99: 0 },
+        }}
+      />,
+    );
+    expect(
+      screen.getByText(
+        "Error rate and latency percentiles need at least one recorded request on this isolate.",
+      ),
+    ).toBeInTheDocument();
+  });
 });

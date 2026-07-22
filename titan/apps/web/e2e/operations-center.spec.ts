@@ -128,5 +128,17 @@ test.describe("Enterprise Operations Center (EAP-7)", () => {
         { exact: false },
       ),
     ).toBeVisible();
+
+    // OPS-1: this real local Worker's genuine request volume/latency never
+    // breaches any documented threshold, so both the Alerts panel and the
+    // summary banner report a real, computed "healthy" — not fabricated.
+    await expect(page.getByText("Healthy — no alerts firing")).toBeVisible();
+    await expect(page.getByText("No alerts firing")).toBeVisible();
+
+    // Request health: real error-rate/latency percentiles computed from
+    // this isolate's own accumulated requests (never zero here — the page
+    // load and this test's own /api/audit call both landed on it).
+    await expect(page.getByText("Request health")).toBeVisible();
+    await expect(page.getByText(/p95 latency/)).toBeVisible();
   });
 });
