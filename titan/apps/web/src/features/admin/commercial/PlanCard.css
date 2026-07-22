@@ -1,0 +1,45 @@
+.titan-plan-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.titan-plan-card--current {
+  border-color: #0ea5e9;
+  border-width: 2px;
+}
+
+.titan-plan-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.titan-plan-card__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-plan-card__price {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-plan-card__entitlements {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

@@ -38,6 +38,14 @@ export function createD1UserProfileRepository(db: D1Database): UserProfileReposi
       return results.map(rowToRecord);
     },
 
+    async findByOrganizationId(organizationId: string): Promise<UserProfileRecord[]> {
+      const { results } = await db
+        .prepare(`SELECT * FROM user_profiles WHERE organization_id = ?`)
+        .bind(organizationId)
+        .all<UserProfileRow>();
+      return results.map(rowToRecord);
+    },
+
     async findById(id: string): Promise<UserProfileRecord | null> {
       const row = await db
         .prepare(`SELECT * FROM user_profiles WHERE id = ?`)

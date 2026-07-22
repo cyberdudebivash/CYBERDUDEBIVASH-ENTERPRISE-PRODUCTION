@@ -8,6 +8,8 @@ import { createInMemoryOrganizationRepository } from "./repositories/organizatio
 import { createInMemoryUserProfileRepository } from "./repositories/userProfileRepository.memory.js";
 import { createD1UserRepository } from "./repositories/userRepository.d1.js";
 import { createInMemorySupportRequestRepository } from "./repositories/supportRequestRepository.memory.js";
+import { createInMemorySubscriptionRepository } from "./repositories/subscriptionRepository.memory.js";
+import { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
@@ -67,6 +69,9 @@ function createAuthorizedTestDeps(): Dependencies & {
     // CPP-1: every portal test needs this configured, the same reasoning
     // `userProfiles`/`organizations` are always included here too.
     supportRequests: createInMemorySupportRequestRepository(),
+    // COM-1: same reasoning, for the commercial describe blocks below.
+    subscriptions: createInMemorySubscriptionRepository(),
+    licenses: createInMemoryLicenseRepository(),
   };
 }
 
@@ -3905,6 +3910,679 @@ describe("handleRequest", () => {
           headers: { cookie: caller.cookie },
         }),
         { ...deps, supportRequests: undefined },
+      );
+      expect(response.status).toBe(503);
+    });
+  });
+
+  describe("GET /api/commercial/plans (COM-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/plans"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns the real plan catalog for any authenticated caller, no role required", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/plans", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const plans = (await response.json()) as { id: string; entitlements: unknown }[];
+      expect(plans.map((p) => p.id).sort()).toEqual(["enterprise", "professional", "starter"]);
+    });
+  });
+
+  describe("GET /api/portal/commercial/subscription (COM-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated caller with no organization membership", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns an honest all-null shape for an organization with no subscription yet", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { subscription: unknown; plan: unknown };
+      expect(body.subscription).toBeNull();
+      expect(body.plan).toBeNull();
+    });
+
+    it("returns the real subscription, resolved plan, license, seat usage, and entitlements — scoped to the caller's own organization only", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.licenses!.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        seatLimit: 50,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.subscriptions!.save({
+        organizationId: "org_2",
+        planId: "enterprise",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        organizationId: string;
+        subscription: { planId: string };
+        plan: { id: string; name: string };
+        license: { seatLimit: number };
+        seatsUsed: number;
+        entitlements: { complianceReportExport: boolean };
+      };
+      expect(body.organizationId).toBe("org_1");
+      expect(body.subscription.planId).toBe("professional");
+      expect(body.plan.name).toBe("Professional");
+      expect(body.license.seatLimit).toBe(50);
+      // seatsUsed reflects real user_profiles membership, not a fabricated
+      // count — this caller is org_1's only real member at this point.
+      expect(body.seatsUsed).toBe(1);
+      expect(body.entitlements.complianceReportExport).toBe(true);
+    });
+
+    it("returns 503 when subscriptions is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          headers: { cookie: caller.cookie },
+        }),
+        { ...deps, subscriptions: undefined },
+      );
+      expect(response.status).toBe(503);
+    });
+  });
+
+  describe("POST /api/portal/commercial/subscription (COM-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 for an unknown plan id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "does-not-exist" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for the sales-assisted enterprise plan — self-service subscribe is blocked", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "enterprise" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "sales_assisted_plan" },
+      });
+    });
+
+    it("creates a real trialing subscription and an active license, with real audit events", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as {
+        subscription: { status: string; planId: string; trialEndsAt: string | null };
+        license: { seatLimit: number; status: string };
+      };
+      expect(body.subscription.status).toBe("trialing");
+      expect(body.subscription.planId).toBe("starter");
+      expect(body.subscription.trialEndsAt).not.toBeNull();
+      expect(body.license.seatLimit).toBe(10);
+      expect(body.license.status).toBe("active");
+
+      const events = await deps.audit.list({ entityType: "subscription" });
+      expect(events.some((e) => e.action === "subscription.created")).toBe(true);
+      const licenseEvents = await deps.audit.list({ entityType: "license" });
+      expect(licenseEvents.some((e) => e.action === "license.activated")).toBe(true);
+    });
+
+    it("returns 409 when the organization already has a subscription", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "trialing",
+        trialEndsAt: "2026-08-03T00:00:00.000Z",
+        currentPeriodEnd: "2026-08-03T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "professional" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+    });
+  });
+
+  describe("PATCH /api/portal/commercial/subscription (COM-1)", () => {
+    async function seedSubscription(deps: ReturnType<typeof createAuthorizedTestDeps>) {
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.licenses!.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        seatLimit: 10,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      return subscription;
+    }
+
+    it("returns 404 when no subscription exists yet", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 403 for a PATCH from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("upgrades to a higher-tier plan and raises the license seat limit to match", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "professional" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { planId: string };
+      expect(body.planId).toBe("professional");
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      expect(license?.seatLimit).toBe(50);
+      const events = await deps.audit.list({
+        entityType: "subscription",
+        entityId: subscription.id,
+      });
+      expect(events.some((e) => e.action === "subscription.upgraded")).toBe(true);
+    });
+
+    it("downgrades to a lower-tier plan, recorded as a real downgrade event", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const events = await deps.audit.list({
+        entityType: "subscription",
+        entityId: subscription.id,
+      });
+      expect(events.some((e) => e.action === "subscription.downgraded")).toBe(true);
+    });
+
+    it("returns 400 when a customer tries to upgrade into the sales-assisted enterprise plan", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "enterprise" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("cancels the subscription and expires its license together", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { status: string; canceledAt: string | null };
+      expect(body.status).toBe("canceled");
+      expect(body.canceledAt).not.toBeNull();
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      expect(license?.status).toBe("expired");
+    });
+
+    it("renews a canceled subscription back to active and reactivates its license", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await seedSubscription(deps);
+      await deps.subscriptions!.update(subscription.id, {
+        status: "canceled",
+        canceledAt: "2026-07-21T00:00:00.000Z",
+      });
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      await deps.licenses!.update(license!.id, { status: "expired" });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "active" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        status: string;
+        canceledAt: string | null;
+        currentPeriodEnd: string;
+      };
+      expect(body.status).toBe("active");
+      expect(body.canceledAt).toBeNull();
+      expect(body.currentPeriodEnd).toBeTruthy();
+      const reactivatedLicense = await deps.licenses!.findByOrganizationId("org_1");
+      expect(reactivatedLicense?.status).toBe("active");
+    });
+
+    it("returns 400 for a status a customer may not set directly (trialing)", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/subscription", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "trialing" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("GET /api/commercial/subscriptions/search (COM-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-admin", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns real subscriptions across every organization for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.subscriptions!.save({
+        organizationId: "org_2",
+        planId: "enterprise",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(2);
+    });
+  });
+
+  describe("GET /api/commercial/subscriptions/:id (COM-1)", () => {
+    it("returns 403 for an authenticated non-admin", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/does-not-exist", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown subscription id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/does-not-exist", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns the subscription joined with its resolved plan and license", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.licenses!.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        seatLimit: 50,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/commercial/subscriptions/${subscription.id}`, {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        subscription: { id: string };
+        plan: { name: string };
+        license: { seatLimit: number };
+      };
+      expect(body.subscription.id).toBe(subscription.id);
+      expect(body.plan.name).toBe("Professional");
+      expect(body.license.seatLimit).toBe(50);
+    });
+  });
+
+  describe("PATCH /api/commercial/subscriptions/:id (COM-1)", () => {
+    it("returns 403 for an authenticated non-admin", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/does-not-exist", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a PATCH from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/commercial/subscriptions/${subscription.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("lets a Platform Administrator assign the sales-assisted enterprise plan directly — unlike the customer-facing PATCH", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/commercial/subscriptions/${subscription.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "enterprise" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { planId: string };
+      expect(body.planId).toBe("enterprise");
+    });
+
+    it("returns 404 for an unknown subscription id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/subscriptions/does-not-exist", {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "canceled" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("GET /api/commercial/licenses/search (COM-1)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/licenses/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-admin", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/licenses/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns real licenses across every organization for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.licenses!.save({
+        organizationId: "org_1",
+        subscriptionId: "sub_1",
+        seatLimit: 10,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/licenses/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(1);
+    });
+
+    it("returns 503 when licenses is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/commercial/licenses/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        { ...deps, licenses: undefined },
       );
       expect(response.status).toBe(503);
     });

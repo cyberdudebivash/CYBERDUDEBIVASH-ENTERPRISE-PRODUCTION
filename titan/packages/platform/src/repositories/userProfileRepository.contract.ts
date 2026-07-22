@@ -48,6 +48,28 @@ export function describeUserProfileRepositoryContract(
       expect(await repo.findByUserId("user_2")).toHaveLength(1);
     });
 
+    // COM-1:
+
+    it("returns an empty list before anything is saved for an organization", async () => {
+      const repo = createRepository();
+      expect(await repo.findByOrganizationId("org_1")).toEqual([]);
+    });
+
+    it("finds every member of an organization, across every user", async () => {
+      const repo = createRepository();
+      await repo.save(sampleProfile);
+      await repo.save({ ...sampleProfile, userId: "user_2", role: "member" });
+      const members = await repo.findByOrganizationId("org_1");
+      expect(members).toHaveLength(2);
+    });
+
+    it("does not return another organization's members", async () => {
+      const repo = createRepository();
+      await repo.save(sampleProfile);
+      await repo.save({ ...sampleProfile, userId: "user_2", organizationId: "org_2" });
+      expect(await repo.findByOrganizationId("org_2")).toHaveLength(1);
+    });
+
     // EAP-5:
 
     it("findById returns null for an unknown id", async () => {

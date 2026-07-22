@@ -147,11 +147,36 @@ curl -s -X PATCH http://localhost:8787/api/organizations/some-org-id \
 # 401 for all three with no session cookie — EAP-4: same Platform Administrator
 # gate as the routes above. PATCH additionally requires a matching Origin header
 # once authenticated, same as PATCH /api/leads/:id.
+
+curl -s http://localhost:8787/api/commercial/plans
+# 200 with no session cookie — COM-1: the Plan catalog is public metadata (the
+# same three plans every caller sees before deciding whether to sign up), not
+# gated at all. Returns the hardcoded Starter/Professional/Enterprise array
+# from commercial/planCatalog.ts, not a database read.
+
+curl -s http://localhost:8787/api/portal/commercial/subscription
+# 401 with no session cookie — COM-1: requires a real organization membership,
+# the same resolvePortalOrganizationId gate every other /api/portal/* route
+# uses (see step 10 below). For an authenticated member whose organization
+# has never started one, returns 200 with an honest all-null
+# PortalCommercialSummary (subscription/plan/license/entitlements all null,
+# seatsUsed 0) — never a fabricated default plan.
+
+curl -s "http://localhost:8787/api/commercial/subscriptions/search?status=active&sortBy=createdAt&sortDirection=desc"
+curl -s http://localhost:8787/api/commercial/subscriptions/some-subscription-id
+curl -s -X PATCH http://localhost:8787/api/commercial/subscriptions/some-subscription-id \
+  -H "Content-Type: application/json" \
+  -d '{"planId":"enterprise"}'
+curl -s "http://localhost:8787/api/commercial/licenses/search?status=active"
+# 401 for all four with no session cookie — COM-1: same Platform Administrator
+# gate as /api/organizations/search and friends. Unlike the portal PATCH
+# below, the admin PATCH accepts any known plan id, including sales-assisted
+# ones (isSelfServicePlan only gates the customer-facing route).
 ```
 
 ### Provisioning a local Platform Administrator
 
-`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `POST /api/organizations`, `GET /api/organizations/search`, `GET /api/organizations/:id`, `PATCH /api/organizations/:id` (EAP-4), `GET /api/users/search`, `GET /api/users/:id`, `POST /api/users/:id/profiles`, `PATCH`/`DELETE /api/users/:id/profiles/:profileId` (EAP-5), `GET /api/audit`, `GET /api/audit/search`, `GET /api/audit/export` (EAP-6), `GET /api/operations/summary` (EAP-7), `GET /api/reports/summary`, `GET /api/reports/trends`, `GET /api/reports/export` (EAP-8), cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants the *very first* one — deliberately, since an endpoint that lets a caller grant themselves platform-wide access from zero privileges would itself be a privilege-escalation vulnerability. Provisioning the first one locally is a real sign-in followed by a direct SQL insert; **every Platform Administrator grant after that first one can go through `POST /api/users/:id/profiles` instead (EAP-5, step 9 below)** — a real, audited endpoint call, not a second direct SQL insert:
+`GET /api/leads`, `GET /api/leads/:id`, `PATCH /api/leads/:id`, `GET /api/leads/search` (EAP-2), `GET /api/organizations`, `GET /api/assessments` (list), `GET /api/assessments/search` (EAP-3), `POST /api/organizations`, `GET /api/organizations/search`, `GET /api/organizations/:id`, `PATCH /api/organizations/:id` (EAP-4), `GET /api/users/search`, `GET /api/users/:id`, `POST /api/users/:id/profiles`, `PATCH`/`DELETE /api/users/:id/profiles/:profileId` (EAP-5), `GET /api/audit`, `GET /api/audit/search`, `GET /api/audit/export` (EAP-6), `GET /api/operations/summary` (EAP-7), `GET /api/reports/summary`, `GET /api/reports/trends`, `GET /api/reports/export` (EAP-8), `GET /api/commercial/subscriptions/search`, `GET`/`PATCH /api/commercial/subscriptions/:id`, `GET /api/commercial/licenses/search` (COM-1), cross-organization `GET /api/assessments/:id` reads, and the admin Dashboard's four privileged sections (EAP-1, above) all require a **Platform Administrator** — a `user_profiles` row with `organization_id: NULL` and `role: 'owner'` (`SECURITY_GUIDE.md`'s "Authorization model"). There is no self-service route that grants the *very first* one — deliberately, since an endpoint that lets a caller grant themselves platform-wide access from zero privileges would itself be a privilege-escalation vulnerability. Provisioning the first one locally is a real sign-in followed by a direct SQL insert; **every Platform Administrator grant after that first one can go through `POST /api/users/:id/profiles` instead (EAP-5, step 9 below)** — a real, audited endpoint call, not a second direct SQL insert:
 
 ```bash
 # 1. Get a CSRF token and start a real sign-in (dev-mode Email provider —
@@ -297,6 +322,51 @@ curl -s -b cookies.txt -X POST "http://localhost:8787/api/portal/support" \
 # 201, returns the new request (status "open"). Retrievable by this same
 # caller only, never another user's:
 curl -s -b cookies.txt "http://localhost:8787/api/portal/support"
+
+# 11. POST/PATCH /api/portal/commercial/subscription (COM-1) are this same
+#     organization member's self-service subscription surface — same Origin
+#     requirement as every other authenticated write above. Only plans with a
+#     real trial (Starter/Professional today, not Enterprise) are acceptable
+#     to this route; isSelfServicePlan (router.ts) rejects a sales-assisted
+#     plan id with 400, not silently accepting it:
+curl -s -b cookies.txt -X POST "http://localhost:8787/api/portal/commercial/subscription" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"planId":"starter"}'
+# 201, returns the new subscription (status "trialing") plus its linked
+# license (seatLimit from the plan). Records subscription.created and
+# license.activated. A second call with the same session now returns 409
+# conflict — one subscription per organization; further changes are PATCH.
+
+curl -s -b cookies.txt "http://localhost:8787/api/portal/commercial/subscription"
+# 200, returns the full PortalCommercialSummary — plan, subscription, license,
+# a real seatsUsed count (userProfiles.findByOrganizationId(...).length, not
+# a stored column), and this plan's entitlements.
+
+curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/portal/commercial/subscription" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"planId":"professional"}'
+# 200, returns the updated subscription. Records subscription.upgraded (or
+# subscription.downgraded, depending on the plan's relative tier) — the same
+# applySubscriptionPatch state machine the admin PATCH below also calls.
+
+# The admin equivalent (GET /api/commercial/subscriptions/search,
+# GET/PATCH /api/commercial/subscriptions/:id, GET /api/commercial/licenses/search)
+# uses the same Platform Administrator session established in steps 1-4 — no
+# organization membership needed, since these are cross-organization admin
+# routes, not portal ones. Unlike the portal PATCH above, the admin PATCH
+# accepts any known plan, including "enterprise" (sales-assisted, no
+# self-service trial):
+curl -s -b cookies.txt "http://localhost:8787/api/commercial/subscriptions/search?status=trialing"
+
+curl -s -b cookies.txt -X PATCH "http://localhost:8787/api/commercial/subscriptions/<subscription id from search above>" \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:5173" \
+  -d '{"planId":"enterprise"}'
+# 200. Records subscription.upgraded with this Platform Administrator, not
+# the organization member, as actor_id — visible via:
+curl -s -b cookies.txt "http://localhost:8787/api/audit?entityType=subscription&entityId=<subscription id>"
 ```
 
 Steps 1–3 use Auth.js's real flow end to end (real CSRF token, real magic link, real session cookie) — nothing here is a test-only shortcut. Only step 4 (granting the *very first* Platform Administrator) is a direct database write, because no route can exist to do that one any other way — every subsequent grant (steps 9 and 10) is a real, audited endpoint call instead (EAP-5).
@@ -423,6 +493,17 @@ Unlike every `/admin/*` module above, `/portal` requires a real **organization m
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/customer-portal.spec.ts`) that seeds two real organizations with one assessment each and proves, in a real browser, that a real organization member's Dashboard/Assessments/Reports never surface the other organization's data — including navigating directly to the other organization's assessment by id — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
+## Using the Enterprise Commercial Platform (`/portal/subscription` and `/admin/commercial`, COM-1)
+
+COM-1 adds one customer-facing self-service page and one admin-facing management pair, both reading and writing the same `subscriptions`/`licenses` tables. The customer-facing side requires the same real organization membership `/portal` itself requires (above) — a Platform-Administrator-only session sees no **Subscription** link in the portal sidebar, the same `hasPortalOrganizationMembership` gate every other portal nav item already respects.
+
+1. **Portal Subscription page** (`/portal/subscription`): for an organization with no subscription yet, a real **Plan Selection** view — three `PlanCard`s (Starter/Professional/Enterprise) sourced from `GET /api/commercial/plans`, each showing real price/seat-limit/trial copy. Only Starter and Professional offer a **Start trial** button; Enterprise shows "Contact sales" instead, since `isSelfServicePlan` (`plan.trialDays > 0`) never accepts it through this self-service route. Once a subscription exists, the page instead shows **Subscription Overview** (status, renewal/trial countdown), **Current Plan** (`PlanCard` again, now read-only), **License Summary** (`SeatUsageMeter` — a real `seatsUsed`/`seatLimit` count, not a stored value), **Entitlements** (`EntitlementBadge` per capability, computed by `resolveEntitlements` for display only), and self-service **Upgrade**/**Downgrade**/**Cancel**/**Renew** controls, each a real `PATCH /api/portal/commercial/subscription` call re-rendering from the server's own response.
+2. **Admin Commercial Workspace** (`/admin/commercial`): with a Platform Administrator session, the sidebar shows a **Commercial** link (`adminNavItems`), hidden entirely for a non-Platform-Administrator, the same convention as every other privileged module. A real, server-backed table of every organization's subscription — search/status filter/sortable columns/pagination, driven by `GET /api/commercial/subscriptions/search`.
+3. **Admin Subscription Detail** (`/admin/commercial/:id`): click any row to navigate here. Shows the same Plan/License/Entitlements/seat-usage panels the portal page shows for a customer's own subscription, plus an admin-only plan/status reassignment control that accepts **any** known plan (including Enterprise) and any real `SubscriptionStatus` — `validateAdminSubscriptionPatch` (router.ts) is deliberately broader than the customer-facing `validatePortalSubscriptionPatch`, though both route through the identical `applySubscriptionPatch` state machine, so the resulting audit trail and license-status bookkeeping are the same regardless of who made the change.
+4. **Every subscription change lands in the audit trail** — `subscription.created`/`subscription.upgraded`/`subscription.downgraded`/`subscription.canceled`/`subscription.renewed` plus the linked license's own `license.activated`/`license.expired`, all visible via `GET /api/audit?entityType=subscription&entityId=...` (or `entityType=license`) — the exact same consolidated Audit Center (EAP-6) and per-record pattern every other module already uses. There is no separate "Commercial Activity Timeline" UI beyond this — the existing Audit Workspace already covers it.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/commercial-platform.spec.ts`) that drives a real organization member through Plan Selection → trial start → upgrade (each persisting across a reload) and a Platform Administrator through Commercial Workspace search → Subscription Detail → an admin-only plan reassignment reflected immediately — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
 ## Structured logs
 
 Every request produces one JSON log line (`observability/logger.ts`) with `level`, `message`, `timestamp`, and a `requestId` that also appears as an `X-Request-Id` response header — grep `wrangler dev`'s output for a specific `requestId` to trace one request, or for `"level":"error"` to find failures. Audit-write failures log at `error` level but never fail the request they describe (`router.ts`'s `recordAuditEvent`).
@@ -440,6 +521,8 @@ Every request produces one JSON log line (`observability/logger.ts`) with `level
 | Sign-out on `/admin` appears to hang, or lands somewhere unexpected, after clicking the Auth.js confirmation page's own "Sign out" button | If this ever regresses: the CSP `form-action` directive also restricts the *redirect* a form submission causes, not just its POST target — `http/finalizeResponse.ts`'s `authPagesCsp` must allowlist the admin app's origin, not just `'self'` (`DECISION_LOG.md`'s EAP-1 entry has the full finding) | Confirm `authPagesCsp(allowedOrigin)` is actually being passed the real `allowedOrigin` (not a hardcoded `'self'`-only policy) on `/api/auth/*` responses |
 | A lifecycle change on `/admin/leads/:id` (status/priority/assignment/tags/notes) silently has no effect, and the browser console shows `Method PATCH is not allowed by Access-Control-Allow-Methods` | If this ever regresses: a browser's CORS preflight (`OPTIONS`) checks the real request's method against the `Access-Control-Allow-Methods` response header and blocks the real request client-side if it's missing — invisible to any test that calls `handleRequest`/`worker.fetch` directly, since neither implements real preflight enforcement (`DECISION_LOG.md`'s EAP-2 entry has the full finding, first caught by this feature's own real-browser Playwright verification) | Confirm `http/cors.ts`'s `ALLOWED_METHODS` lists every method any route actually uses, including `PATCH` |
 | `/portal` shows "No organization membership" for a session that already has a Platform Administrator grant | Expected, not a bug (CPP-1) — a Platform Administrator profile has `organization_id: NULL`; `/portal` requires a *separate* profile with a real, non-null `organization_id` | Grant that same user id an organization-member profile too (`POST /api/users/:id/profiles` with a real `organizationId`, "Provisioning a local Platform Administrator" step 10 above) — one user can hold both kinds of profile at once |
+| `GET`/`POST`/`PATCH /api/portal/commercial/subscription` or the admin commercial routes return 503 `not_configured` ("Subscriptions"/"Licenses are not configured") | Expected, not a bug (COM-1) — `Dependencies.subscriptions`/`.licenses` are optional fields, the same "not configured" pattern every other optional dependency in this codebase already follows; a deployment that hasn't wired one gets an honest 503, never a silent empty result | Confirm `worker.ts` constructs both `createD1SubscriptionRepository(env.DB)` and `createD1LicenseRepository(env.DB)` and passes them into `Dependencies` — both are wired unconditionally today, so seeing this in local dev usually means migrations `0011`/`0012` haven't been applied yet |
+| In a Playwright spec, clicking a client-side (React Router) link and then calling `page.waitForURL()` with a glob pattern times out even though the page visibly navigated | If this ever regresses: glob-pattern URL matching against client-side SPA navigation is unreliable in this stack — a real finding from `commercial-platform.spec.ts` (COM-1), not specific to the commercial routes themselves | Assert on the destination page's actual visible content (e.g. `await expect(page.getByRole("heading", {name: "..."})).toBeVisible()`) instead of `waitForURL`, the convention every spec in this suite (including the fixed one) now follows — see `DEVELOPER_GUIDE.md`'s Playwright section |
 
 ## What this runbook does not cover
 

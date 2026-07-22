@@ -42,6 +42,22 @@ export type {
   SupportRequestRepository,
   NewSupportRequest,
   SupportRequestStatus,
+  SubscriptionRecord,
+  SubscriptionRepository,
+  NewSubscription,
+  SubscriptionPatch,
+  SubscriptionStatus,
+  SubscriptionSearchOptions,
+  SubscriptionSearchResult,
+  SubscriptionSortField,
+  LicenseRecord,
+  LicenseRepository,
+  NewLicense,
+  LicensePatch,
+  LicenseStatus,
+  LicenseSearchOptions,
+  LicenseSearchResult,
+  LicenseSortField,
 } from "./repositories/types.js";
 export {
   LEAD_STATUSES,
@@ -49,6 +65,8 @@ export {
   ORGANIZATION_STATUSES,
   USER_ROLES,
   SUPPORT_REQUEST_STATUSES,
+  SUBSCRIPTION_STATUSES,
+  LICENSE_STATUSES,
 } from "./repositories/types.js";
 
 export { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
@@ -65,6 +83,10 @@ export { createInMemoryAuditRepository } from "./repositories/auditRepository.me
 export { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
 export { createInMemorySupportRequestRepository } from "./repositories/supportRequestRepository.memory.js";
 export { createD1SupportRequestRepository } from "./repositories/supportRequestRepository.d1.js";
+export { createInMemorySubscriptionRepository } from "./repositories/subscriptionRepository.memory.js";
+export { createD1SubscriptionRepository } from "./repositories/subscriptionRepository.d1.js";
+export { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
+export { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
 
 export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
 export type {
@@ -80,9 +102,14 @@ export type {
   TrendSeries,
   PortalAssessmentsReport,
   PortalComplianceSummary,
+  PortalCommercialSummary,
 } from "./router.js";
 export { handleRequest, REPORT_TREND_ENTITIES } from "./router.js";
 export type { Env } from "./worker.js";
+
+export type { Plan, PlanEntitlements, PlanId } from "./commercial/planCatalog.js";
+export { PLAN_CATALOG, PLAN_IDS, findPlan, isSelfServicePlan } from "./commercial/planCatalog.js";
+export { resolveEntitlements } from "./commercial/entitlements.js";
 
 export type { AuthConfigOptions, OAuthCredentials } from "./auth/config.js";
 export { createAuthConfig } from "./auth/config.js";

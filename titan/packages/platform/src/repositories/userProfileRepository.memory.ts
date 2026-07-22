@@ -19,6 +19,10 @@ export function createInMemoryUserProfileRepository(): UserProfileRepository {
       return profiles.filter((profile) => profile.userId === userId);
     },
 
+    async findByOrganizationId(organizationId: string): Promise<UserProfileRecord[]> {
+      return profiles.filter((profile) => profile.organizationId === organizationId);
+    },
+
     async findById(id: string): Promise<UserProfileRecord | null> {
       return profiles.find((profile) => profile.id === id) ?? null;
     },

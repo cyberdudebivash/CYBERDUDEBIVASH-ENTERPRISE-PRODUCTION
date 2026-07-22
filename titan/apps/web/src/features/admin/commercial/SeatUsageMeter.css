@@ -1,0 +1,30 @@
+.titan-seat-usage-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.titan-seat-usage-meter__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.titan-seat-usage-meter__track {
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.titan-seat-usage-meter__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #0ea5e9;
+}
+
+.titan-seat-usage-meter__fill--over {
+  background: #ef4444;
+}

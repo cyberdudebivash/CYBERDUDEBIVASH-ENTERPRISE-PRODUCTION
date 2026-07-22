@@ -19,6 +19,8 @@ import { UserDetailPage } from "../features/admin/users/UserDetailPage.js";
 import { AuditWorkspacePage } from "../features/admin/audit/AuditWorkspacePage.js";
 import { OperationsWorkspacePage } from "../features/admin/operations/OperationsWorkspacePage.js";
 import { ReportingWorkspacePage } from "../features/admin/reporting/ReportingWorkspacePage.js";
+import { CommercialWorkspacePage } from "../features/admin/commercial/CommercialWorkspacePage.js";
+import { CommercialSubscriptionDetailPage } from "../features/admin/commercial/CommercialSubscriptionDetailPage.js";
 import { PortalLayout } from "../features/portal/layout/PortalLayout.js";
 import { PortalDashboardPage } from "../features/portal/dashboard/PortalDashboardPage.js";
 import { PortalAssessmentsPage } from "../features/portal/assessments/PortalAssessmentsPage.js";
@@ -26,6 +28,7 @@ import { PortalAssessmentDetailPage } from "../features/portal/assessments/Porta
 import { PortalReportsPage } from "../features/portal/reports/PortalReportsPage.js";
 import { PortalAccountPage } from "../features/portal/account/PortalAccountPage.js";
 import { PortalSupportPage } from "../features/portal/support/PortalSupportPage.js";
+import { PortalSubscriptionPage } from "../features/portal/subscription/PortalSubscriptionPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -97,6 +100,15 @@ export function AppRoutes() {
             the Executive Dashboard/Business Reports/Analytics are all
             summary views, none with a standalone per-record detail page. */}
         <Route path="reporting" element={<ReportingWorkspacePage />} />
+        {/* COM-1: the Enterprise Commercial Platform — same Platform-
+            Administrator-gated-server-side pattern as every module above,
+            not a route-level block. No "License Inventory" as its own
+            top-level page: a license is 1:1 with a subscription in this
+            data model, so its own fields (seat limit/usage/status) surface
+            as columns/sections on the Commercial Workspace/Detail pages
+            instead of a separate, redundant list of the same rows. */}
+        <Route path="commercial" element={<CommercialWorkspacePage />} />
+        <Route path="commercial/:id" element={<CommercialSubscriptionDetailPage />} />
       </Route>
       {/* CPP-1: the Enterprise Customer Portal — a real Organization Member/
           Admin/Owner viewing their own organization's data, not a new role
@@ -124,6 +136,7 @@ export function AppRoutes() {
         <Route path="reports" element={<PortalReportsPage />} />
         <Route path="support" element={<PortalSupportPage />} />
         <Route path="account" element={<PortalAccountPage />} />
+        <Route path="subscription" element={<PortalSubscriptionPage />} />
       </Route>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />

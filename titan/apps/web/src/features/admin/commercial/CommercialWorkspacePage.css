@@ -1,0 +1,34 @@
+.titan-commercial-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-commercial-workspace__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.titan-commercial-workspace__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-commercial-workspace__note {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.titan-commercial-workspace__name-link {
+  color: #0ea5e9;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.titan-commercial-workspace__name-link:hover {
+  text-decoration: underline;
+}
