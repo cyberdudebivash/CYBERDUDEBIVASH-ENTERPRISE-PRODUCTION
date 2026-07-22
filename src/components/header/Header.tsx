@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Globe, Shield, Cpu, Activity, BookOpen, Key } from "lucide-react";
 import { aligned } from "../../constants/ecosystemData";
 import type { ViewType, AiTab } from "../../types/app";
@@ -29,6 +29,27 @@ const SERVICE_VIEWS = SERVICE_ITEMS.map(s => s.view);
 export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, onRunHashCheck }: HeaderProps) {
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [solutionsDropdownOpen, setSolutionsDropdownOpen] = useState(false);
+  const servicesCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const solutionsCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // A short delay before closing (cleared if the pointer re-enters in time)
+  // tolerates the moment the cursor crosses from the trigger button down
+  // into the menu — without it, any hover gap between the two closes the
+  // dropdown before the pointer arrives.
+  const openServices = () => {
+    if (servicesCloseTimer.current) clearTimeout(servicesCloseTimer.current);
+    setServicesDropdownOpen(true);
+  };
+  const closeServicesDelayed = () => {
+    servicesCloseTimer.current = setTimeout(() => setServicesDropdownOpen(false), 200);
+  };
+  const openSolutions = () => {
+    if (solutionsCloseTimer.current) clearTimeout(solutionsCloseTimer.current);
+    setSolutionsDropdownOpen(true);
+  };
+  const closeSolutionsDelayed = () => {
+    solutionsCloseTimer.current = setTimeout(() => setSolutionsDropdownOpen(false), 200);
+  };
 
   const solutionsItems = [
     { label: "AI Security Governance", action: () => { onNavigate("ai"); onOpenAiTab("compliance"); }, desc: "OWASP LLM & AI compliance audits" },
@@ -78,8 +99,8 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
         {/* Services Dropdown */}
         <div
           className="relative"
-          onMouseEnter={() => setServicesDropdownOpen(true)}
-          onMouseLeave={() => setServicesDropdownOpen(false)}
+          onMouseEnter={openServices}
+          onMouseLeave={closeServicesDelayed}
         >
           <button
             aria-haspopup="true"
@@ -93,22 +114,27 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
             <Shield className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" /> Services <span className="text-[9px] opacity-90" aria-hidden="true">▼</span>
           </button>
           {servicesDropdownOpen && (
-            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
-              {SERVICE_ITEMS.map((s) => (
-                <button
-                  key={s.view}
-                  role="menuitem"
-                  aria-current={currentView === s.view ? "page" : undefined}
-                  onClick={() => {
-                    onNavigate(s.view);
-                    setServicesDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
-                >
-                  <span className="text-xs font-bold font-mono">{s.label}</span>
-                  <span className="text-[10px] text-slate-300 leading-none mt-0.5">{s.desc}</span>
-                </button>
-              ))}
+            /* pt-1 (padding, not margin) keeps this bridging gap inside the
+               hoverable box, so the pointer never has to cross dead space
+               between the button and the menu below it. */
+            <div className="absolute top-full left-0 pt-1 w-56 z-50">
+              <div role="menu" className="bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 space-y-0.5 animate-slide-up">
+                {SERVICE_ITEMS.map((s) => (
+                  <button
+                    key={s.view}
+                    role="menuitem"
+                    aria-current={currentView === s.view ? "page" : undefined}
+                    onClick={() => {
+                      onNavigate(s.view);
+                      setServicesDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
+                  >
+                    <span className="text-xs font-bold font-mono">{s.label}</span>
+                    <span className="text-[10px] text-slate-300 leading-none mt-0.5">{s.desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -116,8 +142,8 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
         {/* Solutions Dropdown */}
         <div
           className="relative"
-          onMouseEnter={() => setSolutionsDropdownOpen(true)}
-          onMouseLeave={() => setSolutionsDropdownOpen(false)}
+          onMouseEnter={openSolutions}
+          onMouseLeave={closeSolutionsDelayed}
         >
           <button
             aria-haspopup="true"
@@ -127,21 +153,23 @@ export function Header({ currentView, onNavigate, onContactClick, onOpenAiTab, o
             <Cpu className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" /> Solutions <span className="text-[9px] opacity-90" aria-hidden="true">▼</span>
           </button>
           {solutionsDropdownOpen && (
-            <div role="menu" className="absolute top-full left-0 mt-1 w-56 bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 z-50 space-y-0.5 animate-slide-up">
-              {solutionsItems.map((sol, idx) => (
-                <button
-                  key={idx}
-                  role="menuitem"
-                  onClick={() => {
-                    sol.action();
-                    setSolutionsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
-                >
-                  <span className="text-xs font-bold font-mono">{sol.label}</span>
-                  <span className="text-[10px] text-slate-300 leading-none mt-0.5">{sol.desc}</span>
-                </button>
-              ))}
+            <div className="absolute top-full left-0 pt-1 w-56 z-50">
+              <div role="menu" className="bg-[#0c1117] border border-slate-700 rounded-lg shadow-xl shadow-black/85 p-1.5 space-y-0.5 animate-slide-up">
+                {solutionsItems.map((sol, idx) => (
+                  <button
+                    key={idx}
+                    role="menuitem"
+                    onClick={() => {
+                      sol.action();
+                      setSolutionsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-900 text-slate-200 hover:text-cyan-300 transition-colors flex flex-col cursor-pointer border-0"
+                  >
+                    <span className="text-xs font-bold font-mono">{sol.label}</span>
+                    <span className="text-[10px] text-slate-300 leading-none mt-0.5">{sol.desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
