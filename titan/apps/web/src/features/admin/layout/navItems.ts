@@ -46,5 +46,11 @@ export function adminNavItems(me: MeResponse): SidebarItem[] {
     // /api/reports/export are all Platform-Administrator-only
     // (SECURITY_GUIDE.md).
     ...(me.isPlatformAdministrator ? [{ label: "Reporting", to: "/admin/reporting" }] : []),
+    // COM-1: same gating reasoning as every entry above — GET
+    // /api/commercial/subscriptions/search, GET
+    // /api/commercial/subscriptions/:id, and GET
+    // /api/commercial/licenses/search are all Platform-Administrator-only
+    // (SECURITY_GUIDE.md).
+    ...(me.isPlatformAdministrator ? [{ label: "Commercial", to: "/admin/commercial" }] : []),
   ];
 }

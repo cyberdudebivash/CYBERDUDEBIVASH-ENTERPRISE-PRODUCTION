@@ -13,6 +13,8 @@ import type {
   LeadRepository,
   LeadSearchOptions,
   LeadStatus,
+  LicenseRepository,
+  LicenseSearchOptions,
   NewAssessment,
   NewLead,
   NewOrganization,
@@ -21,6 +23,10 @@ import type {
   OrganizationSearchOptions,
   OrganizationStatus,
   NewSupportRequest,
+  SubscriptionRecord,
+  SubscriptionRepository,
+  SubscriptionSearchOptions,
+  SubscriptionStatus,
   SupportRequestRepository,
   UserProfilePatch,
   UserProfileRecord,
@@ -33,8 +39,11 @@ import {
   LEAD_PRIORITIES,
   LEAD_STATUSES,
   ORGANIZATION_STATUSES,
+  SUBSCRIPTION_STATUSES,
   USER_ROLES,
 } from "./repositories/types.js";
+import { findPlan, isSelfServicePlan, PLAN_CATALOG, type Plan } from "./commercial/planCatalog.js";
+import { resolveEntitlements } from "./commercial/entitlements.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
@@ -110,6 +119,18 @@ export interface Dependencies {
    * unconfigured deployment fails these two routes with a 503, not a
    * silent empty result. */
   supportRequests?: SupportRequestRepository;
+  /** COM-1 (Commercial Platform): backs Subscriptions (`GET`/`POST`/`PATCH
+   * /api/portal/commercial/subscription`, `GET/PATCH
+   * /api/commercial/subscriptions/*`) — the organization-level commercial
+   * lifecycle record. Optional for the same reason `supportRequests` is: an
+   * unconfigured deployment fails these specific routes with a 503, not a
+   * silent empty result. */
+  subscriptions?: SubscriptionRepository;
+  /** COM-1: backs the seat grant tied 1:1 to a subscription (`GET
+   * /api/commercial/licenses/search`, and read/updated internally
+   * alongside every subscription lifecycle change). Same optionality
+   * reasoning as `subscriptions`. */
+  licenses?: LicenseRepository;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -244,6 +265,7 @@ const ORGANIZATION_ID_PATTERN = /^\/api\/organizations\/([^/]+)$/;
 const USER_ID_PATTERN = /^\/api\/users\/([^/]+)$/;
 const USER_PROFILES_PATTERN = /^\/api\/users\/([^/]+)\/profiles$/;
 const USER_PROFILE_ID_PATTERN = /^\/api\/users\/([^/]+)\/profiles\/([^/]+)$/;
+const COMMERCIAL_SUBSCRIPTION_ID_PATTERN = /^\/api\/commercial\/subscriptions\/([^/]+)$/;
 
 async function route(
   request: Request,
@@ -642,6 +664,97 @@ async function route(
     return createPortalSupportRequest(request, caller, organizationId, deps, ctx);
   }
 
+  // COM-1: Enterprise Commercial Platform — subscriptions/licenses/
+  // entitlements, built on the verified EAP-1–EAP-8 and CPP-1 foundations.
+  // Provider-agnostic throughout: no route here or in any handler it calls
+  // ever touches a payment amount, invoice, or card/token — this models the
+  // commercial lifecycle a real billing provider would plug into, not the
+  // provider itself. `GET /api/commercial/plans` is the one route open to
+  // any authenticated caller (the same deliberate exception `GET /api/me`
+  // already is) — plan/pricing data carries no tenant-scoped or otherwise
+  // sensitive information. Every other route is either customer-scoped
+  // (`/api/portal/commercial/*`, gated by the same `resolvePortalOrganizationId`
+  // CPP-1 already established — never a client-supplied organization id) or
+  // Platform-Administrator-only (`/api/commercial/*`, the same cross-
+  // organization policy every EAP admin route already uses).
+  if (url.pathname === "/api/commercial/plans" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    return commercialPlansResponse();
+  }
+
+  if (url.pathname === "/api/portal/commercial/subscription" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return getPortalCommercialSummary(organizationId, deps, ctx);
+  }
+
+  // COM-1: subscribing is a real authenticated write — same Origin/CSRF
+  // check every other authenticated write in this file already gets, same
+  // no-rate-limit reasoning as POST /api/portal/support (CPP-1).
+  if (url.pathname === "/api/portal/commercial/subscription" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return createPortalSubscription(request, caller, organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/commercial/subscription" && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return updatePortalSubscription(request, caller, organizationId, deps, ctx);
+  }
+
+  // COM-1: checked before COMMERCIAL_SUBSCRIPTION_ID_PATTERN below, or
+  // "search" would be parsed as a subscription id — the same ordering every
+  // other "search before :id" pair in this file already uses.
+  if (url.pathname === "/api/commercial/subscriptions/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchCommercialSubscriptions(url, deps, ctx);
+  }
+
+  const subscriptionMatch = COMMERCIAL_SUBSCRIPTION_ID_PATTERN.exec(url.pathname);
+  if (subscriptionMatch?.[1] && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return getCommercialSubscription(subscriptionMatch[1], deps, ctx);
+  }
+
+  if (subscriptionMatch?.[1] && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return updateAdminSubscription(subscriptionMatch[1], request, caller, deps, ctx);
+  }
+
+  if (url.pathname === "/api/commercial/licenses/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchCommercialLicenses(url, deps, ctx);
+  }
+
   if (url.pathname === "/api/me" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -741,6 +854,28 @@ function userProfilesNotConfigured(requestId: string): Response {
 function supportRequestsNotConfigured(requestId: string): Response {
   return jsonError(
     { code: "not_configured", message: "Support requests are not configured" },
+    requestId,
+    503,
+  );
+}
+
+/** COM-1: same reasoning as `supportRequestsNotConfigured` — every route
+ * `deps.subscriptions` backs is unusable without it. */
+function subscriptionsNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "Subscriptions are not configured" },
+    requestId,
+    503,
+  );
+}
+
+/** COM-1: same reasoning, for `deps.licenses` specifically — only reachable
+ * standalone via `GET /api/commercial/licenses/search`; every other license
+ * read/write happens alongside an already-`deps.subscriptions`-gated
+ * subscription route. */
+function licensesNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "Licenses are not configured" },
     requestId,
     503,
   );
@@ -994,6 +1129,10 @@ const ORGANIZATION_SORT_FIELDS = ["name", "createdAt", "updatedAt"] as const;
 const USER_SORT_FIELDS = ["name", "email"] as const;
 
 const AUDIT_SORT_FIELDS = ["createdAt"] as const;
+
+// COM-1:
+const COMMERCIAL_SUBSCRIPTION_SORT_FIELDS = ["createdAt", "currentPeriodEnd"] as const;
+const COMMERCIAL_LICENSE_SORT_FIELDS = ["createdAt", "seatLimit"] as const;
 
 // EAP-6: `GET /api/audit/export`'s hard cap — an export is a real file
 // download, not a paginated UI, so there's no page/pageSize from a caller to
@@ -2943,6 +3082,691 @@ async function createPortalSupportRequest(
     deps.supportRequests!.save(newRequest),
   );
   return jsonSuccess(saved, 201);
+}
+
+// COM-1: Enterprise Commercial Platform handlers.
+
+function commercialPlansResponse(): Response {
+  return jsonSuccess(PLAN_CATALOG);
+}
+
+export interface PortalCommercialSummary {
+  organizationId: string;
+  subscription: {
+    id: string;
+    planId: string;
+    status: SubscriptionStatus;
+    trialEndsAt: string | null;
+    currentPeriodEnd: string | null;
+    canceledAt: string | null;
+  } | null;
+  plan: Plan | null;
+  license: {
+    id: string;
+    seatLimit: number;
+    status: string;
+    expiresAt: string | null;
+  } | null;
+  seatsUsed: number;
+  entitlements: ReturnType<typeof resolveEntitlements> | null;
+}
+
+/** CPP-1/COM-1: the Customer Portal's own Commercial Dashboard — one
+ * composed response covering Subscription Overview, Current Plan, License
+ * Summary, Usage Summary, Entitlements, Renewal Information, and Trial
+ * Status all at once, the same "one endpoint composes everything a
+ * dashboard needs" shape `buildPortalComplianceSummary` (CPP-1) already
+ * established. An organization with no subscription yet gets an honest
+ * all-null shape (never a fabricated default plan) — the same "no
+ * assessments yet" idiom the rest of the Customer Portal already uses for
+ * an honest empty state. */
+async function getPortalCommercialSummary(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+
+  const subscription = await withOperationTiming(
+    ctx.metrics,
+    "portal.commercial.subscriptions.findByOrganizationId",
+    () => deps.subscriptions!.findByOrganizationId(organizationId),
+  );
+
+  if (!subscription) {
+    const summary: PortalCommercialSummary = {
+      organizationId,
+      subscription: null,
+      plan: null,
+      license: null,
+      seatsUsed: 0,
+      entitlements: null,
+    };
+    return jsonSuccess(summary);
+  }
+
+  const plan = findPlan(subscription.planId);
+  const license = deps.licenses
+    ? await withOperationTiming(
+        ctx.metrics,
+        "portal.commercial.licenses.findByOrganizationId",
+        () => deps.licenses!.findByOrganizationId(organizationId),
+      )
+    : null;
+  const members = await withOperationTiming(
+    ctx.metrics,
+    "portal.commercial.userProfiles.findByOrganizationId",
+    () => deps.userProfiles!.findByOrganizationId(organizationId),
+  );
+
+  const summary: PortalCommercialSummary = {
+    organizationId,
+    subscription: {
+      id: subscription.id,
+      planId: subscription.planId,
+      status: subscription.status,
+      trialEndsAt: subscription.trialEndsAt,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+      canceledAt: subscription.canceledAt,
+    },
+    plan,
+    license: license
+      ? {
+          id: license.id,
+          seatLimit: license.seatLimit,
+          status: license.status,
+          expiresAt: license.expiresAt,
+        }
+      : null,
+    seatsUsed: members.length,
+    entitlements: plan ? resolveEntitlements(plan, subscription) : null,
+  };
+  return jsonSuccess(summary);
+}
+
+function validateCreateSubscriptionInput(value: unknown): ValidationResult<{ planId: string }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const planId = requireNonEmptyString(body.value, "planId");
+  if (!planId.ok) return planId;
+  return ok({ planId: planId.value });
+}
+
+/** COM-1: subscribing an organization to its first plan. `POST` only —
+ * once a subscription exists, every further change is a `PATCH` (upgrade/
+ * downgrade/cancel/renew, `updatePortalSubscription` below), the same
+ * create-once/patch-thereafter shape `POST /api/organizations`/`PATCH
+ * /api/organizations/:id` already establishes. */
+async function createPortalSubscription(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  if (!deps.licenses) return licensesNotConfigured(ctx.requestId);
+
+  const existing = await deps.subscriptions.findByOrganizationId(organizationId);
+  if (existing) {
+    return jsonError(
+      { code: "conflict", message: "This organization already has a subscription" },
+      ctx.requestId,
+      409,
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonError(
+      { code: "validation_error", message: "Invalid JSON body" },
+      ctx.requestId,
+      400,
+    );
+  }
+  const parsed = validateCreateSubscriptionInput(body);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const plan = findPlan(parsed.value.planId);
+  if (!plan) {
+    return jsonError(
+      { code: "validation_error", message: `Unknown plan: ${parsed.value.planId}` },
+      ctx.requestId,
+      400,
+    );
+  }
+  // A sales-assisted plan (Plan.trialDays === 0, e.g. "enterprise") has no
+  // self-service trial to start — a Platform Administrator assigns it
+  // directly via PATCH /api/commercial/subscriptions/:id instead
+  // (updateAdminSubscription below), which carries no such restriction.
+  if (!isSelfServicePlan(plan)) {
+    return jsonError(
+      { code: "sales_assisted_plan", message: "This plan requires contacting sales" },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const now = new Date();
+  const trialEndsAt = new Date(now.getTime() + plan.trialDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const subscription = await withOperationTiming(
+    ctx.metrics,
+    "portal.commercial.subscriptions.save",
+    () =>
+      deps.subscriptions!.save({
+        organizationId,
+        planId: plan.id,
+        status: "trialing",
+        trialEndsAt,
+        currentPeriodEnd: trialEndsAt,
+        createdAt: now.toISOString(),
+      }),
+  );
+  const license = await withOperationTiming(ctx.metrics, "portal.commercial.licenses.save", () =>
+    deps.licenses!.save({
+      organizationId,
+      subscriptionId: subscription.id,
+      seatLimit: plan.entitlements.maxSeats,
+      status: "active",
+      activatedAt: now.toISOString(),
+      expiresAt: null,
+      createdAt: now.toISOString(),
+    }),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId,
+    action: "subscription.created",
+    entityType: "subscription",
+    entityId: subscription.id,
+    metadata: { planId: plan.id },
+    createdAt: now.toISOString(),
+  });
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId,
+    action: "license.activated",
+    entityType: "license",
+    entityId: license.id,
+    metadata: { seatLimit: license.seatLimit },
+    createdAt: now.toISOString(),
+  });
+
+  return jsonSuccess({ subscription, license }, 201);
+}
+
+interface SubscriptionPatchInput {
+  planId?: string;
+  status?: SubscriptionStatus;
+}
+
+/** COM-1: a customer's own self-service lifecycle actions — narrower than
+ * what a Platform Administrator may do (`validateAdminSubscriptionPatch`
+ * below): only a plan change (upgrade/downgrade) or a `"canceled"`/
+ * `"active"` status transition (cancel/renew). A customer can never set
+ * `"trialing"`/`"expired"` directly, or edit `trialEndsAt`/
+ * `currentPeriodEnd` themselves — those are server-derived, the same
+ * "never trust a client value for a business date/status" discipline
+ * `POST /api/leads`'s server-side score recomputation already
+ * established. */
+function validatePortalSubscriptionPatch(value: unknown): ValidationResult<SubscriptionPatchInput> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+  const result: SubscriptionPatchInput = {};
+
+  if (record.planId !== undefined) {
+    if (typeof record.planId !== "string" || record.planId.trim() === "") {
+      return fail("Invalid field: planId");
+    }
+    result.planId = record.planId;
+  }
+  if (record.status !== undefined) {
+    if (record.status !== "canceled" && record.status !== "active") {
+      return fail('Invalid field: status must be "canceled" or "active"');
+    }
+    result.status = record.status;
+  }
+  if (result.planId === undefined && result.status === undefined) {
+    return fail("Body must include planId and/or status");
+  }
+  return ok(result);
+}
+
+/** COM-1: a Platform Administrator's override — any known plan (including a
+ * sales-assisted one like "enterprise", the real, intended way that plan
+ * gets assigned to a real customer) and any real `SubscriptionStatus`, not
+ * just the two a customer may self-serve. No broader than that: a Platform
+ * Administrator still can't set an unknown plan id or an arbitrary status
+ * string, the same "known values only, never free text" discipline every
+ * other admin PATCH in this file already applies. */
+function validateAdminSubscriptionPatch(value: unknown): ValidationResult<SubscriptionPatchInput> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+  const result: SubscriptionPatchInput = {};
+
+  if (record.planId !== undefined) {
+    if (typeof record.planId !== "string" || record.planId.trim() === "") {
+      return fail("Invalid field: planId");
+    }
+    result.planId = record.planId;
+  }
+  if (record.status !== undefined) {
+    if (!SUBSCRIPTION_STATUSES.includes(record.status as SubscriptionStatus)) {
+      return fail(`Invalid status: ${String(record.status)}`);
+    }
+    result.status = record.status as SubscriptionStatus;
+  }
+  if (result.planId === undefined && result.status === undefined) {
+    return fail("Body must include planId and/or status");
+  }
+  return ok(result);
+}
+
+/** COM-1: the one shared state-machine both the customer-facing PATCH
+ * (`updatePortalSubscription`) and the admin override PATCH
+ * (`updateAdminSubscription`) apply, after each has validated the patch
+ * against its own, differently-scoped rules — real audit events derived
+ * from what actually changed, the same diff-before-recording discipline
+ * `updateOrganization`/`updateLead` already established, extended here to
+ * also keep the subscription's own `LicenseRecord` (seat limit, active/
+ * expired status) in lockstep rather than letting the two drift apart. */
+async function applySubscriptionPatch(
+  organizationId: string,
+  before: SubscriptionRecord,
+  patch: SubscriptionPatchInput,
+  actorId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<SubscriptionRecord> {
+  let after = before;
+  const now = new Date().toISOString();
+
+  if (patch.planId && patch.planId !== after.planId) {
+    const oldPlan = findPlan(after.planId);
+    const newPlan = findPlan(patch.planId);
+    if (newPlan) {
+      const updated = await deps.subscriptions!.update(after.id, { planId: newPlan.id });
+      if (updated) after = updated;
+      const action =
+        !oldPlan || newPlan.tier > oldPlan.tier
+          ? "subscription.upgraded"
+          : "subscription.downgraded";
+      await recordAuditEvent(deps, ctx, {
+        actorId,
+        organizationId,
+        action,
+        entityType: "subscription",
+        entityId: before.id,
+        metadata: { from: before.planId, to: newPlan.id },
+        createdAt: now,
+      });
+      const license = deps.licenses
+        ? await deps.licenses.findByOrganizationId(organizationId)
+        : null;
+      if (license) {
+        await deps.licenses!.update(license.id, { seatLimit: newPlan.entitlements.maxSeats });
+      }
+    }
+  }
+
+  if (patch.status === "canceled" && after.status !== "canceled") {
+    const updated = await deps.subscriptions!.update(after.id, {
+      status: "canceled",
+      canceledAt: now,
+    });
+    if (updated) after = updated;
+    await recordAuditEvent(deps, ctx, {
+      actorId,
+      organizationId,
+      action: "subscription.canceled",
+      entityType: "subscription",
+      entityId: before.id,
+      metadata: null,
+      createdAt: now,
+    });
+    const license = deps.licenses ? await deps.licenses.findByOrganizationId(organizationId) : null;
+    if (license && license.status !== "expired") {
+      await deps.licenses!.update(license.id, { status: "expired" });
+      await recordAuditEvent(deps, ctx, {
+        actorId,
+        organizationId,
+        action: "license.expired",
+        entityType: "license",
+        entityId: license.id,
+        metadata: null,
+        createdAt: now,
+      });
+    }
+  }
+
+  if (patch.status === "active" && (after.status === "canceled" || after.status === "expired")) {
+    // Server-computed, never client-supplied — the same discipline
+    // createLead/createAssessment's server-side recomputation established.
+    const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const updated = await deps.subscriptions!.update(after.id, {
+      status: "active",
+      currentPeriodEnd,
+      canceledAt: null,
+    });
+    if (updated) after = updated;
+    await recordAuditEvent(deps, ctx, {
+      actorId,
+      organizationId,
+      action: "subscription.renewed",
+      entityType: "subscription",
+      entityId: before.id,
+      metadata: null,
+      createdAt: now,
+    });
+    const license = deps.licenses ? await deps.licenses.findByOrganizationId(organizationId) : null;
+    if (license && license.status !== "active") {
+      await deps.licenses!.update(license.id, { status: "active" });
+      await recordAuditEvent(deps, ctx, {
+        actorId,
+        organizationId,
+        action: "license.activated",
+        entityType: "license",
+        entityId: license.id,
+        metadata: null,
+        createdAt: now,
+      });
+    }
+  }
+
+  return after;
+}
+
+async function updatePortalSubscription(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  const before = await deps.subscriptions.findByOrganizationId(organizationId);
+  if (!before) {
+    return jsonError(
+      { code: "not_found", message: "No subscription exists for this organization" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validatePortalSubscriptionPatch(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+  if (parsed.value.planId) {
+    const plan = findPlan(parsed.value.planId);
+    if (!plan) {
+      return jsonError(
+        { code: "validation_error", message: `Unknown plan: ${parsed.value.planId}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    if (!isSelfServicePlan(plan)) {
+      return jsonError(
+        { code: "sales_assisted_plan", message: "This plan requires contacting sales" },
+        ctx.requestId,
+        400,
+      );
+    }
+  }
+
+  const after = await applySubscriptionPatch(
+    organizationId,
+    before,
+    parsed.value,
+    caller.userId,
+    deps,
+    ctx,
+  );
+  return jsonSuccess(after);
+}
+
+async function updateAdminSubscription(
+  id: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  const before = await deps.subscriptions.findById(id);
+  if (!before) {
+    return jsonError({ code: "not_found", message: "Subscription not found" }, ctx.requestId, 404);
+  }
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateAdminSubscriptionPatch(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+  if (parsed.value.planId && !findPlan(parsed.value.planId)) {
+    return jsonError(
+      { code: "validation_error", message: `Unknown plan: ${parsed.value.planId}` },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const after = await applySubscriptionPatch(
+    before.organizationId,
+    before,
+    parsed.value,
+    caller.userId,
+    deps,
+    ctx,
+  );
+  return jsonSuccess(after);
+}
+
+/** COM-1: the Commercial Workspace's table — search/filter/sort/pagination,
+ * the same query-param validation strictness as every other `/search`
+ * endpoint in this file. Platform-Administrator-only for the identical
+ * repository-isolation reason every other cross-organization search
+ * already is (`SubscriptionRepository.search` has no per-organization
+ * filter — it returns every organization's own subscription). */
+async function searchCommercialSubscriptions(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  const params = url.searchParams;
+  const options: SubscriptionSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const status = params.get("status");
+  if (status !== null) {
+    if (!SUBSCRIPTION_STATUSES.includes(status as SubscriptionStatus)) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid status: ${status}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.status = status as SubscriptionStatus;
+  }
+
+  const planId = params.get("planId");
+  if (planId) options.planId = planId;
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (
+      !COMMERCIAL_SUBSCRIPTION_SORT_FIELDS.includes(
+        sortBy as (typeof COMMERCIAL_SUBSCRIPTION_SORT_FIELDS)[number],
+      )
+    ) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as SubscriptionSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "commercial.subscriptions.search", () =>
+    deps.subscriptions!.search(options),
+  );
+  return jsonSuccess(result);
+}
+
+/** COM-1: Subscription Administration's detail view — the subscription
+ * joined server-side with its resolved plan and license, the same
+ * "compose the related records into one response" shape
+ * `getPortalCommercialSummary` above already uses for the customer-facing
+ * equivalent. */
+async function getCommercialSubscription(
+  id: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  const subscription = await withOperationTiming(
+    ctx.metrics,
+    "commercial.subscriptions.findById",
+    () => deps.subscriptions!.findById(id),
+  );
+  if (!subscription) {
+    return jsonError({ code: "not_found", message: "Subscription not found" }, ctx.requestId, 404);
+  }
+  const plan = findPlan(subscription.planId);
+  const license = deps.licenses
+    ? await deps.licenses.findByOrganizationId(subscription.organizationId)
+    : null;
+  // Same real, live count `getPortalCommercialSummary` uses — an admin
+  // reviewing one organization's own subscription needs the identical
+  // "how many seats are actually in use" fact a customer sees.
+  const seatsUsed = deps.userProfiles
+    ? (await deps.userProfiles.findByOrganizationId(subscription.organizationId)).length
+    : 0;
+  return jsonSuccess({ subscription, plan, license, seatsUsed });
+}
+
+async function searchCommercialLicenses(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.licenses) return licensesNotConfigured(ctx.requestId);
+  const params = url.searchParams;
+  const options: LicenseSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const status = params.get("status");
+  if (status !== null) {
+    if (status !== "active" && status !== "expired") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid status: ${status}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.status = status;
+  }
+
+  const sortBy = params.get("sortBy");
+  if (sortBy !== null) {
+    if (
+      !COMMERCIAL_LICENSE_SORT_FIELDS.includes(
+        sortBy as (typeof COMMERCIAL_LICENSE_SORT_FIELDS)[number],
+      )
+    ) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortBy: ${sortBy}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortBy = sortBy as LicenseSearchOptions["sortBy"];
+  }
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  for (const [param, field] of [
+    ["page", "page"],
+    ["pageSize", "pageSize"],
+  ] as const) {
+    const raw = params.get(param);
+    if (raw === null) continue;
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid ${param}: ${raw}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options[field] = parsed;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "commercial.licenses.search", () =>
+    deps.licenses!.search(options),
+  );
+  return jsonSuccess(result);
 }
 
 /** EAP-1: "who am I" for the frontend — the piece role-aware navigation

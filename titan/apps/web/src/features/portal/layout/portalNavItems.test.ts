@@ -59,6 +59,7 @@ describe("portalNavItems", () => {
     expect(items).toContainEqual({ label: "Assessments", to: "/portal/assessments" });
     expect(items).toContainEqual({ label: "Reports", to: "/portal/reports" });
     expect(items).toContainEqual({ label: "Support", to: "/portal/support" });
+    expect(items).toContainEqual({ label: "Subscription", to: "/portal/subscription" });
     expect(items).toContainEqual({ label: "Account", to: "/portal/account" });
   });
 

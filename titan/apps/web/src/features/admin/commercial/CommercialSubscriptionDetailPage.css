@@ -1,0 +1,42 @@
+.titan-commercial-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-commercial-detail__back {
+  color: #0ea5e9;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.titan-commercial-detail__back:hover {
+  text-decoration: underline;
+}
+
+.titan-commercial-detail__meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.titan-commercial-detail__meta dt {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0;
+}
+
+.titan-commercial-detail__meta dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #0a1628;
+}
+
+.titan-commercial-detail__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}

@@ -257,6 +257,14 @@ export interface UserProfilePatch {
 export interface UserProfileRepository {
   save(profile: NewUserProfile): Promise<UserProfileRecord>;
   findByUserId(userId: string): Promise<UserProfileRecord[]>;
+  /** COM-1: every real member of one organization, regardless of which user
+   * — backs Commercial's "seat usage" (a subscription's own seat count is
+   * the live number of this organization's own `user_profiles` rows, not a
+   * separately tracked counter that could drift from the real membership
+   * list). The mirror image of `findByUserId`: that finds one user's
+   * memberships across every organization, this finds one organization's
+   * members across every user. */
+  findByOrganizationId(organizationId: string): Promise<UserProfileRecord[]>;
   /** EAP-5: single-record lookup by the profile's own id — backs Role
    * Assignment's update/revoke actions, same null-not-throw contract as
    * every other repository's `findById`. */
@@ -523,4 +531,159 @@ export interface SupportRequestRepository {
    * real, deferred follow-up (`DECISION_LOG.md`'s CPP-1 entry), not this
    * phase's scope — "Do NOT implement: Administration Console". */
   listByUser(userId: string): Promise<SupportRequestRecord[]>;
+}
+
+// COM-1: Commercial Platform. Subscriptions and Licenses are the two
+// genuinely new entities — everything else (Plans, Entitlements) is
+// computed from these plus the code-defined plan catalog
+// (`commercial/planCatalog.ts`), never persisted separately. Provider-
+// agnostic by design: no payment amount, invoice, or card/token field
+// exists anywhere in either record — a real billing provider integration
+// would plug into the lifecycle these model, not be modeled itself.
+
+export const SUBSCRIPTION_STATUSES = ["trialing", "active", "canceled", "expired"] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
+
+export interface SubscriptionRecord {
+  id: string;
+  /** Not nullable, unlike `AssessmentRecord.organizationId` — there is no
+   * anonymous-flow analogue for a subscription; every one is created
+   * through an authenticated organization member or a Platform
+   * Administrator acting on a real organization's behalf. One subscription
+   * per organization (`findByOrganizationId` returns at most one) — this
+   * system has no multi-subscription-per-tenant concept. */
+  organizationId: string;
+  /** A `PlanId` from `commercial/planCatalog.ts`'s `PLAN_CATALOG`, stored as
+   * a plain string (not re-typed here) so this repository has no
+   * compile-time dependency on the catalog module — the same "repository
+   * types don't import business logic" boundary `AssessmentRecord.framework`
+   * already keeps as a plain string rather than importing
+   * `@titan/assessment-core`'s own framework union. */
+  planId: string;
+  status: SubscriptionStatus;
+  /** ISO 8601, or null once a trial has converted (or the plan never had
+   * one — `Plan.trialDays === 0`). */
+  trialEndsAt: string | null;
+  /** ISO 8601 — when the current term ends and renewal (or expiry) is due.
+   * Server-computed on every create/renew (`router.ts`), never
+   * client-supplied — the same "never trust a client value for a business
+   * date" discipline `POST /api/leads`'s server-side score recomputation
+   * already established. */
+  currentPeriodEnd: string | null;
+  createdAt: string;
+  updatedAt: string;
+  canceledAt: string | null;
+}
+
+export type NewSubscription = Omit<SubscriptionRecord, "id" | "updatedAt" | "canceledAt">;
+
+/** A partial lifecycle update (`PATCH /api/portal/commercial/subscription`,
+ * `PATCH /api/commercial/subscriptions/:id`) — `router.ts` diffs this
+ * against the pre-update record to decide which real event
+ * (`subscription.upgraded`/`.downgraded`/`.canceled`/`.renewed`) to record,
+ * the same pattern `OrganizationPatch`/`LeadLifecyclePatch` already
+ * established. */
+export interface SubscriptionPatch {
+  planId?: string;
+  status?: SubscriptionStatus;
+  trialEndsAt?: string | null;
+  currentPeriodEnd?: string | null;
+  canceledAt?: string | null;
+}
+
+export type SubscriptionSortField = "createdAt" | "currentPeriodEnd";
+
+/** Admin-facing cross-organization search (`GET /api/commercial/subscriptions/search`)
+ * — same shape and reasoning as `OrganizationSearchOptions`. */
+export interface SubscriptionSearchOptions {
+  /** Case-insensitive substring match against organizationId/planId. */
+  search?: string;
+  status?: SubscriptionStatus;
+  planId?: string;
+  sortBy?: SubscriptionSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface SubscriptionSearchResult {
+  subscriptions: SubscriptionRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface SubscriptionRepository {
+  save(subscription: NewSubscription): Promise<SubscriptionRecord>;
+  /** The one real per-tenant lookup — backs every `/api/portal/commercial/*`
+   * route (CPP-1's own `resolvePortalOrganizationId` resolves the
+   * organization; this resolves that organization's own subscription, or
+   * null if it never subscribed to anything). */
+  findByOrganizationId(organizationId: string): Promise<SubscriptionRecord | null>;
+  findById(id: string): Promise<SubscriptionRecord | null>;
+  search(options: SubscriptionSearchOptions): Promise<SubscriptionSearchResult>;
+  update(id: string, patch: SubscriptionPatch): Promise<SubscriptionRecord | null>;
+}
+
+export const LICENSE_STATUSES = ["active", "expired"] as const;
+export type LicenseStatus = (typeof LICENSE_STATUSES)[number];
+
+/** COM-1: the seat grant itself — a subscription's own "how many seats,
+ * currently active or expired". Deliberately not "one row per seat/user":
+ * seat *usage* is the live count of an organization's own real
+ * `UserProfileRecord`s (`UserProfileRepository.findByOrganizationId`), not
+ * a separately tracked assignment table that could drift from real
+ * membership — the same "compose from the existing repository, don't
+ * duplicate its data" discipline CPP-1's `PortalComplianceSummary` already
+ * established for assessment counts. */
+export interface LicenseRecord {
+  id: string;
+  organizationId: string;
+  subscriptionId: string;
+  seatLimit: number;
+  status: LicenseStatus;
+  activatedAt: string;
+  /** ISO 8601, or null while the license is active with no scheduled end
+   * (mirrors the subscription's own `currentPeriodEnd` once it exists). */
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NewLicense = Omit<LicenseRecord, "id" | "updatedAt">;
+
+export interface LicensePatch {
+  seatLimit?: number;
+  status?: LicenseStatus;
+  expiresAt?: string | null;
+}
+
+export type LicenseSortField = "createdAt" | "seatLimit";
+
+export interface LicenseSearchOptions {
+  search?: string;
+  status?: LicenseStatus;
+  sortBy?: LicenseSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface LicenseSearchResult {
+  licenses: LicenseRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface LicenseRepository {
+  save(license: NewLicense): Promise<LicenseRecord>;
+  findByOrganizationId(organizationId: string): Promise<LicenseRecord | null>;
+  findById(id: string): Promise<LicenseRecord | null>;
+  /** Admin-facing "License Inventory" (`GET /api/commercial/licenses/search`)
+   * — same shape and reasoning as `SubscriptionSearchOptions`. */
+  search(options: LicenseSearchOptions): Promise<LicenseSearchResult>;
+  update(id: string, patch: LicensePatch): Promise<LicenseRecord | null>;
 }

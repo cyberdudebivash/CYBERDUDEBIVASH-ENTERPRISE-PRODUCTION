@@ -27,6 +27,7 @@ export function portalNavItems(me: MeResponse): SidebarItem[] {
     { label: "Assessments", to: "/portal/assessments" },
     { label: "Reports", to: "/portal/reports" },
     { label: "Support", to: "/portal/support" },
+    { label: "Subscription", to: "/portal/subscription" },
     { label: "Account", to: "/portal/account" },
   ];
 }
