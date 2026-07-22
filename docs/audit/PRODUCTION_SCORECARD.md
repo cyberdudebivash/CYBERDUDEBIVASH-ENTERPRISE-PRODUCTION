@@ -1,17 +1,17 @@
 # Production Scorecard
 
-Living document — category-level pass/fail, the judgment layer. For the raw endpoint-by-endpoint evidence behind each row, see `LIVE_OPERATIONAL_DASHBOARD.md`. Last verified against live systems: **2026-07-20**, Stage 5. Updated in place only when new evidence changes a row — not on a schedule.
+Living document — category-level pass/fail, the judgment layer. For the raw endpoint-by-endpoint evidence behind each row, see `LIVE_OPERATIONAL_DASHBOARD.md`. Last verified against live systems: **2026-07-20**, Stage 5; repository-validation row re-verified **2026-07-22** (dependency CVEs found and fixed, test-suite scoping bug found and fixed — see `PROGRAM_BACKLOG.md`). Updated in place only when new evidence changes a row — not on a schedule.
 
 ## Repository validation
 
 | Category | Status | Evidence |
 |---|---|---|
-| Clean install | ✅ PASS | `npm ci --ignore-scripts`, 0 vulnerabilities |
+| Clean install | ✅ PASS | `npm ci --ignore-scripts` |
 | Clean build | ✅ PASS | `vite build` + `assemble-site.mjs` + `esbuild`, deterministic content (filenames may vary, see `DECISION_LOG.md` D6) |
 | `verify-dist` | ✅ PASS | 7/7 checks (asset references, no orphans, HTML well-formed, metadata/schema, favicon, sitemap/robots, headers) |
-| Test suite | ✅ PASS | 440/440 |
+| Test suite | ✅ PASS | 440/440. Re-verified 2026-07-22 after fixing a root-`npm test` scoping bug that had let Node's default test discovery sweep up `titan/`'s incompatible test file (44 spurious failures in an environment without `titan/`'s own deps installed) — see `PROGRAM_BACKLOG.md` |
 | Typecheck | ✅ PASS | 0 errors |
-| Dependency audit | ✅ PASS | 0 vulnerabilities |
+| Dependency audit | ✅ PASS | 0 vulnerabilities. Re-verified 2026-07-22: 2 CVEs disclosed since Stage 5 (`body-parser`, `protobufjs`), found and fixed via `npm audit fix` (lockfile-only) |
 
 ## Deployment validation
 
@@ -61,8 +61,8 @@ Living document — category-level pass/fail, the judgment layer. For the raw en
 
 | Category | Status | Detail |
 |---|---|---|
-| Tag hygiene (title/canonical/OG/Twitter/JSON-LD) | ✅ PASS | 19–20/20 pages; 1 gap (`item.html` canonical), `PROGRAM_BACKLOG.md` #7 |
-| Accessibility | ⚠️ PARTIAL | Good foundations; measured gaps in mobile tap targets, `PROGRAM_BACKLOG.md` #8 |
+| Tag hygiene (title/canonical/OG/Twitter/JSON-LD) | ✅ PASS | 20/20 pages — `item.html`'s missing canonical fixed 2026-07-22 |
+| Accessibility | ⚠️ PARTIAL | Good foundations; heading-concatenation regression fixed 2026-07-22; mobile tap-target sizing remains open, `PROGRAM_BACKLOG.md` #8 |
 | Performance | ⚠️ Not re-measured live | Sandboxed measurement only; recommend a real Lighthouse CI run — not a blocker |
 | Analytics (GA4) | ⚠️ Unverified | `PROGRAM_BACKLOG.md` #4 |
 
