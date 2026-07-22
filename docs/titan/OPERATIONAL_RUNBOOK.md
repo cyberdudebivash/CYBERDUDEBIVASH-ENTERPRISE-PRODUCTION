@@ -149,10 +149,13 @@ curl -s -X PATCH http://localhost:8787/api/organizations/some-org-id \
 # once authenticated, same as PATCH /api/leads/:id.
 
 curl -s http://localhost:8787/api/commercial/plans
-# 200 with no session cookie — COM-1: the Plan catalog is public metadata (the
-# same three plans every caller sees before deciding whether to sign up), not
-# gated at all. Returns the hardcoded Starter/Professional/Enterprise array
-# from commercial/planCatalog.ts, not a database read.
+# 401 with no session cookie — COM-1: unlike the routes below, this one needs
+# only *some* real session (resolveCaller), the same "any authenticated
+# caller" exception GET /api/me already is — no Platform Administrator role
+# or organization membership required. With a real session cookie (see
+# "Provisioning a local Platform Administrator" below): 200, returning the
+# hardcoded Starter/Professional/Enterprise array from commercial/planCatalog.ts,
+# not a database read.
 
 curl -s http://localhost:8787/api/portal/commercial/subscription
 # 401 with no session cookie — COM-1: requires a real organization membership,
