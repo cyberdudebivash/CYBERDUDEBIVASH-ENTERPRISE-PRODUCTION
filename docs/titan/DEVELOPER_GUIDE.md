@@ -404,6 +404,26 @@ npm run smoke-test -- --base-url http://localhost:8787   # against a running `wr
 - **The release-automation scripts (`packages/platform/scripts/*.mjs`) are plain Node, not TypeScript.** They run directly via `node scripts/x.mjs`, outside this workspace's `tsc`/Vite build pipeline, deliberately — adding a build step for six small CLI scripts would be new tooling this workspace doesn't otherwise need. ESLint still lints them (`packages/config/eslint.base.mjs`'s `**/scripts/**/*.mjs` block, PRD-1, gives them real Node/`fetch` globals) — keep any new script under `scripts/` so it picks up that config automatically.
 - **A real bug was caught in `check-wrangler-config.mjs` by running it, not by reading it.** Its first version's "find the next environment section" logic matched `[env.staging.vars]` (a sub-table) as if it were a new top-level `[env.production]` header, silently truncating its own scan. If you touch this script's section-boundary logic, re-run it for real against `wrangler.toml` afterward and confirm it still finds every real placeholder — a plausible-looking regex is not evidence it works.
 
+## Enterprise Operations & SRE usage (OPS-1)
+
+Full detail lives in `MONITORING_GUIDE.md`/`INCIDENT_RESPONSE_GUIDE.md`/`SRE_GUIDE.md`/`OPERATIONS_GUIDE.md` — this section is the short, developer-facing version.
+
+```ts
+import { computeErrorRate, computeLatencyPercentiles, collectDurations } from "./observability/aggregate.js";
+import { evaluateAlerts, DEFAULT_ALERT_THRESHOLDS } from "./observability/alerts.js";
+
+const errorRate = computeErrorRate(metrics.getCounts(), "http.request");
+const latency = computeLatencyPercentiles(collectDurations(metrics.getDurations(), "http.request.duration_ms"));
+const alerts = evaluateAlerts({ ready, services, errorRate, latency, configValidation });
+```
+
+- **`observability/aggregate.ts` and `observability/alerts.ts` are pure, zero-I/O leaf modules, like `config/validateEnv.ts`.** If you add a new metric or alert rule, keep it a synchronous function of its inputs — no `fetch`, no D1 access, no dependency on `router.ts`'s own types. `alerts.ts` deliberately defines its own narrow `ServiceHealthInput` rather than importing `router.ts`'s `ServiceStatus`, so the dependency direction stays one-way (router depends on observability, never the reverse) — follow the same pattern for any new evaluation input.
+- **A new alert needs real evidence, not just a severity.** Every `Alert.evidence` field must be the actual value that triggered it (see the existing rules in `alerts.ts` for the pattern) — an alert with no real number behind it is exactly the kind of fabricated monitoring this program's engineering principles rule out.
+- **`GET /api/operations/summary`'s `requestSummary`/`alerts` fields are always present, unlike `configuration`.** They're computed from data this endpoint already gathers on every call, regardless of whether a deployment ever wired `configValidation` — don't make a new field on `OperationsSummary` optional unless it genuinely depends on an optional dependency the way `configuration` does.
+- **`router.ts`'s `computeReadiness` is now shared by `readinessResponse` and `operationsSummary` — don't let them diverge.** If you add a third reason readiness could fail, add it inside `computeReadiness` itself so both callers see the same real answer, rather than teaching one of them a new check the other doesn't know about.
+- **The Operations Center's new Alerts panel/Operational Summary banner compose existing data — they don't introduce a new signal.** If you extend the dashboard further, keep that discipline: a new panel should render something `GET /api/operations/summary` already returns, not fetch a second endpoint or fabricate a client-side computation the backend doesn't back.
+- **`check-operational-thresholds.mjs` is deliberately separate from `smoke-test.mjs`, not a rewrite of it.** Same reasoning as `titan-deploy.yml` staying independent of `titan-ci.yml` — avoid touching a stable, already-verified script for an unrelated new check.
+
 ## Adding a new component to the design system
 
 1. `packages/design-system/src/components/YourComponent.tsx` + co-located `.css` + `.test.tsx`.
@@ -429,3 +449,5 @@ npm run smoke-test -- --base-url http://localhost:8787   # against a running `wr
 - Don't add a route that lets a caller grant themselves (or anyone) the Platform Administrator role — that would be a privilege-escalation vulnerability, not a convenience feature. Provisioning is a direct D1 insert on purpose (`OPERATIONAL_RUNBOOK.md`, `SECURITY_GUIDE.md`).
 - Don't reach for the main repository's `node:test`/`tsx` conventions inside `titan/` — this workspace has its own toolchain, documented above.
 - Don't add a `push`/`schedule`/`tag` trigger to `titan-deploy.yml`, add R2/Queues/Durable Objects/Turnstile bindings to `wrangler.toml`, or paste a real secret value into `wrangler.toml`'s `[vars]` blocks without a real go-ahead — PRD-1 deliberately kept the deploy workflow manual-only, deliberately left every Cloudflare binding this codebase doesn't actually use unwired (nothing generates a file to store, dispatches an async job, or gates a public form against bots yet), and `[vars]` blocks are plaintext, committed config (`DEPLOYMENT_GUIDE.md`, `SECURITY_GUIDE.md`'s "Secrets management"). Don't touch `titan-ci.yml` to make it "smarter" about deployment either — it's a separate, stable, working system on purpose (`ARCHITECTURE.md`'s PRD-1 section); extend `titan-deploy.yml` instead.
+- Don't wire a real paging/notification integration (PagerDuty/Slack/email webhook) into `observability/alerts.ts` or anywhere else without a real go-ahead — no deployed environment produces real traffic to evaluate and no paging provider has ever been chosen, the identical "no forcing decision yet" reasoning `ARCHITECTURE.md`'s payments/email provider gaps already have (`MONITORING_GUIDE.md`, `DECISION_LOG.md`'s OPS-1 entry). Don't build a second, parallel metrics/alerting backend either — extend `observability/aggregate.ts`/`observability/alerts.ts` the same additive way every prior phase extended its own predecessor, rather than inventing a competing implementation.
+- Don't implement route-based code-splitting for `@titan/web`'s main bundle as a side effect of an operations task — it's real, named, prioritized follow-up work (PRD-1's own finding, re-confirmed by OPS-1), but it's frontend-routing restructuring, out of an operations-focused phase's own scope.

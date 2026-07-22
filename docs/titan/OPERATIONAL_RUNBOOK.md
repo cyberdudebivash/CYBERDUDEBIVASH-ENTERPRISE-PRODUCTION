@@ -465,13 +465,15 @@ This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e
 
 With a Platform Administrator session (above), the sidebar shows an **Operations** link (`adminNavItems`), hidden entirely for a non-Platform-Administrator, the same convention as every other privileged module. Health/Readiness in this page are role-agnostic (any authenticated caller sees them), the same as the Dashboard's own Platform health/System status panels — only Service Status/Runtime Metrics/System Overview require Platform Administrator.
 
-1. **Platform health / Readiness**: real `GET /health`/`GET /health/ready` results, the same two endpoints the Dashboard already reads — this page adds no new health check, it's a second place to see the same real signal.
-2. **Service status**: a real reachability check per repository (`leads`/`assessments`/`organizations`/`users`/`userProfiles`/`audit`), driven by `GET /api/operations/summary` — each row shows a real row count and latency from a genuine query, and "Not configured" (not "Unreachable") for a repository this deployment simply doesn't wire (organizations/users/userProfiles are the ones that can be optional).
-3. **Runtime metrics**: real request counts (by method/path/status) and real repository-operation timings (by operation, with average/max), read directly from this Worker isolate's own accumulating counters (`observability/metrics.ts`) — resets whenever the isolate restarts, stated honestly in the panel's own empty-state copy rather than implied to be a durable history.
-4. **Background operations**: an honest note that no background job/queue/scheduled-task infrastructure exists in this deployment — not a fabricated queue view.
-5. **System overview**: platform version, runtime environment, and the list of registered services — real, static, verified values (see `SECURITY_GUIDE.md`'s known-gaps entry for why these are manually-maintained constants rather than a dynamic build-info read).
+0. **Operational summary banner** (OPS-1): one line — `Healthy`/`Degraded`/`Critical` — derived from the real Alerts panel below plus System Overview's own version/environment, so it never claims anything the panels beneath it don't already show in more detail.
+1. **Platform health / Readiness**: real `GET /health`/`GET /health/ready` results, the same two endpoints the Dashboard already reads — this page adds no new health check, it's a second place to see the same real signal. Readiness (OPS-1) now also fails if a `staging`/`production` deployment's configuration is invalid, not only if the database is unreachable — `router.ts`'s `computeReadiness`.
+2. **Alerts** (OPS-1): `observability/alerts.ts`'s `evaluateAlerts` applied to this exact response's own real data — an honest "No alerts firing" state when nothing breaches a threshold, or a real, evidence-backed message per firing alert (`MONITORING_GUIDE.md` has the full threshold table).
+3. **Service status**: a real reachability check per repository (`leads`/`assessments`/`organizations`/`users`/`userProfiles`/`audit`), driven by `GET /api/operations/summary` — each row shows a real row count and latency from a genuine query, and "Not configured" (not "Unreachable") for a repository this deployment simply doesn't wire (organizations/users/userProfiles are the ones that can be optional).
+4. **Runtime metrics**: real request counts (by method/path/status) and real repository-operation timings (by operation, with average/max), read directly from this Worker isolate's own accumulating counters (`observability/metrics.ts`) — resets whenever the isolate restarts, stated honestly in the panel's own empty-state copy rather than implied to be a durable history. A "Request health" section (OPS-1) adds real p50/p95/p99 latency and 4xx/5xx error rate, computed from the same counters (`observability/aggregate.ts`).
+5. **Background operations**: an honest note that no background job/queue/scheduled-task infrastructure exists in this deployment — not a fabricated queue view.
+6. **System overview**: platform version, runtime environment, and the list of registered services — real, static, verified values (see `SECURITY_GUIDE.md`'s known-gaps entry for why these are manually-maintained constants rather than a dynamic build-info read).
 
-This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/operations-center.spec.ts`) that sends a real prior request through the running Worker and then asserts the Runtime Metrics table reflects that same real request, not a number the test fabricates and hands back to itself — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/operations-center.spec.ts`) that sends a real prior request through the running Worker and then asserts the Runtime Metrics table reflects that same real request, not a number the test fabricates and hands back to itself, plus (OPS-1) asserts the real, healthy Alerts/Operational-summary state this local Worker's own genuine traffic produces — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
 ## Viewing reports through the Admin Application (`/admin/reporting`, EAP-8)
 
@@ -551,9 +553,22 @@ rm -rf .wrangler/state/v3/d1
 npx wrangler d1 execute titan-platform-db --local --file=backups/<your-backup>.sql -y
 ```
 
+## Verifying OPS-1's operational tooling locally
+
+```bash
+cd titan/packages/platform
+
+# Real single-request latency check against /health and /health/ready — no
+# auth needed, classified against MONITORING_GUIDE.md's documented
+# thresholds (warning >= 500ms, critical >= 2000ms or unreachable).
+npm run check-operational-thresholds -- --base-url http://localhost:8787
+```
+
+`GET /api/operations/summary` (a Platform Administrator session) now also returns `requestSummary` (real error rate + p50/p95/p99 latency) and `alerts` (real, evidence-backed — empty when nothing breaches a threshold) on every call — see `MONITORING_GUIDE.md` for the full threshold table and `SRE_GUIDE.md` for how these back real SLIs/SLOs.
+
 ## Structured logs
 
-Every request produces one JSON log line (`observability/logger.ts`) with `level`, `message`, `timestamp`, and a `requestId` that also appears as an `X-Request-Id` response header — grep `wrangler dev`'s output for a specific `requestId` to trace one request, or for `"level":"error"` to find failures. Audit-write failures log at `error` level but never fail the request they describe (`router.ts`'s `recordAuditEvent`).
+Every request produces one JSON log line (`observability/logger.ts`) with `level`, `message`, `timestamp`, and a `requestId` that also appears as an `X-Request-Id` response header — grep `wrangler dev`'s output for a specific `requestId` to trace one request, or for `"level":"error"` to find failures. Audit-write failures log at `error` level but never fail the request they describe (`router.ts`'s `recordAuditEvent`). A `"warn"`/`"error"` `"operational alert evaluated"` line (OPS-1) appears whenever `evaluateAlerts` finds at least one real alert — see `MONITORING_GUIDE.md`'s "Log classification" for the full level scheme.
 
 ## Common problems
 

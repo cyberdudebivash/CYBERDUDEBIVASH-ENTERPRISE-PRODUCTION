@@ -364,6 +364,18 @@ describe("AppRoutes", () => {
                 requestCounts: [],
                 repositoryOperations: [],
                 overview: { version: "0.1.0", environment: "local", modules: [] },
+                requestSummary: {
+                  errorRate: {
+                    total: 0,
+                    serverErrors: 0,
+                    clientErrors: 0,
+                    serverErrorRate: 0,
+                    clientErrorRate: 0,
+                  },
+                  latency: { count: 0, p50: 0, p95: 0, p99: 0 },
+                  repositoryLatency: { count: 0, p50: 0, p95: 0, p99: 0 },
+                },
+                alerts: [],
               }),
               { status: 200 },
             ),

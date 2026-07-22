@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { Alert, LoadingSkeleton, Panel } from "@titan/design-system";
-import type { OperationsSummary } from "@titan/platform";
+import { Alert, Badge, LoadingSkeleton, Panel } from "@titan/design-system";
+import { highestSeverity, type OperationsSummary } from "@titan/platform";
 import { useSession } from "../auth/SessionContext.js";
 import type { MeResponse } from "../auth/session.js";
 import type { HealthPayload, SectionState } from "../dashboard/useDashboardData.js";
+import { AlertsPanel } from "./AlertsPanel.js";
 import { RuntimeMetricsPanel } from "./RuntimeMetricsPanel.js";
 import { ServiceStatusPanel } from "./ServiceStatusPanel.js";
 import { SystemOverviewPanel } from "./SystemOverviewPanel.js";
@@ -24,6 +25,8 @@ export function OperationsWorkspaceContent({ me }: { me: MeResponse }) {
     <div className="titan-operations-workspace">
       <h1 className="titan-operations-workspace__title">Operations Center</h1>
 
+      {data.summary.status === "ready" && <OperationalSummaryBanner summary={data.summary.data} />}
+
       <div className="titan-operations-workspace__grid">
         <Panel title="Platform health">
           <HealthSection state={data.health} />
@@ -33,6 +36,13 @@ export function OperationsWorkspaceContent({ me }: { me: MeResponse }) {
           <HealthSection state={data.readiness} />
         </Panel>
       </div>
+
+      <Panel title="Alerts">
+        <SummarySection
+          state={data.summary}
+          render={(summary) => <AlertsPanel alerts={summary.alerts} />}
+        />
+      </Panel>
 
       <Panel title="Service status">
         <SummarySection
@@ -48,6 +58,7 @@ export function OperationsWorkspaceContent({ me }: { me: MeResponse }) {
             <RuntimeMetricsPanel
               requestCounts={summary.requestCounts}
               repositoryOperations={summary.repositoryOperations}
+              requestSummary={summary.requestSummary}
             />
           )}
         />
@@ -70,6 +81,34 @@ export function OperationsWorkspaceContent({ me }: { me: MeResponse }) {
           render={(summary) => <SystemOverviewPanel overview={summary.overview} />}
         />
       </Panel>
+    </div>
+  );
+}
+
+const SUMMARY_BANNER_COPY: Record<
+  "critical" | "warning" | "healthy",
+  { label: string; tone: "error" | "warning" | "success" }
+> = {
+  critical: { label: "Critical — one or more thresholds breached", tone: "error" },
+  warning: { label: "Degraded — one or more warning thresholds breached", tone: "warning" },
+  healthy: { label: "Healthy — no alerts firing", tone: "success" },
+};
+
+/** OPS-1 (Workstream 10, "Operational Summary"): one line combining real,
+ * already-computed data (`highestSeverity` over the same `alerts` the Alerts
+ * panel below renders in full, plus the existing System Overview's own
+ * version/environment) — not a new signal, a composition of existing ones,
+ * so it can never say something the panels beneath it don't already say in
+ * more detail. */
+function OperationalSummaryBanner({ summary }: { summary: OperationsSummary }) {
+  const severity = highestSeverity(summary.alerts) ?? "healthy";
+  const copy = SUMMARY_BANNER_COPY[severity];
+  return (
+    <div className="titan-operations-summary-banner">
+      <Badge tone={copy.tone}>{copy.label}</Badge>
+      <span className="titan-operations-summary-banner__label">
+        {summary.overview.environment} · v{summary.overview.version}
+      </span>
     </div>
   );
 }

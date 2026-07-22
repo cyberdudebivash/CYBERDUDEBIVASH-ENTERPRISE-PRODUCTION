@@ -88,7 +88,13 @@ export { createD1SubscriptionRepository } from "./repositories/subscriptionRepos
 export { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
 export { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
 
-export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
+export type {
+  Dependencies,
+  ServiceStatus,
+  SystemOverview,
+  OperationsSummary,
+  RequestHealthSummary,
+} from "./router.js";
 export { validateProductionConfig, DEFAULT_ENVIRONMENT_NAME } from "./config/validateEnv.js";
 export type { EnvLike, ConfigIssue, ConfigValidationResult } from "./config/validateEnv.js";
 export type {
@@ -123,3 +129,10 @@ export type { Logger, LogFields, LogLevel } from "./observability/logger.js";
 export { createLogger } from "./observability/logger.js";
 export type { Metrics, RecordedCount, RecordedDuration } from "./observability/metrics.js";
 export { createInMemoryMetrics } from "./observability/metrics.js";
+export type { ErrorRateSummary, LatencyPercentiles } from "./observability/aggregate.js";
+export type {
+  Alert as OperationalAlert,
+  AlertSeverity,
+  AlertThresholds,
+} from "./observability/alerts.js";
+export { DEFAULT_ALERT_THRESHOLDS, highestSeverity } from "./observability/alerts.js";
