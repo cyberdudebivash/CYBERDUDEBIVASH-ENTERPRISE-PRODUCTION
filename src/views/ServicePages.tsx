@@ -462,7 +462,7 @@ export default function ServicePages({ currentView, onNavigate, onContact, roiSt
                 { v: "2,500+", l: "Engagements Completed", c: "pink" as const },
                 { v: "97%", l: "Critical Findings Rate", c: "red" as const },
                 { v: "5 days", l: "Avg. Delivery Time", c: "cyan" as const },
-                { v: "CERT-In", l: "Empanelled Organization", c: "emerald" as const },
+                { v: "CERT-In", l: "Guidelines Aligned", c: "emerald" as const },
               ].map(s => (
                 <StatCard key={s.l} value={s.v} label={s.l} tone={s.c} />
               ))}

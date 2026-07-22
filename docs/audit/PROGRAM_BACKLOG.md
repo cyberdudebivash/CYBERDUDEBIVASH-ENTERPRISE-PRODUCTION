@@ -18,6 +18,8 @@ Living document — remaining work, prioritized. Updated in place as items resol
 | 3 | HSTS zone-level `max-age` below the value authored in `_headers` | Cloudflare project owner | Live: `max-age=15552000` (180d), no `preload`. Authored: `63072000` (2yr) + `preload`. Likely a separate zone-level HSTS dashboard setting taking precedence. Still fully HSTS-compliant either way — hardening, not a defect |
 | 4 | GA4 property (`G-MDT720X9YW`) ownership unverified | Whoever has `analytics.google.com` access | Homepage source still carries the unedited "replace this ID" setup comment. Determines whether any conversion data collected to date is real |
 | 5 | Blogger auto-publish secrets unverified | Whoever has GitHub repo secrets / Blogger account access | `publish-posts.yml` depends on 5 secrets whose validity can't be observed from the repository |
+| 5a | Decide the one canonical contact email (currently 3 live: personal Gmail modeled as the legal contact, the `.com` domain address actually rendered publicly, and a retired `.in` domain address) | Founder/Business owner | `RISK_REGISTER.md` risk 12. A business decision, not an engineering task — see `organization.config.ts` header comment for the full drift history |
+| 5b | Provide an evidentiary basis for, or soften, unverified commercial stats ("2,500+ Engagements Completed", "97% Critical Findings Rate", "500K+ Threat IOCs Tracked", "99.9% Platform SLA Uptime", "50+ Countries Protected") | Founder/Business owner | `RISK_REGISTER.md` risk 13. Cannot be resolved from the repository either way — inventing a "correct" number would be as wrong as leaving it unverified |
 
 ## P2 — Repository-owned, not blocking, no external dependency
 
@@ -45,3 +47,6 @@ Living document — remaining work, prioritized. Updated in place as items resol
 | Favicon bridge regression | Fixed Stage 2.6, confirmed live every stage since |
 | `_headers` never copied into `dist/` (would have silently broken security headers on cutover) | Fixed Stage 5, confirmed live |
 | 22 pre-existing lint errors | Resolved (files that carried them no longer exist in `src/`) — noticed, not caused, by this program |
+| `server.ts` AI system prompt falsely asserted formal ISO 27001/SOC 2 certification | Fixed — now composes `COMPLIANCE_DISCLOSURE`, the same single source of truth the frontend uses |
+| "CERT-In Empanelled Organization" / "CERT-In Notified" unsupported certification-style claims | Fixed — softened to "Guidelines Aligned" / routed through the existing `aligned()` helper |
+| Exploit Mitigation Lab shell/nginx/YARA generation had no input validation (injection risk via crafted IP/domain/hash) | Fixed — strict format validation added before interpolation |

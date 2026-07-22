@@ -95,7 +95,7 @@ export default function LegalPages({ currentView, onNavigate, onContact }: Legal
                   { label: "MITRE ATT&CK Mapped", color: "text-red-400 bg-red-950/40 border-red-900/40" },
                   { label: "OWASP LLM Top 10", color: "text-pink-400 bg-pink-950/40 border-pink-900/40" },
                   { label: "NIST CSF 2.0", color: "text-slate-300 bg-slate-800/60 border-slate-700/40" },
-                  { label: "CERT-In Notified", color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
+                  { label: aligned("certIn"), color: "text-orange-400 bg-orange-950/40 border-orange-900/40" },
                 ].map(b => (
                   <SecurityBadge key={b.label} label={b.label} colorClassName={b.color} variant="pill-solid" />
                 ))}

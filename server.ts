@@ -3,6 +3,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { COMPLIANCE_DISCLOSURE } from "./src/constants/ecosystemData";
 
 // Load .env.local first (takes priority), then .env
 dotenv.config({ path: ".env.local" });
@@ -187,7 +188,7 @@ app.post("/api/security/analyze", async (req, res) => {
 
   try {
     // Build system prompt based on analysis type
-    let systemInstruction = "You are the CyberDude AI Security Architect, a premium cyber incident response and audit engine from the CyberDudeBivash® Ecosystem. Based in Ragadi, Odisha, India, CyberDudeBivash Private Limited is ISO 27001 certified, SOC 2 Type II compliant, and DPDP aligned.";
+    let systemInstruction = `You are the CyberDude AI Security Architect, a premium cyber incident response and audit engine from the CyberDudeBivash® Ecosystem. Based in Ragadi, Odisha, India, CyberDudeBivash Private Limited follows security practices aligned with ISO/IEC 27001, SOC 2 Type II, and India's DPDP Act 2023. ${COMPLIANCE_DISCLOSURE} If asked about certification or audit status, answer accurately using this disclosure rather than claiming formal certification.`;
 
     if (type === "log") {
       systemInstruction += " Your task is to analyze the provided raw log file, security event, or dump. Identify if there is a threat, explain the attack vector (if any), categorize the severity (Critical, High, Medium, Low, or Info), and detail immediate remediation actions in clean Markdown with clear headings.";

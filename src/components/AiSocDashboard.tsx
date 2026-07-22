@@ -240,6 +240,7 @@ export function AiSocDashboard() {
   const [hunterType, setHunterType] = useState<"ip" | "domain" | "hash">("ip");
   const [hunterResult, setHunterResult] = useState<any>(null);
   const [hunterRunning, setHunterRunning] = useState(false);
+  const [hunterError, setHunterError] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const [selectedFramework, setSelectedFramework] = useState<"dpdp" | "iso" | "soc2">("dpdp");
@@ -394,9 +395,26 @@ export function AiSocDashboard() {
   const triggerQuickPrompt = (q: string) => submitCopilotChat(undefined, q);
 
   // ─── THREAT HUNTER ───────────────────────────────────────────────────────────
+  // Generated shellCommand/nginxCode below are copy/downloadable as real mitigation
+  // scripts, so the input must be format-validated before interpolation — otherwise
+  // a crafted "IP"/"domain"/"hash" string could inject arbitrary shell syntax into
+  // a script a security engineer trusts and runs elsewhere.
+  const HUNTER_PATTERNS: Record<"ip" | "domain" | "hash", RegExp> = {
+    ip: /^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$/,
+    domain: /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/,
+    hash: /^[a-fA-F0-9]{64}$/,
+  };
+  const HUNTER_LABELS: Record<"ip" | "domain" | "hash", string> = { ip: "IPv4 address", domain: "bare domain name", hash: "SHA-256 hash (64 hex chars)" };
+
   const executeThreatHunter = (e: React.FormEvent) => {
-    e.preventDefault(); setHunterRunning(true); setHunterResult(null); playTickAudio();
+    e.preventDefault();
     const target = targetInput.trim();
+    if (!HUNTER_PATTERNS[hunterType].test(target)) {
+      setHunterResult(null);
+      setHunterError(`"${target.slice(0, 60)}" is not a valid ${HUNTER_LABELS[hunterType]}. Enter a properly formatted value.`);
+      return;
+    }
+    setHunterError(null); setHunterRunning(true); setHunterResult(null); playTickAudio();
     setTimeout(() => {
       if (hunterType === "ip") {
         setHunterResult({ query: target, classification: "CRITICAL_MALICIOUS_BOTNET_IP", riskScore: 98, threatGroup: "APT-29 (Cozy Bear campaign)", family: "Mirai polymorphic DDoS malware", origin: "NL (Amsterdam Tor Exit Edge Router)", openPorts: "22, 80, 443, 8080", shellCommand: `iptables -A INPUT -s ${target} -p tcp --dport 22 -j DROP`, nginxCode: `deny ${target};`, mitreRef: "T1110 (Brute Force), T1059.001 (PowerShell)", advice: "Perform active network segment isolation immediately." });
@@ -854,7 +872,7 @@ export function AiSocDashboard() {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => { setHunterType(type); setTargetInput(type === "ip" ? "185.220.101.4" : type === "domain" ? "scam-redirector-portal.su" : "4198fa3906a59bc8da771970b89cf8271a067ff09761da12937000e4bbf451ae"); }}
+                      onClick={() => { setHunterType(type); setHunterError(null); setTargetInput(type === "ip" ? "185.220.101.4" : type === "domain" ? "scam-redirector-portal.su" : "4198fa3906a59bc8da771970b89cf8271a067ff09761da12937000e4bbf451ae"); }}
                       className={`py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all border cursor-pointer ${hunterType === type ? "bg-cyan-950 text-cyan-400 border-cyan-700/60" : "bg-slate-950/50 text-slate-300 border-slate-800 hover:text-white hover:border-slate-700"}`}
                     >
                       {type === "ip" ? "IP Node" : type === "domain" ? "Domain/URL" : "SHA256 Hash"}
@@ -922,6 +940,14 @@ export function AiSocDashboard() {
                       {hunterResult.shellCommand}
                     </div>
                   </div>
+                </div>
+              ) : hunterError ? (
+                <div className="h-full flex flex-col items-center justify-center gap-2 text-center py-4 px-2">
+                  <div className="w-12 h-12 rounded-full bg-red-950/60 border border-red-900/40 flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-red-400" />
+                  </div>
+                  <span className="text-[10px] font-mono text-red-400 uppercase tracking-wider">Invalid Input</span>
+                  <p className="text-[10px] text-slate-400 font-sans max-w-xs">{hunterError}</p>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-2 text-center py-4">
