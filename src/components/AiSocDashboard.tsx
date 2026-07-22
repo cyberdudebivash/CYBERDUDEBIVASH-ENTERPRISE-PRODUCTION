@@ -470,7 +470,10 @@ export function AiSocDashboard() {
             </div>
 
             <div>
-              <h2 className="text-sm font-extrabold font-mono tracking-widest uppercase text-white flex items-center gap-2 flex-wrap">
+              <h2
+                className="text-sm font-extrabold font-mono tracking-widest uppercase text-white flex items-center gap-2 flex-wrap"
+                aria-label={activeSimulation ? undefined : "CYBERDUDEBIVASH® AI Cybersecurity Command Center — Simulated Demo"}
+              >
                 {activeSimulation ? (
                   <span className="text-red-400 animate-pulse">⚠ INCIDENT SIMULATION ACTIVE — {activeSimulation.toUpperCase().replace("_", " ")}</span>
                 ) : (
