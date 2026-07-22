@@ -1,0 +1,318 @@
+/* ============================================================
+   CYBERDUDEBIVASH® — GM-FOOTER.CSS
+   Shared footer used across every static marketing page (about.html,
+   privacy.html, terms.html, services.html, etc.). These .gm-footer*
+   classes previously had no CSS definition anywhere in the codebase —
+   the footer rendered as an unstyled bullet list with the matrix
+   background bleeding through. This file gives it real styling,
+   matching the dark navy / cyan / emerald palette already established
+   by godlevel.css and the React SPA's own Footer component.
+   ============================================================ */
+
+.gm-footer {
+  position: relative;
+  background: #020810;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 242, 255, 0.15);
+}
+
+/* ---------- Eco strip (top thin bar of live platform links) ---------- */
+.gm-footer-eco-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+  padding: 12px 24px;
+  background: #050c14;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+.eco-strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.eco-strip-item:hover {
+  color: #0cf2ff;
+}
+
+.eco-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e676;
+  box-shadow: 0 0 6px #00e676;
+  flex-shrink: 0;
+  animation: gm-pulse 1.6s ease-in-out infinite;
+}
+
+.eco-dot-blue {
+  background: #0cf2ff;
+  box-shadow: 0 0 6px #0cf2ff;
+}
+
+.eco-dot-purple {
+  background: #a78bfa;
+  box-shadow: 0 0 6px #a78bfa;
+}
+
+.eco-strip-sep {
+  color: #334155;
+}
+
+@keyframes gm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ---------- Main grid ---------- */
+.gm-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 32px;
+  padding: 56px 24px 40px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 980px) {
+  .gm-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .gm-footer-grid {
+    grid-template-columns: 1fr;
+    padding: 40px 20px 32px;
+  }
+}
+
+.gm-footer-brand-col {
+  grid-column: span 2;
+}
+
+@media (max-width: 980px) {
+  .gm-footer-brand-col {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .gm-footer-brand-col {
+    grid-column: span 1;
+  }
+}
+
+.gm-footer-logo-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+.gm-footer-logo {
+  border-radius: 10px;
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.gm-footer-logo-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  background: radial-gradient(circle, rgba(12, 242, 255, 0.35) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.gm-footer-brand-name {
+  font-family: Orbitron, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.gm-footer-tagline {
+  color: #8a9ab8;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.gm-footer-cert-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gm-cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(12, 242, 255, 0.06);
+  border: 1px solid rgba(12, 242, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0cf2ff;
+  white-space: nowrap;
+}
+
+/* ---------- Link columns ---------- */
+.gm-footer-col-hdr {
+  font-family: Orbitron, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gm-hdr-cyan { color: #0cf2ff; border-bottom-color: rgba(12, 242, 255, 0.3); }
+.gm-hdr-purple { color: #a78bfa; border-bottom-color: rgba(167, 139, 250, 0.3); }
+.gm-hdr-orange { color: #ffab40; border-bottom-color: rgba(255, 171, 64, 0.3); }
+.gm-hdr-green { color: #00e676; border-bottom-color: rgba(0, 230, 118, 0.3); }
+
+.gm-footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.gm-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.gm-footer-link:hover {
+  color: #0cf2ff;
+}
+
+.gm-link-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #475569;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.gm-footer-link:hover .gm-link-dot {
+  background: #0cf2ff;
+}
+
+/* ---------- Social grid ---------- */
+.gm-social-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gm-social-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.gm-social-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.gm-soc-github:hover { color: #c9d1d9; border-color: rgba(201, 209, 217, 0.4); }
+.gm-soc-linkedin:hover { color: #0a66c2; border-color: rgba(10, 102, 194, 0.4); }
+.gm-soc-twitter:hover { color: #e7e9ea; border-color: rgba(231, 233, 234, 0.4); }
+.gm-soc-youtube:hover { color: #ff0000; border-color: rgba(255, 0, 0, 0.4); }
+.gm-soc-patreon:hover { color: #ff424d; border-color: rgba(255, 66, 77, 0.4); }
+.gm-soc-instagram:hover { color: #e1306c; border-color: rgba(225, 48, 108, 0.4); }
+
+/* ---------- Bottom bar ---------- */
+.gm-footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #000;
+}
+
+.gm-footer-bottom-line {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(12, 242, 255, 0.5), transparent);
+}
+
+.gm-fbl-glow {
+  position: absolute;
+  inset: 0;
+  filter: blur(2px);
+}
+
+.gm-footer-bottom-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gm-footer-copyright {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.gm-bottom-sep {
+  color: #334155;
+  margin: 0 6px;
+}
+
+.gm-bottom-link {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.gm-bottom-link:hover {
+  color: #0cf2ff;
+}
+
+.gm-footer-trademark {
+  color: #475569;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gm-tm-badge {
+  color: #0cf2ff;
+}
