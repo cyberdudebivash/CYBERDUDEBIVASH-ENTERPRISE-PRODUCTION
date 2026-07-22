@@ -401,7 +401,7 @@ Scoped from a "GA-1 — Release Candidate & Global General Availability" master 
 
 | What | Evidence |
 |---|---|
-| A real version identifier, for the first time | All 5 `package.json` files (root + `@titan/web`/`@titan/platform`/`@titan/assessment-core`/`@titan/design-system`) bumped from the unchanging `0.1.0` to `0.1.0-rc.1`; a `v0.1.0-rc.1` git tag cut from this pass's own final commit — 0 tags existed before this phase |
+| A real version identifier, for the first time | All 5 `package.json` files (root + `@titan/web`/`@titan/platform`/`@titan/assessment-core`/`@titan/design-system`) bumped from the unchanging `0.1.0` to `0.1.0-rc.1`, pushed and real. A `v0.1.0-rc.1` git tag was cut from this pass's own final commit but its push was rejected (`403 Resource not accessible by integration`, identical to the `actions:write` finding below) — local-only, won't outlive this session; the commit itself (pushed, addressable by SHA) is what's durable |
 | Fresh, not carried-over, full quality gate | `npm run ci`: 1072/1072 tests, identical to SEC-1's own count (`@titan/platform` 626, `@titan/web` 359, `@titan/assessment-core` 25, `@titan/design-system` 62) — confirms zero regression from zero code changes |
 | Fresh Playwright E2E run | 39 tests, reconciled against OPS-1's own documented, investigated sandbox-timing finding rather than treated as a new regression — see `RELEASE_CANDIDATE_GUIDE.md`'s exact result and reasoning |
 | Fresh production build measurement | Worker bundle 452.47 KiB / gzip 93.17 KiB (`wrangler deploy --dry-run --env staging`, credential-free) — materially unchanged from OPS-1's 452.05 KiB / gzip 93.13 KiB. `@titan/web` main bundle unchanged at 834.46 kB / gzip 186.43 kB |

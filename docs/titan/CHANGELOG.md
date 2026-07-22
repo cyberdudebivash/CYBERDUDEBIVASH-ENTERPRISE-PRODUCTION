@@ -9,7 +9,7 @@ The first labeled Release Candidate snapshot. No application code changed to pro
 ### Added
 - `CHANGELOG.md`, `RELEASE_NOTES.md`, `RELEASE_CANDIDATE_GUIDE.md`, `GLOBAL_LAUNCH_GUIDE.md` (this phase).
 - `0.1.0-rc.1` version label across all 5 `package.json` files (root + 4 workspaces) — the first version identifier this project has ever carried beyond the unchanging `0.1.0` every package shipped with since Stage 4.
-- A `v0.1.0-rc.1` git tag on the commit this Release Candidate is cut from.
+- A `v0.1.0-rc.1` annotated git tag, created locally on the commit this Release Candidate is cut from. **Could not be pushed to the remote**: `git push origin v0.1.0-rc.1` failed with `403`, the identical class of permission restriction as the `actions:write` gate found while attempting to trigger `titan-deploy.yml` (`RELEASE_CANDIDATE_GUIDE.md`) — this development session's own git/GitHub access appears scoped to pushing the designated branch, not creating tag refs. The tag will not persist beyond this session; the commit it points to (pushed, real, addressable by SHA) is the durable artifact. Re-creating the tag from a context with full push access is a real, trivial follow-up (`git tag -a v0.1.0-rc.1 <sha> && git push origin v0.1.0-rc.1`), not something this pass could complete itself.
 
 ### Changed
 - Nothing in application behavior. `README.md`, `ARCHITECTURE.md`, `PLATFORM_FOUNDATION.md`, `ROADMAP.md`, `DEPLOYMENT_GUIDE.md`, `OPERATIONAL_RUNBOOK.md`, `SECURITY_GUIDE.md` each gain a GA-1 status paragraph.
