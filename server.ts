@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { COMPLIANCE_DISCLOSURE } from "./src/constants/ecosystemData";
@@ -177,12 +178,31 @@ async function callOpenAICompatible(
   return data.choices?.[0]?.message?.content || "";
 }
 
+// Every request here fans out to a paid third-party AI API (Gemini/Groq/
+// DeepSeek/OpenRouter), so an unauthenticated, unrate-limited caller could
+// run up real cost. 20 requests per 15 minutes per IP is generous for
+// interactive chat use and cheap to raise later if it's ever too tight.
+const securityAnalyzeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many analysis requests. Please wait a few minutes and try again." },
+});
+
+const MAX_ANALYSIS_CONTENT_LENGTH = 8000;
+
 // 2. AI Cybersecurity Agent Analyzer — Multi-provider with fallback chain
-app.post("/api/security/analyze", async (req, res) => {
+app.post("/api/security/analyze", securityAnalyzeLimiter, async (req, res) => {
   const { type, content } = req.body;
 
-  if (!content || !content.trim()) {
+  if (!content || typeof content !== "string" || !content.trim()) {
     res.status(400).json({ error: "Content is required for AI security analysis." });
+    return;
+  }
+
+  if (content.length > MAX_ANALYSIS_CONTENT_LENGTH) {
+    res.status(413).json({ error: `Content too long — limit is ${MAX_ANALYSIS_CONTENT_LENGTH} characters.` });
     return;
   }
 

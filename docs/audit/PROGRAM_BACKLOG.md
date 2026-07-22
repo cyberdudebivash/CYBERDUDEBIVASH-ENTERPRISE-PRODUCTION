@@ -25,12 +25,11 @@ Living document — remaining work, prioritized. Updated in place as items resol
 
 | # | Item | Owner | Notes |
 |---|---|---|---|
-| 6 | `POST /api/security/analyze` has no rate limiting or request validation | Engineering | Not exposed via either live static deployment target today (only relevant if `server.ts` is ever run as a public Node process). `express-rate-limit` + payload validation, ~0.5–1 day |
 | 7 | `item.html` missing `rel="canonical"` | Engineering | 1 of 20 pages, ~5 minutes |
 | 8 | 41% of mobile interactive elements under the 24×24px WCAG tap-target minimum; one heading-concatenation accessibility regression | Engineering | Measured, not inferred (Playwright, mobile viewport). Component-level sizing rule + a <1hr heading fix |
 | 9 | No application logging, uptime monitoring, or error reporting | Engineering/Operational | Nothing currently implemented claims to provide this — a genuine gap for a live commercial site, not a regression |
 | 10 | SPA/static-page navigation duplication; `App.tsx` monolith (1,498 lines, 45 `useState` hooks) | Engineering | Pre-existing architectural debt, `docs/audit/history/PLATFORM_FEATURE_INVENTORY.md` §C and the Phase 0 architecture audit (`docs/audit/history/`) for full detail. Not a production blocker |
-| 12 | Decide whether to retire the SPA's in-memory About/Privacy/Terms/Copyright views (`LegalPages.tsx`) now that the footer links to the real static pages instead | Founder/Business owner | `RISK_REGISTER.md` risk 15. Currently orphaned-but-still-reachable via `?page=about` etc.; harmless as-is but a latent content-drift risk if left indefinitely |
+| 12 | Keep `LegalPages.tsx`'s in-app About/Privacy/Terms/Copyright content in sync with the real static pages when either is updated | Engineering (process note, not a fix) | `RISK_REGISTER.md` risk 15. Correction to this program's own earlier entry: the `?redirect=` handler that reaches these views is a deliberate 404-fallback for every page type, not orphaned code — do not remove it. The two copies just have no shared source, so a future content change to one should also touch the other |
 
 ## Phase 2 — gated, do not start early
 
@@ -53,3 +52,4 @@ Living document — remaining work, prioritized. Updated in place as items resol
 | Exploit Mitigation Lab shell/nginx/YARA generation had no input validation (injection risk via crafted IP/domain/hash) | Fixed — strict format validation added before interpolation |
 | Terms of Service and Copyright & IP had no dedicated page anywhere (SPA-only, unreachable by URL); Terms/Privacy links on 12 static pages pointed at raw `.md` files or nothing | Fixed — created `terms.html`/`copyright.html`, fixed all affected footer links, added to sitemap, pointed SPA footer at the real URLs |
 | The entire `.gm-footer*` class system (13 static pages) had zero CSS anywhere — every footer rendered as an unstyled bullet list with the matrix-rain canvas bleeding through | Fixed — added `assets/css/gm-footer.css`, linked into all 14 affected pages (13 + threat-intel.html's wrapper); also gave `compliance.html`/`dark-web-monitor.html`/`vciso.html` a real footer for the first time |
+| `POST /api/security/analyze` had no rate limiting or request validation despite fanning out to paid third-party AI APIs on every call | Fixed — `express-rate-limit` (20 req/15min per IP), plus content type and 8,000-char length validation. Functionally verified: 22 rapid requests correctly return 429 after the limit, oversized payload returns 413, non-string content returns 400 (previously would have thrown unhandled on `.trim()`), unrelated `/api/security/threat-feed` route confirmed unaffected |
