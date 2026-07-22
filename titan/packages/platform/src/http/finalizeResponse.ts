@@ -4,8 +4,16 @@ import { corsHeaders } from "./cors.js";
  * Strict default for every JSON API response (health, leads, assessments) —
  * this Worker never renders HTML on those routes, so there's no reason to
  * allow any resource type at all.
+ *
+ * SEC-1: `frame-ancestors` is listed explicitly, not left to `default-src`.
+ * Per the CSP3 spec, `frame-ancestors` is one of the few directives that does
+ * NOT fall back to `default-src` — `default-src 'none'` alone restricts
+ * zero framing. Clickjacking protection on every route was, until this
+ * addition, coming exclusively from the legacy `X-Frame-Options: DENY`
+ * header (still kept below, as defense in depth for the handful of older
+ * user agents that honor X-Frame-Options but not this CSP directive).
  */
-export const STRICT_CSP = "default-src 'none'";
+export const STRICT_CSP = "default-src 'none'; frame-ancestors 'none'";
 
 /**
  * Auth.js's own /api/auth/* actions (e.g. GET /api/auth/signin without a
@@ -42,7 +50,7 @@ export const STRICT_CSP = "default-src 'none'";
  * one additional, known origin is allowed, nothing else is.
  */
 export function authPagesCsp(allowedOrigin: string): string {
-  return `default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' ${allowedOrigin}`;
+  return `default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; base-uri 'self'; form-action 'self' ${allowedOrigin}; frame-ancestors 'none'`;
 }
 
 const BASE_SECURITY_HEADERS: Record<string, string> = {

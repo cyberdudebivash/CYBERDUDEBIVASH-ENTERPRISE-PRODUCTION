@@ -33,6 +33,14 @@ on:
         type: boolean
         default: false
 
+# SEC-1: explicit least-privilege GITHUB_TOKEN permissions, same reasoning as
+# titan-ci.yml — every real credential this workflow uses (CLOUDFLARE_API_TOKEN/
+# CLOUDFLARE_ACCOUNT_ID) is a repository/environment secret consumed directly
+# by wrangler, not the GitHub API; read-only `contents` (for checkout) is the
+# complete real requirement.
+permissions:
+  contents: read
+
 defaults:
   run:
     working-directory: titan
