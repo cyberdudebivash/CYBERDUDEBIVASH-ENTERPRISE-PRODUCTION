@@ -1242,6 +1242,31 @@ describe("handleRequest", () => {
       expect(csp).toContain("form-action 'self' http://localhost:5173");
     });
 
+    it("SEC-1: sets frame-ancestors 'none' on both the strict JSON-API policy and the relaxed Auth.js pages policy", async () => {
+      // frame-ancestors does not fall back to default-src (CSP3 spec) — this
+      // must be listed explicitly on every policy variant, or clickjacking
+      // protection would rely solely on the legacy X-Frame-Options header.
+      const jsonResponse = await handleRequest(
+        new Request("https://example.com/health"),
+        createTestDeps(),
+      );
+      expect(jsonResponse.headers.get("Content-Security-Policy")).toContain(
+        "frame-ancestors 'none'",
+      );
+
+      const authDeps: Dependencies = {
+        ...createTestDeps(),
+        authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+      };
+      const authResponse = await handleRequest(
+        new Request("https://example.com/api/auth/signin"),
+        authDeps,
+      );
+      expect(authResponse.headers.get("Content-Security-Policy")).toContain(
+        "frame-ancestors 'none'",
+      );
+    });
+
     it("rate-limits POST /api/auth/* separately from the general API limiter", async () => {
       const deps: Dependencies = {
         ...createTestDeps(),
@@ -1300,7 +1325,9 @@ describe("handleRequest", () => {
     );
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
     expect(response.headers.get("X-Frame-Options")).toBe("DENY");
-    expect(response.headers.get("Content-Security-Policy")).toBe("default-src 'none'");
+    expect(response.headers.get("Content-Security-Policy")).toBe(
+      "default-src 'none'; frame-ancestors 'none'",
+    );
     expect(response.headers.get("X-Request-Id")).toBeTruthy();
     expect(response.headers.get("Strict-Transport-Security")).toContain("max-age=");
     expect(response.headers.get("Permissions-Policy")).toBeTruthy();
@@ -4106,6 +4133,29 @@ describe("handleRequest", () => {
       );
       expect(response.status).toBe(503);
     });
+
+    it("SEC-1: rate-limits POST /api/portal/support once the limit is exceeded", async () => {
+      const deps = {
+        ...createAuthorizedTestDeps(),
+        rateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/portal/support", {
+            method: "POST",
+            headers: { cookie: caller.cookie, "cf-connecting-ip": "203.0.113.5" },
+            body: JSON.stringify({ subject: "Help", message: "Something's wrong" }),
+          }),
+          deps,
+        );
+
+      const first = await makeRequest();
+      expect(first.status).toBe(201);
+
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
+    });
   });
 
   describe("GET /api/commercial/plans (COM-1)", () => {
@@ -4344,6 +4394,33 @@ describe("handleRequest", () => {
       );
       expect(response.status).toBe(409);
     });
+
+    it("SEC-1: rate-limits POST /api/portal/commercial/subscription once the limit is exceeded", async () => {
+      const deps = {
+        ...createAuthorizedTestDeps(),
+        rateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/portal/commercial/subscription", {
+            method: "POST",
+            headers: {
+              cookie: caller.cookie,
+              "content-type": "application/json",
+              "cf-connecting-ip": "203.0.113.6",
+            },
+            body: JSON.stringify({ planId: "starter" }),
+          }),
+          deps,
+        );
+
+      const first = await makeRequest();
+      expect(first.status).toBe(201);
+
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
+    });
   });
 
   describe("PATCH /api/portal/commercial/subscription (COM-1)", () => {
@@ -4528,6 +4605,34 @@ describe("handleRequest", () => {
         deps,
       );
       expect(response.status).toBe(400);
+    });
+
+    it("SEC-1: rate-limits PATCH /api/portal/commercial/subscription once the limit is exceeded", async () => {
+      const deps = {
+        ...createAuthorizedTestDeps(),
+        rateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      await seedSubscription(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/portal/commercial/subscription", {
+            method: "PATCH",
+            headers: {
+              cookie: caller.cookie,
+              "content-type": "application/json",
+              "cf-connecting-ip": "203.0.113.7",
+            },
+            body: JSON.stringify({ status: "canceled" }),
+          }),
+          deps,
+        );
+
+      const first = await makeRequest();
+      expect(first.status).toBe(200);
+
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
     });
   });
 

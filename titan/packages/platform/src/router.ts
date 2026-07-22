@@ -665,14 +665,20 @@ async function route(
 
   // CPP-1: a real authenticated write — same Origin/CSRF check every other
   // authenticated write in this file already gets (PATCH /api/leads/:id,
-  // POST /api/organizations, etc.). No rate limit, matching this
-  // codebase's own convention that rate limiting exists specifically for
-  // the anonymous, unauthenticated POST routes (POST /api/leads,
-  // POST /api/assessments) — an authenticated write already requires a
-  // real session, a materially weaker abuse vector.
+  // POST /api/organizations, etc.). SEC-1: also rate-limited on the same
+  // general limiter POST /api/organizations already uses — a customer-
+  // facing write reachable by any organization member's own session is a
+  // real abuse surface (a compromised or malicious member's session could
+  // spam support requests), closing a real inconsistency this codebase's
+  // prior "authenticated writes never need rate limiting" reasoning had
+  // (SECURITY_ARCHITECTURE.md's rate limiting section has the full
+  // thresholds table).
   if (url.pathname === "/api/portal/support" && request.method === "POST") {
     if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
       return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
     }
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -709,11 +715,16 @@ async function route(
   }
 
   // COM-1: subscribing is a real authenticated write — same Origin/CSRF
-  // check every other authenticated write in this file already gets, same
-  // no-rate-limit reasoning as POST /api/portal/support (CPP-1).
+  // check every other authenticated write in this file already gets.
+  // SEC-1: rate-limited on the same general limiter as POST /api/organizations
+  // and POST /api/portal/support — see that route's own comment above for
+  // the reasoning (SECURITY_ARCHITECTURE.md has the full thresholds table).
   if (url.pathname === "/api/portal/commercial/subscription" && request.method === "POST") {
     if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
       return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
     }
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -725,6 +736,9 @@ async function route(
   if (url.pathname === "/api/portal/commercial/subscription" && request.method === "PATCH") {
     if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
       return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
     }
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);

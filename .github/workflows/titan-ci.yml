@@ -12,6 +12,15 @@ on:
       - "titan/**"
       - ".github/workflows/titan-ci.yml"
 
+# SEC-1: explicit least-privilege GITHUB_TOKEN permissions — this workflow
+# only ever checks out the repository and runs local quality gates; it never
+# calls the GitHub API for anything else (no PR comments, no releases, no
+# packages), so read-only `contents` is the complete real requirement, not
+# an arbitrary restriction. Matches the same explicit-permissions pattern
+# deploy.yml (the marketing site's own pipeline) already uses.
+permissions:
+  contents: read
+
 # Fully independent of deploy.yml: this workflow only ever touches titan/,
 # never installs the root package.json, and has no bridge/mirror step.
 # Nothing here can affect the marketing site's build or deployment.
