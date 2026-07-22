@@ -405,6 +405,20 @@ Where OPS-1 built the operational layer, SEC-1 audits and hardens the security p
 
 **Explicitly not built this phase:** any change to `auth/rbac.ts`, `auth/authorize.ts`, `auth/config.ts`, or the underlying role model — every one was read in full and verified correct, not touched. Rate limiting for the remaining seven Platform-Administrator-only writes (a deliberate scope decision, not an oversight — see above). A forced dependency downgrade to resolve SEC-1-01 (would regress `wrangler` by ~97 minor versions — deferred, not applied). Any real penetration test, security certification, or compliance audit — `THREAT_MODEL.md`'s penetration-test-preparation section and `COMPLIANCE_GUIDE.md` are real preparation material, explicitly not a claim that either has actually occurred. `SECURITY_ARCHITECTURE.md`/`THREAT_MODEL.md`/`COMPLIANCE_GUIDE.md` have the full detail.
 
+## Release Candidate & Global General Availability architecture (GA-1)
+
+Where every prior phase added a capability, GA-1 adds none — its own brief is explicit that its responsibility is "not feature development, not architectural redesign," but "delivering the final Release Candidate and preparing Project Titan for Global General Availability." This section documents a release-labeling and validation pass, not a new subsystem.
+
+**A Release Candidate is a tagged commit, not a new mechanism.** `0.1.0-rc.1` is the first version label and the first git tag this project has ever carried — every package under `titan/` shipped at an unchanging `0.1.0` from Stage 4 through SEC-1, and zero tags existed before this pass. No build tooling, versioning scheme, or release infrastructure was invented to support this: standard `package.json` semver plus a standard annotated git tag, the same mechanism any Node project already has available.
+
+**Every quality gate this project has ever defined was re-run fresh, not cited from a prior phase's report.** `npm run ci` (typecheck/lint/format/build/test), a full Playwright E2E run, and a credential-free `wrangler deploy --dry-run` bundle/binding check — see `RELEASE_CANDIDATE_GUIDE.md` for the exact numbers and how the E2E result reconciles against OPS-1's own documented sandbox-timing finding rather than being treated as a new, unexplained regression.
+
+**Four new documents, zero new code paths.** `CHANGELOG.md` (a distilled, chronological index of every phase, sourced from `DECISION_LOG.md`), `RELEASE_NOTES.md` (this Release Candidate's own user-facing summary), `RELEASE_CANDIDATE_GUIDE.md` (the audit and Go/No-Go decision), and `GLOBAL_LAUNCH_GUIDE.md` (a forward-looking, deliberately all-unchecked GA checklist — populating it with fabricated "done" states would violate this program's own anti-fabrication instructions as directly as inventing a metric would).
+
+**Never redesigned:** Authentication, Authorization, RBAC, the Assessment or Reporting Engines, the Administration or Customer Platforms, Production or Operations Infrastructure, the Security Platform, the database architecture, the Repository Pattern, or business logic — `git diff` against the pre-GA-1 baseline touches only `package.json` version fields and `docs/`, confirmed directly, not asserted.
+
+**Explicitly not built this phase:** a real deployment (still zero `titan-deploy.yml` runs, still no `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` anywhere this project has run) — this pass additionally confirmed a *second*, independent gate beyond the credentials one: this session's own GitHub integration lacks `actions:write`, so it cannot dispatch the workflow at all, a 403 encountered before the credential-check job would even run. Any load/stress test (no deployed environment, no real traffic pattern to design one against — `RELEASE_CANDIDATE_GUIDE.md`'s Workstream 5). Resolution of any of `ARCHITECTURE.md`'s own three still-open decisions (payments provider, email provider, DPDP legal review) — none is an engineering decision this pass could make. `RELEASE_CANDIDATE_GUIDE.md`/`GLOBAL_LAUNCH_GUIDE.md` have the full detail.
+
 ## Open decisions
 
 ### Decided (see `DECISION_LOG.md` for the full record)
