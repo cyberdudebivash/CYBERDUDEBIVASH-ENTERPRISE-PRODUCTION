@@ -146,14 +146,14 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
           <div className="pt-2 space-y-1.5">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-300 border-b border-slate-700/60 pb-2">Legal</h4>
             {[
-              { label: "About Us", view: "about" as const },
-              { label: "Privacy Policy", view: "privacy" as const },
-              { label: "Terms of Service", view: "terms" as const },
-              { label: "Copyright & IP", view: "copyright" as const },
+              { label: "About Us", url: "/about.html" },
+              { label: "Privacy Policy", url: "/privacy.html" },
+              { label: "Terms of Service", url: "/terms.html" },
+              { label: "Copyright & IP", url: "/copyright.html" },
             ].map(l => (
-              <button key={l.label} onClick={() => onNavigate(l.view)} className="block text-[12px] text-slate-300 font-medium hover:text-cyan-300 transition-colors cursor-pointer text-left font-sans">
+              <a key={l.label} href={l.url} className="block text-[12px] text-slate-300 font-medium hover:text-cyan-300 transition-colors text-left font-sans">
                 {l.label}
-              </button>
+              </a>
             ))}
           </div>
         </div>

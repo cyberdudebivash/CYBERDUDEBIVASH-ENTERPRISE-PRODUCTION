@@ -197,4 +197,22 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/privacy.html"/>
   </url>
 
+  <url>
+    <loc>https://www.cyberdudebivash.com/terms.html</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.35</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/terms.html"/>
+  </url>
+
+  <url>
+    <loc>https://www.cyberdudebivash.com/copyright.html</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.35</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.cyberdudebivash.com/copyright.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.cyberdudebivash.com/copyright.html"/>
+  </url>
+
 </urlset>
