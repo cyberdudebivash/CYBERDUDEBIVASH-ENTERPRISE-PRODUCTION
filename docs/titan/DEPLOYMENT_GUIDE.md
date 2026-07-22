@@ -60,6 +60,8 @@ Also wired into `packages/platform/package.json`: `db:backup:local`, `config:che
 | `npm run rollback:staging` / `:production` | **Yes** | Never run |
 | `.github/workflows/titan-deploy.yml` past its `config-and-secrets-check` job | **Yes** | Never completed a real run |
 
+**GA-1's own new finding: a second, independent gate exists before the credentials one.** Actually attempting to trigger `titan-deploy.yml` via `workflow_dispatch` from a development session requires the caller's own GitHub API token/App installation to hold `actions:write` on this repository — a development session's own integration was confirmed this pass to lack it (`403 Resource not accessible by integration`, encountered immediately, before `config-and-secrets-check` would even start). A real deploy therefore needs **both** a human with real repository access clicking "Run workflow" in the GitHub UI (or a token/App scoped with `actions:write`) **and** the `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` secrets below — neither alone is sufficient, and this document's own "First real deploy checklist" step 8 assumes the former without previously stating it explicitly.
+
 ## First real deploy checklist
 
 Everything below is a real, external, one-time action a future session (or a human) needs to take — none of it can be done from inside this repository alone:
