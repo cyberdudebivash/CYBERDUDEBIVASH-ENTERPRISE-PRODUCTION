@@ -18,3 +18,58 @@ migrations_dir = "migrations"
 # titan/apps/web's Vite dev server origin (Workstream 4). Override this the
 # day a real frontend origin exists — it is not a production value.
 ALLOWED_ORIGIN = "http://localhost:5173"
+
+# PRD-1: named environments. `wrangler`'s named-environment config does not
+# inherit the top-level `[[d1_databases]]`/`[vars]` blocks above — each
+# environment below restates its own bindings in full, verified structurally
+# via `wrangler deploy --dry-run --env staging|production` (DEPLOYMENT_GUIDE.md),
+# which resolves and prints every binding without needing real credentials.
+# Neither environment below has ever been deployed — every REPLACE_WITH_REAL_*
+# value is a real placeholder, not a fabricated id, exactly like the default
+# environment's own `database_id` above. A real deployment requires:
+#   1. `wrangler d1 create titan-platform-staging-db` (and `-production-db`) —
+#      real Cloudflare account required — then paste the real database_id here.
+#   2. A real frontend origin for ALLOWED_ORIGIN once one is deployed (Pages).
+#   3. AUTH_SECRET and any AUTH_GOOGLE_*/AUTH_GITHUB_* set as real `wrangler
+#      secret put` values per environment — secrets are never set in this
+#      file (SECURITY_GUIDE.md's "Secrets management" section).
+# See DEPLOYMENT_GUIDE.md for the full, step-by-step first-real-deploy
+# checklist this file's placeholders are the other half of.
+
+[env.staging]
+name = "titan-platform-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "titan-platform-staging-db"
+database_id = "REPLACE_WITH_REAL_STAGING_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[env.staging.vars]
+# ENVIRONMENT drives config/validateEnv.ts's production-tier checks (PRD-1) —
+# a real deploy to this environment with ALLOWED_ORIGIN still unset or still
+# a localhost value fails GET /api/operations/summary's configuration check
+# and logs a real startup warning, rather than silently serving traffic
+# misconfigured.
+ENVIRONMENT = "staging"
+ALLOWED_ORIGIN = "REPLACE_WITH_REAL_STAGING_FRONTEND_ORIGIN"
+
+[env.production]
+name = "titan-platform-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "titan-platform-production-db"
+database_id = "REPLACE_WITH_REAL_PRODUCTION_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "REPLACE_WITH_REAL_PRODUCTION_FRONTEND_ORIGIN"
+
+# PRD-1: Workers Logs, off by default (matches every environment above having
+# never been deployed) — real observability only becomes meaningful once real
+# traffic exists. Documented here, not enabled, so turning it on for a real
+# environment is a one-line, reviewable change rather than a rediscovery.
+# [env.production.observability]
+# enabled = true

@@ -83,6 +83,17 @@ export function titanEslintConfig({ tsconfigRootDir }) {
       },
     },
     {
+      // PRD-1: standalone Node.js CLI scripts (packages/platform/scripts/) —
+      // deployment/validation tooling run directly via `node scripts/x.mjs`,
+      // never bundled into the Worker or the browser app, so this needs real
+      // Node/fetch globals rather than browserGlobals (which assumes a
+      // window/DOM context none of these scripts have).
+      files: ["**/scripts/**/*.mjs"],
+      languageOptions: {
+        globals: { ...nodeGlobals, console: "readonly", URL: "readonly", fetch: "readonly" },
+      },
+    },
+    {
       // .wrangler/ is `wrangler dev`'s local build cache (gitignored,
       // packages/platform/.gitignore) — its generated bundles aren't this
       // codebase's source and shouldn't be linted as if they were. Found

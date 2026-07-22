@@ -3106,6 +3106,71 @@ describe("handleRequest", () => {
       const leads = body.services.find((service) => service.name === "leads");
       expect(leads).toMatchObject({ configured: true, ok: true });
     });
+
+    it("PRD-1: omits configuration entirely when the deployment didn't compute it (every existing deps object above)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as { configuration?: unknown };
+      expect(body.configuration).toBeUndefined();
+    });
+
+    it("PRD-1: surfaces a real, valid configValidation result, overriding overview.environment", async () => {
+      const deps = createAuthorizedTestDeps();
+      deps.configValidation = {
+        environment: "production",
+        isProductionTier: true,
+        valid: true,
+        issues: [],
+      };
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        overview: { environment: string };
+        configuration?: { environment: string; valid: boolean; issues: unknown[] };
+      };
+      expect(body.overview.environment).toBe("production");
+      expect(body.configuration).toEqual({
+        environment: "production",
+        isProductionTier: true,
+        valid: true,
+        issues: [],
+      });
+    });
+
+    it("PRD-1: surfaces real validation issues for a misconfigured non-local environment, never a fabricated pass", async () => {
+      const deps = createAuthorizedTestDeps();
+      deps.configValidation = {
+        environment: "staging",
+        isProductionTier: true,
+        valid: false,
+        issues: [{ field: "AUTH_SECRET", severity: "error", message: "AUTH_SECRET is not set" }],
+      };
+      const caller = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/operations/summary", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      const body = (await response.json()) as {
+        configuration?: { valid: boolean; issues: Array<{ field: string }> };
+      };
+      expect(body.configuration?.valid).toBe(false);
+      expect(body.configuration?.issues).toEqual([
+        expect.objectContaining({ field: "AUTH_SECRET" }),
+      ]);
+    });
   });
 
   describe("GET /api/reports/summary (EAP-8)", () => {

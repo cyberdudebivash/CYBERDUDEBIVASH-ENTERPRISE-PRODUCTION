@@ -13,7 +13,20 @@
     "test:watch": "vitest",
     "db:migrations:apply:local": "wrangler d1 migrations apply titan-platform-db --local",
     "db:seed:local": "wrangler d1 execute titan-platform-db --local --file=./seed.sql",
-    "dev": "wrangler dev"
+    "db:backup:local": "node scripts/db-backup-local.mjs",
+    "dev": "wrangler dev",
+    "config:check:staging": "node scripts/check-wrangler-config.mjs --env staging",
+    "config:check:production": "node scripts/check-wrangler-config.mjs --env production",
+    "secrets:validate:local": "node scripts/validate-secrets.mjs --local",
+    "secrets:validate:staging": "node scripts/validate-secrets.mjs --env staging",
+    "secrets:validate:production": "node scripts/validate-secrets.mjs --env production",
+    "smoke-test": "node scripts/smoke-test.mjs",
+    "deploy:dry-run:staging": "wrangler deploy --dry-run --env staging",
+    "deploy:dry-run:production": "wrangler deploy --dry-run --env production",
+    "release:staging": "node scripts/release.mjs --env staging",
+    "release:production": "node scripts/release.mjs --env production",
+    "rollback:staging": "wrangler rollback --env staging",
+    "rollback:production": "wrangler rollback --env production"
   },
   "dependencies": {
     "@auth/core": "0.41.2",

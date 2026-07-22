@@ -752,4 +752,54 @@ describe("worker (default export)", () => {
     const createdByResult = (await createdByResponse.json()) as { total: number };
     expect(createdByResult.total).toBe(1);
   });
+
+  it("PRD-1: wires a real env.ENVIRONMENT through validateProductionConfig to a real, invalid configuration report", async () => {
+    const env = {
+      DB: createDb(),
+      AUTH_SECRET: "test-secret",
+      ENVIRONMENT: "production",
+      // ALLOWED_ORIGIN deliberately left unset — a real, reachable
+      // misconfiguration this test proves worker.ts actually detects end to
+      // end, not just router.ts's own unit tests against a hand-built
+      // ConfigValidationResult.
+    };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const response = await worker.fetch(
+      new Request("https://example.com/api/operations/summary", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      overview: { environment: string };
+      configuration?: { valid: boolean; issues: Array<{ field: string }> };
+    };
+    expect(body.overview.environment).toBe("production");
+    expect(body.configuration?.valid).toBe(false);
+    expect(body.configuration?.issues).toContainEqual(
+      expect.objectContaining({ field: "ALLOWED_ORIGIN" }),
+    );
+  });
+
+  it("PRD-1: wires a real, fully-configured production env.* through to a valid configuration report", async () => {
+    const env = {
+      DB: createDb(),
+      AUTH_SECRET: "test-secret",
+      ENVIRONMENT: "production",
+      ALLOWED_ORIGIN: "https://app.example.com",
+    };
+    const cookie = await createPlatformAdministratorCookie(env.DB);
+
+    const response = await worker.fetch(
+      new Request("https://example.com/api/operations/summary", { headers: { cookie } }),
+      env,
+      noopContext,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      configuration?: { valid: boolean; issues: unknown[] };
+    };
+    expect(body.configuration).toMatchObject({ valid: true, issues: [] });
+  });
 });

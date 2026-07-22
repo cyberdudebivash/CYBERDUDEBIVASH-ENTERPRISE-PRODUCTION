@@ -507,6 +507,50 @@ COM-1 adds one customer-facing self-service page and one admin-facing management
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/commercial-platform.spec.ts`) that drives a real organization member through Plan Selection → trial start → upgrade (each persisting across a reload) and a Platform Administrator through Commercial Workspace search → Subscription Detail → an admin-only plan reassignment reflected immediately — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
+## Verifying PRD-1's production infrastructure locally
+
+Everything below is real and runnable today, entirely credential-free — none of it deploys anywhere. See `DEPLOYMENT_GUIDE.md` for the full picture (including what genuinely needs real Cloudflare credentials and hasn't been run) and `DISASTER_RECOVERY.md` for the full backup/restore drill this section's backup commands are drawn from.
+
+```bash
+cd titan/packages/platform
+
+# Structural config check — no credentials needed, catches an unfilled
+# wrangler.toml placeholder before a real deploy would even try
+npm run config:check:staging
+npm run config:check:production
+# Today: both correctly report unfilled REPLACE_WITH_REAL_* placeholders
+# and exit non-zero — expected, not a bug (DEPLOYMENT_GUIDE.md).
+
+# Local secrets check — real, reads .dev.vars directly
+npm run secrets:validate:local
+
+# Real wrangler dry-run — resolves and prints every binding for a named
+# environment without deploying or needing credentials
+npx wrangler deploy --dry-run --env staging
+npx wrangler deploy --dry-run --env production
+
+# Real local D1 backup
+npm run db:backup:local
+# Writes backups/titan-platform-db-local-<timestamp>.sql (gitignored)
+
+# Smoke test against a running wrangler dev (start it first: npm run dev)
+npm run smoke-test -- --base-url http://localhost:8787
+```
+
+`GET /api/operations/summary` (a Platform Administrator session, "Provisioning a local Platform Administrator" above) now also returns a `configuration` field once a deployment sets `env.ENVIRONMENT` — absent in ordinary local dev (nothing sets `ENVIRONMENT` there), so this is easiest to see for real via the `worker.test.ts` tests that construct an `env` with `ENVIRONMENT: "production"` directly, rather than through `wrangler dev` (which always runs the default, unnamed environment — `wrangler dev --env staging` would use the staging config, including its still-placeholder `database_id`, and is not something to run against real local state).
+
+### Restoring from a backup — the real, verified procedure
+
+Confirmed this phase via a full drill (`DISASTER_RECOVERY.md`): restore a full `wrangler d1 export` output **directly**, with no prior `db:migrations:apply:local` step — the export already contains the complete schema (including Wrangler's own internal migration-tracking table), and applying migrations first causes a real `UNIQUE constraint failed: d1_migrations.id` error on restore.
+
+```bash
+# Only if local state needs to be rebuilt from scratch first:
+rm -rf .wrangler/state/v3/d1
+
+# Restore — no migrations:apply step before this:
+npx wrangler d1 execute titan-platform-db --local --file=backups/<your-backup>.sql -y
+```
+
 ## Structured logs
 
 Every request produces one JSON log line (`observability/logger.ts`) with `level`, `message`, `timestamp`, and a `requestId` that also appears as an `X-Request-Id` response header — grep `wrangler dev`'s output for a specific `requestId` to trace one request, or for `"level":"error"` to find failures. Audit-write failures log at `error` level but never fail the request they describe (`router.ts`'s `recordAuditEvent`).
@@ -526,7 +570,10 @@ Every request produces one JSON log line (`observability/logger.ts`) with `level
 | `/portal` shows "No organization membership" for a session that already has a Platform Administrator grant | Expected, not a bug (CPP-1) — a Platform Administrator profile has `organization_id: NULL`; `/portal` requires a *separate* profile with a real, non-null `organization_id` | Grant that same user id an organization-member profile too (`POST /api/users/:id/profiles` with a real `organizationId`, "Provisioning a local Platform Administrator" step 10 above) — one user can hold both kinds of profile at once |
 | `GET`/`POST`/`PATCH /api/portal/commercial/subscription` or the admin commercial routes return 503 `not_configured` ("Subscriptions"/"Licenses are not configured") | Expected, not a bug (COM-1) — `Dependencies.subscriptions`/`.licenses` are optional fields, the same "not configured" pattern every other optional dependency in this codebase already follows; a deployment that hasn't wired one gets an honest 503, never a silent empty result | Confirm `worker.ts` constructs both `createD1SubscriptionRepository(env.DB)` and `createD1LicenseRepository(env.DB)` and passes them into `Dependencies` — both are wired unconditionally today, so seeing this in local dev usually means migrations `0011`/`0012` haven't been applied yet |
 | In a Playwright spec, clicking a client-side (React Router) link and then calling `page.waitForURL()` with a glob pattern times out even though the page visibly navigated | If this ever regresses: glob-pattern URL matching against client-side SPA navigation is unreliable in this stack — a real finding from `commercial-platform.spec.ts` (COM-1), not specific to the commercial routes themselves | Assert on the destination page's actual visible content (e.g. `await expect(page.getByRole("heading", {name: "..."})).toBeVisible()`) instead of `waitForURL`, the convention every spec in this suite (including the fixed one) now follows — see `DEVELOPER_GUIDE.md`'s Playwright section |
+| `wrangler d1 execute <name> --local` fails with `Couldn't find a D1 DB with the name or binding '<name>'` | Expected, not a bug (PRD-1) — unlike `d1 export`, `d1 execute --local` requires the target database name to already be registered in `wrangler.toml`'s `[[d1_databases]]` (or a named environment's own block); it does not create an arbitrary local SQLite file on the fly from any name you pass it | Use the exact `database_name` already configured (`titan-platform-db` for local dev), or add a real `[[d1_databases]]` entry first if you genuinely need a new local database |
+| `npm run secrets:validate:staging`/`:production` (or `titan-deploy.yml`'s `config-and-secrets-check` job) fails with "necessary to set a CLOUDFLARE_API_TOKEN environment variable" | Expected, not a bug (PRD-1) — this project has never had a Cloudflare account/API token in any environment it has run in; `wrangler secret list --env <tier>` genuinely needs one to authenticate | Not fixable locally — see `DEPLOYMENT_GUIDE.md`'s "First real deploy checklist" for the real, external steps that create one |
+| `GET /api/operations/summary`'s `configuration` field is missing even though `env.ENVIRONMENT` looks set | Check that `worker.ts` is actually the code path handling the request (not a hand-built `Dependencies` object in a test that never set `configValidation`) — the field is only ever present when `Dependencies.configValidation` is supplied, which only real `worker.fetch()` does automatically | Confirm via `GET /api/operations/summary` against a real `wrangler dev`/`worker.fetch()` call, not a router-level unit test that constructs its own bare `Dependencies` |
 
 ## What this runbook does not cover
 
-Deployment. There is no deployment runbook because there has never been a deployment — no Cloudflare account or credentials have existed in any environment this project has run in. Writing deployment steps now would be speculative instructions for infrastructure that doesn't exist; this document only covers what has actually been run and verified.
+**A real deployment.** `DEPLOYMENT_GUIDE.md` (PRD-1) now documents the real, structurally-verified deployment *automation* — named environments, a CI/CD pipeline, release-automation scripts, all actually run against real local state — and `DISASTER_RECOVERY.md`/`ENVIRONMENT_GUIDE.md` cover backup/recovery and environment configuration in the same evidence-only way this document does for local operation. None of the three describes a real deployment having happened, because one hasn't — no Cloudflare account or credentials have existed in any environment this project has run in. This document, and those three, only cover what has actually been run and verified.

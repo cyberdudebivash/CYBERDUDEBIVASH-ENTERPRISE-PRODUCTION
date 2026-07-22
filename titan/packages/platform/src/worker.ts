@@ -14,6 +14,7 @@ import { resolveAllowedOrigin } from "./http/cors.js";
 import { createLogger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
+import { validateProductionConfig } from "./config/validateEnv.js";
 
 export interface Env {
   DB: D1Database;
@@ -23,6 +24,12 @@ export interface Env {
   AUTH_GOOGLE_SECRET?: string;
   AUTH_GITHUB_ID?: string;
   AUTH_GITHUB_SECRET?: string;
+  /** PRD-1: set per named `wrangler.toml` environment (`[env.staging]`'s and
+   * [env.production]'s own `[vars]` blocks) — absent in local dev, matching
+   * every other var here. Read by `validateProductionConfig` below and
+   * surfaced honestly via `GET /api/operations/summary`'s `overview.environment`
+   * and new `configuration` field, never guessed from any other signal. */
+  ENVIRONMENT?: string;
 }
 
 // Module-scoped (not per-request): a Workers isolate is reused across many
@@ -35,6 +42,13 @@ const rateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
 const authRateLimiter = createInMemoryRateLimiter({ limit: 10, windowMs: 60_000 });
 const metrics = createInMemoryMetrics();
 
+// PRD-1: logged at most once per isolate (Workers has no separate startup
+// hook to fail at — env bindings only exist inside fetch(), see
+// config/validateEnv.ts's own doc comment) rather than once per request,
+// which would otherwise flood logs for every request a misconfigured
+// deployment ever receives.
+let configWarningLogged = false;
+
 // Not deployed anywhere (no Cloudflare account/credentials in this
 // environment — DECISION_LOG.md), but verified against a real local D1
 // instance via `wrangler dev` (Workstream 10 — local operational
@@ -45,6 +59,15 @@ export default {
     // deliberately, not two independently-configured origins that could
     // silently drift apart (EAP-1).
     const allowedOrigin = resolveAllowedOrigin(env.ALLOWED_ORIGIN);
+
+    const configValidation = validateProductionConfig(env);
+    if (!configValidation.valid && !configWarningLogged) {
+      configWarningLogged = true;
+      logger.error("production configuration invalid", {
+        environment: configValidation.environment,
+        issues: configValidation.issues,
+      });
+    }
 
     // AUTH_SECRET absent (no .dev.vars configured) means /api/auth/* simply
     // doesn't exist yet, rather than the Worker crashing on startup — the
@@ -83,6 +106,7 @@ export default {
       metrics,
       allowedOrigin,
       authConfig,
+      configValidation,
       // A trivial, real query — not a repository call — so a readiness
       // failure means "D1 itself is unreachable", not "this one table has a
       // problem". GET /health/ready turns this into a 503 the moment it

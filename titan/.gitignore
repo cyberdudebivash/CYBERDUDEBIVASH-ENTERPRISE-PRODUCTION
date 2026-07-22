@@ -7,3 +7,7 @@ coverage/
 .dev.vars
 test-results/
 playwright-report/
+# PRD-1: local wrangler d1 export output (backup round-trip testing,
+# packages/platform/scripts/) — real SQL dumps of local dev data, never
+# committed, same treatment as .dev.vars/.wrangler/.
+backups/

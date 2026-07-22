@@ -44,6 +44,7 @@ import {
 } from "./repositories/types.js";
 import { findPlan, isSelfServicePlan, PLAN_CATALOG, type Plan } from "./commercial/planCatalog.js";
 import { resolveEntitlements } from "./commercial/entitlements.js";
+import { DEFAULT_ENVIRONMENT_NAME, type ConfigValidationResult } from "./config/validateEnv.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
 import { authPagesCsp, finalizeResponse, STRICT_CSP } from "./http/finalizeResponse.js";
@@ -144,6 +145,14 @@ export interface Dependencies {
    * boundary ARCHITECTURE.md's audit confirmed holds everywhere else.
    */
   readinessCheck?: () => Promise<boolean>;
+  /** PRD-1: worker.ts's own `validateProductionConfig(env)` result, computed
+   * once per request from real `env.*` bindings — kept out of router.ts's
+   * own Cloudflare-binding knowledge, the same boundary `readinessCheck`
+   * above already established (a plain value in, not an `Env` import here).
+   * Optional so every existing test keeps working unchanged; when absent,
+   * `operationsSummary` falls back to the same honest
+   * "local development (never deployed)" constant it always has. */
+  configValidation?: ConfigValidationResult;
 }
 
 const defaultRateLimiter = createInMemoryRateLimiter({ limit: 30, windowMs: 60_000 });
@@ -2177,6 +2186,13 @@ export interface OperationsSummary {
   requestCounts: RecordedCount[];
   repositoryOperations: RecordedDuration[];
   overview: SystemOverview;
+  /** PRD-1: only present when `Dependencies.configValidation` is configured
+   * (worker.ts always supplies it) — never fabricated for a deployment that
+   * didn't actually run the check. Never includes a secret's real value,
+   * only field names and honest, non-sensitive diagnostic messages (the
+   * same disclosure posture `ServiceStatus.error` already established for
+   * this Platform-Administrator-only endpoint). */
+  configuration?: ConfigValidationResult;
 }
 
 // EAP-7: manually kept in sync with every package.json's own `version`
@@ -2186,11 +2202,16 @@ export interface OperationsSummary {
 // over a fragile new import path for one display field.
 const PLATFORM_VERSION = "0.1.0";
 
-// EAP-7: real, but only ever this one value — this project has never been
-// deployed anywhere in any environment it has run in (DECISION_LOG.md's
-// standing note, repeated every EAP phase), so "environment" has exactly
-// one honest answer today, not a placeholder for a tier that doesn't exist.
-const RUNTIME_ENVIRONMENT = "local development (never deployed)";
+// EAP-7: real, but only ever this one value until PRD-1 — this project had
+// never been deployed anywhere in any environment it had run in
+// (DECISION_LOG.md's standing note, repeated every EAP/CPP/COM phase), so
+// "environment" had exactly one honest answer, not a placeholder for a tier
+// that didn't exist. PRD-1 introduces named `wrangler.toml` environments
+// (`staging`/`production`, each setting a real `ENVIRONMENT` var) without
+// touching this fallback — a deployment that doesn't configure
+// `deps.configValidation` (every existing test, and any future caller that
+// doesn't need this) still gets this exact same honest default.
+const RUNTIME_ENVIRONMENT_FALLBACK = DEFAULT_ENVIRONMENT_NAME;
 
 // EAP-7: every repository this Worker registers, whether or not a given
 // deployment actually wires it (`ServiceStatus.configured` reports that per
@@ -2319,9 +2340,10 @@ async function operationsSummary(deps: Dependencies, ctx: RouteContext): Promise
     repositoryOperations: ctx.metrics.getDurations(),
     overview: {
       version: PLATFORM_VERSION,
-      environment: RUNTIME_ENVIRONMENT,
+      environment: deps.configValidation?.environment ?? RUNTIME_ENVIRONMENT_FALLBACK,
       modules: [...REGISTERED_MODULES],
     },
+    configuration: deps.configValidation,
   };
 
   return jsonSuccess(summary);

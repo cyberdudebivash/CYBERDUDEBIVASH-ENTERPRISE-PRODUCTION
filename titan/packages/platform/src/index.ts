@@ -89,6 +89,8 @@ export { createInMemoryLicenseRepository } from "./repositories/licenseRepositor
 export { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
 
 export type { Dependencies, ServiceStatus, SystemOverview, OperationsSummary } from "./router.js";
+export { validateProductionConfig, DEFAULT_ENVIRONMENT_NAME } from "./config/validateEnv.js";
+export type { EnvLike, ConfigIssue, ConfigValidationResult } from "./config/validateEnv.js";
 export type {
   OrganizationsReport,
   LeadsReport,
