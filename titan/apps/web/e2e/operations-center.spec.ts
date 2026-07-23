@@ -117,9 +117,13 @@ test.describe("Enterprise Operations Center (EAP-7)", () => {
     await expect(requestCountsTable.getByText("GET").first()).toBeVisible({ timeout: 10_000 });
     expect(await requestCountsTable.getByText("GET").count()).toBeGreaterThan(1);
 
-    // System Overview: real, static, verifiable facts.
-    await expect(page.getByText("0.1.0")).toBeVisible();
-    await expect(page.getByText(/local development/)).toBeVisible();
+    // System Overview: real, static, verifiable facts. Exact match on both:
+    // the Operational Summary banner above also renders "<environment> ·
+    // v<version>", so a loose match on either resolves to two elements.
+    await expect(page.getByText("0.1.0", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("local development (never deployed)", { exact: true }),
+    ).toBeVisible();
 
     // Background Operations: an honest note, not a fabricated queue view.
     await expect(
@@ -133,7 +137,10 @@ test.describe("Enterprise Operations Center (EAP-7)", () => {
     // breaches any documented threshold, so both the Alerts panel and the
     // summary banner report a real, computed "healthy" — not fabricated.
     await expect(page.getByText("Healthy — no alerts firing")).toBeVisible();
-    await expect(page.getByText("No alerts firing")).toBeVisible();
+    // Exact match: a loose search for "No alerts firing" also matches the
+    // banner's own "Healthy — no alerts firing" label above (Playwright's
+    // getByText is case-insensitive substring matching by default).
+    await expect(page.getByText("No alerts firing", { exact: true })).toBeVisible();
 
     // Request health: real error-rate/latency percentiles computed from
     // this isolate's own accumulated requests (never zero here — the page
