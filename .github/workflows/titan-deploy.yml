@@ -174,7 +174,14 @@ jobs:
       - name: Build (production)
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ vars.TITAN_API_BASE_URL }}
+          # Reads from secrets, not vars: TITAN_API_BASE_URL has repeatedly
+          # ended up saved as a repository secret in practice (2026-07-23),
+          # not a variable — the value itself isn't sensitive (it's a public
+          # Worker URL, and VITE_ vars get inlined into the public client
+          # bundle regardless of source), so consuming it from wherever it
+          # actually is set is simpler than relying on it always landing in
+          # the right one of two similarly-named GitHub UI tabs.
+          VITE_API_BASE_URL: ${{ secrets.TITAN_API_BASE_URL }}
 
       # ARCHITECTURE.md's own "Deployment target (Titan app)" row: Pages
       # hosts the app shell. Project name matches the environment so
@@ -205,4 +212,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run smoke test against the deployed Worker
-        run: node scripts/smoke-test.mjs --base-url ${{ vars.TITAN_API_BASE_URL }}
+        run: node scripts/smoke-test.mjs --base-url ${{ secrets.TITAN_API_BASE_URL }}
