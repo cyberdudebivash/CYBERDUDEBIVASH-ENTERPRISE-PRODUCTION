@@ -1,5 +1,6 @@
 import type { AuthConfig } from "@auth/core";
 import { Auth } from "@auth/core";
+import { buildVerifyConfirmPage } from "./auth/verifyConfirmPage.js";
 import type { QuestionBank, RiskLevel } from "@titan/assessment-core";
 import { dpdpV1, scoreAssessment } from "@titan/assessment-core";
 import type {
@@ -319,6 +320,15 @@ async function route(
 
   if (url.pathname === "/health/ready" && request.method === "GET") {
     return readinessResponse(deps, ctx);
+  }
+
+  // Checked before the generic /api/auth/* passthrough below — otherwise
+  // Auth.js's own catch-all would swallow this path and 404 it (it has no
+  // "verify-confirm" action of its own). Gated behind deps.authConfig for
+  // the same reason as the rest of /api/auth/*: no auth configured means
+  // this page has nothing to confirm and shouldn't exist either.
+  if (url.pathname === "/api/auth/verify-confirm" && request.method === "GET" && deps.authConfig) {
+    return verifyConfirmResponse(url);
   }
 
   if (url.pathname.startsWith("/api/auth/") && deps.authConfig) {
@@ -1012,6 +1022,26 @@ function healthResponse(): Response {
     status: "ok",
     service: "titan-platform",
     timestamp: new Date().toISOString(),
+  });
+}
+
+/** See `auth/verifyConfirmUrl.ts`'s doc comment for why this route exists.
+ * `token`/`email`/`callbackUrl` are read straight from the query string —
+ * this handler never looks them up or validates them against D1, since it
+ * has no side effect to protect: it only builds an href for a button. Real
+ * validation happens exactly where it already did before this page
+ * existed, in Auth.js's own `/api/auth/callback/email` handler once a human
+ * actually clicks through. */
+function verifyConfirmResponse(url: URL): Response {
+  const html = buildVerifyConfirmPage({
+    origin: url.origin,
+    token: url.searchParams.get("token") ?? "",
+    email: url.searchParams.get("email") ?? "",
+    callbackUrl: url.searchParams.get("callbackUrl") ?? "",
+  });
+  return new Response(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
   });
 }
 

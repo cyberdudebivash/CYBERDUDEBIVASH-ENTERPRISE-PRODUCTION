@@ -6,6 +6,7 @@ import { D1Adapter } from "@auth/d1-adapter";
 import type { D1Database } from "@cloudflare/workers-types";
 import { createLogger, type Logger } from "../observability/logger.js";
 import { sendMagicLinkEmail, type ResendCredentials } from "./resendEmail.js";
+import { toConfirmUrl } from "./verifyConfirmUrl.js";
 
 export interface OAuthCredentials {
   clientId: string;
@@ -96,7 +97,18 @@ export function createAuthConfig(options: AuthConfigOptions): AuthConfig {
         name: "Email",
         from: resendCredentials.from,
         async sendVerificationRequest({ identifier, url, expires }) {
-          await sendMagicLinkEmail({ to: identifier, url, expires }, resendCredentials, logger);
+          // Never email Auth.js's raw callback URL directly — see
+          // verifyConfirmUrl.ts's doc comment for the real production
+          // incident (a link-safety scanner consuming the token seconds
+          // after send) this rewrite exists to fix. Dev-mode logging below
+          // deliberately keeps the raw URL: local dev has no scanner in the
+          // loop, and a developer pasting the logged link expects it to
+          // work in one step.
+          await sendMagicLinkEmail(
+            { to: identifier, url: toConfirmUrl(url), expires },
+            resendCredentials,
+            logger,
+          );
         },
       }
     : {

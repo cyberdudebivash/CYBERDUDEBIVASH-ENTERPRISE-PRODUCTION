@@ -138,6 +138,37 @@ describe("createAuthConfig", () => {
         false,
       );
     });
+
+    it("emails the safe verify-confirm link, never Auth.js's raw token-consuming callback URL", async () => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_abc" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        resend: { apiKey: "re_test", from: "no-reply@cyberdudebivash.com" },
+      });
+      const emailProvider = config.providers.find((p) => "id" in p && p.id === "email") as
+        EmailConfig | undefined;
+
+      await emailProvider!.sendVerificationRequest({
+        identifier: "asha@acme.in",
+        url: "https://example.com/api/auth/callback/email?token=abc&email=asha%40acme.in",
+        expires: new Date(Date.now() + 3600_000),
+        provider: emailProvider!,
+        token: "test-token",
+        theme: {},
+        request: new Request("https://example.com/api/auth/callback/email?token=abc"),
+      });
+
+      const [, requestInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+      const body = JSON.parse(requestInit.body as string) as { html: string; text: string };
+      expect(body.html).toContain("/api/auth/verify-confirm?token=abc");
+      expect(body.text).toContain("/api/auth/verify-confirm?token=abc");
+      expect(body.html).not.toContain("/api/auth/callback/email");
+      expect(body.text).not.toContain("/api/auth/callback/email");
+    });
   });
 
   describe("redirect callback (EAP-1)", () => {

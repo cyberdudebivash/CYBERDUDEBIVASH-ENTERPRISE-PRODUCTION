@@ -1322,6 +1322,66 @@ describe("handleRequest", () => {
       const second = await makeRequest();
       expect(second.status).toBe(200);
     });
+
+    describe("GET /api/auth/verify-confirm", () => {
+      it("returns real HTML with a callback href built from the query params — not JSON, and not swallowed by the general Auth.js passthrough", async () => {
+        // If this route were swallowed by the generic /api/auth/* -> Auth()
+        // passthrough below it, Auth.js would 404 it (it has no
+        // "verify-confirm" action of its own) instead of returning this.
+        const deps: Dependencies = {
+          ...createTestDeps(),
+          authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        };
+        const response = await handleRequest(
+          new Request(
+            "https://example.com/api/auth/verify-confirm?token=abc123&email=asha%40acme.in&callbackUrl=https%3A%2F%2Fexample.com",
+          ),
+          deps,
+        );
+        expect(response.status).toBe(200);
+        expect(response.headers.get("Content-Type")).toContain("text/html");
+        const html = await response.text();
+        expect(html).toContain(
+          "https://example.com/api/auth/callback/email?token=abc123&amp;email=asha%40acme.in&amp;callbackUrl=https%3A%2F%2Fexample.com",
+        );
+      });
+
+      it("renders a graceful 'incomplete link' state instead of a broken button when token is missing", async () => {
+        const deps: Dependencies = {
+          ...createTestDeps(),
+          authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        };
+        const response = await handleRequest(
+          new Request("https://example.com/api/auth/verify-confirm"),
+          deps,
+        );
+        expect(response.status).toBe(200);
+        const html = await response.text();
+        expect(html.toLowerCase()).toContain("incomplete");
+      });
+
+      it("returns 404 when no authConfig is supplied, matching every other /api/auth/* route", async () => {
+        const response = await handleRequest(
+          new Request("https://example.com/api/auth/verify-confirm?token=abc"),
+          createTestDeps(),
+        );
+        expect(response.status).toBe(404);
+      });
+
+      it("uses the relaxed style-src CSP, matching Auth.js's own HTML pages on this same path prefix", async () => {
+        const deps: Dependencies = {
+          ...createTestDeps(),
+          authConfig: createAuthConfig({ db: createAuthDb(), secret: "test-secret" }),
+        };
+        const response = await handleRequest(
+          new Request("https://example.com/api/auth/verify-confirm?token=abc"),
+          deps,
+        );
+        expect(response.headers.get("Content-Security-Policy")).toContain(
+          "style-src 'unsafe-inline'",
+        );
+      });
+    });
   });
 
   it("returns 404 for an unmatched route", async () => {
