@@ -39,6 +39,7 @@ export interface PortalCommercialSummary {
     trialEndsAt: string | null;
     currentPeriodEnd: string | null;
     canceledAt: string | null;
+    currency: string;
   } | null;
   plan: Plan | null;
   license: { id: string; seatLimit: number; status: string; expiresAt: string | null } | null;
@@ -56,11 +57,65 @@ export function createPortalSubscription(
   return postJson("/api/portal/commercial/subscription", { planId });
 }
 
+/** `status` only ever accepts `"canceled"` now — reactivating a canceled/
+ * expired subscription requires a real Razorpay checkout
+ * (`createRazorpaySubscriptionCheckout`/`verifyRazorpaySubscriptionPayment`
+ * below), not this route (`router.ts`'s `validatePortalSubscriptionPatch`
+ * removed the free self-service "active" transition once real payments
+ * existed — see its own doc comment and this repository's DECISION_LOG.md,
+ * 2026-07-23 production-readiness audit entry). */
 export function updatePortalSubscription(patch: {
   planId?: string;
-  status?: "canceled" | "active";
+  status?: "canceled";
 }): Promise<SubscriptionRecord> {
   return patchJson<SubscriptionRecord>("/api/portal/commercial/subscription", patch);
+}
+
+/** Real recurring billing (Razorpay Subscriptions API, not one-time
+ * Orders) — the shared checkout-creation call both the DPDP Scanner paywall
+ * and the Customer Portal's own Subscription page (first subscribe *and*
+ * reactivating a canceled/expired subscription) go through.
+ * `currency` is the customer's own choice, never guessed or defaulted
+ * client-side — `SUPPORTED_CURRENCIES` (`@titan/platform`) is this
+ * function's own contract for what's valid. */
+export interface RazorpaySubscriptionCheckoutResponse {
+  providerSubscriptionId: string;
+  amountPaise: number;
+  currency: string;
+  /** Razorpay's own publishable key id — safe to use client-side to open
+   * Checkout (never the key secret, which never leaves the Worker). */
+  keyId: string;
+  transactionId: string;
+}
+
+export function createRazorpaySubscriptionCheckout(
+  planId: string,
+  currency: string,
+): Promise<RazorpaySubscriptionCheckoutResponse> {
+  return postJson<RazorpaySubscriptionCheckoutResponse>(
+    "/api/portal/commercial/razorpay/subscriptions",
+    { planId, currency },
+  );
+}
+
+export interface VerifyRazorpaySubscriptionPaymentInput {
+  razorpay_subscription_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export interface VerifyRazorpaySubscriptionPaymentResponse {
+  verified: boolean;
+  transactionId: string;
+}
+
+export function verifyRazorpaySubscriptionPayment(
+  input: VerifyRazorpaySubscriptionPaymentInput,
+): Promise<VerifyRazorpaySubscriptionPaymentResponse> {
+  return postJson<VerifyRazorpaySubscriptionPaymentResponse>(
+    "/api/portal/commercial/razorpay/verify",
+    input,
+  );
 }
 
 export function searchCommercialSubscriptions(

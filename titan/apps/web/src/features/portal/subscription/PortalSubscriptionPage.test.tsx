@@ -190,6 +190,13 @@ describe("PortalSubscriptionPage", () => {
 
     await user.click(await screen.findByRole("button", { name: "Cancel subscription" }));
 
-    expect(await screen.findByRole("button", { name: "Renew subscription" })).toBeInTheDocument();
+    // Reactivating now requires a real Razorpay checkout (see
+    // commercialApi.ts's updatePortalSubscription doc comment) — this only
+    // proves the real action surfaces, not the checkout flow itself, which
+    // is the shared useRazorpaySubscriptionCheckout hook's own tests'
+    // job (exercised end to end via DpdpScannerPage.test.tsx).
+    expect(
+      await screen.findByRole("button", { name: "Reactivate subscription" }),
+    ).toBeInTheDocument();
   });
 });

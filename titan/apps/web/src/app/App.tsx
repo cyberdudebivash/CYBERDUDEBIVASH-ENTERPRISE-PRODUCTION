@@ -21,6 +21,7 @@ import { OperationsWorkspacePage } from "../features/admin/operations/Operations
 import { ReportingWorkspacePage } from "../features/admin/reporting/ReportingWorkspacePage.js";
 import { CommercialWorkspacePage } from "../features/admin/commercial/CommercialWorkspacePage.js";
 import { CommercialSubscriptionDetailPage } from "../features/admin/commercial/CommercialSubscriptionDetailPage.js";
+import { SupportRequestWorkspacePage } from "../features/admin/support/SupportRequestWorkspacePage.js";
 import { PortalLayout } from "../features/portal/layout/PortalLayout.js";
 import { PortalDashboardPage } from "../features/portal/dashboard/PortalDashboardPage.js";
 import { PortalAssessmentsPage } from "../features/portal/assessments/PortalAssessmentsPage.js";
@@ -110,6 +111,13 @@ export function AppRoutes() {
             instead of a separate, redundant list of the same rows. */}
         <Route path="commercial" element={<CommercialWorkspacePage />} />
         <Route path="commercial/:id" element={<CommercialSubscriptionDetailPage />} />
+        {/* Admin Support Queue (2026-07-23 production-readiness audit,
+            DECISION_LOG.md's Workstream 15) — same Platform-Administrator-
+            gated-server-side pattern as every module above, not a
+            route-level block. No detail route: the only real admin action
+            (resolve/reopen) is an inline table action, not a per-record
+            page. */}
+        <Route path="support-requests" element={<SupportRequestWorkspacePage />} />
       </Route>
       {/* CPP-1: the Enterprise Customer Portal — a real Organization Member/
           Admin/Owner viewing their own organization's data, not a new role

@@ -12,6 +12,13 @@ export interface PlanCardProps {
   onSelect?: () => void;
   selectLabel?: string;
   disabled?: boolean;
+  /** Real, multi-currency checkout: when the caller has already resolved a
+   * real chargeable amount for a specific currency (`findPlanPricing`),
+   * this replaces `plan.priceDisplay`'s static text with the actual price
+   * the customer is about to be charged in their chosen currency. Omitted
+   * entirely (the admin Commercial Detail page, which has no currency
+   * selection of its own) falls back to `priceDisplay` unchanged. */
+  priceOverride?: string;
 }
 
 /** COM-1: one plan from the real, code-defined catalog (`PLAN_CATALOG`) —
@@ -21,7 +28,14 @@ export interface PlanCardProps {
  * current plan, with no action). `priceDisplay` is exactly that — display
  * text, never a real chargeable amount (`commercial/planCatalog.ts`'s own
  * doc comment). */
-export function PlanCard({ plan, isCurrent, onSelect, selectLabel, disabled }: PlanCardProps) {
+export function PlanCard({
+  plan,
+  isCurrent,
+  onSelect,
+  selectLabel,
+  disabled,
+  priceOverride,
+}: PlanCardProps) {
   return (
     <div
       className={`titan-plan-card${isCurrent ? " titan-plan-card--current" : ""}`}
@@ -31,7 +45,7 @@ export function PlanCard({ plan, isCurrent, onSelect, selectLabel, disabled }: P
         <h3 className="titan-plan-card__name">{plan.name}</h3>
         {isCurrent && <Badge tone="info">Current plan</Badge>}
       </div>
-      <p className="titan-plan-card__price">{plan.priceDisplay}</p>
+      <p className="titan-plan-card__price">{priceOverride ?? plan.priceDisplay}</p>
       <ul className="titan-plan-card__entitlements">
         <li>
           <EntitlementBadge label={`${plan.entitlements.maxSeats} seats`} enabled />

@@ -53,7 +53,7 @@ describe("PortalLayout", () => {
     expect(screen.getByText("Dashboard content")).toBeInTheDocument();
   });
 
-  it("shows an honest 'no organization membership' message instead of the routed content for a caller with no organization profile", async () => {
+  it("shows the real self-service onboarding form instead of the routed content for a caller with no organization profile", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -67,7 +67,8 @@ describe("PortalLayout", () => {
     );
     renderPortalLayout();
 
-    expect(await screen.findByText("No organization membership")).toBeInTheDocument();
+    expect(await screen.findByText("Create your organization")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create organization" })).toBeInTheDocument();
     expect(screen.queryByText("Dashboard content")).not.toBeInTheDocument();
     // The nav itself is empty too — hidden entirely, not shown-then-blocked.
     expect(screen.queryByRole("link", { name: "Dashboard" })).not.toBeInTheDocument();

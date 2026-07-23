@@ -18,6 +18,21 @@ export function fetchPortalOrganization(): Promise<OrganizationRecord> {
   return getJson<OrganizationRecord>("/api/portal/organization");
 }
 
+/** Self-service onboarding — the real fix for the production incident this
+ * codebase's own DECISION_LOG.md (2026-07-23) traced to a signed-in
+ * customer having no organization and no path to one without a Platform
+ * Administrator acting on their account. `PortalLayout` calls this when
+ * `useSession()` reflects a real session with zero organization
+ * memberships, instead of the dead-end "contact your administrator"
+ * message it used to show unconditionally. */
+export function createPortalOrganization(input: {
+  name: string;
+  industry?: string | null;
+  region?: string | null;
+}): Promise<{ organization: OrganizationRecord; profile: unknown }> {
+  return postJson("/api/portal/organization", input);
+}
+
 export function fetchPortalAssessments(
   options: { page?: number; pageSize?: number } = {},
 ): Promise<AssessmentSearchResult> {

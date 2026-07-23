@@ -12,6 +12,8 @@ function makeSubscription(overrides: Partial<SubscriptionRecord> = {}): Subscrip
     status: "active",
     trialEndsAt: null,
     currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+    currency: "INR",
+    providerSubscriptionId: null,
     createdAt: "2026-07-20T00:00:00.000Z",
     updatedAt: "2026-07-20T00:00:00.000Z",
     canceledAt: null,

@@ -3,12 +3,15 @@ import type { AssessmentRecord } from "@titan/platform";
 import { getJson, postJson } from "../../../lib/apiClient.js";
 
 /**
- * `@titan/web`'s side of the DPDP Compliance Scanner's real payment gate —
- * one file, the same one-file-per-feature scope `portalApi.ts`/
- * `commercialApi.ts` already establish. Every function here calls a real
- * `/api/portal/*` route (`router.ts`); nothing here computes a price or a
- * risk score itself — both are server-resolved, the same discipline
- * `createPortalSubscription` already established for plan pricing.
+ * `@titan/web`'s side of the DPDP Compliance Scanner's own routes — one
+ * file, the same one-file-per-feature scope `portalApi.ts`/
+ * `commercialApi.ts` already establish. Real Razorpay checkout itself
+ * (`createRazorpaySubscriptionCheckout`/`verifyRazorpaySubscriptionPayment`)
+ * lives in `commercialApi.ts` instead, not here — it's a general Commercial
+ * Platform concern `PortalSubscriptionPage` shares, not scanner-specific,
+ * the same "the API module matches the backend module it calls, not the
+ * page that happens to render it" reasoning `PlanCard`'s own cross-feature
+ * reuse already establishes.
  */
 
 export interface DpdpScannerAccess {
@@ -17,37 +20,6 @@ export interface DpdpScannerAccess {
 
 export function fetchDpdpScannerAccess(): Promise<DpdpScannerAccess> {
   return getJson<DpdpScannerAccess>("/api/portal/dpdp-scanner/access");
-}
-
-export interface RazorpayOrderResponse {
-  orderId: string;
-  amountPaise: number;
-  currency: string;
-  /** Razorpay's own publishable key id — safe to use client-side to open
-   * Checkout (never the key secret, which never leaves the Worker). */
-  keyId: string;
-  transactionId: string;
-}
-
-export function createDpdpScannerOrder(planId: string): Promise<RazorpayOrderResponse> {
-  return postJson<RazorpayOrderResponse>("/api/portal/commercial/razorpay/orders", { planId });
-}
-
-export interface VerifyRazorpayPaymentInput {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-}
-
-export interface VerifyRazorpayPaymentResponse {
-  verified: boolean;
-  transactionId: string;
-}
-
-export function verifyDpdpScannerPayment(
-  input: VerifyRazorpayPaymentInput,
-): Promise<VerifyRazorpayPaymentResponse> {
-  return postJson<VerifyRazorpayPaymentResponse>("/api/portal/commercial/razorpay/verify", input);
 }
 
 /** Runs and saves a real scan — the exact same `AssessmentRecord` shape the

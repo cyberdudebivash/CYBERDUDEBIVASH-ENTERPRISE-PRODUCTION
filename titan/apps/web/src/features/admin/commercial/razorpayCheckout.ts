@@ -7,8 +7,15 @@
  * `pdfReport.ts`'s own dynamic `import("jspdf")` already established.
  */
 
+/** Real recurring billing (Razorpay Subscriptions API): subscription-mode
+ * checkout's own documented success-callback shape — genuinely different
+ * from one-time Orders-mode (`razorpay_subscription_id`, never
+ * `razorpay_order_id` — Razorpay's Subscriptions Checkout never produces an
+ * order id at all, verified directly against Razorpay's own documented
+ * contract, `commercial/razorpay.ts`'s own doc comment on the backend
+ * side). */
 export interface RazorpaySuccessResponse {
-  razorpay_order_id: string;
+  razorpay_subscription_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
 }
@@ -17,7 +24,10 @@ export interface RazorpayCheckoutOptions {
   key: string;
   amount: number;
   currency: string;
-  order_id: string;
+  /** Subscription-mode checkout — opens against a real recurring mandate,
+   * not a one-time order (`router.ts`'s `createRazorpaySubscriptionCheckout`
+   * on the backend side). */
+  subscription_id: string;
   name: string;
   description?: string;
   handler: (response: RazorpaySuccessResponse) => void;

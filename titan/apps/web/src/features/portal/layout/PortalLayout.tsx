@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { Alert } from "@titan/design-system";
 import { Header } from "../../../components/Header.js";
 import { Sidebar } from "../../../components/Sidebar.js";
 import { Footer } from "../../../components/Footer.js";
@@ -8,6 +7,7 @@ import { useSession } from "../../admin/auth/SessionContext.js";
 import { signOutUrl } from "../../admin/auth/authUrls.js";
 import { Breadcrumbs } from "../../admin/layout/Breadcrumbs.js";
 import { hasPortalOrganizationMembership, portalNavItems } from "./portalNavItems.js";
+import { PortalOnboarding } from "./PortalOnboarding.js";
 
 /**
  * The Customer Portal's own shell — reuses the exact same Header/Sidebar/
@@ -19,9 +19,13 @@ import { hasPortalOrganizationMembership, portalNavItems } from "./portalNavItem
  * `"authenticated"` — a real session is not the same thing as a real
  * organization membership, though, so this layout (not `RequireAuth`,
  * which is deliberately role-agnostic) is where that honest distinction is
- * drawn: an authenticated caller with no organization membership sees a
- * clear, real message instead of a portal page that would just 403 every
- * request it made.
+ * drawn: an authenticated caller with no organization membership sees
+ * `PortalOnboarding` (a real, self-service "create your organization" form)
+ * instead of a portal page that would just 403 every request it made. This
+ * used to be a dead-end informational message pointing the customer at an
+ * administrator who might not exist — see `PortalOnboarding`'s own doc
+ * comment and this repository's `DECISION_LOG.md` (2026-07-23) for why that
+ * was a real, live production incident, not a hypothetical gap.
  */
 export function PortalLayout() {
   const session = useSession();
@@ -39,14 +43,7 @@ export function PortalLayout() {
         <div className="titan-layout__content">
           <main id="main-content">
             <Breadcrumbs />
-            {hasMembership ? (
-              <Outlet />
-            ) : (
-              <Alert variant="info" title="No organization membership">
-                Your account isn&apos;t linked to an organization yet, so there&apos;s nothing to
-                show here. Contact your organization&apos;s administrator to be added.
-              </Alert>
-            )}
+            {hasMembership ? <Outlet /> : <PortalOnboarding />}
           </main>
         </div>
       </div>

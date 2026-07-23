@@ -62,7 +62,7 @@ describe("razorpayCheckout", () => {
       key: "rzp_test_fake",
       amount: 999_900,
       currency: "INR",
-      order_id: "order_1",
+      subscription_id: "sub_1",
       name: "CYBERDUDEBIVASH",
       handler: () => {},
     };

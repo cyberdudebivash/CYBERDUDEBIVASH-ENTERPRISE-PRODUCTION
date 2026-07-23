@@ -1,9 +1,12 @@
 import { useState } from "react";
+import type { Currency } from "@titan/platform";
 import { Alert, Button, LoadingSkeleton, Panel } from "@titan/design-system";
 import { PlanCard } from "../../admin/commercial/PlanCard.js";
 import { SeatUsageMeter } from "../../admin/commercial/SeatUsageMeter.js";
 import { SubscriptionStatusBadge } from "../../admin/commercial/SubscriptionStatusBadge.js";
 import { EntitlementBadge } from "../../admin/commercial/EntitlementBadge.js";
+import { CurrencySelect } from "../../admin/commercial/CurrencySelect.js";
+import { useRazorpaySubscriptionCheckout } from "../../admin/commercial/useRazorpaySubscriptionCheckout.js";
 import {
   createPortalSubscription,
   updatePortalSubscription,
@@ -27,6 +30,12 @@ export function PortalSubscriptionPage() {
   const { summary, plans, reload } = usePortalSubscription();
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currency, setCurrency] = useState<Currency>("INR");
+  const {
+    submittingPlanId: reactivatingPlanId,
+    checkoutError: reactivateError,
+    start: startReactivateCheckout,
+  } = useRazorpaySubscriptionCheckout(reload);
 
   async function subscribe(planId: string) {
     setActionError(null);
@@ -69,18 +78,12 @@ export function PortalSubscriptionPage() {
     }
   }
 
-  async function renew() {
-    setActionError(null);
-    setIsSubmitting(true);
-    try {
-      await updatePortalSubscription({ status: "active" });
-      reload();
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Could not renew your subscription.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  // Reactivating a canceled/expired subscription is real recurring billing
+  // now, not a free self-service PATCH — see `commercialApi.ts`'s
+  // `updatePortalSubscription` doc comment for why. `useRazorpaySubscriptionCheckout`
+  // opens a real Razorpay Checkout mandate for the organization's current
+  // plan in the customer's chosen currency; `onVerified` (`reload`) refreshes
+  // this page's own summary once the payment is verified server-side.
 
   return (
     <div className="titan-portal-subscription">
@@ -91,6 +94,11 @@ export function PortalSubscriptionPage() {
       {actionError && (
         <Alert variant="error" title="Could not complete this action">
           {actionError}
+        </Alert>
+      )}
+      {reactivateError && (
+        <Alert variant="error" title="Could not complete checkout">
+          {reactivateError}
         </Alert>
       )}
 
@@ -212,11 +220,23 @@ export function PortalSubscriptionPage() {
                 </Button>
               )}
               {(summary.data.subscription.status === "canceled" ||
-                summary.data.subscription.status === "expired") && (
-                <Button isLoading={isSubmitting} onClick={() => void renew()}>
-                  Renew subscription
-                </Button>
-              )}
+                summary.data.subscription.status === "expired") &&
+                summary.data.plan && (
+                  <>
+                    <CurrencySelect
+                      value={currency}
+                      onChange={setCurrency}
+                      disabled={reactivatingPlanId !== null}
+                    />
+                    <Button
+                      isLoading={reactivatingPlanId === summary.data.plan.id}
+                      disabled={reactivatingPlanId !== null}
+                      onClick={() => startReactivateCheckout(summary.data.plan!, currency)}
+                    >
+                      Reactivate subscription
+                    </Button>
+                  </>
+                )}
             </div>
           </Panel>
         </>

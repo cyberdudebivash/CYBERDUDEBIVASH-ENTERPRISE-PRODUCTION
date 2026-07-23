@@ -2,25 +2,23 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { dpdpV1 } from "@titan/assessment-core";
 import type { Answers } from "@titan/assessment-core";
-import type { AssessmentRecord, Plan } from "@titan/platform";
-import { isSelfServicePlan } from "@titan/platform";
+import type { AssessmentRecord, Currency, Plan } from "@titan/platform";
+import { isSelfServicePlan, findPlanPricing } from "@titan/platform";
 import { Alert, Button, LoadingSkeleton, Panel } from "@titan/design-system";
 import type { SectionState } from "../../admin/dashboard/useDashboardData.js";
 import { useSession } from "../../admin/auth/SessionContext.js";
 import { fetchPlans } from "../../admin/commercial/commercialApi.js";
 import { PlanCard } from "../../admin/commercial/PlanCard.js";
+import { CurrencySelect } from "../../admin/commercial/CurrencySelect.js";
+import { useRazorpaySubscriptionCheckout } from "../../admin/commercial/useRazorpaySubscriptionCheckout.js";
+import { formatMinorUnits } from "../../../lib/currency.js";
 import { fetchPortalOrganization } from "../portalApi.js";
 import { ProgressBar } from "../../dpdp-assessment/ProgressBar.js";
 import { QuestionStep } from "../../dpdp-assessment/QuestionStep.js";
 import { RiskResults } from "../../dpdp-assessment/RiskResults.js";
 import { buildDpdpReportPdf, reportFileName } from "../../dpdp-assessment/pdfReport.js";
 import "../../dpdp-assessment/dpdp-assessment.css";
-import { createDpdpScannerOrder, runDpdpScan, verifyDpdpScannerPayment } from "./dpdpScannerApi.js";
-import {
-  loadRazorpayCheckout,
-  openRazorpayCheckout,
-  type RazorpaySuccessResponse,
-} from "./razorpayCheckout.js";
+import { runDpdpScan } from "./dpdpScannerApi.js";
 import { useDpdpScannerAccess } from "./useDpdpScannerAccess.js";
 import "./DpdpScannerPage.css";
 
@@ -65,8 +63,8 @@ function AccessGate({ access, reload }: { access: SectionState<boolean>; reload:
 
 function Paywall({ onUnlocked }: { onUnlocked: () => void }) {
   const [plans, setPlans] = useState<SectionState<Plan[]>>({ status: "loading" });
-  const [submittingPlanId, setSubmittingPlanId] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<Currency>("INR");
+  const { submittingPlanId, checkoutError, start } = useRazorpaySubscriptionCheckout(onUnlocked);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,58 +85,18 @@ function Paywall({ onUnlocked }: { onUnlocked: () => void }) {
     };
   }, []);
 
-  async function verifyPayment(response: RazorpaySuccessResponse) {
-    try {
-      await verifyDpdpScannerPayment(response);
-      setSubmittingPlanId(null);
-      onUnlocked();
-    } catch (error) {
-      setCheckoutError(
-        error instanceof Error
-          ? error.message
-          : "Payment could not be verified. If you were charged, contact support.",
-      );
-      setSubmittingPlanId(null);
-    }
-  }
-
-  async function unlock(plan: Plan) {
-    setCheckoutError(null);
-    setSubmittingPlanId(plan.id);
-    try {
-      const order = await createDpdpScannerOrder(plan.id);
-      await loadRazorpayCheckout();
-      openRazorpayCheckout({
-        key: order.keyId,
-        amount: order.amountPaise,
-        currency: order.currency,
-        order_id: order.orderId,
-        name: "CYBERDUDEBIVASH",
-        description: `${plan.name} — DPDP Compliance Scanner`,
-        theme: { color: "#00d4ff" },
-        handler: (response) => {
-          void verifyPayment(response);
-        },
-        modal: {
-          // The visitor closed the widget without paying — not an error,
-          // just back to an unlocked button.
-          ondismiss: () => setSubmittingPlanId(null),
-        },
-      });
-    } catch (error) {
-      setCheckoutError(
-        error instanceof Error ? error.message : "Could not start checkout. Please try again.",
-      );
-      setSubmittingPlanId(null);
-    }
-  }
-
   return (
     <Panel title="Unlock the DPDP Compliance Scanner">
       <p className="titan-dpdp-scanner-paywall__intro">
-        The scanner is a premium feature. Choose a plan below to unlock it — checkout is handled by
-        Razorpay, and access activates the moment your payment is verified.
+        The scanner is a premium feature. Choose a plan below to unlock it — checkout is real
+        recurring billing via Razorpay, and access activates the moment your first payment is
+        verified.
       </p>
+      <CurrencySelect
+        value={currency}
+        onChange={setCurrency}
+        disabled={submittingPlanId !== null}
+      />
       {checkoutError && (
         <Alert variant="error" title="Could not complete checkout">
           {checkoutError}
@@ -152,17 +110,27 @@ function Paywall({ onUnlocked }: { onUnlocked: () => void }) {
       )}
       {plans.status === "ready" && (
         <div className="titan-dpdp-scanner-paywall__plans">
-          {plans.data.filter(isSelfServicePlan).map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              disabled={submittingPlanId !== null}
-              onSelect={() => void unlock(plan)}
-              selectLabel={
-                submittingPlanId === plan.id ? "Opening checkout…" : `Unlock with ${plan.name}`
-              }
-            />
-          ))}
+          {plans.data.filter(isSelfServicePlan).map((plan) => {
+            const amount = findPlanPricing(plan, currency);
+            return (
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                disabled={submittingPlanId !== null || amount === null}
+                priceOverride={
+                  amount !== null ? `${formatMinorUnits(amount, currency)}/month` : undefined
+                }
+                onSelect={() => start(plan, currency)}
+                selectLabel={
+                  submittingPlanId === plan.id
+                    ? "Opening checkout…"
+                    : amount === null
+                      ? "Not available in this currency"
+                      : `Unlock with ${plan.name}`
+                }
+              />
+            );
+          })}
         </div>
       )}
     </Panel>

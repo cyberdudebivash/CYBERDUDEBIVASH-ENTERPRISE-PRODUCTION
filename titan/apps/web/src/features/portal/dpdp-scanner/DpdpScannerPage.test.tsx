@@ -6,8 +6,8 @@ import { dpdpV1 } from "@titan/assessment-core";
 import type { AssessmentResult } from "@titan/assessment-core";
 import { SessionProvider } from "../../admin/auth/SessionContext.js";
 import { DpdpScannerPage } from "./DpdpScannerPage.js";
-import { openRazorpayCheckout } from "./razorpayCheckout.js";
-import type { RazorpaySuccessResponse } from "./razorpayCheckout.js";
+import { openRazorpayCheckout } from "../../admin/commercial/razorpayCheckout.js";
+import type { RazorpaySuccessResponse } from "../../admin/commercial/razorpayCheckout.js";
 import { buildDpdpReportPdf } from "../../dpdp-assessment/pdfReport.js";
 
 // Razorpay's real Checkout widget (a script-injected `window.Razorpay`) has
@@ -15,7 +15,7 @@ import { buildDpdpReportPdf } from "../../dpdp-assessment/pdfReport.js";
 // mechanics themselves lives in razorpayCheckout.test.ts. Here it's mocked
 // so a test can drive "checkout succeeded" the same way Razorpay's own
 // `handler` callback would.
-vi.mock("./razorpayCheckout.js", () => ({
+vi.mock("../../admin/commercial/razorpayCheckout.js", () => ({
   loadRazorpayCheckout: vi.fn().mockResolvedValue(undefined),
   openRazorpayCheckout: vi.fn(),
 }));
@@ -39,7 +39,7 @@ const plansPayload = [
     name: "Starter",
     tier: 1,
     priceDisplay: "$499/month",
-    priceInPaise: 999_900,
+    pricing: { INR: 999_900, USD: 49_900, EUR: 45_900, GBP: 39_900 },
     trialDays: 14,
     entitlements: {
       complianceReportExport: false,
@@ -53,7 +53,7 @@ const plansPayload = [
     name: "Professional",
     tier: 2,
     priceDisplay: "$1,499/month",
-    priceInPaise: 2_999_900,
+    pricing: { INR: 2_999_900, USD: 149_900, EUR: 139_900, GBP: 119_900 },
     trialDays: 14,
     entitlements: {
       complianceReportExport: true,
@@ -67,7 +67,7 @@ const plansPayload = [
     name: "Enterprise",
     tier: 3,
     priceDisplay: "Contact sales",
-    priceInPaise: null,
+    pricing: null,
     trialDays: 0,
     entitlements: {
       complianceReportExport: true,
@@ -156,14 +156,14 @@ describe("DpdpScannerPage", () => {
     ).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Unlock with Starter" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Unlock with Professional" })).toBeInTheDocument();
-    // Enterprise is sales-assisted (no priceInPaise) — no self-service checkout button.
+    // Enterprise is sales-assisted (pricing: null) — no self-service checkout button.
     expect(screen.queryByRole("button", { name: /Enterprise/ })).not.toBeInTheDocument();
   });
 
-  it("runs a real Razorpay checkout, verifies the payment, and unlocks the scanner", async () => {
+  it("runs a real recurring Razorpay checkout (Subscriptions API), verifies the payment, and unlocks the scanner", async () => {
     const user = userEvent.setup();
     let verified = false;
-    let capturedOrderBody: unknown;
+    let capturedCheckoutBody: unknown;
     let capturedVerifyBody: unknown;
 
     vi.mocked(fetch).mockImplementation((input, init) => {
@@ -174,12 +174,12 @@ describe("DpdpScannerPage", () => {
       if (url.includes("/api/commercial/plans")) {
         return Promise.resolve(jsonResponse(plansPayload));
       }
-      if (url.includes("/api/portal/commercial/razorpay/orders")) {
-        capturedOrderBody = JSON.parse(init?.body as string);
+      if (url.includes("/api/portal/commercial/razorpay/subscriptions")) {
+        capturedCheckoutBody = JSON.parse(init?.body as string);
         return Promise.resolve(
           jsonResponse(
             {
-              orderId: "order_1",
+              providerSubscriptionId: "sub_1",
               amountPaise: 999_900,
               currency: "INR",
               keyId: "rzp_test_fake",
@@ -204,7 +204,7 @@ describe("DpdpScannerPage", () => {
     // invoking the `handler` callback it was opened with.
     vi.mocked(openRazorpayCheckout).mockImplementation((options) => {
       options.handler({
-        razorpay_order_id: "order_1",
+        razorpay_subscription_id: "sub_1",
         razorpay_payment_id: "pay_1",
         razorpay_signature: "sig_1",
       } satisfies RazorpaySuccessResponse);
@@ -215,15 +215,58 @@ describe("DpdpScannerPage", () => {
     await user.click(await screen.findByRole("button", { name: "Unlock with Starter" }));
 
     expect(await screen.findByRole("button", { name: "Start scan" })).toBeInTheDocument();
-    expect(capturedOrderBody).toEqual({ planId: "starter" });
+    expect(capturedCheckoutBody).toEqual({ planId: "starter", currency: "INR" });
     expect(capturedVerifyBody).toEqual({
-      razorpay_order_id: "order_1",
+      razorpay_subscription_id: "sub_1",
       razorpay_payment_id: "pay_1",
       razorpay_signature: "sig_1",
     });
   });
 
-  it("shows a real error and re-enables the button when order creation fails", async () => {
+  it("opens checkout in the currency the customer selects", async () => {
+    const user = userEvent.setup();
+    let capturedCheckoutBody: unknown;
+
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      if (url.includes("/api/portal/dpdp-scanner/access")) {
+        return Promise.resolve(jsonResponse({ hasAccess: false }));
+      }
+      if (url.includes("/api/commercial/plans")) {
+        return Promise.resolve(jsonResponse(plansPayload));
+      }
+      if (url.includes("/api/portal/commercial/razorpay/subscriptions")) {
+        capturedCheckoutBody = JSON.parse(init?.body as string);
+        return Promise.resolve(
+          jsonResponse(
+            {
+              providerSubscriptionId: "sub_usd",
+              amountPaise: 49_900,
+              currency: "USD",
+              keyId: "rzp_test_fake",
+              transactionId: "txn_usd",
+            },
+            201,
+          ),
+        );
+      }
+      if (url.includes("/api/me")) {
+        return Promise.resolve(jsonResponse(mePayload));
+      }
+      return Promise.reject(new Error(`unexpected fetch: ${url}`));
+    });
+
+    renderPage();
+    await screen.findByRole("button", { name: "Unlock with Starter" });
+    await user.selectOptions(screen.getByLabelText("Billing currency"), "USD");
+    await user.click(screen.getByRole("button", { name: "Unlock with Starter" }));
+
+    await vi.waitFor(() =>
+      expect(capturedCheckoutBody).toEqual({ planId: "starter", currency: "USD" }),
+    );
+  });
+
+  it("shows a real error and re-enables the button when checkout creation fails", async () => {
     const user = userEvent.setup();
     vi.mocked(fetch).mockImplementation((input) => {
       const url = String(input);
@@ -233,7 +276,7 @@ describe("DpdpScannerPage", () => {
       if (url.includes("/api/commercial/plans")) {
         return Promise.resolve(jsonResponse(plansPayload));
       }
-      if (url.includes("/api/portal/commercial/razorpay/orders")) {
+      if (url.includes("/api/portal/commercial/razorpay/subscriptions")) {
         return Promise.resolve(
           jsonResponse(
             { error: { code: "razorpay_error", message: "Authentication failed" } },

@@ -1,0 +1,24 @@
+.titan-support-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-support-workspace__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-support-workspace__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.titan-support-workspace__note {
+  font-size: 14px;
+  color: #64748b;
+}

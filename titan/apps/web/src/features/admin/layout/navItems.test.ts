@@ -137,4 +137,25 @@ describe("adminNavItems", () => {
     });
     expect(nonAdmin).not.toContainEqual({ label: "Reporting", to: "/admin/reporting" });
   });
+
+  it("includes Support Requests (Admin Support Queue) only for a Platform Administrator", () => {
+    const admin = adminNavItems({
+      userId: "u1",
+      email: "a@x.com",
+      profiles: [],
+      isPlatformAdministrator: true,
+    });
+    expect(admin).toContainEqual({ label: "Support Requests", to: "/admin/support-requests" });
+
+    const nonAdmin = adminNavItems({
+      userId: "u2",
+      email: "b@x.com",
+      profiles: [],
+      isPlatformAdministrator: false,
+    });
+    expect(nonAdmin).not.toContainEqual({
+      label: "Support Requests",
+      to: "/admin/support-requests",
+    });
+  });
 });

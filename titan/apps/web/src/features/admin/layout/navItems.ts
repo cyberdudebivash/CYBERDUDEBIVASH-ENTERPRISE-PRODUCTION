@@ -52,5 +52,13 @@ export function adminNavItems(me: MeResponse): SidebarItem[] {
     // /api/commercial/licenses/search are all Platform-Administrator-only
     // (SECURITY_GUIDE.md).
     ...(me.isPlatformAdministrator ? [{ label: "Commercial", to: "/admin/commercial" }] : []),
+    // Admin Support Queue (2026-07-23 production-readiness audit,
+    // DECISION_LOG.md's Workstream 15): same gating reasoning as every
+    // entry above — GET /api/support-requests/search and PATCH
+    // /api/support-requests/:id are both Platform-Administrator-only
+    // (SECURITY_GUIDE.md).
+    ...(me.isPlatformAdministrator
+      ? [{ label: "Support Requests", to: "/admin/support-requests" }]
+      : []),
   ];
 }
