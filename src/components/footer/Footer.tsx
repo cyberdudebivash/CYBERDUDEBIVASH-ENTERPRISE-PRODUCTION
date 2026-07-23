@@ -103,6 +103,7 @@ export function Footer({ onNavigate, onContactClick }: FooterProps) {
               { label: "ThreatCore™ Tools", url: "https://tools.cyberdudebivash.com" },
               { label: "Research Blog", url: "https://blog.cyberdudebivash.in" },
               { label: "Developer APIs", url: "https://cyberdudebivash.in/api" },
+              { label: "Titan Compliance Platform", url: "https://titan-web-production.pages.dev" },
             ].map(l => (
               <li key={l.url}>
                 <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-[12px] text-slate-400 hover:text-emerald-400 transition-colors font-sans flex items-center gap-2 group">
