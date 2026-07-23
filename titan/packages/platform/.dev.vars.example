@@ -31,7 +31,9 @@ RAZORPAY_KEY_SECRET=
 # dev-mode sendVerificationRequest (logs the sign-in link instead of
 # emailing it — see auth/config.ts) rather than a broken send. Real key
 # comes from the Resend Dashboard (API Keys); EMAIL_FROM must be an address
-# on a domain verified in that same dashboard (Domains) — this project has
-# never had a real Resend account in any session (DECISION_LOG.md).
+# on a domain verified in that same dashboard (Domains) — this codebase has
+# never called Resend before this session (DECISION_LOG.md), independent of
+# whether the account itself (shared across the CyberDudeBivash ecosystem)
+# has other verified domains already.
 RESEND_API_KEY=
 EMAIL_FROM=

@@ -8,16 +8,22 @@ import { buildMagicLinkEmail } from "./emailTemplates.js";
  * Razorpay's own REST API: no vendor SDK, Bearer/Basic auth built by hand,
  * defensive parsing of the vendor's own JSON error shape.
  *
- * This project has never had a real Resend API key in any environment it
- * has run in — `sendMagicLinkEmail` genuinely calls the real Resend API and
- * will fail without a real `RESEND_API_KEY`/`EMAIL_FROM` pair, the same
- * "real but blocked without real credentials" shape already established for
- * `createRazorpayOrder`. `auth/config.ts` only wires this in when both are
- * present; it never fabricates a "from" address, since Resend rejects mail
- * from a domain that hasn't been verified in the Resend dashboard, and this
- * project has never had one — silently defaulting to a guessed address
- * would fail confusingly (or silently land in spam) at send time instead of
- * simply not registering the provider.
+ * No code in this repository called the Resend API before this session —
+ * verified by grepping the entire repository, not assumed. The
+ * `RESEND_API_KEY` this reads (`worker.ts`) may still be a real, already-
+ * active Resend account used elsewhere in the broader CyberDudeBivash
+ * ecosystem outside this codebase (its dashboard shows real prior sends
+ * unrelated to Titan) — this integration is new to *this repository's own
+ * code*, not a claim that the account itself has never sent real email.
+ * `sendMagicLinkEmail` genuinely calls the real Resend API and will fail
+ * without a real `RESEND_API_KEY`/`EMAIL_FROM` pair. `auth/config.ts` only
+ * wires this in when both are present; it never fabricates a "from"
+ * address, since Resend rejects mail from a domain that hasn't been
+ * verified in the Resend dashboard for *this* account, and which domain
+ * (if any) is already verified there is real information only the account
+ * owner has — silently defaulting to a guessed address would fail
+ * confusingly (or silently land in spam) at send time instead of simply
+ * not registering the provider.
  *
  * A magic-link send happens inline in the `POST /api/auth/signin/email`
  * request Auth.js is already handling, so retry/timeout budgets stay small

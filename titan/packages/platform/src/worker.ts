@@ -40,13 +40,15 @@ export interface Env {
   RAZORPAY_KEY_SECRET?: string;
   /** Real Resend credentials for production magic-link email
    * (auth/resendEmail.ts) — absent in local dev, same
-   * never-had-real-credentials status as Razorpay above (DECISION_LOG.md).
+   * blocked-without-both-values shape Razorpay above already established.
    * Both must be present for `createAuthConfig`'s `resend` option to be
    * constructed below; a partial pair is treated as not configured and
    * falls back to the dev-mode logging provider, same pairing rule as
    * `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`. `EMAIL_FROM` must be an
    * address on a domain verified in the Resend dashboard — never defaulted
-   * to a guessed address here (Resend rejects unverified senders). */
+   * to a guessed address here (Resend rejects unverified senders, and which
+   * domain is verified on this account is real information this codebase
+   * cannot know on its own — see DECISION_LOG.md's same-day correction). */
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
 }
