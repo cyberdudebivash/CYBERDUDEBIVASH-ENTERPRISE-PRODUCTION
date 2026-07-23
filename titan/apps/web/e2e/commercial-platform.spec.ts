@@ -126,16 +126,30 @@ test.describe("Enterprise Commercial Platform (COM-1)", () => {
     await expect(page.getByRole("button", { name: "Cancel subscription" })).toBeVisible();
   });
 
-  test("a real organization member cancels and then renews their own subscription", async ({
+  test("a real organization member cancels their own subscription and sees a real reactivate-via-checkout action, not a free renew", async ({
     page,
     context,
   }) => {
+    // Reactivating a canceled subscription is real recurring billing now
+    // (Razorpay Subscriptions API checkout), not a free self-service PATCH
+    // — see router.ts's validatePortalSubscriptionPatch and this
+    // repository's DECISION_LOG.md (2026-07-23 production-readiness audit
+    // entry) for why the old "cancel then renew for free" action was
+    // removed. This spec proves cancellation itself is real and that the
+    // UI offers a real checkout action afterward — it deliberately does not
+    // drive an actual Razorpay Checkout completion, the same "no real
+    // Razorpay credentials exist in any environment" constraint
+    // dpdp-scanner.spec.ts's own paid-access test already works within
+    // (seeding real state directly rather than a live payment).
     const stamp = Date.now();
     const ownOrg = seedOrganization({
       name: `E2E Commercial Cancel Org ${stamp}`,
       slug: `e2e-commercial-cancel-org-${stamp}`,
     });
-    seedSubscription(ownOrg, { planId: "professional", status: "active" });
+    seedSubscription(ownOrg, {
+      planId: "professional",
+      status: "active",
+    });
     const { cookie } = seedSession({
       email: `e2e-commercial-cancel-${stamp}@titan.local`,
       organizationId: ownOrg,
@@ -149,12 +163,11 @@ test.describe("Enterprise Commercial Platform (COM-1)", () => {
     });
 
     await page.getByRole("button", { name: "Cancel subscription" }).click();
-    await expect(page.getByRole("button", { name: "Renew subscription" })).toBeVisible({
-      timeout: 10_000,
-    });
-
-    await page.getByRole("button", { name: "Renew subscription" }).click();
-    await expect(page.getByRole("button", { name: "Cancel subscription" })).toBeVisible({
+    // A real server round trip through the real Worker + real D1 (not a
+    // mock) — the "Reactivate subscription" button only appears once
+    // GET /api/portal/commercial/subscription reflects the real
+    // status: "canceled" written by the PATCH above.
+    await expect(page.getByRole("button", { name: "Reactivate subscription" })).toBeVisible({
       timeout: 10_000,
     });
   });

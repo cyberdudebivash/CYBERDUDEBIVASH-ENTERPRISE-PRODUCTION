@@ -133,7 +133,7 @@ test.describe("DPDP Compliance Scanner", () => {
     const [response] = await Promise.all([
       page.waitForResponse(
         (res) =>
-          res.url().includes("/api/portal/commercial/razorpay/orders") &&
+          res.url().includes("/api/portal/commercial/razorpay/subscriptions") &&
           res.request().method() === "POST",
       ),
       page.getByRole("button", { name: "Unlock with Starter" }).click(),

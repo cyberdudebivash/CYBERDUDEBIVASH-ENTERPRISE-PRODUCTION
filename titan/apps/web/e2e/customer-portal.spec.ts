@@ -84,7 +84,7 @@ test.describe("Enterprise Customer Portal (CPP-1)", () => {
     expect(decodeURIComponent(page.url())).toContain("callbackUrl=http://localhost:5173/portal");
   });
 
-  test("shows an honest 'no organization membership' message for an authenticated caller with no organization profile", async ({
+  test("shows a real self-service 'create your organization' form for an authenticated caller with no organization profile, and using it grants real portal access", async ({
     page,
     context,
   }) => {
@@ -93,9 +93,19 @@ test.describe("Enterprise Customer Portal (CPP-1)", () => {
     await context.addCookies([{ name: name!, value: value!, url: "http://localhost:8787" }]);
 
     await page.goto("/portal", { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("No organization membership")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: "Create your organization" })).toBeVisible({
+      timeout: 10_000,
+    });
     // The nav itself is empty too — hidden entirely, not shown-then-blocked.
     await expect(page.getByRole("link", { name: "Dashboard" })).toHaveCount(0);
+
+    // The real fix this incident needed: submitting the form actually
+    // provisions a real organization and grants real portal access,
+    // not just a friendlier dead end.
+    const stamp = Date.now();
+    await page.getByLabel("Organization name").fill(`E2E Onboarding Org ${stamp}`);
+    await page.getByRole("button", { name: "Create organization" }).click();
+    await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible({ timeout: 10_000 });
   });
 
   test("a real organization member sees their own organization's Dashboard, Assessments, and Reports — and never another organization's data", async ({
