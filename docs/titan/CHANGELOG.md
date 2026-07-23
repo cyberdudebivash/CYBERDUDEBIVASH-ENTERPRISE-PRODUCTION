@@ -19,11 +19,14 @@ Real Resend email delivery, real Razorpay payment (one-time Orders, then rebuilt
 ### Fixed
 - The free self-service subscription-renewal payment bypass — a customer's own `PATCH /api/portal/commercial/subscription` can no longer set `status: "active"` at all; reactivation now requires a real Razorpay checkout or an explicit Platform Administrator override.
 - A real magic-link sign-in failure caused by email-scanner link prefetching (confirmation-page fix).
+- **Critical**: `@auth/core@0.41.2` → `0.41.3` (`@auth/d1-adapter` peer → `1.11.3`) — a real, critical email-homoglyph `@`-bypass advisory ([GHSA-7rqj-j65f-68wh](https://github.com/advisories/GHSA-7rqj-j65f-68wh)) in the actual sign-in path, plus two lower-severity advisories on the same package. `npm audit`: zero vulnerabilities after. See `DECISION_LOG.md`'s 2026-07-23 "Resumed after a usage-limit cutoff" entry — a prior session found and started this fix but hit its usage limit before committing it.
+- A flaky E2E test (`commercial-platform.spec.ts`'s admin subscriptions-review test) — widened its per-test timeout after confirming by repeated isolated runs that it was a sandbox timing-margin issue, not a functional regression.
 
 ### Verified (not changed)
 - Full workspace `typecheck`/`lint`/`format`/`build`/`test` — `@titan/platform` 836 tests, `@titan/web` 386 tests.
 - A full 13-spec, 45-test Playwright E2E suite, real Chromium + real `wrangler dev` + real local D1, zero mocks — re-run clean end to end.
 - Real cross-implementation HMAC verification (order-mode and subscription-mode Razorpay signatures, webhook signatures) against Node's own `node:crypto`.
+- Re-verified 2026-07-23, independently: `THREAT_MODEL.md`'s SEC-1-01 (`sharp`/libvips CVEs) no longer reproduces — resolved upstream within the existing `wrangler` semver range, not by a downgrade.
 
 ### Known limitation, unchanged from prior entries
 - No real Razorpay Subscription, Plan, or webhook has ever been exercised against Razorpay's actual live API — no real credentials have existed in any environment this project has run in. Still not deployed anywhere.

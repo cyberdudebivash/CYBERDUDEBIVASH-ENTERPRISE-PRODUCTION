@@ -31,7 +31,7 @@
 
 ## Security checklist
 
-- [ ] Re-run `npm audit` — confirm whether a non-breaking `wrangler`/`miniflare` release has resolved the `sharp` transitive CVE (`THREAT_MODEL.md` SEC-1-01) before assuming today's "no safe fix" conclusion still holds
+- [x] Re-run `npm audit` — confirm whether a non-breaking `wrangler`/`miniflare` release has resolved the `sharp` transitive CVE (`THREAT_MODEL.md` SEC-1-01) before assuming today's "no safe fix" conclusion still holds. **Done 2026-07-23: yes** — `sharp` now resolves to `0.34.5` within the existing `wrangler@^4.112.0` range, `npm audit` reports zero vulnerabilities. Also found and fixed a separate, unrelated, real critical vulnerability this same pass: `@auth/core@0.41.2` (direct dependency, the actual sign-in path) had a critical email-homoglyph bypass advisory — bumped to `0.41.3` (`THREAT_MODEL.md` SEC-1-13). Re-running `npm audit` periodically remains good practice regardless
 - [ ] A real, independent penetration test performed against a real deployed environment (`THREAT_MODEL.md`'s 12-scenario preparation material is real test-backed preparation, not a substitute)
 - [ ] Any compliance certification pursued (SOC 2, ISO 27001, GDPR, DPDP) — organizational/legal work, not something a code session can complete (`COMPLIANCE_GUIDE.md`)
 - [ ] Rate limiting's known limitation re-assessed once real: today's fixed-window in-memory limiter is per-Worker-isolate, not global — a real deployment may need a durable, cross-isolate limiter (Durable Objects or an equivalent) if abuse patterns actually require it
