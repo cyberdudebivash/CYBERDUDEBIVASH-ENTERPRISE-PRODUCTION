@@ -1,0 +1,82 @@
+name: Titan Provision Environment
+
+# One-time, real-infrastructure provisioning for a wrangler.toml [env.*]
+# target — the two prerequisites titan-deploy.yml itself never creates:
+#
+# 1. The real D1 database migrate-database's `wrangler d1 migrations apply`
+#    expects to already exist (DEPLOYMENT_GUIDE.md's "First real deploy
+#    checklist" step 2). `wrangler d1 create`'s own output prints a ready-
+#    to-paste `database_id` — read it from this run's log and paste it into
+#    wrangler.toml's matching [[env.<target>.d1_databases]] block by hand,
+#    exactly as that checklist documents. This workflow never edits
+#    wrangler.toml itself.
+# 2. The real Cloudflare Worker secrets the deployed code reads at runtime
+#    (worker.ts's own env.AUTH_SECRET / env.RAZORPAY_KEY_ID / env.RAZORPAY_KEY_SECRET)
+#    — a completely different store from this repository's own Actions
+#    secrets, set via `wrangler secret put`, never in wrangler.toml
+#    (SECURITY_GUIDE.md's "Secrets management"). AUTH_SECRET has no
+#    existing value anywhere in this project (DECISION_LOG.md — never
+#    deployed), so it is generated fresh here; the generated value is
+#    piped directly into `wrangler secret put` and never echoed or logged.
+#    Razorpay's two keys are forwarded from this repository's own
+#    RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET Actions secrets, which GitHub
+#    automatically redacts from all logs regardless.
+#
+# Manual-only, like titan-deploy.yml — never runs automatically. Intended
+# to run once per environment, before that environment's first
+# titan-deploy.yml dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Environment to provision (must match a wrangler.toml [env.*] block)"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: titan/packages/platform
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: titan
+
+      - name: Create the real D1 database for this environment
+        run: npx wrangler d1 create titan-platform-${{ inputs.target_environment }}-db
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set AUTH_SECRET Worker secret (generated here — never logged, never stored in this repository)
+        run: openssl rand -base64 32 | npx wrangler secret put AUTH_SECRET --env ${{ inputs.target_environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set Razorpay Worker secrets from this repository's own secrets of the same name
+        run: |
+          printf '%s' "${{ secrets.RAZORPAY_KEY_ID }}" | npx wrangler secret put RAZORPAY_KEY_ID --env ${{ inputs.target_environment }}
+          printf '%s' "${{ secrets.RAZORPAY_KEY_SECRET }}" | npx wrangler secret put RAZORPAY_KEY_SECRET --env ${{ inputs.target_environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
