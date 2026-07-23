@@ -85,8 +85,15 @@ export default function App() {
   const [roiEndpoints, setRoiEndpoints] = useState(250);
   const [roiBreach, setRoiBreach] = useState(150000);
 
-  // Dynamic page title per view
+  // Dynamic page title per view, and scroll to top on every view change.
+  // onNavigate is wired directly to setCurrentView (Footer/Header/MobileNav/
+  // ServicePages all pass it through unwrapped) with no scroll handling of
+  // its own, so a click on a footer link — the case most likely to happen
+  // while already scrolled far down the page — swapped the rendered content
+  // without moving the viewport, making the new content appear invisible
+  // until the user manually scrolled back up.
   useEffect(() => {
+    window.scrollTo(0, 0);
     const titles: Record<string, string> = {
       home: "CYBERDUDEBIVASH® | AI-Powered Cybersecurity Platform",
       intel: "Sentinel APEX™ Threat Intelligence | CYBERDUDEBIVASH®",
