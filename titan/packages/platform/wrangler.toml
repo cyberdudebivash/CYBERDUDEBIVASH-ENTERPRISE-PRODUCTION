@@ -74,9 +74,14 @@ ENVIRONMENT = "production"
 # differs, correct this value and redeploy so CORS matches exactly.
 ALLOWED_ORIGIN = "https://titan-web-production.pages.dev"
 
-# PRD-1: Workers Logs, off by default (matches every environment above having
-# never been deployed) — real observability only becomes meaningful once real
-# traffic exists. Documented here, not enabled, so turning it on for a real
-# environment is a one-line, reviewable change rather than a rediscovery.
-# [env.production.observability]
-# enabled = true
+# PRD-1: Workers Logs — enabled 2026-07-23 via the Cloudflare dashboard
+# (Settings > Logs) while diagnosing a real production email-send failure,
+# and mirrored here immediately after so `wrangler deploy` (wrangler.toml is
+# the source of truth it reconciles against) doesn't silently revert the
+# dashboard change on the next deploy. `invocation_logs` (request/response
+# metadata) is enough for that diagnostic need; `head_sampling_rate` is left
+# at its default (1.0, no sampling) since production traffic volume doesn't
+# yet justify sampling down.
+[env.production.observability.logs]
+enabled = true
+invocation_logs = true
