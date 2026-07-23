@@ -27,6 +27,11 @@ const browserGlobals = {
   setTimeout: "readonly",
   clearTimeout: "readonly",
   localStorage: "readonly",
+  // Same reasoning as setTimeout/clearTimeout/localStorage above: real new
+  // code (commercial/razorpay.ts's Basic Auth header, `key_id:key_secret`
+  // base64-encoded per Razorpay's own documented API) was the first in this
+  // workspace to need it. A real Workers/browser global, not Node-specific.
+  btoa: "readonly",
 };
 
 const nodeGlobals = {

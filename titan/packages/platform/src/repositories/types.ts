@@ -687,3 +687,78 @@ export interface LicenseRepository {
   search(options: LicenseSearchOptions): Promise<LicenseSearchResult>;
   update(id: string, patch: LicensePatch): Promise<LicenseRecord | null>;
 }
+
+export const BILLING_TRANSACTION_STATUSES = ["created", "paid", "failed"] as const;
+export type BillingTransactionStatus = (typeof BILLING_TRANSACTION_STATUSES)[number];
+
+/** Real payment-provider integration: one row per real Razorpay order
+ * attempt, kept deliberately separate from `SubscriptionRecord`/
+ * `LicenseRecord` (COM-1) rather than adding payment fields to either — see
+ * migrations/0013_billing_transactions.sql's own comment. `providerPaymentId`/
+ * `providerSignature` are null until a real checkout completes and its
+ * signature is verified server-side; `status` only ever becomes `"paid"`
+ * after that verification succeeds, never on an unverified client claim. */
+export interface BillingTransactionRecord {
+  id: string;
+  organizationId: string;
+  subscriptionId: string;
+  planId: string;
+  /** Only one provider exists today — a literal, not an enum with
+   * speculative future members, the same "real values only" discipline
+   * `Plan.id`/`SubscriptionStatus` already follow. */
+  provider: "razorpay";
+  providerOrderId: string;
+  providerPaymentId: string | null;
+  providerSignature: string | null;
+  /** The smallest currency unit (paise for INR) — Razorpay's own convention,
+   * and the same "never a float for money" discipline this avoids by
+   * construction. Always the server-resolved plan price, never a
+   * client-submitted amount. */
+  amountPaise: number;
+  currency: string;
+  status: BillingTransactionStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NewBillingTransaction = Omit<BillingTransactionRecord, "id" | "updatedAt">;
+
+export interface BillingTransactionPatch {
+  providerPaymentId?: string;
+  providerSignature?: string;
+  status?: BillingTransactionStatus;
+}
+
+export type BillingTransactionSortField = "createdAt";
+
+export interface BillingTransactionSearchOptions {
+  organizationId?: string;
+  status?: BillingTransactionStatus;
+  sortBy?: BillingTransactionSortField;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface BillingTransactionSearchResult {
+  transactions: BillingTransactionRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface BillingTransactionRepository {
+  save(transaction: NewBillingTransaction): Promise<BillingTransactionRecord>;
+  findById(id: string): Promise<BillingTransactionRecord | null>;
+  /** The one lookup the verify step needs — Razorpay's own checkout
+   * callback returns `razorpay_order_id`, not this repository's internal
+   * id, so verification has to resolve from that value. */
+  findByProviderOrderId(providerOrderId: string): Promise<BillingTransactionRecord | null>;
+  /** Real access-gating relies on this: "does this organization have at
+   * least one paid transaction" (`router.ts`'s scanner entitlement check),
+   * not on subscription status alone — see that function's own doc
+   * comment for why the two are deliberately different checks. */
+  search(options: BillingTransactionSearchOptions): Promise<BillingTransactionSearchResult>;
+  update(id: string, patch: BillingTransactionPatch): Promise<BillingTransactionRecord | null>;
+}

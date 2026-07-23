@@ -58,6 +58,14 @@ export type {
   LicenseSearchOptions,
   LicenseSearchResult,
   LicenseSortField,
+  BillingTransactionRecord,
+  BillingTransactionRepository,
+  NewBillingTransaction,
+  BillingTransactionPatch,
+  BillingTransactionStatus,
+  BillingTransactionSearchOptions,
+  BillingTransactionSearchResult,
+  BillingTransactionSortField,
 } from "./repositories/types.js";
 export {
   LEAD_STATUSES,
@@ -67,6 +75,7 @@ export {
   SUPPORT_REQUEST_STATUSES,
   SUBSCRIPTION_STATUSES,
   LICENSE_STATUSES,
+  BILLING_TRANSACTION_STATUSES,
 } from "./repositories/types.js";
 
 export { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
@@ -87,6 +96,8 @@ export { createInMemorySubscriptionRepository } from "./repositories/subscriptio
 export { createD1SubscriptionRepository } from "./repositories/subscriptionRepository.d1.js";
 export { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
 export { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
+export { createInMemoryBillingTransactionRepository } from "./repositories/billingTransactionRepository.memory.js";
+export { createD1BillingTransactionRepository } from "./repositories/billingTransactionRepository.d1.js";
 
 export type {
   Dependencies,
@@ -118,6 +129,10 @@ export type { Env } from "./worker.js";
 export type { Plan, PlanEntitlements, PlanId } from "./commercial/planCatalog.js";
 export { PLAN_CATALOG, PLAN_IDS, findPlan, isSelfServicePlan } from "./commercial/planCatalog.js";
 export { resolveEntitlements } from "./commercial/entitlements.js";
+// commercial/razorpay.js is deliberately not exported here: RazorpayCredentials
+// carries a real secret (keySecret) that must never be importable into a
+// frontend bundle, and createRazorpayOrder/verifyRazorpaySignature have no
+// consumer outside router.ts's own handlers.
 
 export type { AuthConfigOptions, OAuthCredentials } from "./auth/config.js";
 export { createAuthConfig } from "./auth/config.js";

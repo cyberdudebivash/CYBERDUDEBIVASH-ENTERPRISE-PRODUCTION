@@ -1,0 +1,53 @@
+.titan-dpdp-scanner-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0a1628 0%, #142c4f 55%, #0d3b5c 100%);
+  border: 1px solid #1e4a72;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.titan-dpdp-scanner-card__badge {
+  display: flex;
+}
+
+.titan-dpdp-scanner-card__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.titan-dpdp-scanner-card__description {
+  margin: 0;
+  max-width: 640px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.titan-dpdp-scanner-card__meta {
+  margin: 0;
+  font-size: 13px;
+  color: #7dd3fc;
+}
+
+.titan-dpdp-scanner-card__cta {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  background: #00d4ff;
+  color: #0a1628;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.titan-dpdp-scanner-card__cta:hover {
+  background: #38e0ff;
+}

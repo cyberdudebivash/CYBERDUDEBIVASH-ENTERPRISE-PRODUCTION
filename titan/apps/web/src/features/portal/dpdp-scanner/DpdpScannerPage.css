@@ -1,0 +1,52 @@
+.titan-dpdp-scanner-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titan-dpdp-scanner-page__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0a1628;
+}
+
+.titan-dpdp-scanner-page__note {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.titan-dpdp-scanner-paywall__intro {
+  margin: 0 0 16px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.titan-dpdp-scanner-paywall__plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.titan-dpdp-scanner-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.titan-dpdp-scanner-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.titan-dpdp-scanner-page__pdf-error {
+  margin: 8px 0 0;
+  color: #b91c1c;
+  font-size: 13px;
+}

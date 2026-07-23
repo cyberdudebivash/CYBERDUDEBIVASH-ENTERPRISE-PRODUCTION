@@ -30,7 +30,7 @@ A SaaS platform that lets organizations self-assess their readiness against Indi
 | Enterprise Consulting | Custom scope for large/complex organizations | High-value, low-volume |
 | Partner Programs | White-label or referral arrangements with consultants/law firms | Channel/distribution |
 
-**Gap in the original brief, flagged here rather than assumed:** nothing in the original module list is a payments/billing module, yet four of the seven tiers above require charging money. This needs an explicit decision (`ARCHITECTURE.md` §Open Decisions) before Phase 2.
+**Gap in the original brief, flagged here rather than assumed — now partially closed:** nothing in the original module list was a payments/billing module, yet four of the seven tiers above require charging money. A real payments decision has now been made and built (Razorpay, not Stripe — `ARCHITECTURE.md`'s "Decided" list, `DECISION_LOG.md`), but only for one real, gated surface: the DPDP Compliance Scanner behind COM-1's own Subscription plans. The other six tiers in the table above (Paid Gap Analysis PDF, Professional Assessment, Implementation Services, Annual Managed Compliance, Enterprise Consulting, Partner Programs) remain exactly what they were before this phase — real product ideas, not wired to any real checkout. `RiskResults.tsx`'s own "Gap Analysis Lite/Pro/Compliance Package" upsell tiers are still marketing copy pointing at a human sales conversation, not a second Razorpay-integrated flow — conflating the two would overclaim what this phase actually built.
 
 ## Success metrics (not yet measurable — no product exists; listed so Phase 1+ instrumentation targets them from day one)
 

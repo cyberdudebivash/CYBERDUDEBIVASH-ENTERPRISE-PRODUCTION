@@ -9,6 +9,7 @@ import { createD1UserRepository } from "./repositories/userRepository.d1.js";
 import { createD1SupportRequestRepository } from "./repositories/supportRequestRepository.d1.js";
 import { createD1SubscriptionRepository } from "./repositories/subscriptionRepository.d1.js";
 import { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
+import { createD1BillingTransactionRepository } from "./repositories/billingTransactionRepository.d1.js";
 import { handleRequest } from "./router.js";
 import { resolveAllowedOrigin } from "./http/cors.js";
 import { createLogger } from "./observability/logger.js";
@@ -30,6 +31,13 @@ export interface Env {
    * surfaced honestly via `GET /api/operations/summary`'s `overview.environment`
    * and new `configuration` field, never guessed from any other signal. */
   ENVIRONMENT?: string;
+  /** Real Razorpay credentials — absent in local dev and in every
+   * environment this project has ever actually run in (DECISION_LOG.md).
+   * Both must be present for `razorpayCredentials` to be constructed below;
+   * a partial pair (e.g. key id alone) is treated as not configured, same
+   * as `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`'s own pairing below. */
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
 }
 
 // Module-scoped (not per-request): a Workers isolate is reused across many
@@ -100,6 +108,11 @@ export default {
       supportRequests: createD1SupportRequestRepository(env.DB),
       subscriptions: createD1SubscriptionRepository(env.DB),
       licenses: createD1LicenseRepository(env.DB),
+      billingTransactions: createD1BillingTransactionRepository(env.DB),
+      razorpayCredentials:
+        env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET
+          ? { keyId: env.RAZORPAY_KEY_ID, keySecret: env.RAZORPAY_KEY_SECRET }
+          : undefined,
       logger,
       rateLimiter,
       authRateLimiter,

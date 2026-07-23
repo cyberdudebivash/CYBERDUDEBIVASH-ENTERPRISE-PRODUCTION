@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createHmac } from "node:crypto";
 import type { AssessmentResult } from "@titan/assessment-core";
 import { scoreAssessment, dpdpV1 } from "@titan/assessment-core";
 import { createInMemoryLeadRepository } from "./repositories/leadRepository.memory.js";
@@ -10,6 +11,7 @@ import { createD1UserRepository } from "./repositories/userRepository.d1.js";
 import { createInMemorySupportRequestRepository } from "./repositories/supportRequestRepository.memory.js";
 import { createInMemorySubscriptionRepository } from "./repositories/subscriptionRepository.memory.js";
 import { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
+import { createInMemoryBillingTransactionRepository } from "./repositories/billingTransactionRepository.memory.js";
 import type { Dependencies } from "./router.js";
 import { handleRequest } from "./router.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
@@ -72,6 +74,15 @@ function createAuthorizedTestDeps(): Dependencies & {
     // COM-1: same reasoning, for the commercial describe blocks below.
     subscriptions: createInMemorySubscriptionRepository(),
     licenses: createInMemoryLicenseRepository(),
+    // Razorpay/scanner: an in-memory repository is inert and safe to include
+    // unconditionally like the two above. `razorpayCredentials` is
+    // deliberately NOT set here — setting it here would make
+    // createRazorpayOrderForPlan attempt a *real* outbound fetch to
+    // api.razorpay.com the moment any test hits that route without first
+    // stubbing global fetch. Dedicated billing describe blocks construct
+    // their own deps with a fake credential pair and a stubbed fetch,
+    // exactly like commercial/razorpay.test.ts already does.
+    billingTransactions: createInMemoryBillingTransactionRepository(),
   };
 }
 
@@ -4883,6 +4894,708 @@ describe("handleRequest", () => {
         { ...deps, licenses: undefined },
       );
       expect(response.status).toBe(503);
+    });
+  });
+
+  describe("POST /api/portal/commercial/razorpay/orders", () => {
+    const credentials = { keyId: "rzp_test_fake", keySecret: "fake_secret" };
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function stubOrderFetch(orderId = "order_abc123", amount = 999900) {
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValue(
+            new Response(JSON.stringify({ id: orderId, amount, currency: "INR" }), { status: 200 }),
+          ),
+      );
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("rate-limits POST .../razorpay/orders per client IP — unlike every other portal write, this one calls a real third-party API on every request", async () => {
+      stubOrderFetch();
+      const deps = {
+        ...createAuthorizedTestDeps(),
+        razorpayCredentials: credentials,
+        rateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+            method: "POST",
+            headers: {
+              cookie: caller.cookie,
+              "content-type": "application/json",
+              "cf-connecting-ip": "203.0.113.7",
+            },
+            body: JSON.stringify({ planId: "starter" }),
+          }),
+          deps,
+        );
+
+      const first = await makeRequest();
+      expect(first.status).toBe(201);
+
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 503 when Razorpay credentials are not configured", async () => {
+      // createAuthorizedTestDeps() deliberately never sets razorpayCredentials
+      // by default (see its own comment) — this is that default, unmodified.
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(503);
+    });
+
+    it("returns 400 for an unknown plan id", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "does-not-exist" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for the sales-assisted enterprise plan — no self-service checkout price exists", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "enterprise" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "sales_assisted_plan" },
+      });
+    });
+
+    it("creates a real trialing subscription+license when none exists, calls Razorpay for a real order, and saves a 'created' billing_transactions row", async () => {
+      stubOrderFetch("order_abc123", 999900);
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const responseBody = (await response.json()) as {
+        orderId: string;
+        amountPaise: number;
+        currency: string;
+        keyId: string;
+        transactionId: string;
+      };
+      expect(responseBody).toMatchObject({
+        orderId: "order_abc123",
+        amountPaise: 999900,
+        currency: "INR",
+        keyId: "rzp_test_fake",
+      });
+
+      const subscription = await deps.subscriptions!.findByOrganizationId("org_1");
+      expect(subscription?.status).toBe("trialing");
+      expect(subscription?.planId).toBe("starter");
+
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      expect(license?.seatLimit).toBe(10);
+
+      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_abc123");
+      expect(transaction).toMatchObject({
+        organizationId: "org_1",
+        planId: "starter",
+        provider: "razorpay",
+        providerOrderId: "order_abc123",
+        amountPaise: 999900,
+        status: "created",
+      });
+
+      const events = await deps.audit.list({ entityType: "subscription" });
+      expect(events.some((e) => e.action === "billing.order_created")).toBe(true);
+    });
+
+    it("reuses an existing subscription rather than creating a second one", async () => {
+      stubOrderFetch("order_def456");
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const existing = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "trialing",
+        trialEndsAt: "2026-08-03T00:00:00.000Z",
+        currentPeriodEnd: "2026-08-03T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const subscription = await deps.subscriptions!.findByOrganizationId("org_1");
+      expect(subscription?.id).toBe(existing.id);
+      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_def456");
+      expect(transaction?.subscriptionId).toBe(existing.id);
+    });
+
+    it("returns 502 with Razorpay's own error description when order creation fails", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ error: { description: "Authentication failed" } }), {
+            status: 401,
+          }),
+        ),
+      );
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(502);
+      expect((await response.json()) as { error: { code: string; message: string } }).toMatchObject(
+        {
+          error: { code: "razorpay_error", message: "Authentication failed" },
+        },
+      );
+    });
+  });
+
+  describe("POST /api/portal/commercial/razorpay/verify", () => {
+    const credentials = { keyId: "rzp_test_fake", keySecret: "fake_secret" };
+
+    /** Computed independently via Node's own `node:crypto` — the same
+     * real-cross-verification reasoning `commercial/razorpay.test.ts`'s own
+     * `referenceSignature` already establishes, duplicated here rather than
+     * shared since it's three lines and this file has no existing import
+     * from that test file. */
+    function referenceSignature(orderId: string, paymentId: string, secret: string): string {
+      return createHmac("sha256", secret).update(`${orderId}|${paymentId}`).digest("hex");
+    }
+
+    async function seedCreatedTransaction(
+      deps: ReturnType<typeof createAuthorizedTestDeps>,
+      organizationId: string,
+      providerOrderId: string,
+    ) {
+      const subscription = await deps.subscriptions!.save({
+        organizationId,
+        planId: "starter",
+        status: "trialing",
+        trialEndsAt: "2026-08-03T00:00:00.000Z",
+        currentPeriodEnd: "2026-08-03T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.licenses!.save({
+        organizationId,
+        subscriptionId: subscription.id,
+        seatLimit: 10,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const transaction = await deps.billingTransactions!.save({
+        organizationId,
+        subscriptionId: subscription.id,
+        planId: "starter",
+        provider: "razorpay",
+        providerOrderId,
+        providerPaymentId: null,
+        providerSignature: null,
+        amountPaise: 999_900,
+        currency: "INR",
+        status: "created",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      return { subscription, transaction };
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          body: JSON.stringify({
+            razorpay_order_id: "order_1",
+            razorpay_payment_id: "pay_1",
+            razorpay_signature: "sig",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_1",
+            razorpay_payment_id: "pay_1",
+            razorpay_signature: "sig",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 when a required field is missing", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ razorpay_order_id: "order_1", razorpay_payment_id: "pay_1" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 404 when the order does not exist", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_does_not_exist",
+            razorpay_payment_id: "pay_1",
+            razorpay_signature: "sig",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 404 (not a distinguishing 403) when the order belongs to a different organization", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      await seedCreatedTransaction(deps, "org_2", "order_belongs_to_org_2");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_belongs_to_org_2",
+            razorpay_payment_id: "pay_1",
+            razorpay_signature: "sig",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "not_found" },
+      });
+    });
+
+    it("rejects an invalid signature, marks the transaction failed, and never activates the subscription", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const { subscription } = await seedCreatedTransaction(deps, "org_1", "order_bad_sig");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_bad_sig",
+            razorpay_payment_id: "pay_1",
+            razorpay_signature: "not-the-real-signature",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "signature_verification_failed" },
+      });
+
+      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_bad_sig");
+      expect(transaction?.status).toBe("failed");
+      const reloadedSubscription = await deps.subscriptions!.findById(subscription.id);
+      expect(reloadedSubscription?.status).toBe("trialing");
+
+      const events = await deps.audit.list({ entityType: "subscription" });
+      expect(events.some((e) => e.action === "billing.payment_failed")).toBe(true);
+    });
+
+    it("verifies a real signature, marks the transaction paid, activates the subscription, and updates the license", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const { subscription } = await seedCreatedTransaction(deps, "org_1", "order_good_sig");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const signature = referenceSignature("order_good_sig", "pay_good", credentials.keySecret);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_good_sig",
+            razorpay_payment_id: "pay_good",
+            razorpay_signature: signature,
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect((await response.json()) as { verified: boolean }).toMatchObject({ verified: true });
+
+      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_good_sig");
+      expect(transaction?.status).toBe("paid");
+      expect(transaction?.providerPaymentId).toBe("pay_good");
+      expect(transaction?.providerSignature).toBe(signature);
+
+      const reloadedSubscription = await deps.subscriptions!.findById(subscription.id);
+      expect(reloadedSubscription?.status).toBe("active");
+      expect(reloadedSubscription?.planId).toBe("starter");
+      expect(reloadedSubscription?.currentPeriodEnd).not.toBeNull();
+
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      expect(license?.status).toBe("active");
+      expect(license?.seatLimit).toBe(10);
+
+      const events = await deps.audit.list({ entityType: "subscription" });
+      expect(events.some((e) => e.action === "subscription.activated")).toBe(true);
+      expect(events.some((e) => e.action === "billing.payment_verified")).toBe(true);
+    });
+
+    it("is idempotent — a retried verify call on an already-paid transaction returns the same success without re-verifying", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const { transaction } = await seedCreatedTransaction(deps, "org_1", "order_already_paid");
+      await deps.billingTransactions!.update(transaction.id, {
+        status: "paid",
+        providerPaymentId: "pay_already",
+        providerSignature: "already-verified-signature",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: "order_already_paid",
+            razorpay_payment_id: "pay_already",
+            // Deliberately garbage — proves the idempotent path returns
+            // early on transaction.status === "paid" without recomputing
+            // the signature at all.
+            razorpay_signature: "garbage-does-not-matter",
+          }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect((await response.json()) as { verified: boolean; transactionId: string }).toMatchObject(
+        {
+          verified: true,
+          transactionId: transaction.id,
+        },
+      );
+    });
+  });
+
+  describe("GET /api/portal/dpdp-scanner/access", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/access"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns hasAccess: false when the organization has no subscription at all", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/access", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect((await response.json()) as { hasAccess: boolean }).toEqual({ hasAccess: false });
+    });
+
+    it("returns hasAccess: false for a trialing subscription that has never been paid — trial entitlements are not reused as the scanner gate", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "trialing",
+        trialEndsAt: "2026-08-03T00:00:00.000Z",
+        currentPeriodEnd: "2026-08-03T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/access", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect((await response.json()) as { hasAccess: boolean }).toEqual({ hasAccess: false });
+    });
+
+    it("returns hasAccess: true for an active subscription with a real paid transaction", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-22T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.billingTransactions!.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        planId: "starter",
+        provider: "razorpay",
+        providerOrderId: "order_paid_1",
+        providerPaymentId: "pay_paid_1",
+        providerSignature: "sig",
+        amountPaise: 999_900,
+        currency: "INR",
+        status: "paid",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/access", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect((await response.json()) as { hasAccess: boolean }).toEqual({ hasAccess: true });
+    });
+
+    it("returns hasAccess: false once a previously-paid subscription is canceled", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "canceled",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-22T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.billingTransactions!.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        planId: "starter",
+        provider: "razorpay",
+        providerOrderId: "order_paid_then_canceled",
+        providerPaymentId: "pay_1",
+        providerSignature: "sig",
+        amountPaise: 999_900,
+        currency: "INR",
+        status: "paid",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/access", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect((await response.json()) as { hasAccess: boolean }).toEqual({ hasAccess: false });
+    });
+  });
+
+  describe("POST /api/portal/dpdp-scanner/scan", () => {
+    async function seedPaidAccess(
+      deps: ReturnType<typeof createAuthorizedTestDeps>,
+      organizationId: string,
+    ) {
+      const subscription = await deps.subscriptions!.save({
+        organizationId,
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-22T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      await deps.billingTransactions!.save({
+        organizationId,
+        subscriptionId: subscription.id,
+        planId: "starter",
+        provider: "razorpay",
+        providerOrderId: `order_${organizationId}`,
+        providerPaymentId: `pay_${organizationId}`,
+        providerSignature: "sig",
+        amountPaise: 999_900,
+        currency: "INR",
+        status: "paid",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/scan", {
+          method: "POST",
+          body: JSON.stringify({ answers: { has_dpo: false } }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedPaidAccess(deps, "org_1");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/scan", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ answers: { has_dpo: false } }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 402 payment_required when the organization has never paid", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/scan", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ answers: { has_dpo: false } }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(402);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "payment_required" },
+      });
+    });
+
+    it("returns 402 payment_required during an unpaid trial — proves the scanner gate is independent of resolveEntitlements", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "trialing",
+        trialEndsAt: "2026-08-03T00:00:00.000Z",
+        currentPeriodEnd: "2026-08-03T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/scan", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ answers: { has_dpo: false } }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(402);
+    });
+
+    it("runs a real scan, saves it via the same AssessmentRepository the anonymous flow uses, and records a real audit event", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedPaidAccess(deps, "org_1");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/dpdp-scanner/scan", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ answers: { has_dpo: false } }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const saved = (await response.json()) as {
+        id: string;
+        organizationId: string;
+        framework: string;
+        result: AssessmentResult;
+      };
+      expect(saved.organizationId).toBe("org_1");
+      expect(saved.framework).toBe("dpdp");
+      expect(saved.result).toEqual(recomputedResultForHasDpoFalse);
+
+      // The exact same repository CPP-1's pre-existing portal
+      // Assessments/Reports pages already read from — no new storage.
+      const found = await deps.assessments.search({ organizationId: "org_1" });
+      expect(found.total).toBe(1);
+      expect(found.assessments[0]?.id).toBe(saved.id);
+
+      const events = await deps.audit.list({ entityType: "assessment" });
+      expect(events.some((e) => e.action === "assessment.created")).toBe(true);
     });
   });
 });

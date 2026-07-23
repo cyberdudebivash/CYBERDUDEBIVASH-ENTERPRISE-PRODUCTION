@@ -56,6 +56,7 @@ describe("portalNavItems", () => {
   it("includes every portal section for a real organization member", () => {
     const items = portalNavItems(memberMe);
     expect(items).toContainEqual({ label: "Dashboard", to: "/portal" });
+    expect(items).toContainEqual({ label: "DPDP Scanner", to: "/portal/dpdp-scanner" });
     expect(items).toContainEqual({ label: "Assessments", to: "/portal/assessments" });
     expect(items).toContainEqual({ label: "Reports", to: "/portal/reports" });
     expect(items).toContainEqual({ label: "Support", to: "/portal/support" });

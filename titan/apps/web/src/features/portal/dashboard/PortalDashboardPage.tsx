@@ -8,6 +8,7 @@ import type {
 import type { SectionState } from "../../admin/dashboard/useDashboardData.js";
 import { auditActionLabel } from "../../admin/audit/auditActionLabels.js";
 import { AssessmentSummaryCard } from "../AssessmentSummaryCard.js";
+import { DpdpScannerCard } from "../dpdp-scanner/DpdpScannerCard.js";
 import { usePortalDashboard } from "./usePortalDashboard.js";
 import "./PortalDashboardPage.css";
 
@@ -26,6 +27,8 @@ export function PortalDashboardPage() {
   return (
     <div className="titan-portal-dashboard">
       <h1 className="titan-portal-dashboard__title">Dashboard</h1>
+
+      <DpdpScannerCard />
 
       <Panel title="Organization overview">
         <OrganizationSection state={organization} />

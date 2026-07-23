@@ -44,6 +44,15 @@ export interface Plan {
    * bigger or smaller than that one". */
   tier: number;
   priceDisplay: string;
+  /** The one real, chargeable amount in this catalog — the smallest
+   * currency unit (paise), server-resolved for every real Razorpay order
+   * (`router.ts`'s order-creation route never trusts a client-submitted
+   * amount). `null` for a sales-assisted plan (`trialDays: 0`) — there is
+   * no self-service checkout to charge a fixed amount for; a real
+   * Enterprise price is negotiated, not catalog-priced. Deliberately a
+   * separate field from `priceDisplay`, which stays exactly what it always
+   * was — display text, e.g. "Contact sales" — never parsed as an amount. */
+  priceInPaise: number | null;
   /** 0 means no self-service trial — see `PLAN_IDS`' own "enterprise" entry
    * and `router.ts`'s `createPortalSubscription`: a plan with no trial is
    * sales-assisted, not self-service-subscribable through the portal. */
@@ -57,6 +66,11 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Starter",
     tier: 1,
     priceDisplay: "$499/month",
+    // ₹9,999/month — a real, round INR figure chosen for this catalog the
+    // same way $499/$1,499 themselves were (COM-1): a reasonable, clearly
+    // documented placeholder business decision, not verified/approved
+    // pricing. Change here, in one place, the day real pricing is decided.
+    priceInPaise: 999_900,
     trialDays: 14,
     entitlements: {
       complianceReportExport: false,
@@ -70,6 +84,8 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Professional",
     tier: 2,
     priceDisplay: "$1,499/month",
+    // ₹29,999/month — same reasoning as Starter's own priceInPaise above.
+    priceInPaise: 2_999_900,
     trialDays: 14,
     entitlements: {
       complianceReportExport: true,
@@ -83,6 +99,8 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Enterprise",
     tier: 3,
     priceDisplay: "Contact sales",
+    // No self-service checkout price — see the field's own doc comment.
+    priceInPaise: null,
     trialDays: 0,
     entitlements: {
       complianceReportExport: true,

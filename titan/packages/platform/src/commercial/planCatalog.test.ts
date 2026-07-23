@@ -19,6 +19,26 @@ describe("PLAN_CATALOG", () => {
       expect(plan.entitlements.maxSeats).toBeGreaterThan(0);
     }
   });
+
+  it("gives every self-service plan a real, positive priceInPaise, and the sales-assisted plan null", () => {
+    for (const plan of PLAN_CATALOG) {
+      if (isSelfServicePlan(plan)) {
+        expect(plan.priceInPaise).not.toBeNull();
+        expect(plan.priceInPaise).toBeGreaterThan(0);
+      } else {
+        expect(plan.priceInPaise).toBeNull();
+      }
+    }
+  });
+
+  it("orders priceInPaise strictly by ascending tier, for every self-service plan", () => {
+    const selfServicePlans = PLAN_CATALOG.filter(isSelfServicePlan).sort((a, b) => a.tier - b.tier);
+    for (let i = 1; i < selfServicePlans.length; i += 1) {
+      expect(selfServicePlans[i]!.priceInPaise!).toBeGreaterThan(
+        selfServicePlans[i - 1]!.priceInPaise!,
+      );
+    }
+  });
 });
 
 describe("findPlan", () => {

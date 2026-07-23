@@ -15,3 +15,12 @@ AUTH_GOOGLE_ID=
 AUTH_GOOGLE_SECRET=
 AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
+
+# Razorpay (DPDP Compliance Scanner payment gate). Left blank in local dev:
+# worker.ts only constructs razorpayCredentials when both are present, so an
+# empty pair means the razorpay/* routes return 503 "not configured" rather
+# than a broken checkout. Real keys come from the Razorpay Dashboard
+# (Settings > API Keys) — this project has never had a real Razorpay account
+# in any session (DECISION_LOG.md).
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=

@@ -8,6 +8,7 @@ import type {
   AuditEventRecord,
   AuditRepository,
   AuditSearchOptions,
+  BillingTransactionRepository,
   LeadLifecyclePatch,
   LeadPriority,
   LeadRepository,
@@ -44,6 +45,12 @@ import {
 } from "./repositories/types.js";
 import { findPlan, isSelfServicePlan, PLAN_CATALOG, type Plan } from "./commercial/planCatalog.js";
 import { resolveEntitlements } from "./commercial/entitlements.js";
+import {
+  createRazorpayOrder,
+  RazorpayApiError,
+  verifyRazorpaySignature,
+  type RazorpayCredentials,
+} from "./commercial/razorpay.js";
 import { DEFAULT_ENVIRONMENT_NAME, type ConfigValidationResult } from "./config/validateEnv.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
@@ -140,6 +147,22 @@ export interface Dependencies {
    * alongside every subscription lifecycle change). Same optionality
    * reasoning as `subscriptions`. */
   licenses?: LicenseRepository;
+  /** Real Razorpay billing integration: one row per real order attempt,
+   * kept separate from `subscriptions`/`licenses` (see
+   * migrations/0013_billing_transactions.sql's own comment). Optional for
+   * the same reason `subscriptions`/`licenses` are — an unconfigured
+   * deployment fails the routes it backs with a 503, not a silent empty
+   * result or (far worse, for a payment route) a silently-granted access. */
+  billingTransactions?: BillingTransactionRepository;
+  /** worker.ts's own `env.RAZORPAY_KEY_ID`/`env.RAZORPAY_KEY_SECRET` —
+   * kept out of router.ts's own Cloudflare-binding knowledge, the same
+   * boundary `readinessCheck`/`configValidation` already established (a
+   * plain value in, not an `Env` import here). Optional: a deployment
+   * without real Razorpay credentials fails the order-creation route with
+   * a 503, the same "not configured" pattern every other optional
+   * dependency in this codebase already follows — it never falls back to
+   * a fake/skipped payment. */
+  razorpayCredentials?: RazorpayCredentials;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -747,6 +770,70 @@ async function route(
     return updatePortalSubscription(request, caller, organizationId, deps, ctx);
   }
 
+  // Real Razorpay billing integration, layered on top of COM-1's own
+  // provider-agnostic subscription model rather than inside it (see
+  // migrations/0013_billing_transactions.sql's own comment). Same
+  // resolvePortalOrganizationId + CSRF discipline as every other
+  // authenticated portal write above — this is real money moving, not a
+  // lower-stakes route to be casually looser about.
+  if (url.pathname === "/api/portal/commercial/razorpay/orders" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    // Unlike every other authenticated portal write, this one calls a real
+    // third-party API (Razorpay's own /v1/orders) on every request — the
+    // same "real external cost, worth rate-limiting even though the caller
+    // is authenticated" reasoning POST /api/organizations already applies
+    // among this file's small set of rate-limited routes; verify/scan below
+    // stay unlimited like every other authenticated portal write, since
+    // neither makes an outbound call of its own.
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return createRazorpayOrderForPlan(request, caller, organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/commercial/razorpay/verify" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return verifyRazorpayPaymentForOrganization(request, caller, organizationId, deps, ctx);
+  }
+
+  // The DPDP Compliance Scanner's own authenticated run — the first route
+  // in this codebase whose authorization gate is "real Razorpay payment
+  // verified", not just "organization member"/"Platform Administrator".
+  // Reuses @titan/assessment-core's scoreAssessment and the existing
+  // AssessmentRepository unchanged — a scan taken here shows up in the
+  // Customer Portal's own pre-existing Assessments/Reports pages (CPP-1)
+  // with zero new results/history/export UI needed.
+  if (url.pathname === "/api/portal/dpdp-scanner/scan" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return runPortalDpdpScan(request, caller, organizationId, deps, ctx);
+  }
+
+  if (url.pathname === "/api/portal/dpdp-scanner/access" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
+    if (organizationId instanceof Response) return organizationId;
+    return getPortalDpdpScannerAccess(organizationId, deps);
+  }
+
   // COM-1: checked before COMMERCIAL_SUBSCRIPTION_ID_PATTERN below, or
   // "search" would be parsed as a subscription id — the same ordering every
   // other "search before :id" pair in this file already uses.
@@ -907,6 +994,14 @@ function subscriptionsNotConfigured(requestId: string): Response {
 function licensesNotConfigured(requestId: string): Response {
   return jsonError(
     { code: "not_configured", message: "Licenses are not configured" },
+    requestId,
+    503,
+  );
+}
+
+function billingNotConfigured(requestId: string): Response {
+  return jsonError(
+    { code: "not_configured", message: "Billing is not configured" },
     requestId,
     503,
   );
@@ -3680,6 +3775,410 @@ async function updatePortalSubscription(
     ctx,
   );
   return jsonSuccess(after);
+}
+
+// Real Razorpay billing integration. Deliberately not folded into
+// applySubscriptionPatch above: that state machine's "active" transition
+// only ever means "renewed from canceled/expired" (a free, self-service
+// action) — it has no transition for "a trial converts to a real paid
+// subscription because a payment was just verified", a genuinely different
+// event this codebase never modeled before real payments existed. Keeping
+// this as its own function means applySubscriptionPatch's existing,
+// already-tested state machine is untouched — zero risk of a payment path
+// silently changing free cancel/renew behavior, or vice versa.
+
+function validateCreateRazorpayOrderInput(value: unknown): ValidationResult<{ planId: string }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const planId = requireNonEmptyString(body.value, "planId");
+  if (!planId.ok) return planId;
+  return ok({ planId: planId.value });
+}
+
+/** Creates a real Razorpay order for a self-service plan's real,
+ * server-resolved price — the client chooses a `planId`, never an amount.
+ * If the organization has no subscription yet, one is created here in
+ * `"trialing"` status (the same shape `createPortalSubscription` already
+ * creates for the free self-service path) purely to have a real id to
+ * attach this transaction to; it only becomes `"active"` once the payment
+ * this order represents is actually verified (`verifyRazorpayPaymentForOrganization`
+ * below) — creating the order is not itself an access grant. */
+async function createRazorpayOrderForPlan(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.billingTransactions) return billingNotConfigured(ctx.requestId);
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  if (!deps.licenses) return licensesNotConfigured(ctx.requestId);
+  if (!deps.razorpayCredentials) return billingNotConfigured(ctx.requestId);
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateCreateRazorpayOrderInput(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const plan = findPlan(parsed.value.planId);
+  if (!plan) {
+    return jsonError(
+      { code: "validation_error", message: `Unknown plan: ${parsed.value.planId}` },
+      ctx.requestId,
+      400,
+    );
+  }
+  // Enterprise (trialDays: 0, priceInPaise: null) is sales-assisted by
+  // design (planCatalog.ts) — no self-service checkout amount exists for
+  // it, the identical restriction createPortalSubscription already applies
+  // to the free trial path.
+  if (!isSelfServicePlan(plan) || plan.priceInPaise === null) {
+    return jsonError(
+      { code: "sales_assisted_plan", message: "This plan requires contacting sales" },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  const now = new Date();
+  let subscription = await deps.subscriptions.findByOrganizationId(organizationId);
+  if (!subscription) {
+    const trialEndsAt = new Date(
+      now.getTime() + plan.trialDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    subscription = await withOperationTiming(
+      ctx.metrics,
+      "portal.commercial.razorpay.subscriptions.save",
+      () =>
+        deps.subscriptions!.save({
+          organizationId,
+          planId: plan.id,
+          status: "trialing",
+          trialEndsAt,
+          currentPeriodEnd: trialEndsAt,
+          createdAt: now.toISOString(),
+        }),
+    );
+    await deps.licenses.save({
+      organizationId,
+      subscriptionId: subscription.id,
+      seatLimit: plan.entitlements.maxSeats,
+      status: "active",
+      activatedAt: now.toISOString(),
+      expiresAt: null,
+      createdAt: now.toISOString(),
+    });
+  }
+
+  let order;
+  try {
+    order = await createRazorpayOrder(
+      {
+        amountPaise: plan.priceInPaise,
+        currency: "INR",
+        // Razorpay's own receipt field is an opaque merchant reference, capped
+        // at 40 characters — real, not fabricated, and never used to derive
+        // anything security-relevant (the real link back to this organization
+        // is billing_transactions.organization_id, resolved server-side).
+        receipt: `${organizationId}-${plan.id}`.slice(0, 40),
+      },
+      deps.razorpayCredentials,
+    );
+  } catch (error) {
+    const message =
+      error instanceof RazorpayApiError ? error.message : "Razorpay order creation failed";
+    return jsonError({ code: "razorpay_error", message }, ctx.requestId, 502);
+  }
+
+  const transaction = await deps.billingTransactions.save({
+    organizationId,
+    subscriptionId: subscription.id,
+    planId: plan.id,
+    provider: "razorpay",
+    providerOrderId: order.id,
+    providerPaymentId: null,
+    providerSignature: null,
+    amountPaise: plan.priceInPaise,
+    currency: "INR",
+    status: "created",
+    createdAt: now.toISOString(),
+  });
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId,
+    action: "billing.order_created",
+    entityType: "subscription",
+    entityId: subscription.id,
+    metadata: { planId: plan.id, amountPaise: plan.priceInPaise, providerOrderId: order.id },
+    createdAt: now.toISOString(),
+  });
+
+  return jsonSuccess(
+    {
+      orderId: order.id,
+      amountPaise: plan.priceInPaise,
+      currency: "INR",
+      // The key id is meant to be public — Razorpay's own Checkout widget
+      // requires it client-side to open. Never the key secret.
+      keyId: deps.razorpayCredentials.keyId,
+      transactionId: transaction.id,
+    },
+    201,
+  );
+}
+
+function validateVerifyRazorpayPaymentInput(value: unknown): ValidationResult<{
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const orderId = requireNonEmptyString(body.value, "razorpay_order_id");
+  if (!orderId.ok) return orderId;
+  const paymentId = requireNonEmptyString(body.value, "razorpay_payment_id");
+  if (!paymentId.ok) return paymentId;
+  const signature = requireNonEmptyString(body.value, "razorpay_signature");
+  if (!signature.ok) return signature;
+  return ok({
+    razorpayOrderId: orderId.value,
+    razorpayPaymentId: paymentId.value,
+    razorpaySignature: signature.value,
+  });
+}
+
+/** The one function that actually grants paid access — everything before
+ * this point (order creation, opening Razorpay's Checkout widget) is
+ * real but not itself trusted; access is granted only after this route
+ * independently recomputes the HMAC signature server-side and confirms it
+ * matches (`verifyRazorpaySignature`, `commercial/razorpay.ts`), never on
+ * the client's own claim that checkout succeeded. */
+async function verifyRazorpayPaymentForOrganization(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.billingTransactions) return billingNotConfigured(ctx.requestId);
+  if (!deps.subscriptions) return subscriptionsNotConfigured(ctx.requestId);
+  if (!deps.licenses) return licensesNotConfigured(ctx.requestId);
+  if (!deps.razorpayCredentials) return billingNotConfigured(ctx.requestId);
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateVerifyRazorpayPaymentInput(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const transaction = await deps.billingTransactions.findByProviderOrderId(
+    parsed.value.razorpayOrderId,
+  );
+  // Scoped to the caller's own organization before anything else — an
+  // order id belonging to a different organization is treated exactly
+  // like an order id that doesn't exist at all, never distinguished by a
+  // different status code (SECURITY_GUIDE.md's own "don't leak existence"
+  // reasoning, applied here to a real payment record instead of an
+  // admin one).
+  if (!transaction || transaction.organizationId !== organizationId) {
+    return jsonError({ code: "not_found", message: "Order not found" }, ctx.requestId, 404);
+  }
+
+  // Idempotent: a retried verify call (e.g. the browser tab closing and
+  // reopening mid-flow) for an already-verified order returns the same
+  // real success, not a second charge or a spurious error.
+  if (transaction.status === "paid") {
+    return jsonSuccess({ verified: true, transactionId: transaction.id });
+  }
+
+  const signatureValid = await verifyRazorpaySignature(
+    parsed.value.razorpayOrderId,
+    parsed.value.razorpayPaymentId,
+    parsed.value.razorpaySignature,
+    deps.razorpayCredentials.keySecret,
+  );
+
+  const now = new Date().toISOString();
+
+  if (!signatureValid) {
+    await deps.billingTransactions.update(transaction.id, { status: "failed" });
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId,
+      action: "billing.payment_failed",
+      entityType: "subscription",
+      entityId: transaction.subscriptionId,
+      metadata: { providerOrderId: transaction.providerOrderId, reason: "signature_mismatch" },
+      createdAt: now,
+    });
+    return jsonError(
+      { code: "signature_verification_failed", message: "Payment could not be verified" },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  await deps.billingTransactions.update(transaction.id, {
+    status: "paid",
+    providerPaymentId: parsed.value.razorpayPaymentId,
+    providerSignature: parsed.value.razorpaySignature,
+  });
+
+  const plan = findPlan(transaction.planId);
+  const subscription = await deps.subscriptions.findById(transaction.subscriptionId);
+  if (plan && subscription) {
+    const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    await deps.subscriptions.update(subscription.id, {
+      planId: plan.id,
+      status: "active",
+      currentPeriodEnd,
+    });
+    const license = await deps.licenses.findByOrganizationId(organizationId);
+    if (license) {
+      await deps.licenses.update(license.id, {
+        seatLimit: plan.entitlements.maxSeats,
+        status: "active",
+      });
+    }
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId,
+      action: "subscription.activated",
+      entityType: "subscription",
+      entityId: subscription.id,
+      metadata: { planId: plan.id, providerOrderId: transaction.providerOrderId },
+      createdAt: now,
+    });
+  }
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId,
+    action: "billing.payment_verified",
+    entityType: "subscription",
+    entityId: transaction.subscriptionId,
+    metadata: {
+      providerOrderId: transaction.providerOrderId,
+      amountPaise: transaction.amountPaise,
+    },
+    createdAt: now,
+  });
+
+  return jsonSuccess({ verified: true, transactionId: transaction.id });
+}
+
+/** The DPDP Compliance Scanner's real access gate — deliberately not the
+ * same thing as `resolveEntitlements`'s output. Entitlements grant their
+ * full plan during `"trialing"` (a real, intended trial-evaluation
+ * feature, `entitlements.ts`'s own doc comment) which would let a
+ * never-paid organization run the scanner for free — the opposite of
+ * "payment must complete before any scan can start". This checks for a
+ * real, verified `"paid"` transaction directly, independent of trial
+ * status, and additionally requires the subscription to currently be
+ * `"active"` (a canceled paid subscription loses access, matching ordinary
+ * SaaS expectations) — see DECISION_LOG.md's entry for the full reasoning
+ * on why this is a separate check from entitlements rather than a new
+ * PlanEntitlements field. */
+async function hasVerifiedDpdpScannerAccess(
+  organizationId: string,
+  deps: Dependencies,
+): Promise<boolean> {
+  if (!deps.billingTransactions || !deps.subscriptions) return false;
+  const subscription = await deps.subscriptions.findByOrganizationId(organizationId);
+  if (!subscription || subscription.status !== "active") return false;
+  const paid = await deps.billingTransactions.search({
+    organizationId,
+    status: "paid",
+    pageSize: 1,
+  });
+  return paid.total > 0;
+}
+
+async function getPortalDpdpScannerAccess(
+  organizationId: string,
+  deps: Dependencies,
+): Promise<Response> {
+  const hasAccess = await hasVerifiedDpdpScannerAccess(organizationId, deps);
+  return jsonSuccess({ hasAccess });
+}
+
+function validateDpdpScanInput(value: unknown): ValidationResult<NewAssessment["answers"]> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const answers = requirePlainObject(body.value, "answers");
+  if (!answers.ok) return answers;
+  return ok(answers.value as unknown as NewAssessment["answers"]);
+}
+
+/** The scanner's own real run — gated on `hasVerifiedDpdpScannerAccess`
+ * above, otherwise identical to the public, anonymous `createAssessment`:
+ * the exact same `scoreAssessment(dpdpV1.questions, answers)` and the same
+ * `AssessmentRepository.save`, just with a real `organizationId`/`createdBy`
+ * instead of the anonymous flow's null/lead-derived values. The saved
+ * assessment is not a new kind of record — it shows up in the Customer
+ * Portal's own pre-existing Assessments/Reports pages (CPP-1) exactly like
+ * any other assessment linked to this organization, with zero new
+ * results/history/search/export UI needed. */
+async function runPortalDpdpScan(
+  request: Request,
+  caller: Caller,
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  const hasAccess = await hasVerifiedDpdpScannerAccess(organizationId, deps);
+  if (!hasAccess) {
+    return jsonError(
+      {
+        code: "payment_required",
+        message: "A paid subscription is required to run the DPDP Compliance Scanner",
+      },
+      ctx.requestId,
+      402,
+    );
+  }
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateDpdpScanInput(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const result = scoreAssessment(dpdpV1.questions, parsed.value);
+  const saved = await withOperationTiming(ctx.metrics, "portal.dpdpScanner.assessments.save", () =>
+    deps.assessments.save({
+      organizationId,
+      createdBy: caller.userId,
+      framework: "dpdp",
+      frameworkVersion: dpdpV1.version,
+      answers: parsed.value,
+      result,
+      createdAt: new Date().toISOString(),
+    }),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId,
+    action: "assessment.created",
+    entityType: "assessment",
+    entityId: saved.id,
+    metadata: { framework: saved.framework, frameworkVersion: saved.frameworkVersion },
+    createdAt: saved.createdAt,
+  });
+
+  return jsonSuccess(saved, 201);
 }
 
 async function updateAdminSubscription(

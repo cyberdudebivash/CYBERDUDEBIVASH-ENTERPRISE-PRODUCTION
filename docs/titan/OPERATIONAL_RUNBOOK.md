@@ -509,6 +509,35 @@ COM-1 adds one customer-facing self-service page and one admin-facing management
 
 This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/commercial-platform.spec.ts`) that drives a real organization member through Plan Selection → trial start → upgrade (each persisting across a reload) and a Platform Administrator through Commercial Workspace search → Subscription Detail → an admin-only plan reassignment reflected immediately — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
 
+## Using the DPDP Compliance Scanner's Razorpay payment gate (`/portal/dpdp-scanner`)
+
+A real, Razorpay-gated premium feature on the Customer Portal — the sidebar shows a **DPDP Scanner** link for any real organization member, and a promotional card renders near the top of the Dashboard, both driven by the same real access check below, never a client-side guess.
+
+1. **No real Razorpay credentials exist in this environment** (`.dev.vars` has no `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` — `DEVELOPER_GUIDE.md`'s setup section). This is the expected, honest local-dev state: visiting `/portal/dpdp-scanner` for an organization with no verified payment shows the real Razorpay paywall (plan cards sourced from the pre-existing `GET /api/commercial/plans`, COM-1), but clicking "Unlock with Starter"/"Unlock with Professional" hits `POST /api/portal/commercial/razorpay/orders`, which correctly returns a real 503 — not a fabricated success, not a silent hang.
+2. **To exercise the "already paid" path locally without real Razorpay credentials**, seed a real, verified transaction directly in D1 — the same technique `dpdp-scanner.spec.ts`'s own E2E suite uses:
+```bash
+# Real subscription + license + a real, verified "paid" billing_transactions row —
+# the exact state hasVerifiedDpdpScannerAccess (router.ts) checks for.
+SUB_ID=$(uuidgen); LIC_ID=$(uuidgen); TXN_ID=$(uuidgen); NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+npx wrangler d1 execute titan-platform-db --local --command \
+  "INSERT INTO subscriptions (id, organization_id, plan_id, status, trial_ends_at, current_period_end, created_at, updated_at, canceled_at) VALUES ('$SUB_ID', '<real organization id>', 'starter', 'active', NULL, '$NOW', '$NOW', '$NOW', NULL)"
+npx wrangler d1 execute titan-platform-db --local --command \
+  "INSERT INTO licenses (id, organization_id, subscription_id, seat_limit, status, activated_at, expires_at, created_at, updated_at) VALUES ('$LIC_ID', '<real organization id>', '$SUB_ID', 10, 'active', '$NOW', NULL, '$NOW', '$NOW')"
+npx wrangler d1 execute titan-platform-db --local --command \
+  "INSERT INTO billing_transactions (id, organization_id, subscription_id, plan_id, provider, provider_order_id, provider_payment_id, provider_signature, amount_paise, currency, status, created_at, updated_at) VALUES ('$TXN_ID', '<real organization id>', '$SUB_ID', 'starter', 'razorpay', 'order_local_$TXN_ID', 'pay_local_$TXN_ID', 'sig_local', 999900, 'INR', 'paid', '$NOW', '$NOW')"
+```
+Reload `/portal/dpdp-scanner` as that organization's own member — it now renders the real scanner (question flow, not the paywall), since `GET /api/portal/dpdp-scanner/access` reads this same real row.
+3. **`POST /api/portal/dpdp-scanner/scan`** (real organization member, CSRF-checked, gated on the access check above) reuses `scoreAssessment`/`AssessmentRepository.save` unchanged from the pre-existing anonymous `POST /api/assessments` handler — a paid scan is a real row in the same repository, visible via the pre-existing `/portal/assessments`/`/portal/reports` pages with zero new endpoint needed to view it:
+```
+curl -s http://localhost:8787/api/portal/dpdp-scanner/scan -X POST \
+  -H "Cookie: authjs.session-token=<real token>" -H "Content-Type: application/json" \
+  -d '{"answers":{"has_dpo":false}}'
+```
+201, returns the saved `AssessmentRecord` (real `result.score`/`riskLevel`/`gaps`, computed server-side, never trusted from the request body — the identical discipline every scoring endpoint in this codebase has used since the Security Release Blocker Sprint). A second call for an organization whose subscription later gets canceled (`PATCH /api/portal/commercial/subscription`, COM-1) correctly returns 402 `payment_required` — the gate re-checks on every request, never caching a prior "yes."
+4. **Every step lands in the audit trail** — `billing.order_created`/`billing.payment_verified`/`billing.payment_failed`/`subscription.activated` (on the subscription entity) alongside the pre-existing `assessment.created` (on the new assessment) — all visible via `GET /api/audit?entityType=subscription&entityId=...`, the same consolidated Audit Center (EAP-6) pattern every other module already uses.
+
+This whole flow is also covered by a committed Playwright E2E suite (`apps/web/e2e/dpdp-scanner.spec.ts`) that drives a real Chromium browser through the real paywall (including the real 503 above), and, via the same D1-seeding technique in step 2, a full real scan-and-save round trip — see `DEVELOPER_GUIDE.md`'s Playwright section to run it.
+
 ## Verifying PRD-1's production infrastructure locally
 
 Everything below is real and runnable today, entirely credential-free — none of it deploys anywhere. See `DEPLOYMENT_GUIDE.md` for the full picture (including what genuinely needs real Cloudflare credentials and hasn't been run) and `DISASTER_RECOVERY.md` for the full backup/restore drill this section's backup commands are drawn from.

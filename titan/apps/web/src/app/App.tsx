@@ -29,6 +29,7 @@ import { PortalReportsPage } from "../features/portal/reports/PortalReportsPage.
 import { PortalAccountPage } from "../features/portal/account/PortalAccountPage.js";
 import { PortalSupportPage } from "../features/portal/support/PortalSupportPage.js";
 import { PortalSubscriptionPage } from "../features/portal/subscription/PortalSubscriptionPage.js";
+import { DpdpScannerPage } from "../features/portal/dpdp-scanner/DpdpScannerPage.js";
 
 /** Separated from App so tests can wrap it in MemoryRouter instead of BrowserRouter. */
 export function AppRoutes() {
@@ -131,6 +132,12 @@ export function AppRoutes() {
         }
       >
         <Route index element={<PortalDashboardPage />} />
+        {/* Real Razorpay billing layered on top of CPP-1/COM-1's own
+            organization-scoped session/subscription model — the paywall and
+            the scanner both live behind this one route, deciding which to
+            render from GET /api/portal/dpdp-scanner/access, not from route
+            params. */}
+        <Route path="dpdp-scanner" element={<DpdpScannerPage />} />
         <Route path="assessments" element={<PortalAssessmentsPage />} />
         <Route path="assessments/:id" element={<PortalAssessmentDetailPage />} />
         <Route path="reports" element={<PortalReportsPage />} />

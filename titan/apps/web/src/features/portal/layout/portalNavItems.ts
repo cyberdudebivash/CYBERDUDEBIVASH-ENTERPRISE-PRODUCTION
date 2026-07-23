@@ -24,6 +24,7 @@ export function portalNavItems(me: MeResponse): SidebarItem[] {
 
   return [
     { label: "Dashboard", to: "/portal" },
+    { label: "DPDP Scanner", to: "/portal/dpdp-scanner" },
     { label: "Assessments", to: "/portal/assessments" },
     { label: "Reports", to: "/portal/reports" },
     { label: "Support", to: "/portal/support" },
