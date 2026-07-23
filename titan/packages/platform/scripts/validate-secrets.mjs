@@ -21,6 +21,7 @@ const REQUIRED_SECRETS = ["AUTH_SECRET"];
 const OPTIONAL_SECRET_PAIRS = [
   ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"],
   ["AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"],
+  ["RESEND_API_KEY", "EMAIL_FROM"],
 ];
 
 const args = process.argv.slice(2);

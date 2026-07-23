@@ -39,6 +39,13 @@ Living document — remaining work, prioritized. Updated in place as items resol
 
 **Do not perform 11–12 before item 1 is confirmed live** — doing so removes the only thing currently keeping Cloudflare correct, with no fallback.
 
+## Titan platform (separate sub-project — `titan/`, own CI/docs, tracked here only at cross-program-risk level)
+
+| # | Item | Owner | Notes |
+|---|---|---|---|
+| 13 | Provision real production email for Titan: create a real Resend account, verify a real sending domain, add `RESEND_API_KEY`/`EMAIL_FROM` to this repository's GitHub Actions secrets, then run the `Titan Provision Environment` workflow (`titan-provision.yml`) for `production` | Founder/Business owner (real account creation) + Engineering (the workflow run itself) | `RISK_REGISTER.md` risk 16a. Code is complete and tested — see `docs/titan/DECISION_LOG.md`'s 2026-07-23 Resend entry. Nothing left to build; this is account setup + a deploy action |
+| 14 | Decide and build a self-service organization-creation or invite path for Titan | Founder/Business owner (decision) + Engineering (build) | `RISK_REGISTER.md` risk 16b. Every organization/role grant today requires an existing Platform Administrator, by deliberate design (`docs/titan/DECISION_LOG.md`) — a real customer who signs in successfully still has no way to reach the product without one. Larger than a config fix; needs a product decision on the desired flow before engineering starts |
+
 ## Closed this program
 
 | Item | Resolution |

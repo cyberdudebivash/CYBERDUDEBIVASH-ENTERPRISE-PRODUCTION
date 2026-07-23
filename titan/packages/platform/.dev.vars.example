@@ -24,3 +24,14 @@ AUTH_GITHUB_SECRET=
 # in any session (DECISION_LOG.md).
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
+
+# Resend (production magic-link email — auth/resendEmail.ts). Left blank in
+# local dev: worker.ts only constructs the `resend` option when both are
+# present, so an empty pair means Auth.js's Email provider falls back to its
+# dev-mode sendVerificationRequest (logs the sign-in link instead of
+# emailing it — see auth/config.ts) rather than a broken send. Real key
+# comes from the Resend Dashboard (API Keys); EMAIL_FROM must be an address
+# on a domain verified in that same dashboard (Domains) — this project has
+# never had a real Resend account in any session (DECISION_LOG.md).
+RESEND_API_KEY=
+EMAIL_FROM=

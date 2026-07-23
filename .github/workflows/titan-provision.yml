@@ -18,20 +18,25 @@ name: Titan Provision Environment
 #    than creating one. DEPLOYMENT_GUIDE.md's checklist didn't anticipate
 #    this either — recorded here so it isn't rediscovered.
 # 3. The real Cloudflare Worker secrets the deployed code reads at runtime
-#    (worker.ts's own env.AUTH_SECRET / env.RAZORPAY_KEY_ID / env.RAZORPAY_KEY_SECRET)
-#    — a completely different store from this repository's own Actions
-#    secrets, set via `wrangler secret put`, never in wrangler.toml
-#    (SECURITY_GUIDE.md's "Secrets management"). AUTH_SECRET has no
-#    existing value anywhere in this project (DECISION_LOG.md — never
-#    deployed), so it is generated fresh here, but only if this environment
-#    doesn't already have one — safe to re-run without silently rotating a
-#    secret that live sessions may already depend on. The generated value
-#    is piped directly into `wrangler secret put` and never echoed or
-#    logged. Razorpay's two keys are forwarded from this repository's own
-#    RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET Actions secrets (always
-#    re-uploaded — idempotent, no rotation risk since the source of truth
-#    is the Actions secret, not a value generated here), which GitHub
-#    automatically redacts from all logs regardless.
+#    (worker.ts's own env.AUTH_SECRET / env.RAZORPAY_KEY_ID / env.RAZORPAY_KEY_SECRET
+#    / env.RESEND_API_KEY / env.EMAIL_FROM) — a completely different store
+#    from this repository's own Actions secrets, set via `wrangler secret
+#    put`, never in wrangler.toml (SECURITY_GUIDE.md's "Secrets
+#    management"). AUTH_SECRET has no existing value anywhere in this
+#    project (DECISION_LOG.md — never deployed), so it is generated fresh
+#    here, but only if this environment doesn't already have one — safe to
+#    re-run without silently rotating a secret that live sessions may
+#    already depend on. The generated value is piped directly into
+#    `wrangler secret put` and never echoed or logged. Razorpay's two keys
+#    and Resend's two values are forwarded from this repository's own
+#    RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET/RESEND_API_KEY/EMAIL_FROM Actions
+#    secrets (always re-uploaded — idempotent, no rotation risk since the
+#    source of truth is the Actions secret, not a value generated here),
+#    which GitHub automatically redacts from all logs regardless. EMAIL_FROM
+#    is not sensitive (it's a public sender address) but is stored as an
+#    Actions secret rather than a variable purely so it lands in the exact
+#    same place as RESEND_API_KEY, avoiding the Secrets-vs-Variables mixup
+#    already documented for TITAN_API_BASE_URL (titan-deploy.yml).
 #
 # Manual-only, like titan-deploy.yml — never runs automatically. Every step
 # is safe to re-run: each checks for its target's existence first.
@@ -111,6 +116,14 @@ jobs:
         run: |
           printf '%s' "${{ secrets.RAZORPAY_KEY_ID }}" | npx wrangler secret put RAZORPAY_KEY_ID --env ${{ inputs.target_environment }}
           printf '%s' "${{ secrets.RAZORPAY_KEY_SECRET }}" | npx wrangler secret put RAZORPAY_KEY_SECRET --env ${{ inputs.target_environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set Resend Worker secrets from this repository's own secrets of the same name (production email delivery)
+        run: |
+          printf '%s' "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --env ${{ inputs.target_environment }}
+          printf '%s' "${{ secrets.EMAIL_FROM }}" | npx wrangler secret put EMAIL_FROM --env ${{ inputs.target_environment }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

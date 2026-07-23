@@ -38,6 +38,17 @@ export interface Env {
    * as `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`'s own pairing below. */
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
+  /** Real Resend credentials for production magic-link email
+   * (auth/resendEmail.ts) — absent in local dev, same
+   * never-had-real-credentials status as Razorpay above (DECISION_LOG.md).
+   * Both must be present for `createAuthConfig`'s `resend` option to be
+   * constructed below; a partial pair is treated as not configured and
+   * falls back to the dev-mode logging provider, same pairing rule as
+   * `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`. `EMAIL_FROM` must be an
+   * address on a domain verified in the Resend dashboard — never defaulted
+   * to a guessed address here (Resend rejects unverified senders). */
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
 }
 
 // Module-scoped (not per-request): a Workers isolate is reused across many
@@ -92,6 +103,10 @@ export default {
           github:
             env.AUTH_GITHUB_ID && env.AUTH_GITHUB_SECRET
               ? { clientId: env.AUTH_GITHUB_ID, clientSecret: env.AUTH_GITHUB_SECRET }
+              : undefined,
+          resend:
+            env.RESEND_API_KEY && env.EMAIL_FROM
+              ? { apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM }
               : undefined,
           logger,
           allowedOrigin,

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EmailConfig } from "@auth/core/providers/email";
 import { createTestD1Factory } from "../repositories/testUtils/testD1.js";
 import { createAuthConfig } from "./config.js";
@@ -72,6 +72,71 @@ describe("createAuthConfig", () => {
     expect(messages[0]).toMatchObject({
       message: expect.stringContaining("dev mode"),
       fields: { identifier: "asha@acme.in" },
+    });
+  });
+
+  it("the dev Email provider's from address is the local placeholder, not a real domain", () => {
+    const config = createAuthConfig({ db: createDb(), secret: "test-secret" });
+    const emailProvider = config.providers.find((p) => "id" in p && p.id === "email") as
+      EmailConfig | undefined;
+    expect(emailProvider?.from).toBe("no-reply@titan.local");
+  });
+
+  describe("Resend-backed Email provider (resend credentials supplied)", () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("uses the configured Resend sender as the provider's from address, not the dev placeholder", () => {
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        resend: { apiKey: "re_test", from: "Titan <no-reply@cyberdudebivash.com>" },
+      });
+      const emailProvider = config.providers.find((p) => "id" in p && p.id === "email") as
+        EmailConfig | undefined;
+      expect(emailProvider?.from).toBe("Titan <no-reply@cyberdudebivash.com>");
+    });
+
+    it("sending a verification request actually calls the real Resend API, not the dev-mode logger", async () => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_abc" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      const messages: unknown[] = [];
+      const config = createAuthConfig({
+        db: createDb(),
+        secret: "test-secret",
+        resend: { apiKey: "re_test", from: "no-reply@cyberdudebivash.com" },
+        logger: {
+          info: (message, fields) => messages.push({ message, fields }),
+          warn: () => {},
+          error: () => {},
+        },
+      });
+      const emailProvider = config.providers.find((p) => "id" in p && p.id === "email") as
+        EmailConfig | undefined;
+      expect(emailProvider).toBeDefined();
+
+      await emailProvider!.sendVerificationRequest({
+        identifier: "asha@acme.in",
+        url: "https://example.com/api/auth/callback/email?token=abc",
+        expires: new Date(Date.now() + 3600_000),
+        provider: emailProvider!,
+        token: "test-token",
+        theme: {},
+        request: new Request("https://example.com/api/auth/callback/email?token=abc"),
+      });
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://api.resend.com/emails",
+        expect.objectContaining({ method: "POST" }),
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toMatchObject({ message: "magic-link email sent" });
+      expect(messages.some((m) => (m as { message: string }).message.includes("dev mode"))).toBe(
+        false,
+      );
     });
   });
 

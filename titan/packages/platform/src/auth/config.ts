@@ -5,6 +5,7 @@ import Google from "@auth/core/providers/google";
 import { D1Adapter } from "@auth/d1-adapter";
 import type { D1Database } from "@cloudflare/workers-types";
 import { createLogger, type Logger } from "../observability/logger.js";
+import { sendMagicLinkEmail, type ResendCredentials } from "./resendEmail.js";
 
 export interface OAuthCredentials {
   clientId: string;
@@ -33,6 +34,13 @@ export interface AuthConfigOptions {
   trustHost?: boolean;
   google?: OAuthCredentials;
   github?: OAuthCredentials;
+  /** Real Resend credentials (Workstream 5 follow-up — the email provider
+   * decision `ARCHITECTURE.md`'s "still open" list left pending). Present
+   * only when both `RESEND_API_KEY` and `EMAIL_FROM` are configured
+   * (worker.ts); registers a real `sendVerificationRequest` that calls the
+   * Resend API instead of the dev-mode logger, same
+   * present-both-or-neither shape as `google`/`github` above. */
+  resend?: ResendCredentials;
   logger?: Logger;
   /**
    * EAP-1: the origin of the browser app that calls this Worker cross-origin
@@ -60,17 +68,18 @@ export interface AuthConfigOptions {
  * Both are genuinely wired (correct provider config shape, real
  * @auth/core provider objects), just inactive without real secrets.
  *
- * Email uses a dev-mode sendVerificationRequest that logs the sign-in link
- * instead of emailing it. This is a real, working provider for local
- * development and testing, not a stub — but it does not send real email.
- * No email provider has been chosen yet (DECISION_LOG.md's "still open"
- * list); wiring one in is a follow-up to this function, not a rewrite of it.
- * Built as a plain EmailConfig object rather than through
- * providers/email.js's default export: that export is a deprecated
- * wrapper around providers/nodemailer.js, which imports the `nodemailer`
- * package at module load time even though a custom sendVerificationRequest
- * never calls its transport — pulling in a real SMTP dependency this
- * project doesn't need yet just to satisfy an unused code path.
+ * Email registers a real Resend-backed sendVerificationRequest
+ * (resendEmail.ts) when `options.resend` is supplied — the email provider
+ * decision DECISION_LOG.md's "still open" list left pending. Falls back to
+ * the original dev-mode sendVerificationRequest (logs the sign-in link
+ * instead of emailing it) when it isn't, the same present-or-absent shape
+ * `google`/`github` already use below, so local dev and any environment
+ * without real Resend credentials keep working exactly as before. Built as
+ * a plain EmailConfig object rather than through providers/email.js's
+ * default export in both cases: that export is a deprecated wrapper around
+ * providers/nodemailer.js, which imports the `nodemailer` package at module
+ * load time even though a custom sendVerificationRequest never calls its
+ * transport — pulling in a real SMTP dependency this project doesn't need.
  *
  * Enterprise SSO (SAML/OIDC federation) is explicitly out of scope for this
  * stage (Workstream 5's own instruction) — nothing here forecloses adding
@@ -79,20 +88,31 @@ export interface AuthConfigOptions {
 export function createAuthConfig(options: AuthConfigOptions): AuthConfig {
   const logger = options.logger ?? createLogger({ service: "titan-auth" });
 
-  const devEmailProvider: EmailConfig = {
-    id: "email",
-    type: "email",
-    name: "Email",
-    from: "no-reply@titan.local",
-    async sendVerificationRequest({ identifier, url }) {
-      logger.info("sign-in link generated (dev mode — not actually emailed)", {
-        identifier,
-        url,
-      });
-    },
-  };
+  const resendCredentials = options.resend;
+  const emailProvider: EmailConfig = resendCredentials
+    ? {
+        id: "email",
+        type: "email",
+        name: "Email",
+        from: resendCredentials.from,
+        async sendVerificationRequest({ identifier, url, expires }) {
+          await sendMagicLinkEmail({ to: identifier, url, expires }, resendCredentials, logger);
+        },
+      }
+    : {
+        id: "email",
+        type: "email",
+        name: "Email",
+        from: "no-reply@titan.local",
+        async sendVerificationRequest({ identifier, url }) {
+          logger.info("sign-in link generated (dev mode — not actually emailed)", {
+            identifier,
+            url,
+          });
+        },
+      };
 
-  const providers: AuthConfig["providers"] = [devEmailProvider];
+  const providers: AuthConfig["providers"] = [emailProvider];
 
   if (options.google) {
     providers.push(
