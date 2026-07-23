@@ -7,6 +7,7 @@ const sampleTransaction: NewBillingTransaction = {
   planId: "starter",
   provider: "razorpay",
   providerOrderId: "order_1",
+  providerSubscriptionId: null,
   providerPaymentId: null,
   providerSignature: null,
   amountPaise: 999900,
@@ -48,6 +49,34 @@ export function describeBillingTransactionRepositoryContract(
       await repo.save({ ...sampleTransaction, providerOrderId: "order_2" });
       const found = await repo.findByProviderOrderId("order_2");
       expect(found?.providerOrderId).toBe("order_2");
+    });
+
+    it("finds a subscription-mode transaction by its provider subscription id, with no order id at all", async () => {
+      const repo = createRepository();
+      const saved = await repo.save({
+        ...sampleTransaction,
+        providerOrderId: null,
+        providerSubscriptionId: "sub_abc123",
+      });
+      expect(saved.providerOrderId).toBeNull();
+      const found = await repo.findByProviderSubscriptionId("sub_abc123");
+      expect(found?.id).toBe(saved.id);
+    });
+
+    it("allows more than one subscription-mode transaction with no order id — a null provider order id never collides", async () => {
+      const repo = createRepository();
+      await repo.save({
+        ...sampleTransaction,
+        providerOrderId: null,
+        providerSubscriptionId: "sub_a",
+      });
+      await repo.save({
+        ...sampleTransaction,
+        providerOrderId: null,
+        providerSubscriptionId: "sub_b",
+      });
+      const result = await repo.search({});
+      expect(result.total).toBe(2);
     });
 
     it("findById returns the matching record", async () => {

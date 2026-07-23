@@ -29,29 +29,50 @@ import type {
   SubscriptionRepository,
   SubscriptionSearchOptions,
   SubscriptionStatus,
+  SupportRequestPatch,
   SupportRequestRepository,
+  SupportRequestSearchOptions,
   UserProfilePatch,
   UserProfileRecord,
   UserProfileRepository,
   UserRepository,
   UserRole,
   UserSearchOptions,
+  WebhookEventRepository,
 } from "./repositories/types.js";
 import {
   LEAD_PRIORITIES,
   LEAD_STATUSES,
   ORGANIZATION_STATUSES,
   SUBSCRIPTION_STATUSES,
+  SUPPORT_REQUEST_STATUSES,
   USER_ROLES,
 } from "./repositories/types.js";
-import { findPlan, isSelfServicePlan, PLAN_CATALOG, type Plan } from "./commercial/planCatalog.js";
+import {
+  findPlan,
+  findPlanPricing,
+  isSelfServicePlan,
+  isSupportedCurrency,
+  PLAN_CATALOG,
+  type Currency,
+  type Plan,
+} from "./commercial/planCatalog.js";
 import { resolveEntitlements } from "./commercial/entitlements.js";
 import {
-  createRazorpayOrder,
+  cancelRazorpaySubscription,
+  createRazorpayPlan,
+  createRazorpaySubscription,
   RazorpayApiError,
-  verifyRazorpaySignature,
+  verifyRazorpaySubscriptionSignature,
+  verifyRazorpayWebhookSignature,
   type RazorpayCredentials,
 } from "./commercial/razorpay.js";
+import {
+  buildCancellationEmail,
+  buildExpiryEmail,
+  buildPaymentReceiptEmail,
+} from "./commercial/billingEmailTemplates.js";
+import { sendResendEmail, type ResendCredentials } from "./auth/resendEmail.js";
 import { DEFAULT_ENVIRONMENT_NAME, type ConfigValidationResult } from "./config/validateEnv.js";
 import { jsonError, jsonSuccess } from "./http/responses.js";
 import { preflightResponse, resolveAllowedOrigin } from "./http/cors.js";
@@ -159,11 +180,37 @@ export interface Dependencies {
    * kept out of router.ts's own Cloudflare-binding knowledge, the same
    * boundary `readinessCheck`/`configValidation` already established (a
    * plain value in, not an `Env` import here). Optional: a deployment
-   * without real Razorpay credentials fails the order-creation route with
-   * a 503, the same "not configured" pattern every other optional
+   * without real Razorpay credentials fails the checkout-creation route
+   * with a 503, the same "not configured" pattern every other optional
    * dependency in this codebase already follows — it never falls back to
    * a fake/skipped payment. */
   razorpayCredentials?: RazorpayCredentials;
+  /** Real recurring billing: idempotency ledger for `POST
+   * /api/webhooks/razorpay` (`webhookEventRepository.*.ts`) — Razorpay's own
+   * documented at-least-once webhook delivery means the same event can
+   * legitimately arrive more than once; this is what makes reprocessing it
+   * a safe no-op instead of a double-applied renewal. Optional for the same
+   * reason every other billing dependency is: an unconfigured deployment
+   * fails the webhook route with a 503, never silently skips the
+   * idempotency check. */
+  webhookEvents?: WebhookEventRepository;
+  /** worker.ts's own `env.RAZORPAY_WEBHOOK_SECRET` — a *different* secret
+   * from `razorpayCredentials.keySecret` (Razorpay issues a dedicated
+   * webhook secret per configured endpoint, per its own documented
+   * contract). Optional for the same "real but blocked without real
+   * credentials" reason `razorpayCredentials` is. */
+  razorpayWebhookSecret?: string;
+  /** Real recurring billing's own transactional emails
+   * (`commercial/billingEmailTemplates.ts`: payment receipt, cancellation
+   * confirmation, expiry confirmation) — the same Resend account
+   * `auth/config.ts`'s magic-link email already uses (`worker.ts` wires
+   * both from the same `RESEND_API_KEY`/`EMAIL_FROM`), exposed here
+   * separately since router.ts, not auth/config.ts, is what sends them.
+   * Optional and best-effort: a missing or failing billing email is logged,
+   * never thrown — the real payment/cancellation/expiry state change it
+   * describes has already happened and must not be rolled back or fail the
+   * request/sweep just because a confirmation email didn't send. */
+  billingEmailCredentials?: ResendCredentials;
   /**
    * RC1 Workstream 6 (readiness probe). `GET /health` is pure liveness — it
    * answers instantly and never touches D1, so it can't distinguish "the
@@ -307,6 +354,7 @@ const USER_ID_PATTERN = /^\/api\/users\/([^/]+)$/;
 const USER_PROFILES_PATTERN = /^\/api\/users\/([^/]+)\/profiles$/;
 const USER_PROFILE_ID_PATTERN = /^\/api\/users\/([^/]+)\/profiles\/([^/]+)$/;
 const COMMERCIAL_SUBSCRIPTION_ID_PATTERN = /^\/api\/commercial\/subscriptions\/([^/]+)$/;
+const SUPPORT_REQUEST_ID_PATTERN = /^\/api\/support-requests\/([^/]+)$/;
 
 async function route(
   request: Request,
@@ -656,6 +704,30 @@ async function route(
     return getPortalOrganization(organizationId, deps, ctx);
   }
 
+  // Self-service organization creation — the real onboarding gap this
+  // repository's 2026-07-23 production-readiness audit found live: every
+  // organization membership previously required a Platform Administrator to
+  // grant it first (EAP-4/EAP-5's own `POST /api/organizations`/`POST
+  // /api/users/:id/profiles`, both Platform-Administrator-only), so a
+  // brand-new customer completing a flawless sign-in still had no
+  // organization and no path to one without a human operator acting on
+  // their account. This is a *different*, narrower route rather than
+  // relaxing `POST /api/organizations`'s own authorization: it only ever
+  // creates one organization for the caller's own account, and only when
+  // they have zero existing organization memberships — never a general
+  // "create arbitrary organizations" capability for a non-admin caller.
+  if (url.pathname === "/api/portal/organization" && request.method === "POST") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
+      return tooManyRequests(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    return createPortalOrganization(request, caller, deps, ctx);
+  }
+
   if (url.pathname === "/api/portal/assessments" && request.method === "GET") {
     const caller = await resolveCaller(request, deps);
     if (!caller) return unauthorized(ctx.requestId);
@@ -677,6 +749,8 @@ async function route(
     if (!caller) return unauthorized(ctx.requestId);
     const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
     if (organizationId instanceof Response) return organizationId;
+    const denied = await requireComplianceReportExportEntitlement(organizationId, deps, ctx);
+    if (denied) return denied;
     return exportPortalReportSummary(url, organizationId, deps, ctx);
   }
 
@@ -718,6 +792,36 @@ async function route(
     const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
     if (organizationId instanceof Response) return organizationId;
     return createPortalSupportRequest(request, caller, organizationId, deps, ctx);
+  }
+
+  // Admin Support Queue (2026-07-23 production-readiness audit,
+  // DECISION_LOG.md's Workstream 15): the real, cross-organization
+  // counterpart to the customer-scoped /api/portal/support above — closes
+  // the gap `SupportRequestRepository`'s own git history left open (every
+  // customer request went into a queue no administrator could ever see or
+  // resolve). Same Platform-Administrator-only, cross-organization policy
+  // every other admin search route in this file already uses (GET
+  // /api/leads/search's own comment has the full reasoning). Checked before
+  // SUPPORT_REQUEST_ID_PATTERN below, same "search" vs. path segment
+  // ordering GET /api/leads/search already established.
+  if (url.pathname === "/api/support-requests/search" && request.method === "GET") {
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return searchSupportRequests(url, deps, ctx);
+  }
+
+  const supportRequestMatch = SUPPORT_REQUEST_ID_PATTERN.exec(url.pathname);
+  if (supportRequestMatch?.[1] && request.method === "PATCH") {
+    if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
+      return forbiddenOrigin(ctx.requestId);
+    }
+    const caller = await resolveCaller(request, deps);
+    if (!caller) return unauthorized(ctx.requestId);
+    const denied = requirePlatformAdministrator(caller.profiles, ctx.requestId);
+    if (denied) return denied;
+    return updateSupportRequestStatus(supportRequestMatch[1], request, caller, deps, ctx);
   }
 
   // COM-1: Enterprise Commercial Platform — subscriptions/licenses/
@@ -785,18 +889,25 @@ async function route(
   // migrations/0013_billing_transactions.sql's own comment). Same
   // resolvePortalOrganizationId + CSRF discipline as every other
   // authenticated portal write above — this is real money moving, not a
-  // lower-stakes route to be casually looser about.
-  if (url.pathname === "/api/portal/commercial/razorpay/orders" && request.method === "POST") {
+  // lower-stakes route to be casually looser about. Real recurring billing
+  // (Razorpay Subscriptions API, not one-time Orders) — renamed from this
+  // route's original `/razorpay/orders` path the day that became true; see
+  // DECISION_LOG.md's 2026-07-23 production-readiness audit entry.
+  if (
+    url.pathname === "/api/portal/commercial/razorpay/subscriptions" &&
+    request.method === "POST"
+  ) {
     if (!isTrustedOrigin(request, ctx.allowedOrigin)) {
       return forbiddenOrigin(ctx.requestId);
     }
     // Unlike every other authenticated portal write, this one calls a real
-    // third-party API (Razorpay's own /v1/orders) on every request — the
-    // same "real external cost, worth rate-limiting even though the caller
-    // is authenticated" reasoning POST /api/organizations already applies
-    // among this file's small set of rate-limited routes; verify/scan below
-    // stay unlimited like every other authenticated portal write, since
-    // neither makes an outbound call of its own.
+    // third-party API (Razorpay's own /v1/plans and /v1/subscriptions) on
+    // every request — the same "real external cost, worth rate-limiting
+    // even though the caller is authenticated" reasoning POST
+    // /api/organizations already applies among this file's small set of
+    // rate-limited routes; verify/scan below stay unlimited like every
+    // other authenticated portal write, since neither makes an outbound
+    // call of its own.
     if (!checkRateLimit(request, ctx, ctx.rateLimiter)) {
       return tooManyRequests(ctx.requestId);
     }
@@ -804,7 +915,7 @@ async function route(
     if (!caller) return unauthorized(ctx.requestId);
     const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
     if (organizationId instanceof Response) return organizationId;
-    return createRazorpayOrderForPlan(request, caller, organizationId, deps, ctx);
+    return createRazorpaySubscriptionCheckout(request, caller, organizationId, deps, ctx);
   }
 
   if (url.pathname === "/api/portal/commercial/razorpay/verify" && request.method === "POST") {
@@ -815,7 +926,21 @@ async function route(
     if (!caller) return unauthorized(ctx.requestId);
     const organizationId = resolvePortalOrganizationId(caller, ctx.requestId);
     if (organizationId instanceof Response) return organizationId;
-    return verifyRazorpayPaymentForOrganization(request, caller, organizationId, deps, ctx);
+    return verifyRazorpaySubscriptionPayment(request, caller, organizationId, deps, ctx);
+  }
+
+  // Real recurring billing's other half: Razorpay's own server-to-server
+  // notification of what it did on its own schedule (a renewal charge, a
+  // mandate that failed and got halted, a cancellation initiated from
+  // Razorpay's own dashboard) — the checkout-callback routes above only
+  // ever see the *first* charge a human is present for. Public and
+  // unauthenticated by necessity (Razorpay is the caller, not a signed-in
+  // customer); verified entirely by `X-Razorpay-Signature` instead of a
+  // session (`handleRazorpayWebhook`'s own doc comment has the full
+  // reasoning). Checked before the generic /api/auth/* passthrough for the
+  // same reason /api/auth/verify-confirm already is — not an Auth.js action.
+  if (url.pathname === "/api/webhooks/razorpay" && request.method === "POST") {
+    return handleRazorpayWebhook(request, deps, ctx);
   }
 
   // The DPDP Compliance Scanner's own authenticated run — the first route
@@ -3095,6 +3220,140 @@ async function getPortalOrganization(
   return jsonSuccess(organization);
 }
 
+function validateSelfServiceOrganizationInput(
+  value: unknown,
+): ValidationResult<{ name: string; industry: string | null; region: string | null }> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const name = requireNonEmptyString(body.value, "name");
+  if (!name.ok) return name;
+  if (name.value.length > 200) {
+    return fail("name must be 200 characters or fewer");
+  }
+  return ok({
+    name: name.value,
+    industry: optionalNullableString(body.value, "industry"),
+    region: optionalNullableString(body.value, "region"),
+  });
+}
+
+/** Derives a URL-safe slug from a real customer-supplied organization name
+ * (lowercased, non-alphanumerics collapsed to single hyphens, trimmed) —
+ * the same shape `OrganizationRecord.slug` already requires, but never
+ * something a self-service customer should have to type themselves the way
+ * the admin-only `POST /api/organizations` route asks a Platform
+ * Administrator to (`validateNewOrganization`'s own `slug` field). Appends
+ * a short random suffix on collision rather than failing the request
+ * outright — two real customers both naming their organization "Acme" is
+ * an entirely ordinary case, not an error condition to surface to either of
+ * them. */
+async function generateUniqueOrganizationSlug(
+  name: string,
+  organizations: OrganizationRepository,
+): Promise<string> {
+  const base =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "organization";
+
+  if (!(await organizations.findBySlug(base))) return base;
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const candidate = `${base}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!(await organizations.findBySlug(candidate))) return candidate;
+  }
+  // Astronomically unlikely to be reached (five random 6-character suffix
+  // collisions in a row) — crypto.randomUUID() is collision-proof enough to
+  // use unconditionally as a last resort rather than looping forever.
+  return `${base}-${crypto.randomUUID().slice(0, 8)}`;
+}
+
+/** The real fix for this repository's own documented onboarding gap
+ * (DECISION_LOG.md, 2026-07-23 production-readiness audit): an
+ * authenticated caller with zero organization memberships creates their
+ * own organization here and is granted `"owner"` on it immediately — no
+ * Platform Administrator action required. Gated on `caller.profiles` being
+ * empty (not just "no *current* organization", which `resolvePortalOrganizationId`
+ * already expresses) so this can never be used to spin up a second
+ * organization for someone who already has one — that's what an invite
+ * flow would be for, deliberately out of this scope (see this function's
+ * own routing-table comment). */
+async function createPortalOrganization(
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.organizations) return organizationsNotConfigured(ctx.requestId);
+  if (!deps.userProfiles) return userProfilesNotConfigured(ctx.requestId);
+
+  if (caller.profiles.length > 0) {
+    return jsonError(
+      {
+        code: "conflict",
+        message: "This account already belongs to an organization",
+      },
+      ctx.requestId,
+      409,
+    );
+  }
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateSelfServiceOrganizationInput(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const now = new Date().toISOString();
+  const slug = await generateUniqueOrganizationSlug(parsed.value.name, deps.organizations);
+
+  const organization = await withOperationTiming(ctx.metrics, "organizations.save", () =>
+    deps.organizations!.save({
+      name: parsed.value.name,
+      slug,
+      industry: parsed.value.industry,
+      region: parsed.value.region,
+      tags: [],
+      createdAt: now,
+    }),
+  );
+
+  const profile = await withOperationTiming(ctx.metrics, "userProfiles.save", () =>
+    deps.userProfiles!.save({
+      userId: caller.userId,
+      organizationId: organization.id,
+      role: "owner",
+      createdAt: now,
+    }),
+  );
+
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: organization.id,
+    action: "organization.created",
+    entityType: "organization",
+    entityId: organization.id,
+    metadata: { name: organization.name, slug: organization.slug, source: "self_service" },
+    createdAt: now,
+  });
+  await recordAuditEvent(deps, ctx, {
+    actorId: caller.userId,
+    organizationId: organization.id,
+    action: "user.role_granted",
+    entityType: "user",
+    entityId: caller.userId,
+    metadata: { profileId: profile.id, organizationId: organization.id, role: "owner" },
+    createdAt: now,
+  });
+
+  return jsonSuccess({ organization, profile }, 201);
+}
+
 const PORTAL_PAGE_SIZE_DEFAULT = 20;
 const PORTAL_PAGE_SIZE_MAX = 100;
 // CPP-1: the same real-file-sized cap `AUDIT_EXPORT_MAX_ROWS`/
@@ -3312,10 +3571,10 @@ function validateSupportRequestInput(
   return ok({ subject: subject.value, message: message.value });
 }
 
-/** CPP-1's one real write: a customer submitting a support request. No
- * ticketing platform — `status` starts (and, today, stays) `"open"`; there
- * is no admin-side resolution endpoint anywhere in this codebase yet
- * (`SupportRequestStatus`'s own doc comment, `repositories/types.ts`). */
+/** CPP-1's one real write: a customer submitting a support request. Always
+ * starts `"open"` — resolving it is the Admin Support Queue's own job
+ * (`updateSupportRequestStatus` below), never something a customer sets on
+ * creation. */
 async function createPortalSupportRequest(
   request: Request,
   caller: Caller,
@@ -3353,6 +3612,149 @@ async function createPortalSupportRequest(
   return jsonSuccess(saved, 201);
 }
 
+/** Admin Support Queue's own table — search/filter/paginate, all
+ * server-side (`SupportRequestRepository.search`). Mirrors `searchLeads`'s
+ * own query-param validation strictness: an unrecognized status is a real
+ * 400, not silently ignored. */
+async function searchSupportRequests(
+  url: URL,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.supportRequests) return supportRequestsNotConfigured(ctx.requestId);
+  const params = url.searchParams;
+  const options: SupportRequestSearchOptions = {};
+
+  const search = params.get("search");
+  if (search) options.search = search;
+
+  const status = params.get("status");
+  if (status !== null) {
+    if (!SUPPORT_REQUEST_STATUSES.includes(status as (typeof SUPPORT_REQUEST_STATUSES)[number])) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid status: ${status}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.status = status as SupportRequestSearchOptions["status"];
+  }
+
+  const organizationId = params.get("organizationId");
+  if (organizationId) options.organizationId = organizationId;
+
+  const sortDirection = params.get("sortDirection");
+  if (sortDirection !== null) {
+    if (sortDirection !== "asc" && sortDirection !== "desc") {
+      return jsonError(
+        { code: "validation_error", message: `Invalid sortDirection: ${sortDirection}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.sortDirection = sortDirection;
+  }
+
+  const page = params.get("page");
+  if (page !== null) {
+    const parsedPage = Number(page);
+    if (!Number.isInteger(parsedPage) || parsedPage < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid page: ${page}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.page = parsedPage;
+  }
+
+  const pageSize = params.get("pageSize");
+  if (pageSize !== null) {
+    const parsedPageSize = Number(pageSize);
+    if (!Number.isInteger(parsedPageSize) || parsedPageSize < 1) {
+      return jsonError(
+        { code: "validation_error", message: `Invalid pageSize: ${pageSize}` },
+        ctx.requestId,
+        400,
+      );
+    }
+    options.pageSize = parsedPageSize;
+  }
+
+  const result = await withOperationTiming(ctx.metrics, "supportRequests.search", () =>
+    deps.supportRequests!.search(options),
+  );
+  return jsonSuccess(result);
+}
+
+function validateSupportRequestPatch(value: unknown): ValidationResult<SupportRequestPatch> {
+  const body = requireJsonObject(value, "Body");
+  if (!body.ok) return body;
+  const record = body.value;
+
+  const status = record.status;
+  if (typeof status !== "string" || !SUPPORT_REQUEST_STATUSES.includes(status as never)) {
+    return fail(`status must be one of: ${SUPPORT_REQUEST_STATUSES.join(", ")}`);
+  }
+  return ok({ status: status as SupportRequestPatch["status"] });
+}
+
+/** Admin Support Queue's one real write: an administrator resolving (or
+ * reopening) a customer's ticket. `status` is the only patchable field —
+ * `subject`/`message`/`createdBy` are the customer's own words, not
+ * something this route lets an administrator rewrite (see
+ * `SupportRequestPatch`'s own doc comment, `repositories/types.ts`). */
+async function updateSupportRequestStatus(
+  id: string,
+  request: Request,
+  caller: Caller,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.supportRequests) return supportRequestsNotConfigured(ctx.requestId);
+
+  const body = await readJsonBody(request);
+  if (!body.ok) {
+    return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
+  }
+  const parsed = validateSupportRequestPatch(body.value);
+  if (!parsed.ok) {
+    return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
+  }
+
+  const before = await deps.supportRequests.findById(id);
+  if (!before) {
+    return jsonError(
+      { code: "not_found", message: "Support request not found" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  const after = await deps.supportRequests.update(id, parsed.value);
+  if (!after) {
+    return jsonError(
+      { code: "not_found", message: "Support request not found" },
+      ctx.requestId,
+      404,
+    );
+  }
+
+  if (after.status !== before.status) {
+    await recordAuditEvent(deps, ctx, {
+      actorId: caller.userId,
+      organizationId: after.organizationId,
+      action: "support_request.status_changed",
+      entityType: "support_request",
+      entityId: id,
+      metadata: { from: before.status, to: after.status },
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  return jsonSuccess(after);
+}
+
 // COM-1: Enterprise Commercial Platform handlers.
 
 function commercialPlansResponse(): Response {
@@ -3368,6 +3770,7 @@ export interface PortalCommercialSummary {
     trialEndsAt: string | null;
     currentPeriodEnd: string | null;
     canceledAt: string | null;
+    currency: string;
   } | null;
   plan: Plan | null;
   license: {
@@ -3437,6 +3840,7 @@ async function getPortalCommercialSummary(
       trialEndsAt: subscription.trialEndsAt,
       currentPeriodEnd: subscription.currentPeriodEnd,
       canceledAt: subscription.canceledAt,
+      currency: subscription.currency,
     },
     plan,
     license: license
@@ -3453,12 +3857,63 @@ async function getPortalCommercialSummary(
   return jsonSuccess(summary);
 }
 
-function validateCreateSubscriptionInput(value: unknown): ValidationResult<{ planId: string }> {
+/** `GET /api/portal/reports/export`'s real gate — `resolveEntitlements`'s
+ * `complianceReportExport` was, until this check existed, computed and
+ * displayed on the Commercial Dashboard but never actually enforced
+ * anywhere (`commercial/entitlements.ts`'s own doc comment; found live
+ * during this repository's 2026-07-23 production-readiness audit — a
+ * Starter-tier organization could call this route and receive the same
+ * export a paying Professional+ customer gets). Deliberately narrow: an
+ * organization with **no subscription at all** is let through unchanged
+ * (`return null`) — Customer Portal reporting predates COM-1's plan
+ * entitlements by design (CPP-1), and retroactively requiring every
+ * existing customer to hold a specific paid plan just to export their own
+ * compliance summary would be a materially bigger, different product
+ * decision than "make Starter-tier respect the same restriction the
+ * Commercial Dashboard already claims it has". Only a *resolved,
+ * known-insufficient* entitlement (a real subscription whose plan doesn't
+ * include this, or one that's canceled/expired) is denied. */
+async function requireComplianceReportExportEntitlement(
+  organizationId: string,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response | null> {
+  if (!deps.subscriptions) return null;
+  const subscription = await deps.subscriptions.findByOrganizationId(organizationId);
+  if (!subscription) return null;
+  const plan = findPlan(subscription.planId);
+  if (!plan) return null;
+  if (resolveEntitlements(plan, subscription).complianceReportExport) return null;
+  return jsonError(
+    {
+      code: "forbidden",
+      message: "Your current plan does not include compliance report export",
+    },
+    ctx.requestId,
+    403,
+  );
+}
+
+function validateCreateSubscriptionInput(
+  value: unknown,
+): ValidationResult<{ planId: string; currency: Currency }> {
   const body = requireJsonObject(value, "Body");
   if (!body.ok) return body;
   const planId = requireNonEmptyString(body.value, "planId");
   if (!planId.ok) return planId;
-  return ok({ planId: planId.value });
+  // Optional: a free trial never charges anything, but recording the
+  // customer's preferred billing currency at trial start (rather than only
+  // at first real checkout) means it's already known the moment the trial
+  // converts — defaults to "INR" (this company's own real, GST-registered
+  // home currency) when omitted, never silently guessed from anything else.
+  const rawCurrency = (body.value as Record<string, unknown>).currency;
+  if (rawCurrency !== undefined) {
+    if (typeof rawCurrency !== "string" || !isSupportedCurrency(rawCurrency)) {
+      return fail(`Invalid currency: ${String(rawCurrency)}`);
+    }
+    return ok({ planId: planId.value, currency: rawCurrency });
+  }
+  return ok({ planId: planId.value, currency: "INR" });
 }
 
 /** COM-1: subscribing an organization to its first plan. `POST` only —
@@ -3533,6 +3988,7 @@ async function createPortalSubscription(
         status: "trialing",
         trialEndsAt,
         currentPeriodEnd: trialEndsAt,
+        currency: parsed.value.currency,
         createdAt: now.toISOString(),
       }),
   );
@@ -3577,13 +4033,28 @@ interface SubscriptionPatchInput {
 
 /** COM-1: a customer's own self-service lifecycle actions — narrower than
  * what a Platform Administrator may do (`validateAdminSubscriptionPatch`
- * below): only a plan change (upgrade/downgrade) or a `"canceled"`/
- * `"active"` status transition (cancel/renew). A customer can never set
- * `"trialing"`/`"expired"` directly, or edit `trialEndsAt`/
- * `currentPeriodEnd` themselves — those are server-derived, the same
- * "never trust a client value for a business date/status" discipline
- * `POST /api/leads`'s server-side score recomputation already
- * established. */
+ * below): only a plan change (upgrade/downgrade) or a `"canceled"` status
+ * transition. A customer can never set `"active"`/`"trialing"`/`"expired"`
+ * directly, or edit `trialEndsAt`/`currentPeriodEnd` themselves — those are
+ * server-derived, the same "never trust a client value for a business
+ * date/status" discipline `POST /api/leads`'s server-side score
+ * recomputation already established.
+ *
+ * `"active"` was reachable here in COM-1's original, pre-Razorpay design —
+ * a real, deliberate "free self-service renew" action back when this
+ * system had no real payment provider behind it at all. Once real money
+ * entered the system, that path was never re-gated: a canceled or expired
+ * subscription could still be flipped straight back to `"active"` with a
+ * fresh billing period, with zero payment involved (see this repository's
+ * DECISION_LOG.md, 2026-07-23 production-readiness audit entry). Removed
+ * here — reactivating a canceled/expired subscription now requires a real,
+ * verified Razorpay checkout (`createRazorpaySubscriptionCheckout`/
+ * `verifyRazorpaySubscriptionPayment` below), the same path first
+ * subscribing to a paid plan already goes through. The Platform
+ * Administrator override path (`validateAdminSubscriptionPatch`) still
+ * allows `"active"` directly — a real administrative action (e.g.
+ * reconciling a payment taken outside Razorpay), not a customer-facing
+ * free-reactivation loophole. */
 function validatePortalSubscriptionPatch(value: unknown): ValidationResult<SubscriptionPatchInput> {
   const body = requireJsonObject(value, "Body");
   if (!body.ok) return body;
@@ -3597,8 +4068,10 @@ function validatePortalSubscriptionPatch(value: unknown): ValidationResult<Subsc
     result.planId = record.planId;
   }
   if (record.status !== undefined) {
-    if (record.status !== "canceled" && record.status !== "active") {
-      return fail('Invalid field: status must be "canceled" or "active"');
+    if (record.status !== "canceled") {
+      return fail(
+        'Invalid field: status must be "canceled" — reactivating requires a real checkout, see POST /api/portal/commercial/razorpay/subscription',
+      );
     }
     result.status = record.status;
   }
@@ -3687,6 +4160,27 @@ async function applySubscriptionPatch(
   }
 
   if (patch.status === "canceled" && after.status !== "canceled") {
+    // Ends the real recurring mandate itself — flipping only this system's
+    // own `status` without this would leave Razorpay still auto-charging
+    // the customer every period while the product shows them "canceled".
+    // Best-effort: a Razorpay API failure here is logged, not thrown — the
+    // customer's own cancellation intent still takes effect locally either
+    // way (see the log line's own reasoning below), and the real mandate
+    // can be cancelled by re-running this action or directly in the
+    // Razorpay dashboard if the outage persists.
+    if (after.providerSubscriptionId && deps.razorpayCredentials) {
+      try {
+        await cancelRazorpaySubscription(after.providerSubscriptionId, deps.razorpayCredentials);
+      } catch (error) {
+        ctx.logger.error("Failed to cancel the real Razorpay subscription", {
+          requestId: ctx.requestId,
+          organizationId,
+          subscriptionId: after.id,
+          providerSubscriptionId: after.providerSubscriptionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
     const updated = await deps.subscriptions!.update(after.id, {
       status: "canceled",
       canceledAt: now,
@@ -3714,9 +4208,27 @@ async function applySubscriptionPatch(
         createdAt: now,
       });
     }
+    const canceledPlan = findPlan(after.planId);
+    if (canceledPlan) {
+      await sendBillingEmail(
+        deps,
+        ctx.logger,
+        organizationId,
+        (identifier) => buildCancellationEmail({ identifier, planName: canceledPlan.name }),
+        "cancellation email",
+      );
+    }
   }
 
   if (patch.status === "active" && (after.status === "canceled" || after.status === "expired")) {
+    // Reachable only through the Platform Administrator override path
+    // today (`validateAdminSubscriptionPatch`) — `validatePortalSubscriptionPatch`
+    // no longer allows a customer to request `"active"` directly (see its
+    // own doc comment for why: this used to be a free self-service renew
+    // that bypassed Razorpay entirely). A real administrative action (e.g.
+    // reconciling a payment taken outside Razorpay), so this still doesn't
+    // touch Razorpay itself — unlike the cancel branch above, there's no
+    // real mandate to recreate here, only this system's own record.
     // Server-computed, never client-supplied — the same discipline
     // createLead/createAssessment's server-side recomputation established.
     const currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -3807,33 +4319,50 @@ async function updatePortalSubscription(
   return jsonSuccess(after);
 }
 
-// Real Razorpay billing integration. Deliberately not folded into
+// Real Razorpay billing integration (Subscriptions API — real recurring,
+// auto-charging billing, not one-time Orders; see DECISION_LOG.md's
+// 2026-07-23 production-readiness audit entry for why this replaced the
+// original Orders-based flow). Deliberately not folded into
 // applySubscriptionPatch above: that state machine's "active" transition
-// only ever means "renewed from canceled/expired" (a free, self-service
-// action) — it has no transition for "a trial converts to a real paid
+// (admin-only now) is a direct administrative override with no Razorpay
+// involvement — it has no transition for "a trial converts to a real paid
 // subscription because a payment was just verified", a genuinely different
-// event this codebase never modeled before real payments existed. Keeping
-// this as its own function means applySubscriptionPatch's existing,
-// already-tested state machine is untouched — zero risk of a payment path
-// silently changing free cancel/renew behavior, or vice versa.
+// event. Keeping this as its own set of functions means
+// applySubscriptionPatch's existing, already-tested state machine is
+// untouched — zero risk of the payment path silently changing cancel/renew
+// behavior, or vice versa.
 
-function validateCreateRazorpayOrderInput(value: unknown): ValidationResult<{ planId: string }> {
+// A finite, large `total_count` standing in for "until cancelled" — see
+// `CreateSubscriptionParams.totalCount`'s own doc comment for why Razorpay's
+// real API requires a number here at all. 120 monthly cycles = 10 years.
+const SUBSCRIPTION_TOTAL_CYCLES = 120;
+
+function validateCreateRazorpaySubscriptionInput(
+  value: unknown,
+): ValidationResult<{ planId: string; currency: Currency }> {
   const body = requireJsonObject(value, "Body");
   if (!body.ok) return body;
   const planId = requireNonEmptyString(body.value, "planId");
   if (!planId.ok) return planId;
-  return ok({ planId: planId.value });
+  const rawCurrency = (body.value as Record<string, unknown>).currency;
+  if (typeof rawCurrency !== "string" || !isSupportedCurrency(rawCurrency)) {
+    return fail(`Invalid or missing currency: ${String(rawCurrency)}`);
+  }
+  return ok({ planId: planId.value, currency: rawCurrency });
 }
 
-/** Creates a real Razorpay order for a self-service plan's real,
- * server-resolved price — the client chooses a `planId`, never an amount.
- * If the organization has no subscription yet, one is created here in
- * `"trialing"` status (the same shape `createPortalSubscription` already
- * creates for the free self-service path) purely to have a real id to
- * attach this transaction to; it only becomes `"active"` once the payment
- * this order represents is actually verified (`verifyRazorpayPaymentForOrganization`
- * below) — creating the order is not itself an access grant. */
-async function createRazorpayOrderForPlan(
+/** Opens a real, recurring Razorpay mandate for a self-service plan's real,
+ * server-resolved price in the client's chosen currency — the client
+ * chooses `planId`/`currency`, never an amount. If the organization has no
+ * subscription yet, one is created here in `"trialing"` status (the same
+ * shape `createPortalSubscription` already creates for the free
+ * self-service path) purely to have a real local id to attach this
+ * transaction to; it only becomes `"active"` once the payment this
+ * subscription represents is actually verified
+ * (`verifyRazorpaySubscriptionPayment` below) — creating the mandate is not
+ * itself an access grant, the same principle Orders-mode order creation
+ * already established. */
+async function createRazorpaySubscriptionCheckout(
   request: Request,
   caller: Caller,
   organizationId: string,
@@ -3849,7 +4378,7 @@ async function createRazorpayOrderForPlan(
   if (!body.ok) {
     return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
   }
-  const parsed = validateCreateRazorpayOrderInput(body.value);
+  const parsed = validateCreateRazorpaySubscriptionInput(body.value);
   if (!parsed.ok) {
     return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
   }
@@ -3862,13 +4391,20 @@ async function createRazorpayOrderForPlan(
       400,
     );
   }
-  // Enterprise (trialDays: 0, priceInPaise: null) is sales-assisted by
-  // design (planCatalog.ts) — no self-service checkout amount exists for
-  // it, the identical restriction createPortalSubscription already applies
-  // to the free trial path.
-  if (!isSelfServicePlan(plan) || plan.priceInPaise === null) {
+  const amountMinorUnits = isSelfServicePlan(plan)
+    ? findPlanPricing(plan, parsed.value.currency)
+    : null;
+  // Covers both "sales-assisted plan, no self-service checkout at all"
+  // (Enterprise) and "self-service plan, but not priced in this specific
+  // currency" (an incomplete PLAN_CATALOG entry) — both are the same real
+  // answer to a customer: this exact (plan, currency) pair can't be
+  // self-service checked out right now.
+  if (amountMinorUnits === null) {
     return jsonError(
-      { code: "sales_assisted_plan", message: "This plan requires contacting sales" },
+      {
+        code: "sales_assisted_plan",
+        message: "This plan requires contacting sales, or isn't available in this currency",
+      },
       ctx.requestId,
       400,
     );
@@ -3890,6 +4426,7 @@ async function createRazorpayOrderForPlan(
           status: "trialing",
           trialEndsAt,
           currentPeriodEnd: trialEndsAt,
+          currency: parsed.value.currency,
           createdAt: now.toISOString(),
         }),
     );
@@ -3904,36 +4441,47 @@ async function createRazorpayOrderForPlan(
     });
   }
 
-  let order;
+  let razorpaySubscription;
   try {
-    order = await createRazorpayOrder(
+    const razorpayPlan = await createRazorpayPlan(
       {
-        amountPaise: plan.priceInPaise,
-        currency: "INR",
-        // Razorpay's own receipt field is an opaque merchant reference, capped
-        // at 40 characters — real, not fabricated, and never used to derive
-        // anything security-relevant (the real link back to this organization
-        // is billing_transactions.organization_id, resolved server-side).
-        receipt: `${organizationId}-${plan.id}`.slice(0, 40),
+        amountMinorUnits,
+        currency: parsed.value.currency,
+        planName: plan.name,
+        period: "monthly",
+        interval: 1,
+      },
+      deps.razorpayCredentials,
+    );
+    razorpaySubscription = await createRazorpaySubscription(
+      {
+        planId: razorpayPlan.id,
+        totalCount: SUBSCRIPTION_TOTAL_CYCLES,
+        notes: { organizationId, planId: plan.id },
       },
       deps.razorpayCredentials,
     );
   } catch (error) {
     const message =
-      error instanceof RazorpayApiError ? error.message : "Razorpay order creation failed";
+      error instanceof RazorpayApiError ? error.message : "Razorpay subscription creation failed";
     return jsonError({ code: "razorpay_error", message }, ctx.requestId, 502);
   }
+
+  await deps.subscriptions.update(subscription.id, {
+    providerSubscriptionId: razorpaySubscription.id,
+  });
 
   const transaction = await deps.billingTransactions.save({
     organizationId,
     subscriptionId: subscription.id,
     planId: plan.id,
     provider: "razorpay",
-    providerOrderId: order.id,
+    providerOrderId: null,
+    providerSubscriptionId: razorpaySubscription.id,
     providerPaymentId: null,
     providerSignature: null,
-    amountPaise: plan.priceInPaise,
-    currency: "INR",
+    amountPaise: amountMinorUnits,
+    currency: parsed.value.currency,
     status: "created",
     createdAt: now.toISOString(),
   });
@@ -3941,18 +4489,23 @@ async function createRazorpayOrderForPlan(
   await recordAuditEvent(deps, ctx, {
     actorId: caller.userId,
     organizationId,
-    action: "billing.order_created",
+    action: "billing.subscription_checkout_created",
     entityType: "subscription",
     entityId: subscription.id,
-    metadata: { planId: plan.id, amountPaise: plan.priceInPaise, providerOrderId: order.id },
+    metadata: {
+      planId: plan.id,
+      amountPaise: amountMinorUnits,
+      currency: parsed.value.currency,
+      providerSubscriptionId: razorpaySubscription.id,
+    },
     createdAt: now.toISOString(),
   });
 
   return jsonSuccess(
     {
-      orderId: order.id,
-      amountPaise: plan.priceInPaise,
-      currency: "INR",
+      providerSubscriptionId: razorpaySubscription.id,
+      amountPaise: amountMinorUnits,
+      currency: parsed.value.currency,
       // The key id is meant to be public — Razorpay's own Checkout widget
       // requires it client-side to open. Never the key secret.
       keyId: deps.razorpayCredentials.keyId,
@@ -3962,33 +4515,36 @@ async function createRazorpayOrderForPlan(
   );
 }
 
-function validateVerifyRazorpayPaymentInput(value: unknown): ValidationResult<{
-  razorpayOrderId: string;
+function validateVerifyRazorpaySubscriptionPaymentInput(value: unknown): ValidationResult<{
+  razorpaySubscriptionId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
 }> {
   const body = requireJsonObject(value, "Body");
   if (!body.ok) return body;
-  const orderId = requireNonEmptyString(body.value, "razorpay_order_id");
-  if (!orderId.ok) return orderId;
+  const subscriptionId = requireNonEmptyString(body.value, "razorpay_subscription_id");
+  if (!subscriptionId.ok) return subscriptionId;
   const paymentId = requireNonEmptyString(body.value, "razorpay_payment_id");
   if (!paymentId.ok) return paymentId;
   const signature = requireNonEmptyString(body.value, "razorpay_signature");
   if (!signature.ok) return signature;
   return ok({
-    razorpayOrderId: orderId.value,
+    razorpaySubscriptionId: subscriptionId.value,
     razorpayPaymentId: paymentId.value,
     razorpaySignature: signature.value,
   });
 }
 
-/** The one function that actually grants paid access — everything before
- * this point (order creation, opening Razorpay's Checkout widget) is
- * real but not itself trusted; access is granted only after this route
- * independently recomputes the HMAC signature server-side and confirms it
- * matches (`verifyRazorpaySignature`, `commercial/razorpay.ts`), never on
- * the client's own claim that checkout succeeded. */
-async function verifyRazorpayPaymentForOrganization(
+/** The one function that actually grants paid access from the checkout side
+ * — everything before this point (subscription creation, opening Razorpay's
+ * Checkout widget) is real but not itself trusted; access is granted only
+ * after this route independently recomputes the HMAC signature server-side
+ * and confirms it matches (`verifyRazorpaySubscriptionSignature`,
+ * `commercial/razorpay.ts`), never on the client's own claim that checkout
+ * succeeded. `handleRazorpayWebhook` below is this function's counterpart
+ * for every renewal *after* this first charge — Razorpay auto-charges on
+ * its own schedule with no browser present to call this route again. */
+async function verifyRazorpaySubscriptionPayment(
   request: Request,
   caller: Caller,
   organizationId: string,
@@ -4004,34 +4560,38 @@ async function verifyRazorpayPaymentForOrganization(
   if (!body.ok) {
     return jsonError({ code: "invalid_body", message: body.error }, ctx.requestId, 400);
   }
-  const parsed = validateVerifyRazorpayPaymentInput(body.value);
+  const parsed = validateVerifyRazorpaySubscriptionPaymentInput(body.value);
   if (!parsed.ok) {
     return jsonError({ code: "validation_error", message: parsed.error }, ctx.requestId, 400);
   }
 
-  const transaction = await deps.billingTransactions.findByProviderOrderId(
-    parsed.value.razorpayOrderId,
+  const transaction = await deps.billingTransactions.findByProviderSubscriptionId(
+    parsed.value.razorpaySubscriptionId,
   );
-  // Scoped to the caller's own organization before anything else — an
-  // order id belonging to a different organization is treated exactly
-  // like an order id that doesn't exist at all, never distinguished by a
+  // Scoped to the caller's own organization before anything else — a
+  // subscription id belonging to a different organization is treated
+  // exactly like one that doesn't exist at all, never distinguished by a
   // different status code (SECURITY_GUIDE.md's own "don't leak existence"
-  // reasoning, applied here to a real payment record instead of an
-  // admin one).
+  // reasoning, applied here to a real payment record instead of an admin
+  // one).
   if (!transaction || transaction.organizationId !== organizationId) {
-    return jsonError({ code: "not_found", message: "Order not found" }, ctx.requestId, 404);
+    return jsonError(
+      { code: "not_found", message: "Subscription checkout not found" },
+      ctx.requestId,
+      404,
+    );
   }
 
   // Idempotent: a retried verify call (e.g. the browser tab closing and
-  // reopening mid-flow) for an already-verified order returns the same
+  // reopening mid-flow) for an already-verified checkout returns the same
   // real success, not a second charge or a spurious error.
   if (transaction.status === "paid") {
     return jsonSuccess({ verified: true, transactionId: transaction.id });
   }
 
-  const signatureValid = await verifyRazorpaySignature(
-    parsed.value.razorpayOrderId,
+  const signatureValid = await verifyRazorpaySubscriptionSignature(
     parsed.value.razorpayPaymentId,
+    parsed.value.razorpaySubscriptionId,
     parsed.value.razorpaySignature,
     deps.razorpayCredentials.keySecret,
   );
@@ -4046,7 +4606,10 @@ async function verifyRazorpayPaymentForOrganization(
       action: "billing.payment_failed",
       entityType: "subscription",
       entityId: transaction.subscriptionId,
-      metadata: { providerOrderId: transaction.providerOrderId, reason: "signature_mismatch" },
+      metadata: {
+        providerSubscriptionId: transaction.providerSubscriptionId,
+        reason: "signature_mismatch",
+      },
       createdAt: now,
     });
     return jsonError(
@@ -4070,6 +4633,8 @@ async function verifyRazorpayPaymentForOrganization(
       planId: plan.id,
       status: "active",
       currentPeriodEnd,
+      currency: transaction.currency,
+      providerSubscriptionId: parsed.value.razorpaySubscriptionId,
     });
     const license = await deps.licenses.findByOrganizationId(organizationId);
     if (license) {
@@ -4084,9 +4649,23 @@ async function verifyRazorpayPaymentForOrganization(
       action: "subscription.activated",
       entityType: "subscription",
       entityId: subscription.id,
-      metadata: { planId: plan.id, providerOrderId: transaction.providerOrderId },
+      metadata: { planId: plan.id, providerSubscriptionId: transaction.providerSubscriptionId },
       createdAt: now,
     });
+    await sendBillingEmail(
+      deps,
+      ctx.logger,
+      organizationId,
+      (identifier) =>
+        buildPaymentReceiptEmail({
+          identifier,
+          planName: plan.name,
+          amountMinorUnits: transaction.amountPaise,
+          currency: transaction.currency,
+          currentPeriodEnd,
+        }),
+      "payment receipt email",
+    );
   }
 
   await recordAuditEvent(deps, ctx, {
@@ -4096,13 +4675,351 @@ async function verifyRazorpayPaymentForOrganization(
     entityType: "subscription",
     entityId: transaction.subscriptionId,
     metadata: {
-      providerOrderId: transaction.providerOrderId,
+      providerSubscriptionId: transaction.providerSubscriptionId,
       amountPaise: transaction.amountPaise,
     },
     createdAt: now,
   });
 
   return jsonSuccess({ verified: true, transactionId: transaction.id });
+}
+
+interface RazorpayWebhookEventPayload {
+  event?: string;
+  created_at?: number;
+  payload?: {
+    subscription?: { entity?: { id?: string; status?: string; current_end?: number } };
+    payment?: { entity?: { id?: string; amount?: number; currency?: string } };
+  };
+}
+
+/** Real recurring billing's server-to-server half — Razorpay notifies this
+ * endpoint on its own schedule for events no browser is present for: a
+ * renewal auto-charge (`subscription.charged`), a mandate ended from
+ * Razorpay's own side (`subscription.cancelled`/`.completed`), or a mandate
+ * paused after repeated charge failures (`subscription.halted`).
+ *
+ * Public and unauthenticated by necessity — Razorpay, not a signed-in
+ * customer, is the caller — so the entire trust model is the signature
+ * check below, never a session. Reads the raw request body as text *before*
+ * any JSON parsing: Razorpay's own documented webhook signature
+ * (`hmac_sha256(<raw body>, webhook_secret)`, header `X-Razorpay-Signature`)
+ * is computed over the exact bytes it sent, and re-serializing a parsed
+ * object can silently produce different bytes even when the parsed value
+ * looks "the same" (`verifyRazorpayWebhookSignature`'s own doc comment).
+ *
+ * Idempotency key: Razorpay's webhook payload format
+ * (`{event, payload: {subscription: {entity}, payment: {entity}}, created_at}`)
+ * has no single universal top-level delivery id verified against this
+ * project's own (nonexistent) live account — rather than assume one, this
+ * builds a key from fields the payload structure itself guarantees for the
+ * events actually handled: the real payment id for a charge (globally
+ * unique per Razorpay's own guarantee), or the subscription id plus
+ * delivery timestamp for a lifecycle event that carries no payment. */
+async function handleRazorpayWebhook(
+  request: Request,
+  deps: Dependencies,
+  ctx: RouteContext,
+): Promise<Response> {
+  if (!deps.razorpayWebhookSecret || !deps.webhookEvents) {
+    return billingNotConfigured(ctx.requestId);
+  }
+  if (!deps.subscriptions || !deps.licenses || !deps.billingTransactions) {
+    return billingNotConfigured(ctx.requestId);
+  }
+
+  const rawBody = await request.text();
+  const signature = request.headers.get("x-razorpay-signature") ?? "";
+  const signatureValid = await verifyRazorpayWebhookSignature(
+    rawBody,
+    signature,
+    deps.razorpayWebhookSecret,
+  );
+  if (!signatureValid) {
+    ctx.logger.warn("Rejected a Razorpay webhook delivery with an invalid signature", {
+      requestId: ctx.requestId,
+    });
+    return jsonError(
+      { code: "invalid_signature", message: "Invalid signature" },
+      ctx.requestId,
+      400,
+    );
+  }
+
+  let event: RazorpayWebhookEventPayload;
+  try {
+    event = JSON.parse(rawBody) as RazorpayWebhookEventPayload;
+  } catch {
+    return jsonError({ code: "invalid_body", message: "Invalid JSON body" }, ctx.requestId, 400);
+  }
+
+  const eventType = event.event ?? "unknown";
+  const subEntity = event.payload?.subscription?.entity;
+  const paymentEntity = event.payload?.payment?.entity;
+  const idempotencyKey =
+    paymentEntity?.id ?? `${subEntity?.id ?? "unknown"}:${event.created_at ?? Date.now()}`;
+
+  const isNew = await deps.webhookEvents.recordIfNew({
+    provider: "razorpay",
+    providerEventId: idempotencyKey,
+    eventType,
+    receivedAt: new Date().toISOString(),
+  });
+  if (!isNew) {
+    // A real, expected redelivery (Razorpay's own documented at-least-once
+    // guarantee) — already applied, acknowledge without reprocessing.
+    return jsonSuccess({ received: true, duplicate: true });
+  }
+
+  const now = new Date().toISOString();
+
+  if (eventType === "subscription.charged") {
+    if (!subEntity?.id) {
+      ctx.logger.error("subscription.charged webhook missing subscription entity id", {
+        requestId: ctx.requestId,
+      });
+      return jsonError(
+        { code: "invalid_body", message: "Malformed webhook payload" },
+        ctx.requestId,
+        500,
+      );
+    }
+    const subscription = await deps.subscriptions.findByProviderSubscriptionId(subEntity.id);
+    if (!subscription) {
+      ctx.logger.warn("subscription.charged webhook for an unrecognized subscription id", {
+        requestId: ctx.requestId,
+        providerSubscriptionId: subEntity.id,
+      });
+      return jsonSuccess({ received: true, recognized: false });
+    }
+
+    const currentPeriodEnd = subEntity.current_end
+      ? new Date(subEntity.current_end * 1000).toISOString()
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    await deps.subscriptions.update(subscription.id, { status: "active", currentPeriodEnd });
+    const license = await deps.licenses.findByOrganizationId(subscription.organizationId);
+    if (license && license.status !== "active") {
+      await deps.licenses.update(license.id, { status: "active" });
+    }
+
+    await deps.billingTransactions.save({
+      organizationId: subscription.organizationId,
+      subscriptionId: subscription.id,
+      planId: subscription.planId,
+      provider: "razorpay",
+      providerOrderId: null,
+      providerSubscriptionId: subEntity.id,
+      providerPaymentId: paymentEntity?.id ?? null,
+      providerSignature: null,
+      amountPaise: paymentEntity?.amount ?? 0,
+      currency: paymentEntity?.currency ?? subscription.currency,
+      status: "paid",
+      createdAt: now,
+    });
+
+    await recordAuditEvent(deps, ctx, {
+      actorId: null,
+      organizationId: subscription.organizationId,
+      action: "subscription.renewed",
+      entityType: "subscription",
+      entityId: subscription.id,
+      metadata: { providerSubscriptionId: subEntity.id, source: "razorpay_webhook" },
+      createdAt: now,
+    });
+    const renewedPlan = findPlan(subscription.planId);
+    if (renewedPlan) {
+      await sendBillingEmail(
+        deps,
+        ctx.logger,
+        subscription.organizationId,
+        (identifier) =>
+          buildPaymentReceiptEmail({
+            identifier,
+            planName: renewedPlan.name,
+            amountMinorUnits: paymentEntity?.amount ?? 0,
+            currency: paymentEntity?.currency ?? subscription.currency,
+            currentPeriodEnd,
+          }),
+        "payment receipt email",
+      );
+    }
+    return jsonSuccess({ received: true });
+  }
+
+  if (eventType === "subscription.cancelled" || eventType === "subscription.completed") {
+    if (!subEntity?.id) return jsonSuccess({ received: true, recognized: false });
+    const subscription = await deps.subscriptions.findByProviderSubscriptionId(subEntity.id);
+    if (!subscription) return jsonSuccess({ received: true, recognized: false });
+
+    await deps.subscriptions.update(subscription.id, { status: "canceled", canceledAt: now });
+    const license = await deps.licenses.findByOrganizationId(subscription.organizationId);
+    if (license && license.status !== "expired") {
+      await deps.licenses.update(license.id, { status: "expired" });
+    }
+    await recordAuditEvent(deps, ctx, {
+      actorId: null,
+      organizationId: subscription.organizationId,
+      action: "subscription.canceled",
+      entityType: "subscription",
+      entityId: subscription.id,
+      metadata: { providerSubscriptionId: subEntity.id, source: "razorpay_webhook" },
+      createdAt: now,
+    });
+    const cancelledPlan = findPlan(subscription.planId);
+    if (cancelledPlan) {
+      await sendBillingEmail(
+        deps,
+        ctx.logger,
+        subscription.organizationId,
+        (identifier) => buildCancellationEmail({ identifier, planName: cancelledPlan.name }),
+        "cancellation email",
+      );
+    }
+    return jsonSuccess({ received: true });
+  }
+
+  if (eventType === "subscription.halted") {
+    // Razorpay's own "the mandate kept failing and has been paused" event —
+    // treated as expired, not canceled: the customer didn't choose to
+    // leave, their payment method stopped working. Reactivating requires a
+    // fresh checkout (createRazorpaySubscriptionCheckout), the same as any
+    // other expired subscription.
+    if (!subEntity?.id) return jsonSuccess({ received: true, recognized: false });
+    const subscription = await deps.subscriptions.findByProviderSubscriptionId(subEntity.id);
+    if (!subscription) return jsonSuccess({ received: true, recognized: false });
+
+    await deps.subscriptions.update(subscription.id, { status: "expired" });
+    const license = await deps.licenses.findByOrganizationId(subscription.organizationId);
+    if (license && license.status !== "expired") {
+      await deps.licenses.update(license.id, { status: "expired" });
+    }
+    await recordAuditEvent(deps, ctx, {
+      actorId: null,
+      organizationId: subscription.organizationId,
+      action: "subscription.halted",
+      entityType: "subscription",
+      entityId: subscription.id,
+      metadata: { providerSubscriptionId: subEntity.id, source: "razorpay_webhook" },
+      createdAt: now,
+    });
+    const haltedPlan = findPlan(subscription.planId);
+    if (haltedPlan) {
+      await sendBillingEmail(
+        deps,
+        ctx.logger,
+        subscription.organizationId,
+        (identifier) => buildExpiryEmail({ identifier, planName: haltedPlan.name }),
+        "expiry email",
+      );
+    }
+    return jsonSuccess({ received: true });
+  }
+
+  // Every other Razorpay event type this account may be subscribed to
+  // (payment.failed, subscription.pending, subscription.authenticated,
+  // etc.) — acknowledged, not acted on. Returning 200 here (rather than 404
+  // or ignoring the idempotency record already written above) tells
+  // Razorpay delivery succeeded, so it stops retrying an event this system
+  // deliberately has no reaction to.
+  return jsonSuccess({ received: true, recognized: false });
+}
+
+export interface SubscriptionExpirySweepResult {
+  checked: number;
+  expired: number;
+}
+
+/** The other half of real subscription expiry — `handleRazorpayWebhook`'s
+ * `subscription.charged` branch extends `currentPeriodEnd` on every real
+ * renewal, but nothing advances a subscription to `"expired"` when a period
+ * ends with *no* renewal (a customer who never opened a recurring mandate
+ * at all still going through the free trial→never-paid path, a Razorpay
+ * mandate quietly lapsing without ever firing `subscription.halted`, or
+ * simply this account never having set up the Razorpay webhook yet). Before
+ * this existed, `SUBSCRIPTION_STATUSES` included `"expired"` but nothing in
+ * this codebase's history ever produced it automatically — see
+ * DECISION_LOG.md's 2026-07-23 production-readiness audit entry, which
+ * found this exact gap live (a subscription that paid once kept paid
+ * DPDP-Scanner access forever, since `hasVerifiedDpdpScannerAccess` only
+ * checks `status === "active"` plus any *historical* paid transaction, not
+ * the current period).
+ *
+ * Called from `worker.ts`'s own `scheduled()` handler (a real Cloudflare
+ * Cron Trigger, `wrangler.toml`'s `[triggers]`), not from any HTTP route —
+ * takes a narrow slice of `Dependencies` and a plain `Logger` rather than a
+ * full `RouteContext`, since there is no request, no requestId, and no rate
+ * limiter to speak of here. Paginates through every `"active"` subscription
+ * via the same `SubscriptionRepository.search` the admin Subscriptions
+ * Workspace already uses — no dedicated "find expired" repository method
+ * needed for what is, at this system's real current scale, a small,
+ * periodic sweep. */
+export async function runSubscriptionExpirySweep(
+  deps: Pick<
+    Dependencies,
+    "subscriptions" | "licenses" | "audit" | "userProfiles" | "users" | "billingEmailCredentials"
+  >,
+  logger: Logger,
+): Promise<SubscriptionExpirySweepResult> {
+  if (!deps.subscriptions) return { checked: 0, expired: 0 };
+
+  const now = new Date();
+  const pageSize = 100;
+  let page = 1;
+  let checked = 0;
+  let expired = 0;
+
+  for (;;) {
+    const result = await deps.subscriptions.search({ status: "active", page, pageSize });
+    checked += result.subscriptions.length;
+
+    for (const subscription of result.subscriptions) {
+      if (!subscription.currentPeriodEnd) continue;
+      if (new Date(subscription.currentPeriodEnd) >= now) continue;
+
+      await deps.subscriptions.update(subscription.id, { status: "expired" });
+      const license = deps.licenses
+        ? await deps.licenses.findByOrganizationId(subscription.organizationId)
+        : null;
+      if (license && license.status !== "expired") {
+        await deps.licenses!.update(license.id, { status: "expired" });
+      }
+      try {
+        await deps.audit.record({
+          actorId: null,
+          organizationId: subscription.organizationId,
+          action: "subscription.expired",
+          entityType: "subscription",
+          entityId: subscription.id,
+          metadata: { currentPeriodEnd: subscription.currentPeriodEnd },
+          createdAt: now.toISOString(),
+        });
+      } catch (error) {
+        logger.error("failed to record subscription.expired audit event", {
+          organizationId: subscription.organizationId,
+          subscriptionId: subscription.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+      const expiredPlan = findPlan(subscription.planId);
+      if (expiredPlan) {
+        await sendBillingEmail(
+          deps,
+          logger,
+          subscription.organizationId,
+          (identifier) => buildExpiryEmail({ identifier, planName: expiredPlan.name }),
+          "expiry email",
+        );
+      }
+      expired += 1;
+    }
+
+    if (page * pageSize >= result.total) break;
+    page += 1;
+  }
+
+  logger.info("subscription expiry sweep completed", { checked, expired });
+  return { checked, expired };
 }
 
 /** The DPDP Compliance Scanner's real access gate — deliberately not the
@@ -4565,6 +5482,64 @@ async function recordAuditEvent(
     ctx.logger.error("failed to record audit event", {
       requestId: ctx.requestId,
       action: event.action,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/** Real recurring billing's own transactional emails need a real recipient
+ * — an organization itself has no email address
+ * (`OrganizationRecord` has none), so this resolves the organization's
+ * `"owner"` member and that user's own real email, the same real "who's the
+ * actual point of contact" resolution a human operator would do by hand.
+ * Returns `null` (never throws) when either dependency is unconfigured, no
+ * owner profile exists, or the owner's own user record has no email — every
+ * one of those is a real, valid "there's nobody to email" state, not an
+ * error worth failing the surrounding request over. */
+async function resolveOrganizationOwnerEmail(
+  organizationId: string,
+  deps: Pick<Dependencies, "userProfiles" | "users">,
+): Promise<string | null> {
+  if (!deps.userProfiles || !deps.users) return null;
+  const profiles = await deps.userProfiles.findByOrganizationId(organizationId);
+  const owner = profiles.find((profile) => profile.role === "owner");
+  if (!owner) return null;
+  const user = await deps.users.findById(owner.userId);
+  return user?.email ?? null;
+}
+
+/** The one place every real billing email actually gets sent —
+ * best-effort, exactly like `recordAuditEvent` above: a missing
+ * `billingEmailCredentials` configuration, an unresolvable recipient, or a
+ * real Resend failure are all logged, never thrown. The payment/
+ * cancellation/expiry state change this email describes has already been
+ * committed by the time this runs; failing the request/sweep because a
+ * confirmation email didn't send would be strictly worse than the customer
+ * simply not getting that one email. */
+async function sendBillingEmail(
+  deps: Pick<Dependencies, "userProfiles" | "users" | "billingEmailCredentials">,
+  logger: Logger,
+  organizationId: string,
+  build: (identifier: string) => { subject: string; html: string; text: string },
+  kind: string,
+): Promise<void> {
+  if (!deps.billingEmailCredentials) return;
+  try {
+    const identifier = await resolveOrganizationOwnerEmail(organizationId, deps);
+    if (!identifier) {
+      logger.warn(`could not resolve a recipient for ${kind}`, { organizationId });
+      return;
+    }
+    const { subject, html, text } = build(identifier);
+    await sendResendEmail(
+      kind,
+      { to: identifier, subject, html, text },
+      deps.billingEmailCredentials,
+      logger,
+    );
+  } catch (error) {
+    logger.error(`${kind} failed`, {
+      organizationId,
       error: error instanceof Error ? error.message : String(error),
     });
   }

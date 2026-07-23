@@ -54,6 +54,17 @@ migrations_dir = "migrations"
 ENVIRONMENT = "staging"
 ALLOWED_ORIGIN = "REPLACE_WITH_REAL_STAGING_FRONTEND_ORIGIN"
 
+# Real recurring billing: a Cloudflare Cron Trigger invoking worker.ts's own
+# scheduled() export, which runs runSubscriptionExpirySweep — the only thing
+# that ever advances a subscription past its currentPeriodEnd to "expired"
+# when nothing renewed it (DECISION_LOG.md's 2026-07-23 production-readiness
+# audit entry). Hourly is a deliberate choice, not the only valid one: it
+# bounds real customers' worst-case "still shown as active past a lapsed
+# period" window to under an hour without running so often it competes for
+# D1 read/write budget against real request traffic.
+[env.staging.triggers]
+crons = ["0 * * * *"]
+
 [env.production]
 name = "titan-platform-production"
 
@@ -85,3 +96,9 @@ ALLOWED_ORIGIN = "https://titan-web-production.pages.dev"
 [env.production.observability.logs]
 enabled = true
 invocation_logs = true
+
+# Real recurring billing: same real Cron Trigger as [env.staging.triggers]
+# above, for the same reason — see its own comment. This is the one that
+# actually runs against real customer subscriptions once deployed.
+[env.production.triggers]
+crons = ["0 * * * *"]

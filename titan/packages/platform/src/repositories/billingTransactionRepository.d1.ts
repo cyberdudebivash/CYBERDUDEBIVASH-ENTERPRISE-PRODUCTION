@@ -14,7 +14,8 @@ interface BillingTransactionRow {
   subscription_id: string;
   plan_id: string;
   provider: string;
-  provider_order_id: string;
+  provider_order_id: string | null;
+  provider_subscription_id: string | null;
   provider_payment_id: string | null;
   provider_signature: string | null;
   amount_paise: number;
@@ -24,7 +25,9 @@ interface BillingTransactionRow {
   updated_at: string;
 }
 
-/** D1-backed implementation (migrations/0013_billing_transactions.sql). */
+/** D1-backed implementation (migrations/0013_billing_transactions.sql,
+ * extended by migrations/0014_recurring_billing_multicurrency.sql for
+ * subscription-mode transactions). */
 export function createD1BillingTransactionRepository(db: D1Database): BillingTransactionRepository {
   return {
     async save(transaction: NewBillingTransaction): Promise<BillingTransactionRecord> {
@@ -37,9 +40,9 @@ export function createD1BillingTransactionRepository(db: D1Database): BillingTra
         .prepare(
           `INSERT INTO billing_transactions
              (id, organization_id, subscription_id, plan_id, provider, provider_order_id,
-              provider_payment_id, provider_signature, amount_paise, currency, status,
-              created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              provider_subscription_id, provider_payment_id, provider_signature, amount_paise,
+              currency, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           record.id,
@@ -48,6 +51,7 @@ export function createD1BillingTransactionRepository(db: D1Database): BillingTra
           record.planId,
           record.provider,
           record.providerOrderId,
+          record.providerSubscriptionId,
           record.providerPaymentId,
           record.providerSignature,
           record.amountPaise,
@@ -72,6 +76,16 @@ export function createD1BillingTransactionRepository(db: D1Database): BillingTra
       const row = await db
         .prepare(`SELECT * FROM billing_transactions WHERE provider_order_id = ?`)
         .bind(providerOrderId)
+        .first<BillingTransactionRow>();
+      return row ? rowToRecord(row) : null;
+    },
+
+    async findByProviderSubscriptionId(
+      providerSubscriptionId: string,
+    ): Promise<BillingTransactionRecord | null> {
+      const row = await db
+        .prepare(`SELECT * FROM billing_transactions WHERE provider_subscription_id = ?`)
+        .bind(providerSubscriptionId)
         .first<BillingTransactionRow>();
       return row ? rowToRecord(row) : null;
     },
@@ -168,6 +182,7 @@ function rowToRecord(row: BillingTransactionRow): BillingTransactionRecord {
     planId: row.plan_id,
     provider: row.provider as BillingTransactionRecord["provider"],
     providerOrderId: row.provider_order_id,
+    providerSubscriptionId: row.provider_subscription_id,
     providerPaymentId: row.provider_payment_id,
     providerSignature: row.provider_signature,
     amountPaise: row.amount_paise,

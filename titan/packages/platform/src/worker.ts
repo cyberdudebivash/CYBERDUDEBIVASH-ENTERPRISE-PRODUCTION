@@ -10,7 +10,8 @@ import { createD1SupportRequestRepository } from "./repositories/supportRequestR
 import { createD1SubscriptionRepository } from "./repositories/subscriptionRepository.d1.js";
 import { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
 import { createD1BillingTransactionRepository } from "./repositories/billingTransactionRepository.d1.js";
-import { handleRequest } from "./router.js";
+import { createD1WebhookEventRepository } from "./repositories/webhookEventRepository.d1.js";
+import { handleRequest, runSubscriptionExpirySweep } from "./router.js";
 import { resolveAllowedOrigin } from "./http/cors.js";
 import { createLogger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
@@ -38,6 +39,12 @@ export interface Env {
    * as `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`'s own pairing below. */
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
+  /** Real recurring billing: Razorpay's own dedicated webhook secret — a
+   * *different* value from `RAZORPAY_KEY_SECRET` (Razorpay issues one per
+   * configured webhook endpoint, per its own documented contract). Absent
+   * in local dev and in every environment this project has ever actually
+   * run in, same as `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`. */
+  RAZORPAY_WEBHOOK_SECRET?: string;
   /** Real Resend credentials for production magic-link email
    * (auth/resendEmail.ts) — absent in local dev, same
    * blocked-without-both-values shape Razorpay above already established.
@@ -70,10 +77,10 @@ const metrics = createInMemoryMetrics();
 // deployment ever receives.
 let configWarningLogged = false;
 
-// Not deployed anywhere (no Cloudflare account/credentials in this
-// environment — DECISION_LOG.md), but verified against a real local D1
-// instance via `wrangler dev` (Workstream 10 — local operational
-// verification), not just against fakes in tests.
+// Deployed to production (titan-platform-production, 2026-07-23 —
+// DECISION_LOG.md) and to a local `wrangler dev` + real local D1 instance
+// throughout development (Workstream 10 — local operational verification),
+// not verified against fakes alone.
 export default {
   fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     // One resolved value feeds both CORS and Auth.js's redirect callback —
@@ -126,9 +133,19 @@ export default {
       subscriptions: createD1SubscriptionRepository(env.DB),
       licenses: createD1LicenseRepository(env.DB),
       billingTransactions: createD1BillingTransactionRepository(env.DB),
+      webhookEvents: createD1WebhookEventRepository(env.DB),
       razorpayCredentials:
         env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET
           ? { keyId: env.RAZORPAY_KEY_ID, keySecret: env.RAZORPAY_KEY_SECRET }
+          : undefined,
+      razorpayWebhookSecret: env.RAZORPAY_WEBHOOK_SECRET,
+      // Real recurring billing's own transactional emails — the exact same
+      // Resend account/credentials the magic-link email above already uses,
+      // just exposed to router.ts under its own key since router.ts (not
+      // auth/config.ts) is what actually sends these.
+      billingEmailCredentials:
+        env.RESEND_API_KEY && env.EMAIL_FROM
+          ? { apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM }
           : undefined,
       logger,
       rateLimiter,
@@ -147,5 +164,37 @@ export default {
           .then(() => true)
           .catch(() => false),
     });
+  },
+
+  /** Real Cloudflare Cron Trigger (`wrangler.toml`'s `[triggers]`) — the
+   * only caller of `runSubscriptionExpirySweep`. Not reachable via HTTP:
+   * Workers' own `scheduled()` export is invoked directly by Cloudflare's
+   * cron infrastructure, not by a request this Worker's own `fetch()`
+   * router ever sees. `ctx.waitUntil` keeps the isolate alive until the
+   * sweep (and every D1 write it makes) actually finishes, the same
+   * documented pattern every Workers Cron Trigger example uses — without
+   * it, Cloudflare may recycle the isolate the moment this function
+   * returns, mid-sweep. */
+  scheduled(_event: unknown, env: Env, ctx: ExecutionContext): void {
+    ctx.waitUntil(
+      runSubscriptionExpirySweep(
+        {
+          subscriptions: createD1SubscriptionRepository(env.DB),
+          licenses: createD1LicenseRepository(env.DB),
+          audit: createD1AuditRepository(env.DB),
+          userProfiles: createD1UserProfileRepository(env.DB),
+          users: createD1UserRepository(env.DB),
+          billingEmailCredentials:
+            env.RESEND_API_KEY && env.EMAIL_FROM
+              ? { apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM }
+              : undefined,
+        },
+        logger,
+      ).catch((error) => {
+        logger.error("subscription expiry sweep failed", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
   },
 };

@@ -42,6 +42,9 @@ export type {
   SupportRequestRepository,
   NewSupportRequest,
   SupportRequestStatus,
+  SupportRequestPatch,
+  SupportRequestSearchOptions,
+  SupportRequestSearchResult,
   SubscriptionRecord,
   SubscriptionRepository,
   NewSubscription,
@@ -67,6 +70,11 @@ export type {
   BillingTransactionSearchResult,
   BillingTransactionSortField,
 } from "./repositories/types.js";
+// WebhookEventRecord/WebhookEventRepository are deliberately not exported
+// here — same reasoning commercial/razorpay.js's own note below already
+// gives for RazorpayCredentials: no consumer outside router.ts's own
+// webhook handler and worker.ts's own wiring, so there's no reason to widen
+// this package's public surface (and the frontend bundle) for it.
 export {
   LEAD_STATUSES,
   LEAD_PRIORITIES,
@@ -126,8 +134,22 @@ export type {
 export { handleRequest, REPORT_TREND_ENTITIES } from "./router.js";
 export type { Env } from "./worker.js";
 
-export type { Plan, PlanEntitlements, PlanId } from "./commercial/planCatalog.js";
-export { PLAN_CATALOG, PLAN_IDS, findPlan, isSelfServicePlan } from "./commercial/planCatalog.js";
+export type {
+  Plan,
+  PlanEntitlements,
+  PlanId,
+  PlanPricing,
+  Currency,
+} from "./commercial/planCatalog.js";
+export {
+  PLAN_CATALOG,
+  PLAN_IDS,
+  SUPPORTED_CURRENCIES,
+  findPlan,
+  findPlanPricing,
+  isSelfServicePlan,
+  isSupportedCurrency,
+} from "./commercial/planCatalog.js";
 export { resolveEntitlements } from "./commercial/entitlements.js";
 // commercial/razorpay.js is deliberately not exported here: RazorpayCredentials
 // carries a real secret (keySecret) that must never be importable into a

@@ -15,6 +15,8 @@ interface SubscriptionRow {
   status: string;
   trial_ends_at: string | null;
   current_period_end: string | null;
+  currency: string;
+  provider_subscription_id: string | null;
   created_at: string;
   updated_at: string;
   canceled_at: string | null;
@@ -34,12 +36,13 @@ export function createD1SubscriptionRepository(db: D1Database): SubscriptionRepo
         ...subscription,
         updatedAt: subscription.createdAt,
         canceledAt: null,
+        providerSubscriptionId: null,
       };
       await db
         .prepare(
           `INSERT INTO subscriptions
-             (id, organization_id, plan_id, status, trial_ends_at, current_period_end, created_at, updated_at, canceled_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (id, organization_id, plan_id, status, trial_ends_at, current_period_end, currency, provider_subscription_id, created_at, updated_at, canceled_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           record.id,
@@ -48,6 +51,8 @@ export function createD1SubscriptionRepository(db: D1Database): SubscriptionRepo
           record.status,
           record.trialEndsAt,
           record.currentPeriodEnd,
+          record.currency,
+          record.providerSubscriptionId,
           record.createdAt,
           record.updatedAt,
           record.canceledAt,
@@ -68,6 +73,16 @@ export function createD1SubscriptionRepository(db: D1Database): SubscriptionRepo
       const row = await db
         .prepare(`SELECT * FROM subscriptions WHERE id = ?`)
         .bind(id)
+        .first<SubscriptionRow>();
+      return row ? rowToRecord(row) : null;
+    },
+
+    async findByProviderSubscriptionId(
+      providerSubscriptionId: string,
+    ): Promise<SubscriptionRecord | null> {
+      const row = await db
+        .prepare(`SELECT * FROM subscriptions WHERE provider_subscription_id = ?`)
+        .bind(providerSubscriptionId)
         .first<SubscriptionRow>();
       return row ? rowToRecord(row) : null;
     },
@@ -134,13 +149,17 @@ export function createD1SubscriptionRepository(db: D1Database): SubscriptionRepo
           ? { currentPeriodEnd: patch.currentPeriodEnd }
           : {}),
         ...(patch.canceledAt !== undefined ? { canceledAt: patch.canceledAt } : {}),
+        ...(patch.currency !== undefined ? { currency: patch.currency } : {}),
+        ...(patch.providerSubscriptionId !== undefined
+          ? { providerSubscriptionId: patch.providerSubscriptionId }
+          : {}),
         updatedAt: new Date().toISOString(),
       };
 
       await db
         .prepare(
           `UPDATE subscriptions
-           SET plan_id = ?, status = ?, trial_ends_at = ?, current_period_end = ?, updated_at = ?, canceled_at = ?
+           SET plan_id = ?, status = ?, trial_ends_at = ?, current_period_end = ?, currency = ?, provider_subscription_id = ?, updated_at = ?, canceled_at = ?
            WHERE id = ?`,
         )
         .bind(
@@ -148,6 +167,8 @@ export function createD1SubscriptionRepository(db: D1Database): SubscriptionRepo
           updated.status,
           updated.trialEndsAt,
           updated.currentPeriodEnd,
+          updated.currency,
+          updated.providerSubscriptionId,
           updated.updatedAt,
           updated.canceledAt,
           id,
@@ -167,6 +188,8 @@ function rowToRecord(row: SubscriptionRow): SubscriptionRecord {
     status: row.status as SubscriptionRecord["status"],
     trialEndsAt: row.trial_ends_at,
     currentPeriodEnd: row.current_period_end,
+    currency: row.currency,
+    providerSubscriptionId: row.provider_subscription_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     canceledAt: row.canceled_at,

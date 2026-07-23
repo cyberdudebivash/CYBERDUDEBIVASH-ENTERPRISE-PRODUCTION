@@ -25,6 +25,14 @@ AUTH_GITHUB_SECRET=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
 
+# Real recurring billing (Razorpay Subscriptions API) webhook signature
+# verification — a *different* secret from RAZORPAY_KEY_SECRET above
+# (Razorpay issues one webhook secret per configured endpoint). Left blank
+# in local dev: worker.ts only wires razorpayWebhookSecret through when
+# present, so an empty value means POST /api/webhooks/razorpay returns 503
+# "not configured" rather than a broken signature check.
+RAZORPAY_WEBHOOK_SECRET=
+
 # Resend (production magic-link email — auth/resendEmail.ts). Left blank in
 # local dev: worker.ts only constructs the `resend` option when both are
 # present, so an empty pair means Auth.js's Email provider falls back to its

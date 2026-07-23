@@ -7,6 +7,7 @@ const sampleSubscription: NewSubscription = {
   status: "trialing",
   trialEndsAt: "2026-08-03T00:00:00.000Z",
   currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+  currency: "INR",
   createdAt: "2026-07-20T00:00:00.000Z",
 };
 
@@ -23,13 +24,23 @@ export function describeSubscriptionRepositoryContract(
       expect(await repo.findByOrganizationId("org_1")).toBeNull();
     });
 
-    it("assigns an id, defaults canceledAt to null, and sets updatedAt to createdAt", async () => {
+    it("assigns an id, defaults canceledAt and providerSubscriptionId to null, and sets updatedAt to createdAt", async () => {
       const repo = createRepository();
       const saved = await repo.save(sampleSubscription);
       expect(saved.id).toBeTruthy();
       expect(saved.canceledAt).toBeNull();
+      expect(saved.providerSubscriptionId).toBeNull();
       expect(saved.updatedAt).toBe(sampleSubscription.createdAt);
       expect(saved).toMatchObject(sampleSubscription);
+    });
+
+    it("finds a subscription by its Razorpay provider subscription id once set", async () => {
+      const repo = createRepository();
+      const saved = await repo.save(sampleSubscription);
+      expect(await repo.findByProviderSubscriptionId("sub_abc123")).toBeNull();
+      await repo.update(saved.id, { providerSubscriptionId: "sub_abc123" });
+      const found = await repo.findByProviderSubscriptionId("sub_abc123");
+      expect(found?.id).toBe(saved.id);
     });
 
     it("finds a subscription by its organization id", async () => {

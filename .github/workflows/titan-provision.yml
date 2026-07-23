@@ -120,6 +120,21 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      # Real recurring billing (Razorpay Subscriptions API): a *different*
+      # secret from RAZORPAY_KEY_SECRET above — Razorpay issues one webhook
+      # secret per configured endpoint, from the dashboard's Webhooks
+      # section, once POST /api/webhooks/razorpay's real URL is registered
+      # there. No pairing rule with RAZORPAY_KEY_ID/SECRET (worker.ts reads
+      # it independently) — provisioned in its own step so a deployment
+      # missing only this one secret still gets a clear, isolated failure
+      # signal rather than being lumped in with the checkout credentials.
+      - name: Set Razorpay webhook secret from this repository's own secret of the same name
+        run: |
+          printf '%s' "${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" | npx wrangler secret put RAZORPAY_WEBHOOK_SECRET --env ${{ inputs.target_environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Set Resend Worker secrets from this repository's own secrets of the same name (production email delivery)
         run: |
           printf '%s' "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --env ${{ inputs.target_environment }}

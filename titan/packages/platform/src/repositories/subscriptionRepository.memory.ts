@@ -17,6 +17,7 @@ export function createInMemorySubscriptionRepository(): SubscriptionRepository {
         ...subscription,
         updatedAt: subscription.createdAt,
         canceledAt: null,
+        providerSubscriptionId: null,
       };
       subscriptions.push(record);
       return record;
@@ -28,6 +29,12 @@ export function createInMemorySubscriptionRepository(): SubscriptionRepository {
 
     async findById(id: string): Promise<SubscriptionRecord | null> {
       return subscriptions.find((s) => s.id === id) ?? null;
+    },
+
+    async findByProviderSubscriptionId(
+      providerSubscriptionId: string,
+    ): Promise<SubscriptionRecord | null> {
+      return subscriptions.find((s) => s.providerSubscriptionId === providerSubscriptionId) ?? null;
     },
 
     async search(options: SubscriptionSearchOptions): Promise<SubscriptionSearchResult> {
@@ -80,6 +87,10 @@ export function createInMemorySubscriptionRepository(): SubscriptionRepository {
           ? { currentPeriodEnd: patch.currentPeriodEnd }
           : {}),
         ...(patch.canceledAt !== undefined ? { canceledAt: patch.canceledAt } : {}),
+        ...(patch.currency !== undefined ? { currency: patch.currency } : {}),
+        ...(patch.providerSubscriptionId !== undefined
+          ? { providerSubscriptionId: patch.providerSubscriptionId }
+          : {}),
         updatedAt: new Date().toISOString(),
       };
       subscriptions[index] = updated;

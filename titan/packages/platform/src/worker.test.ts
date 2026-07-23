@@ -8,6 +8,8 @@ import { createTestCaller } from "./auth/testUtils/testSession.js";
 import { createD1UserProfileRepository } from "./repositories/userProfileRepository.d1.js";
 import { createD1OrganizationRepository } from "./repositories/organizationRepository.d1.js";
 import { createD1AuditRepository } from "./repositories/auditRepository.d1.js";
+import { createD1SubscriptionRepository } from "./repositories/subscriptionRepository.d1.js";
+import { createD1LicenseRepository } from "./repositories/licenseRepository.d1.js";
 
 const noopContext = {} as ExecutionContext;
 const createDb = await createTestD1Factory();
@@ -801,5 +803,52 @@ describe("worker (default export)", () => {
       configuration?: { valid: boolean; issues: unknown[] };
     };
     expect(body.configuration).toMatchObject({ valid: true, issues: [] });
+  });
+
+  describe("scheduled (Cron Trigger)", () => {
+    it("wires a real env.DB through runSubscriptionExpirySweep and waits for it via ctx.waitUntil", async () => {
+      const db = createDb();
+      const env = { DB: db, AUTH_SECRET: "test-secret" };
+
+      const subscriptions = createD1SubscriptionRepository(db);
+      const licenses = createD1LicenseRepository(db);
+      const subscription = await subscriptions.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2020-01-01T00:00:00.000Z",
+        createdAt: "2026-07-01T00:00:00.000Z",
+        currency: "INR",
+      });
+      await licenses.save({
+        organizationId: "org_1",
+        subscriptionId: subscription.id,
+        seatLimit: 10,
+        status: "active",
+        activatedAt: "2026-07-01T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-01T00:00:00.000Z",
+      });
+
+      // A real ExecutionContext.waitUntil implementation (noopContext above
+      // has none — a real Worker always supplies one), capturing the
+      // background promise so the test can actually wait on it rather than
+      // asserting on a still-in-flight sweep.
+      let backgroundWork: Promise<unknown> = Promise.resolve();
+      const ctx = {
+        waitUntil: (promise: Promise<unknown>) => {
+          backgroundWork = promise;
+        },
+      } as ExecutionContext;
+
+      worker.scheduled!({} as never, env, ctx);
+      await backgroundWork;
+
+      const reloaded = await subscriptions.findById(subscription.id);
+      expect(reloaded?.status).toBe("expired");
+      const license = await licenses.findByOrganizationId("org_1");
+      expect(license?.status).toBe("expired");
+    });
   });
 });

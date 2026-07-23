@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { findPlan, isSelfServicePlan, PLAN_CATALOG, PLAN_IDS } from "./planCatalog.js";
+import {
+  findPlan,
+  findPlanPricing,
+  isSelfServicePlan,
+  isSupportedCurrency,
+  PLAN_CATALOG,
+  PLAN_IDS,
+  SUPPORTED_CURRENCIES,
+} from "./planCatalog.js";
 
 describe("PLAN_CATALOG", () => {
   it("has one real entry per PLAN_IDS value, no more, no fewer", () => {
@@ -20,24 +28,53 @@ describe("PLAN_CATALOG", () => {
     }
   });
 
-  it("gives every self-service plan a real, positive priceInPaise, and the sales-assisted plan null", () => {
+  it("gives every self-service plan a real, positive price in every supported currency, and the sales-assisted plan none", () => {
     for (const plan of PLAN_CATALOG) {
       if (isSelfServicePlan(plan)) {
-        expect(plan.priceInPaise).not.toBeNull();
-        expect(plan.priceInPaise).toBeGreaterThan(0);
+        expect(plan.pricing).not.toBeNull();
+        for (const currency of SUPPORTED_CURRENCIES) {
+          const amount = findPlanPricing(plan, currency);
+          expect(amount).not.toBeNull();
+          expect(amount!).toBeGreaterThan(0);
+        }
       } else {
-        expect(plan.priceInPaise).toBeNull();
+        expect(plan.pricing).toBeNull();
       }
     }
   });
 
-  it("orders priceInPaise strictly by ascending tier, for every self-service plan", () => {
+  it("orders pricing strictly by ascending tier, for every self-service plan, in every supported currency", () => {
     const selfServicePlans = PLAN_CATALOG.filter(isSelfServicePlan).sort((a, b) => a.tier - b.tier);
-    for (let i = 1; i < selfServicePlans.length; i += 1) {
-      expect(selfServicePlans[i]!.priceInPaise!).toBeGreaterThan(
-        selfServicePlans[i - 1]!.priceInPaise!,
-      );
+    for (const currency of SUPPORTED_CURRENCIES) {
+      for (let i = 1; i < selfServicePlans.length; i += 1) {
+        expect(findPlanPricing(selfServicePlans[i]!, currency)!).toBeGreaterThan(
+          findPlanPricing(selfServicePlans[i - 1]!, currency)!,
+        );
+      }
     }
+  });
+});
+
+describe("findPlanPricing", () => {
+  it("resolves a real amount for a self-service plan in a supported currency", () => {
+    expect(findPlanPricing(findPlan("starter")!, "USD")).toBe(49_900);
+  });
+
+  it("returns null for the sales-assisted plan in any currency", () => {
+    expect(findPlanPricing(findPlan("enterprise")!, "INR")).toBeNull();
+  });
+});
+
+describe("isSupportedCurrency", () => {
+  it("is true for every real supported currency", () => {
+    for (const currency of SUPPORTED_CURRENCIES) {
+      expect(isSupportedCurrency(currency)).toBe(true);
+    }
+  });
+
+  it("is false for an unsupported or malformed currency code", () => {
+    expect(isSupportedCurrency("JPY")).toBe(false);
+    expect(isSupportedCurrency("not-a-currency")).toBe(false);
   });
 });
 

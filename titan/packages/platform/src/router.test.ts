@@ -12,8 +12,10 @@ import { createInMemorySupportRequestRepository } from "./repositories/supportRe
 import { createInMemorySubscriptionRepository } from "./repositories/subscriptionRepository.memory.js";
 import { createInMemoryLicenseRepository } from "./repositories/licenseRepository.memory.js";
 import { createInMemoryBillingTransactionRepository } from "./repositories/billingTransactionRepository.memory.js";
+import { createInMemoryWebhookEventRepository } from "./repositories/webhookEventRepository.memory.js";
 import type { Dependencies } from "./router.js";
-import { handleRequest } from "./router.js";
+import { handleRequest, runSubscriptionExpirySweep } from "./router.js";
+import { createLogger } from "./observability/logger.js";
 import { createInMemoryRateLimiter } from "./security/rateLimiter.js";
 import type { Logger } from "./observability/logger.js";
 import { createInMemoryMetrics } from "./observability/metrics.js";
@@ -77,12 +79,17 @@ function createAuthorizedTestDeps(): Dependencies & {
     // Razorpay/scanner: an in-memory repository is inert and safe to include
     // unconditionally like the two above. `razorpayCredentials` is
     // deliberately NOT set here — setting it here would make
-    // createRazorpayOrderForPlan attempt a *real* outbound fetch to
+    // createRazorpaySubscriptionCheckout attempt a *real* outbound fetch to
     // api.razorpay.com the moment any test hits that route without first
     // stubbing global fetch. Dedicated billing describe blocks construct
     // their own deps with a fake credential pair and a stubbed fetch,
     // exactly like commercial/razorpay.test.ts already does.
     billingTransactions: createInMemoryBillingTransactionRepository(),
+    // Real recurring billing: same "inert, safe to include unconditionally"
+    // reasoning as billingTransactions above — `razorpayWebhookSecret` is
+    // deliberately NOT set here for the same reason `razorpayCredentials`
+    // isn't; the webhook describe block sets its own.
+    webhookEvents: createInMemoryWebhookEventRepository(),
   };
 }
 
@@ -122,6 +129,29 @@ async function createPlatformAdministratorCaller(
     createdAt: "2026-07-20T00:00:00.000Z",
   });
   return caller;
+}
+
+/** Real billing emails (`sendBillingEmail`, router.ts) resolve a real
+ * recipient via the organization's `"owner"` profile, distinct from
+ * whichever member/admin actually triggered the event —
+ * `createOrganizationMemberCaller` above deliberately grants `"member"`,
+ * not `"owner"`, so tests proving an email went to the *owner* need this
+ * separate seed, the same "resolve the real point of contact, not just
+ * whoever's signed in" reasoning `sendBillingEmail`'s own doc comment
+ * gives. */
+async function seedOrganizationOwner(
+  deps: Dependencies & { userProfiles: UserProfileRepository },
+  organizationId: string,
+  email: string,
+) {
+  const owner = await createTestCaller(deps.authConfig!, { email });
+  await deps.userProfiles.save({
+    userId: owner.userId,
+    organizationId,
+    role: "owner",
+    createdAt: "2026-07-20T00:00:00.000Z",
+  });
+  return owner;
 }
 
 const sampleResult: AssessmentResult = {
@@ -3867,6 +3897,149 @@ describe("handleRequest", () => {
     });
   });
 
+  describe("POST /api/portal/organization (self-service onboarding)", () => {
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          body: JSON.stringify({ name: "Acme Fintech" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for a POST from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          headers: { cookie: caller.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ name: "Acme Fintech" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 400 when name is missing", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({}),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("creates a real organization and grants the caller 'owner' on it — the actual fix for the onboarding gap", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createTestCaller(deps.authConfig!);
+
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ name: "Acme Fintech", industry: "Financial Services" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as {
+        organization: { id: string; name: string; slug: string; industry: string | null };
+        profile: { role: string; organizationId: string };
+      };
+      expect(body.organization.name).toBe("Acme Fintech");
+      expect(body.organization.slug).toBe("acme-fintech");
+      expect(body.organization.industry).toBe("Financial Services");
+      expect(body.profile.role).toBe("owner");
+      expect(body.profile.organizationId).toBe(body.organization.id);
+
+      // Real proof this actually unblocks the customer, not just a database
+      // row — the same route the P0 incident found returning profiles: []
+      // now reflects real access.
+      const meResponse = await handleRequest(
+        new Request("https://example.com/api/me", { headers: { cookie: caller.cookie } }),
+        deps,
+      );
+      const me = (await meResponse.json()) as { profiles: unknown[] };
+      expect(me.profiles).toHaveLength(1);
+
+      const events = await deps.audit.list({ entityType: "organization" });
+      expect(events.some((e) => e.action === "organization.created")).toBe(true);
+    });
+
+    it("generates a unique slug when two organizations share the same name", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.organizations.save({
+        name: "Acme",
+        slug: "acme",
+        industry: null,
+        region: null,
+        tags: [],
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      const caller = await createTestCaller(deps.authConfig!);
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ name: "Acme" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as { organization: { slug: string } };
+      expect(body.organization.slug).not.toBe("acme");
+      expect(body.organization.slug.startsWith("acme-")).toBe(true);
+    });
+
+    it("returns 409 for a caller who already belongs to an organization — this route is onboarding, not a general create", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/organization", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ name: "A Second Org" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(409);
+    });
+
+    it("rate-limits POST /api/portal/organization once the limit is exceeded", async () => {
+      const deps = {
+        ...createAuthorizedTestDeps(),
+        rateLimiter: createInMemoryRateLimiter({ limit: 1, windowMs: 60_000 }),
+      };
+      const caller = await createTestCaller(deps.authConfig!);
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/portal/organization", {
+            method: "POST",
+            headers: {
+              cookie: caller.cookie,
+              "content-type": "application/json",
+              "cf-connecting-ip": "203.0.113.9",
+            },
+            body: JSON.stringify({ name: "Acme" }),
+          }),
+          deps,
+        );
+      const first = await makeRequest();
+      expect(first.status).toBe(201);
+      const second = await makeRequest();
+      expect(second.status).toBe(429);
+    });
+  });
+
   describe("GET /api/portal/assessments (CPP-1)", () => {
     it("returns 401 for an anonymous caller", async () => {
       const deps = createAuthorizedTestDeps();
@@ -4041,6 +4214,85 @@ describe("handleRequest", () => {
       // and counts, the same conservatism `SECURITY_GUIDE.md`'s CPP-1
       // paragraph documents.
       expect(body).not.toContain("user_creator_1");
+    });
+
+    it("returns 403 for a Starter-tier subscription — complianceReportExport is a Professional+ entitlement, now actually enforced", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+      expect((await response.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: "forbidden" },
+      });
+    });
+
+    it("allows export for a Professional-tier active subscription", async () => {
+      const deps = createAuthorizedTestDeps();
+      await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
+      });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+    });
+
+    it("returns 403 once a previously-Professional subscription is canceled", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await deps.subscriptions!.save({
+        organizationId: "org_1",
+        planId: "professional",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
+      });
+      await deps.subscriptions!.update(subscription.id, { status: "canceled" });
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("allows export for an organization with no subscription at all — CPP-1 reporting predates COM-1 plan entitlements", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/reports/export", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
     });
   });
 
@@ -4229,6 +4481,295 @@ describe("handleRequest", () => {
     });
   });
 
+  describe("GET /api/support-requests/search (Admin Support Queue)", () => {
+    async function seedSupportRequest(
+      deps: ReturnType<typeof createAuthorizedTestDeps>,
+      overrides: Partial<{
+        organizationId: string | null;
+        createdBy: string;
+        subject: string;
+        message: string;
+      }> = {},
+    ) {
+      return deps.supportRequests!.save({
+        organizationId: "org_1",
+        createdBy: "user_1",
+        subject: "Can't download my report",
+        message: "The export button spins but nothing downloads.",
+        createdAt: "2026-07-21T00:00:00.000Z",
+        ...overrides,
+      });
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search"),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search", {
+          headers: { cookie: caller.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns every support request across every organization for a Platform Administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSupportRequest(deps, { organizationId: "org_1" });
+      await seedSupportRequest(deps, { organizationId: "org_2", subject: "Billing question" });
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number };
+      expect(body.total).toBe(2);
+    });
+
+    it("filters by a case-insensitive substring across subject/message", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSupportRequest(deps, { subject: "Can't download my report" });
+      await seedSupportRequest(deps, { subject: "Billing question", message: "Unrelated" });
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search?search=download", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { total: number; requests: { subject: string }[] };
+      expect(body.total).toBe(1);
+      expect(body.requests[0]?.subject).toBe("Can't download my report");
+    });
+
+    it("filters by status", async () => {
+      const deps = createAuthorizedTestDeps();
+      const resolved = await seedSupportRequest(deps, { subject: "Resolved one" });
+      await deps.supportRequests!.update(resolved.id, { status: "resolved" });
+      await seedSupportRequest(deps, { subject: "Still open" });
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search?status=resolved", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { requests: { id: string }[] };
+      expect(body.requests).toHaveLength(1);
+      expect(body.requests[0]?.id).toBe(resolved.id);
+    });
+
+    it("filters by organizationId", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSupportRequest(deps, { organizationId: "org_1" });
+      await seedSupportRequest(deps, { organizationId: "org_2" });
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search?organizationId=org_2", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { requests: { organizationId: string | null }[] };
+      expect(body.requests).toHaveLength(1);
+      expect(body.requests[0]?.organizationId).toBe("org_2");
+    });
+
+    it("returns 400 for an invalid status filter", async () => {
+      const deps = createAuthorizedTestDeps();
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search?status=bogus", {
+          headers: { cookie: admin.cookie },
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 503 when supportRequests is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/search", {
+          headers: { cookie: admin.cookie },
+        }),
+        { ...deps, supportRequests: undefined },
+      );
+      expect(response.status).toBe(503);
+    });
+  });
+
+  describe("PATCH /api/support-requests/:id (Admin Support Queue)", () => {
+    async function seedSupportRequest(deps: ReturnType<typeof createAuthorizedTestDeps>) {
+      return deps.supportRequests!.save({
+        organizationId: "org_1",
+        createdBy: "user_1",
+        subject: "Can't download my report",
+        message: "The export button spins but nothing downloads.",
+        createdAt: "2026-07-21T00:00:00.000Z",
+      });
+    }
+
+    it("returns 401 for an anonymous caller", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 403 for an authenticated non-administrator", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 403 for a PATCH from a mismatched Origin (CSRF)", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, origin: "https://evil.example" },
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it("returns 404 for an unknown id", async () => {
+      const deps = createAuthorizedTestDeps();
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/does-not-exist", {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(404);
+    });
+
+    it("returns 400 for an invalid status", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "bogus" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("a Platform Administrator resolves an open request, recorded in the audit trail", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { status: string };
+      expect(body.status).toBe("resolved");
+
+      const reloaded = await deps.supportRequests!.findById(saved.id);
+      expect(reloaded?.status).toBe("resolved");
+
+      const events = await deps.audit.list({ entityType: "support_request", entityId: saved.id });
+      expect(events.some((e) => e.action === "support_request.status_changed")).toBe(true);
+    });
+
+    it("a Platform Administrator can reopen a resolved request", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      await deps.supportRequests!.update(saved.id, { status: "resolved" });
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "open" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      const reloaded = await deps.supportRequests!.findById(saved.id);
+      expect(reloaded?.status).toBe("open");
+    });
+
+    it("does not record an audit event when the status doesn't actually change", async () => {
+      const deps = createAuthorizedTestDeps();
+      const saved = await seedSupportRequest(deps);
+      const admin = await createPlatformAdministratorCaller(deps);
+      await handleRequest(
+        new Request(`https://example.com/api/support-requests/${saved.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "open" }),
+        }),
+        deps,
+      );
+      const events = await deps.audit.list({ entityType: "support_request", entityId: saved.id });
+      expect(events).toHaveLength(0);
+    });
+
+    it("returns 503 when supportRequests is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const admin = await createPlatformAdministratorCaller(deps);
+      const response = await handleRequest(
+        new Request("https://example.com/api/support-requests/some-id", {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "resolved" }),
+        }),
+        { ...deps, supportRequests: undefined },
+      );
+      expect(response.status).toBe(503);
+    });
+  });
+
   describe("GET /api/commercial/plans (COM-1)", () => {
     it("returns 401 for an anonymous caller", async () => {
       const deps = createAuthorizedTestDeps();
@@ -4300,6 +4841,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.licenses!.save({
         organizationId: "org_1",
@@ -4317,6 +4859,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: null,
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
 
@@ -4453,6 +4996,7 @@ describe("handleRequest", () => {
         trialEndsAt: "2026-08-03T00:00:00.000Z",
         currentPeriodEnd: "2026-08-03T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -4503,6 +5047,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.licenses!.save({
         organizationId: "org_1",
@@ -4578,6 +5123,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -4631,7 +5177,57 @@ describe("handleRequest", () => {
       expect(license?.status).toBe("expired");
     });
 
-    it("renews a canceled subscription back to active and reactivates its license", async () => {
+    it("sends a real cancellation email to the organization's owner when billing emails are configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      await seedSubscription(deps);
+      await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_cancel_1" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      try {
+        const response = await handleRequest(
+          new Request("https://example.com/api/portal/commercial/subscription", {
+            method: "PATCH",
+            headers: { cookie: caller.cookie, "content-type": "application/json" },
+            body: JSON.stringify({ status: "canceled" }),
+          }),
+          {
+            ...deps,
+            billingEmailCredentials: {
+              apiKey: "resend_test_key",
+              from: "billing@cyberdudebivash.in",
+            },
+          },
+        );
+        expect(response.status).toBe(200);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://api.resend.com/emails",
+        expect.objectContaining({ method: "POST" }),
+      );
+      const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+        to: string[];
+        subject: string;
+      };
+      expect(sentBody.to).toEqual(["owner@acme.in"]);
+      expect(sentBody.subject).toBe("Your Starter subscription has been canceled");
+    });
+
+    it("rejects a customer's own attempt to self-reactivate a canceled subscription for free — reactivating requires a real Razorpay checkout, not this route", async () => {
+      // This used to be a real, free, self-service "renew" action (COM-1,
+      // before real payments existed) — see validatePortalSubscriptionPatch's
+      // own doc comment and DECISION_LOG.md's 2026-07-23 production-readiness
+      // audit entry for why leaving it reachable once Razorpay was real would
+      // have let any customer cancel a paid plan and instantly reactivate it
+      // for free, forever, with no payment. `POST
+      // /api/portal/commercial/razorpay/subscriptions` +
+      // `POST .../razorpay/verify` is the real replacement path — covered by
+      // their own describe blocks.
       const deps = createAuthorizedTestDeps();
       const subscription = await seedSubscription(deps);
       await deps.subscriptions!.update(subscription.id, {
@@ -4650,15 +5246,37 @@ describe("handleRequest", () => {
         }),
         deps,
       );
+      expect(response.status).toBe(400);
+
+      const reloadedSubscription = await deps.subscriptions!.findById(subscription.id);
+      expect(reloadedSubscription?.status).toBe("canceled");
+      const reloadedLicense = await deps.licenses!.findByOrganizationId("org_1");
+      expect(reloadedLicense?.status).toBe("expired");
+    });
+
+    it("a Platform Administrator CAN reactivate a canceled subscription directly — a real administrative override, not the removed customer free-renew path", async () => {
+      const deps = createAuthorizedTestDeps();
+      const subscription = await seedSubscription(deps);
+      await deps.subscriptions!.update(subscription.id, {
+        status: "canceled",
+        canceledAt: "2026-07-21T00:00:00.000Z",
+      });
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      await deps.licenses!.update(license!.id, { status: "expired" });
+      const admin = await createPlatformAdministratorCaller(deps);
+
+      const response = await handleRequest(
+        new Request(`https://example.com/api/commercial/subscriptions/${subscription.id}`, {
+          method: "PATCH",
+          headers: { cookie: admin.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ status: "active" }),
+        }),
+        deps,
+      );
       expect(response.status).toBe(200);
-      const body = (await response.json()) as {
-        status: string;
-        canceledAt: string | null;
-        currentPeriodEnd: string;
-      };
+      const body = (await response.json()) as { status: string; canceledAt: string | null };
       expect(body.status).toBe("active");
       expect(body.canceledAt).toBeNull();
-      expect(body.currentPeriodEnd).toBeTruthy();
       const reactivatedLicense = await deps.licenses!.findByOrganizationId("org_1");
       expect(reactivatedLicense?.status).toBe("active");
     });
@@ -4738,6 +5356,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.subscriptions!.save({
         organizationId: "org_2",
@@ -4746,6 +5365,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: null,
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createPlatformAdministratorCaller(deps);
       const response = await handleRequest(
@@ -4794,6 +5414,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.licenses!.save({
         organizationId: "org_1",
@@ -4847,6 +5468,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createPlatformAdministratorCaller(deps);
       const response = await handleRequest(
@@ -4869,6 +5491,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-20T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createPlatformAdministratorCaller(deps);
       const response = await handleRequest(
@@ -4957,38 +5580,42 @@ describe("handleRequest", () => {
     });
   });
 
-  describe("POST /api/portal/commercial/razorpay/orders", () => {
+  describe("POST /api/portal/commercial/razorpay/subscriptions", () => {
     const credentials = { keyId: "rzp_test_fake", keySecret: "fake_secret" };
 
     afterEach(() => {
       vi.unstubAllGlobals();
     });
 
-    function stubOrderFetch(orderId = "order_abc123", amount = 999900) {
-      vi.stubGlobal(
-        "fetch",
-        vi
-          .fn()
-          .mockResolvedValue(
-            new Response(JSON.stringify({ id: orderId, amount, currency: "INR" }), { status: 200 }),
-          ),
-      );
+    /** Real recurring checkout is two real Razorpay API calls in sequence
+     * (Plan, then Subscription) — stubs both in order, the same real
+     * response shapes `commercial/razorpay.test.ts` already verifies
+     * against. */
+    function stubSubscriptionCheckoutFetch(planId = "plan_abc123", subscriptionId = "sub_abc123") {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ id: planId }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ id: subscriptionId, status: "created" }), { status: 200 }),
+        );
+      vi.stubGlobal("fetch", fetchMock);
+      return fetchMock;
     }
 
     it("returns 401 for an anonymous caller", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
       expect(response.status).toBe(401);
     });
 
-    it("rate-limits POST .../razorpay/orders per client IP — unlike every other portal write, this one calls a real third-party API on every request", async () => {
-      stubOrderFetch();
+    it("rate-limits POST .../razorpay/subscriptions per client IP — unlike every other portal write, this one calls a real third-party API on every request", async () => {
+      stubSubscriptionCheckoutFetch();
       const deps = {
         ...createAuthorizedTestDeps(),
         razorpayCredentials: credentials,
@@ -4997,14 +5624,14 @@ describe("handleRequest", () => {
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const makeRequest = () =>
         handleRequest(
-          new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+          new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
             method: "POST",
             headers: {
               cookie: caller.cookie,
               "content-type": "application/json",
               "cf-connecting-ip": "203.0.113.7",
             },
-            body: JSON.stringify({ planId: "starter" }),
+            body: JSON.stringify({ planId: "starter", currency: "INR" }),
           }),
           deps,
         );
@@ -5020,10 +5647,10 @@ describe("handleRequest", () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, origin: "https://evil.example" },
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
@@ -5036,10 +5663,10 @@ describe("handleRequest", () => {
       const deps = createAuthorizedTestDeps();
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
@@ -5050,24 +5677,38 @@ describe("handleRequest", () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "does-not-exist" }),
+          body: JSON.stringify({ planId: "does-not-exist", currency: "INR" }),
         }),
         deps,
       );
       expect(response.status).toBe(400);
     });
 
-    it("returns 400 for the sales-assisted enterprise plan — no self-service checkout price exists", async () => {
+    it("returns 400 for an unsupported currency", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "enterprise" }),
+          body: JSON.stringify({ planId: "starter", currency: "JPY" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("returns 400 for the sales-assisted enterprise plan — no self-service checkout price exists in any currency", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "enterprise", currency: "INR" }),
         }),
         deps,
       );
@@ -5077,28 +5718,28 @@ describe("handleRequest", () => {
       });
     });
 
-    it("creates a real trialing subscription+license when none exists, calls Razorpay for a real order, and saves a 'created' billing_transactions row", async () => {
-      stubOrderFetch("order_abc123", 999900);
+    it("creates a real trialing subscription+license when none exists, opens a real recurring Razorpay mandate, and saves a 'created' billing_transactions row", async () => {
+      stubSubscriptionCheckoutFetch("plan_abc123", "sub_abc123");
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
       expect(response.status).toBe(201);
       const responseBody = (await response.json()) as {
-        orderId: string;
+        providerSubscriptionId: string;
         amountPaise: number;
         currency: string;
         keyId: string;
         transactionId: string;
       };
       expect(responseBody).toMatchObject({
-        orderId: "order_abc123",
+        providerSubscriptionId: "sub_abc123",
         amountPaise: 999900,
         currency: "INR",
         keyId: "rzp_test_fake",
@@ -5107,26 +5748,47 @@ describe("handleRequest", () => {
       const subscription = await deps.subscriptions!.findByOrganizationId("org_1");
       expect(subscription?.status).toBe("trialing");
       expect(subscription?.planId).toBe("starter");
+      expect(subscription?.providerSubscriptionId).toBe("sub_abc123");
 
       const license = await deps.licenses!.findByOrganizationId("org_1");
       expect(license?.seatLimit).toBe(10);
 
-      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_abc123");
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_abc123");
       expect(transaction).toMatchObject({
         organizationId: "org_1",
         planId: "starter",
         provider: "razorpay",
-        providerOrderId: "order_abc123",
+        providerOrderId: null,
+        providerSubscriptionId: "sub_abc123",
         amountPaise: 999900,
+        currency: "INR",
         status: "created",
       });
 
       const events = await deps.audit.list({ entityType: "subscription" });
-      expect(events.some((e) => e.action === "billing.order_created")).toBe(true);
+      expect(events.some((e) => e.action === "billing.subscription_checkout_created")).toBe(true);
+    });
+
+    it("resolves a plan's real USD price when the client chooses USD", async () => {
+      stubSubscriptionCheckoutFetch("plan_usd", "sub_usd");
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const response = await handleRequest(
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
+          method: "POST",
+          headers: { cookie: caller.cookie, "content-type": "application/json" },
+          body: JSON.stringify({ planId: "starter", currency: "USD" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(201);
+      const responseBody = (await response.json()) as { amountPaise: number; currency: string };
+      expect(responseBody).toMatchObject({ amountPaise: 49_900, currency: "USD" });
     });
 
     it("reuses an existing subscription rather than creating a second one", async () => {
-      stubOrderFetch("order_def456");
+      stubSubscriptionCheckoutFetch("plan_def", "sub_def456");
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const existing = await deps.subscriptions!.save({
         organizationId: "org_1",
@@ -5135,24 +5797,27 @@ describe("handleRequest", () => {
         trialEndsAt: "2026-08-03T00:00:00.000Z",
         currentPeriodEnd: "2026-08-03T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
       expect(response.status).toBe(201);
       const subscription = await deps.subscriptions!.findByOrganizationId("org_1");
       expect(subscription?.id).toBe(existing.id);
-      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_def456");
+      expect(subscription?.providerSubscriptionId).toBe("sub_def456");
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_def456");
       expect(transaction?.subscriptionId).toBe(existing.id);
     });
 
-    it("returns 502 with Razorpay's own error description when order creation fails", async () => {
+    it("returns 502 with Razorpay's own error description when plan creation fails", async () => {
       vi.stubGlobal(
         "fetch",
         vi.fn().mockResolvedValue(
@@ -5164,10 +5829,10 @@ describe("handleRequest", () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
-        new Request("https://example.com/api/portal/commercial/razorpay/orders", {
+        new Request("https://example.com/api/portal/commercial/razorpay/subscriptions", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ planId: "starter" }),
+          body: JSON.stringify({ planId: "starter", currency: "INR" }),
         }),
         deps,
       );
@@ -5187,15 +5852,20 @@ describe("handleRequest", () => {
      * real-cross-verification reasoning `commercial/razorpay.test.ts`'s own
      * `referenceSignature` already establishes, duplicated here rather than
      * shared since it's three lines and this file has no existing import
-     * from that test file. */
-    function referenceSignature(orderId: string, paymentId: string, secret: string): string {
-      return createHmac("sha256", secret).update(`${orderId}|${paymentId}`).digest("hex");
+     * from that test file. Subscription-mode message order
+     * (payment_id|subscription_id), not Orders-mode. */
+    function referenceSubscriptionSignature(
+      paymentId: string,
+      subscriptionId: string,
+      secret: string,
+    ): string {
+      return createHmac("sha256", secret).update(`${paymentId}|${subscriptionId}`).digest("hex");
     }
 
     async function seedCreatedTransaction(
       deps: ReturnType<typeof createAuthorizedTestDeps>,
       organizationId: string,
-      providerOrderId: string,
+      providerSubscriptionId: string,
     ) {
       const subscription = await deps.subscriptions!.save({
         organizationId,
@@ -5204,7 +5874,9 @@ describe("handleRequest", () => {
         trialEndsAt: "2026-08-03T00:00:00.000Z",
         currentPeriodEnd: "2026-08-03T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
+      await deps.subscriptions!.update(subscription.id, { providerSubscriptionId });
       await deps.licenses!.save({
         organizationId,
         subscriptionId: subscription.id,
@@ -5219,7 +5891,8 @@ describe("handleRequest", () => {
         subscriptionId: subscription.id,
         planId: "starter",
         provider: "razorpay",
-        providerOrderId,
+        providerOrderId: null,
+        providerSubscriptionId,
         providerPaymentId: null,
         providerSignature: null,
         amountPaise: 999_900,
@@ -5236,7 +5909,7 @@ describe("handleRequest", () => {
         new Request("https://example.com/api/portal/commercial/razorpay/verify", {
           method: "POST",
           body: JSON.stringify({
-            razorpay_order_id: "order_1",
+            razorpay_subscription_id: "sub_1",
             razorpay_payment_id: "pay_1",
             razorpay_signature: "sig",
           }),
@@ -5254,7 +5927,7 @@ describe("handleRequest", () => {
           method: "POST",
           headers: { cookie: caller.cookie, origin: "https://evil.example" },
           body: JSON.stringify({
-            razorpay_order_id: "order_1",
+            razorpay_subscription_id: "sub_1",
             razorpay_payment_id: "pay_1",
             razorpay_signature: "sig",
           }),
@@ -5271,14 +5944,14 @@ describe("handleRequest", () => {
         new Request("https://example.com/api/portal/commercial/razorpay/verify", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
-          body: JSON.stringify({ razorpay_order_id: "order_1", razorpay_payment_id: "pay_1" }),
+          body: JSON.stringify({ razorpay_subscription_id: "sub_1", razorpay_payment_id: "pay_1" }),
         }),
         deps,
       );
       expect(response.status).toBe(400);
     });
 
-    it("returns 404 when the order does not exist", async () => {
+    it("returns 404 when the subscription checkout does not exist", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -5286,7 +5959,7 @@ describe("handleRequest", () => {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
           body: JSON.stringify({
-            razorpay_order_id: "order_does_not_exist",
+            razorpay_subscription_id: "sub_does_not_exist",
             razorpay_payment_id: "pay_1",
             razorpay_signature: "sig",
           }),
@@ -5296,16 +5969,16 @@ describe("handleRequest", () => {
       expect(response.status).toBe(404);
     });
 
-    it("returns 404 (not a distinguishing 403) when the order belongs to a different organization", async () => {
+    it("returns 404 (not a distinguishing 403) when the subscription belongs to a different organization", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
-      await seedCreatedTransaction(deps, "org_2", "order_belongs_to_org_2");
+      await seedCreatedTransaction(deps, "org_2", "sub_belongs_to_org_2");
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
         new Request("https://example.com/api/portal/commercial/razorpay/verify", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
           body: JSON.stringify({
-            razorpay_order_id: "order_belongs_to_org_2",
+            razorpay_subscription_id: "sub_belongs_to_org_2",
             razorpay_payment_id: "pay_1",
             razorpay_signature: "sig",
           }),
@@ -5320,14 +5993,14 @@ describe("handleRequest", () => {
 
     it("rejects an invalid signature, marks the transaction failed, and never activates the subscription", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
-      const { subscription } = await seedCreatedTransaction(deps, "org_1", "order_bad_sig");
+      const { subscription } = await seedCreatedTransaction(deps, "org_1", "sub_bad_sig");
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
         new Request("https://example.com/api/portal/commercial/razorpay/verify", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
           body: JSON.stringify({
-            razorpay_order_id: "order_bad_sig",
+            razorpay_subscription_id: "sub_bad_sig",
             razorpay_payment_id: "pay_1",
             razorpay_signature: "not-the-real-signature",
           }),
@@ -5339,7 +6012,8 @@ describe("handleRequest", () => {
         error: { code: "signature_verification_failed" },
       });
 
-      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_bad_sig");
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_bad_sig");
       expect(transaction?.status).toBe("failed");
       const reloadedSubscription = await deps.subscriptions!.findById(subscription.id);
       expect(reloadedSubscription?.status).toBe("trialing");
@@ -5350,15 +6024,19 @@ describe("handleRequest", () => {
 
     it("verifies a real signature, marks the transaction paid, activates the subscription, and updates the license", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
-      const { subscription } = await seedCreatedTransaction(deps, "org_1", "order_good_sig");
+      const { subscription } = await seedCreatedTransaction(deps, "org_1", "sub_good_sig");
       const caller = await createOrganizationMemberCaller(deps, "org_1");
-      const signature = referenceSignature("order_good_sig", "pay_good", credentials.keySecret);
+      const signature = referenceSubscriptionSignature(
+        "pay_good",
+        "sub_good_sig",
+        credentials.keySecret,
+      );
       const response = await handleRequest(
         new Request("https://example.com/api/portal/commercial/razorpay/verify", {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
           body: JSON.stringify({
-            razorpay_order_id: "order_good_sig",
+            razorpay_subscription_id: "sub_good_sig",
             razorpay_payment_id: "pay_good",
             razorpay_signature: signature,
           }),
@@ -5368,7 +6046,8 @@ describe("handleRequest", () => {
       expect(response.status).toBe(200);
       expect((await response.json()) as { verified: boolean }).toMatchObject({ verified: true });
 
-      const transaction = await deps.billingTransactions!.findByProviderOrderId("order_good_sig");
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_good_sig");
       expect(transaction?.status).toBe("paid");
       expect(transaction?.providerPaymentId).toBe("pay_good");
       expect(transaction?.providerSignature).toBe(signature);
@@ -5387,9 +6066,61 @@ describe("handleRequest", () => {
       expect(events.some((e) => e.action === "billing.payment_verified")).toBe(true);
     });
 
+    it("sends a real payment receipt email to the organization's owner once a payment is verified, when billing emails are configured", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
+      await seedCreatedTransaction(deps, "org_1", "sub_email_receipt");
+      await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+      // The signed-in caller (whoever completes checkout) need not be the
+      // owner — the email still goes to the real point of contact.
+      const caller = await createOrganizationMemberCaller(deps, "org_1");
+      const signature = referenceSubscriptionSignature(
+        "pay_receipt",
+        "sub_email_receipt",
+        credentials.keySecret,
+      );
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_receipt_1" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      try {
+        const response = await handleRequest(
+          new Request("https://example.com/api/portal/commercial/razorpay/verify", {
+            method: "POST",
+            headers: { cookie: caller.cookie, "content-type": "application/json" },
+            body: JSON.stringify({
+              razorpay_subscription_id: "sub_email_receipt",
+              razorpay_payment_id: "pay_receipt",
+              razorpay_signature: signature,
+            }),
+          }),
+          {
+            ...deps,
+            billingEmailCredentials: {
+              apiKey: "resend_test_key",
+              from: "billing@cyberdudebivash.in",
+            },
+          },
+        );
+        expect(response.status).toBe(200);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://api.resend.com/emails",
+        expect.objectContaining({ method: "POST" }),
+      );
+      const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+        to: string[];
+        subject: string;
+      };
+      expect(sentBody.to).toEqual(["owner@acme.in"]);
+      expect(sentBody.subject).toBe("Payment received — Starter plan");
+    });
+
     it("is idempotent — a retried verify call on an already-paid transaction returns the same success without re-verifying", async () => {
       const deps = { ...createAuthorizedTestDeps(), razorpayCredentials: credentials };
-      const { transaction } = await seedCreatedTransaction(deps, "org_1", "order_already_paid");
+      const { transaction } = await seedCreatedTransaction(deps, "org_1", "sub_already_paid");
       await deps.billingTransactions!.update(transaction.id, {
         status: "paid",
         providerPaymentId: "pay_already",
@@ -5401,7 +6132,7 @@ describe("handleRequest", () => {
           method: "POST",
           headers: { cookie: caller.cookie, "content-type": "application/json" },
           body: JSON.stringify({
-            razorpay_order_id: "order_already_paid",
+            razorpay_subscription_id: "sub_already_paid",
             razorpay_payment_id: "pay_already",
             // Deliberately garbage — proves the idempotent path returns
             // early on transaction.status === "paid" without recomputing
@@ -5418,6 +6149,334 @@ describe("handleRequest", () => {
           transactionId: transaction.id,
         },
       );
+    });
+  });
+
+  describe("POST /api/webhooks/razorpay", () => {
+    const webhookSecret = "a-real-test-webhook-secret";
+
+    function sign(rawBody: string): string {
+      return createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
+    }
+
+    async function seedActiveSubscription(
+      deps: ReturnType<typeof createAuthorizedTestDeps>,
+      organizationId: string,
+      providerSubscriptionId: string,
+    ) {
+      const subscription = await deps.subscriptions!.save({
+        organizationId,
+        planId: "starter",
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2026-08-20T00:00:00.000Z",
+        createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
+      });
+      await deps.subscriptions!.update(subscription.id, { providerSubscriptionId });
+      await deps.licenses!.save({
+        organizationId,
+        subscriptionId: subscription.id,
+        seatLimit: 10,
+        status: "active",
+        activatedAt: "2026-07-20T00:00:00.000Z",
+        expiresAt: null,
+        createdAt: "2026-07-20T00:00:00.000Z",
+      });
+      return subscription;
+    }
+
+    it("returns 503 when the webhook secret is not configured", async () => {
+      const deps = createAuthorizedTestDeps();
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          body: "{}",
+        }),
+        deps,
+      );
+      expect(response.status).toBe(503);
+    });
+
+    it("rejects a delivery with an invalid or missing signature", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          headers: { "x-razorpay-signature": "not-the-real-signature" },
+          body: JSON.stringify({ event: "subscription.charged" }),
+        }),
+        deps,
+      );
+      expect(response.status).toBe(400);
+    });
+
+    it("extends the current period and records a real paid transaction on subscription.charged", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      const subscription = await seedActiveSubscription(deps, "org_1", "sub_charged_1");
+      const rawBody = JSON.stringify({
+        event: "subscription.charged",
+        created_at: 1_800_000_000,
+        payload: {
+          subscription: {
+            entity: { id: "sub_charged_1", status: "active", current_end: 1_802_592_000 },
+          },
+          payment: { entity: { id: "pay_webhook_1", amount: 999900, currency: "INR" } },
+        },
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          headers: { "x-razorpay-signature": sign(rawBody) },
+          body: rawBody,
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const reloaded = await deps.subscriptions!.findById(subscription.id);
+      expect(reloaded?.status).toBe("active");
+      expect(reloaded?.currentPeriodEnd).toBe(new Date(1_802_592_000 * 1000).toISOString());
+
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_charged_1");
+      expect(transaction).toMatchObject({
+        providerPaymentId: "pay_webhook_1",
+        amountPaise: 999900,
+        currency: "INR",
+        status: "paid",
+      });
+
+      const events = await deps.audit.list({ entityType: "subscription" });
+      expect(events.some((e) => e.action === "subscription.renewed")).toBe(true);
+    });
+
+    it("is idempotent — a redelivered subscription.charged event is not re-applied", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      await seedActiveSubscription(deps, "org_1", "sub_charged_2");
+      const rawBody = JSON.stringify({
+        event: "subscription.charged",
+        payload: {
+          subscription: { entity: { id: "sub_charged_2", current_end: 1_802_592_000 } },
+          payment: { entity: { id: "pay_webhook_2", amount: 999900, currency: "INR" } },
+        },
+      });
+      const signature = sign(rawBody);
+      const makeRequest = () =>
+        handleRequest(
+          new Request("https://example.com/api/webhooks/razorpay", {
+            method: "POST",
+            headers: { "x-razorpay-signature": signature },
+            body: rawBody,
+          }),
+          deps,
+        );
+
+      await makeRequest();
+      const secondResponse = await makeRequest();
+      expect(secondResponse.status).toBe(200);
+      expect((await secondResponse.json()) as { duplicate: boolean }).toMatchObject({
+        duplicate: true,
+      });
+
+      const transaction =
+        await deps.billingTransactions!.findByProviderSubscriptionId("sub_charged_2");
+      // Exactly one paid transaction recorded — the redelivery never
+      // created a second one.
+      const all = await deps.billingTransactions!.search({ organizationId: "org_1" });
+      expect(all.transactions.filter((t) => t.id === transaction!.id)).toHaveLength(1);
+      expect(all.total).toBe(1);
+    });
+
+    it("sends a real payment receipt email to the organization's owner on subscription.charged, when billing emails are configured", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      await seedActiveSubscription(deps, "org_1", "sub_charged_email");
+      await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+      const rawBody = JSON.stringify({
+        event: "subscription.charged",
+        created_at: 1_800_000_000,
+        payload: {
+          subscription: {
+            entity: { id: "sub_charged_email", status: "active", current_end: 1_802_592_000 },
+          },
+          payment: { entity: { id: "pay_webhook_email", amount: 999900, currency: "INR" } },
+        },
+      });
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_charged_1" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      try {
+        const response = await handleRequest(
+          new Request("https://example.com/api/webhooks/razorpay", {
+            method: "POST",
+            headers: { "x-razorpay-signature": sign(rawBody) },
+            body: rawBody,
+          }),
+          {
+            ...deps,
+            billingEmailCredentials: {
+              apiKey: "resend_test_key",
+              from: "billing@cyberdudebivash.in",
+            },
+          },
+        );
+        expect(response.status).toBe(200);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://api.resend.com/emails",
+        expect.objectContaining({ method: "POST" }),
+      );
+      const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+        to: string[];
+        subject: string;
+      };
+      expect(sentBody.to).toEqual(["owner@acme.in"]);
+      expect(sentBody.subject).toBe("Payment received — Starter plan");
+    });
+
+    it("cancels the local subscription and expires the license on subscription.cancelled", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      const subscription = await seedActiveSubscription(deps, "org_1", "sub_cancelled_1");
+      const rawBody = JSON.stringify({
+        event: "subscription.cancelled",
+        payload: { subscription: { entity: { id: "sub_cancelled_1" } } },
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          headers: { "x-razorpay-signature": sign(rawBody) },
+          body: rawBody,
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const reloaded = await deps.subscriptions!.findById(subscription.id);
+      expect(reloaded?.status).toBe("canceled");
+      const license = await deps.licenses!.findByOrganizationId("org_1");
+      expect(license?.status).toBe("expired");
+    });
+
+    it("sends a real cancellation email to the organization's owner on subscription.cancelled, when billing emails are configured", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      await seedActiveSubscription(deps, "org_1", "sub_cancelled_email");
+      await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+      const rawBody = JSON.stringify({
+        event: "subscription.cancelled",
+        payload: { subscription: { entity: { id: "sub_cancelled_email" } } },
+      });
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_cancelled_1" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      try {
+        const response = await handleRequest(
+          new Request("https://example.com/api/webhooks/razorpay", {
+            method: "POST",
+            headers: { "x-razorpay-signature": sign(rawBody) },
+            body: rawBody,
+          }),
+          {
+            ...deps,
+            billingEmailCredentials: {
+              apiKey: "resend_test_key",
+              from: "billing@cyberdudebivash.in",
+            },
+          },
+        );
+        expect(response.status).toBe(200);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+        to: string[];
+        subject: string;
+      };
+      expect(sentBody.to).toEqual(["owner@acme.in"]);
+      expect(sentBody.subject).toBe("Your Starter subscription has been canceled");
+    });
+
+    it("expires the local subscription on subscription.halted (mandate paused after repeated charge failures)", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      const subscription = await seedActiveSubscription(deps, "org_1", "sub_halted_1");
+      const rawBody = JSON.stringify({
+        event: "subscription.halted",
+        payload: { subscription: { entity: { id: "sub_halted_1" } } },
+      });
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          headers: { "x-razorpay-signature": sign(rawBody) },
+          body: rawBody,
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+
+      const reloaded = await deps.subscriptions!.findById(subscription.id);
+      expect(reloaded?.status).toBe("expired");
+    });
+
+    it("sends a real expiry email to the organization's owner on subscription.halted, when billing emails are configured", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      await seedActiveSubscription(deps, "org_1", "sub_halted_email");
+      await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+      const rawBody = JSON.stringify({
+        event: "subscription.halted",
+        payload: { subscription: { entity: { id: "sub_halted_email" } } },
+      });
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(JSON.stringify({ id: "re_halted_1" }), { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      try {
+        const response = await handleRequest(
+          new Request("https://example.com/api/webhooks/razorpay", {
+            method: "POST",
+            headers: { "x-razorpay-signature": sign(rawBody) },
+            body: rawBody,
+          }),
+          {
+            ...deps,
+            billingEmailCredentials: {
+              apiKey: "resend_test_key",
+              from: "billing@cyberdudebivash.in",
+            },
+          },
+        );
+        expect(response.status).toBe(200);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+
+      const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+        to: string[];
+        subject: string;
+      };
+      expect(sentBody.to).toEqual(["owner@acme.in"]);
+      expect(sentBody.subject).toBe("Your Starter subscription has expired");
+    });
+
+    it("acknowledges but does not act on an event type this system doesn't react to", async () => {
+      const deps = { ...createAuthorizedTestDeps(), razorpayWebhookSecret: webhookSecret };
+      const rawBody = JSON.stringify({ event: "payment.failed", payload: {} });
+      const response = await handleRequest(
+        new Request("https://example.com/api/webhooks/razorpay", {
+          method: "POST",
+          headers: { "x-razorpay-signature": sign(rawBody) },
+          body: rawBody,
+        }),
+        deps,
+      );
+      expect(response.status).toBe(200);
+      expect((await response.json()) as { recognized: boolean }).toMatchObject({
+        recognized: false,
+      });
     });
   });
 
@@ -5453,6 +6512,7 @@ describe("handleRequest", () => {
         trialEndsAt: "2026-08-03T00:00:00.000Z",
         currentPeriodEnd: "2026-08-03T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -5473,6 +6533,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-22T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.billingTransactions!.save({
         organizationId: "org_1",
@@ -5486,6 +6547,7 @@ describe("handleRequest", () => {
         currency: "INR",
         status: "paid",
         createdAt: "2026-07-20T00:00:00.000Z",
+        providerSubscriptionId: null,
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -5506,6 +6568,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-22T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.billingTransactions!.save({
         organizationId: "org_1",
@@ -5519,6 +6582,7 @@ describe("handleRequest", () => {
         currency: "INR",
         status: "paid",
         createdAt: "2026-07-20T00:00:00.000Z",
+        providerSubscriptionId: null,
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -5543,6 +6607,7 @@ describe("handleRequest", () => {
         trialEndsAt: null,
         currentPeriodEnd: "2026-08-22T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       await deps.billingTransactions!.save({
         organizationId,
@@ -5556,6 +6621,7 @@ describe("handleRequest", () => {
         currency: "INR",
         status: "paid",
         createdAt: "2026-07-20T00:00:00.000Z",
+        providerSubscriptionId: null,
       });
     }
 
@@ -5612,6 +6678,7 @@ describe("handleRequest", () => {
         trialEndsAt: "2026-08-03T00:00:00.000Z",
         currentPeriodEnd: "2026-08-03T00:00:00.000Z",
         createdAt: "2026-07-20T00:00:00.000Z",
+        currency: "INR",
       });
       const caller = await createOrganizationMemberCaller(deps, "org_1");
       const response = await handleRequest(
@@ -5657,5 +6724,148 @@ describe("handleRequest", () => {
       const events = await deps.audit.list({ entityType: "assessment" });
       expect(events.some((e) => e.action === "assessment.created")).toBe(true);
     });
+  });
+});
+
+describe("runSubscriptionExpirySweep", () => {
+  const logger = createLogger({ service: "test" });
+
+  async function seedSubscriptionWithPeriodEnd(
+    deps: ReturnType<typeof createAuthorizedTestDeps>,
+    organizationId: string,
+    status: "active" | "trialing",
+    currentPeriodEnd: string | null,
+  ) {
+    const subscription = await deps.subscriptions!.save({
+      organizationId,
+      planId: "starter",
+      status,
+      trialEndsAt: null,
+      currentPeriodEnd,
+      createdAt: "2026-07-01T00:00:00.000Z",
+      currency: "INR",
+    });
+    await deps.licenses!.save({
+      organizationId,
+      subscriptionId: subscription.id,
+      seatLimit: 10,
+      status: "active",
+      activatedAt: "2026-07-01T00:00:00.000Z",
+      expiresAt: null,
+      createdAt: "2026-07-01T00:00:00.000Z",
+    });
+    return subscription;
+  }
+
+  it("does nothing when subscriptions is not configured", async () => {
+    const result = await runSubscriptionExpirySweep(
+      { audit: createAuthorizedTestDeps().audit },
+      logger,
+    );
+    expect(result).toEqual({ checked: 0, expired: 0 });
+  });
+
+  it("expires an active subscription whose currentPeriodEnd has already passed, and syncs its license", async () => {
+    const deps = createAuthorizedTestDeps();
+    const subscription = await seedSubscriptionWithPeriodEnd(
+      deps,
+      "org_1",
+      "active",
+      "2020-01-01T00:00:00.000Z",
+    );
+    const result = await runSubscriptionExpirySweep(deps, logger);
+    expect(result).toEqual({ checked: 1, expired: 1 });
+
+    const reloaded = await deps.subscriptions!.findById(subscription.id);
+    expect(reloaded?.status).toBe("expired");
+    const license = await deps.licenses!.findByOrganizationId("org_1");
+    expect(license?.status).toBe("expired");
+
+    const events = await deps.audit.list({ entityType: "subscription" });
+    expect(events.some((e) => e.action === "subscription.expired")).toBe(true);
+  });
+
+  it("leaves an active subscription alone when its currentPeriodEnd is still in the future", async () => {
+    const deps = createAuthorizedTestDeps();
+    const subscription = await seedSubscriptionWithPeriodEnd(
+      deps,
+      "org_1",
+      "active",
+      "2099-01-01T00:00:00.000Z",
+    );
+    const result = await runSubscriptionExpirySweep(deps, logger);
+    expect(result).toEqual({ checked: 1, expired: 0 });
+
+    const reloaded = await deps.subscriptions!.findById(subscription.id);
+    expect(reloaded?.status).toBe("active");
+  });
+
+  it("never touches a trialing subscription — only ever searches status: active", async () => {
+    const deps = createAuthorizedTestDeps();
+    const subscription = await seedSubscriptionWithPeriodEnd(
+      deps,
+      "org_1",
+      "trialing",
+      "2020-01-01T00:00:00.000Z",
+    );
+    const result = await runSubscriptionExpirySweep(deps, logger);
+    expect(result).toEqual({ checked: 0, expired: 0 });
+
+    const reloaded = await deps.subscriptions!.findById(subscription.id);
+    expect(reloaded?.status).toBe("trialing");
+  });
+
+  it("leaves an active subscription with no currentPeriodEnd at all alone (nothing to compare against)", async () => {
+    const deps = createAuthorizedTestDeps();
+    const subscription = await seedSubscriptionWithPeriodEnd(deps, "org_1", "active", null);
+    const result = await runSubscriptionExpirySweep(deps, logger);
+    expect(result).toEqual({ checked: 1, expired: 0 });
+    const reloaded = await deps.subscriptions!.findById(subscription.id);
+    expect(reloaded?.status).toBe("active");
+  });
+
+  it("sweeps every expired subscription across multiple organizations in one pass", async () => {
+    const deps = createAuthorizedTestDeps();
+    await seedSubscriptionWithPeriodEnd(deps, "org_1", "active", "2020-01-01T00:00:00.000Z");
+    await seedSubscriptionWithPeriodEnd(deps, "org_2", "active", "2020-01-01T00:00:00.000Z");
+    await seedSubscriptionWithPeriodEnd(deps, "org_3", "active", "2099-01-01T00:00:00.000Z");
+    const result = await runSubscriptionExpirySweep(deps, logger);
+    expect(result).toEqual({ checked: 3, expired: 2 });
+  });
+
+  it("sends a real expiry email to the organization's owner for every subscription it expires, when billing emails are configured", async () => {
+    const deps = createAuthorizedTestDeps();
+    await seedSubscriptionWithPeriodEnd(deps, "org_1", "active", "2020-01-01T00:00:00.000Z");
+    await seedOrganizationOwner(deps, "org_1", "owner@acme.in");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ id: "re_expiry_1" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const result = await runSubscriptionExpirySweep(
+        {
+          ...deps,
+          billingEmailCredentials: {
+            apiKey: "resend_test_key",
+            from: "billing@cyberdudebivash.in",
+          },
+        },
+        logger,
+      );
+      expect(result).toEqual({ checked: 1, expired: 1 });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.resend.com/emails",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const sentBody = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+      to: string[];
+      subject: string;
+    };
+    expect(sentBody.to).toEqual(["owner@acme.in"]);
+    expect(sentBody.subject).toBe("Your Starter subscription has expired");
   });
 });

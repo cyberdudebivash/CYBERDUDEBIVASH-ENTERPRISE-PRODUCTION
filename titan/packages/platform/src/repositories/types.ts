@@ -492,14 +492,16 @@ export interface AuditRepository {
 
 // CPP-1: Support Requests — the one genuinely new entity the Customer
 // Portal needs (everything else it shows is composed from repositories
-// that already exist). A real, closed single-value status, not a
-// speculative multi-state workflow: there is no admin-side resolution
-// endpoint anywhere in this codebase yet, so "open" is the only status any
-// request can ever actually have today. Extending this enum is real,
-// named future work for the day a resolution flow exists — not built
-// speculatively ahead of one (the same discipline `AssessmentRecord`'s
-// honest, single "Completed" status already established, EAP-3).
-export const SUPPORT_REQUEST_STATUSES = ["open"] as const;
+// that already exist). Originally a closed single-value ("open") status
+// with no admin-side resolution endpoint anywhere in this codebase — see
+// git history for that original reasoning. The 2026-07-23
+// production-readiness audit (DECISION_LOG.md) found the deferred
+// "Administration Console" follow-up this comment used to point at was a
+// real, live gap: every customer support request went into a queue no
+// admin could ever see or close. `"resolved"` below or an admin-facing
+// search/update capability were not needed until the Admin Support Queue
+// (this same audit's Workstream 15) made itself real.
+export const SUPPORT_REQUEST_STATUSES = ["open", "resolved"] as const;
 export type SupportRequestStatus = (typeof SUPPORT_REQUEST_STATUSES)[number];
 
 export interface SupportRequestRecord {
@@ -521,16 +523,53 @@ export type NewSupportRequest = Omit<SupportRequestRecord, "id" | "status"> & {
   status?: SupportRequestStatus;
 };
 
+/** Admin Support Queue's own patch shape — deliberately just `status`, the
+ * one field an administrator actually resolves a ticket by changing.
+ * Mirrors `LeadLifecyclePatch`'s own "narrow, admin-settable subset" shape
+ * rather than accepting `Partial<SupportRequestRecord>`, which would let a
+ * caller silently rewrite `subject`/`message`/`createdBy` — a customer's
+ * own words, not something an administrator should be able to edit. */
+export interface SupportRequestPatch {
+  status: SupportRequestStatus;
+}
+
+export interface SupportRequestSearchOptions {
+  /** Case-insensitive substring match against subject/message. */
+  search?: string;
+  status?: SupportRequestStatus;
+  /** Admin Support Queue's own cross-organization view needs to narrow to
+   * one organization (same reasoning as `LeadSearchOptions.organizationId`
+   * backing Organization Relationships' own panel) — exact match, not a
+   * substring. */
+  organizationId?: string;
+  sortDirection?: "asc" | "desc";
+  /** 1-based. */
+  page?: number;
+  pageSize?: number;
+}
+
+export interface SupportRequestSearchResult {
+  requests: SupportRequestRecord[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface SupportRequestRepository {
   save(request: NewSupportRequest): Promise<SupportRequestRecord>;
-  /** No unfiltered `list()` — the only real consumer this phase has is a
-   * customer viewing their own request history (`GET /api/portal/support`),
-   * the same "search-only, no consumer for an unfiltered read" reasoning
-   * `UserRepository.search()` already established (EAP-5) for not building
-   * a method with no real caller. An admin-facing, cross-customer view is
-   * real, deferred follow-up (`DECISION_LOG.md`'s CPP-1 entry), not this
-   * phase's scope — "Do NOT implement: Administration Console". */
+  /** No unfiltered `list()` — mirrors `LeadRepository`'s own split between
+   * an unfiltered read with a real existing consumer (there is none here)
+   * and `search`, the Admin Support Queue's actual entry point. */
   listByUser(userId: string): Promise<SupportRequestRecord[]>;
+  findById(id: string): Promise<SupportRequestRecord | null>;
+  /** Returns null if no request with this id exists — mirrors
+   * `LeadRepository.update`'s null-not-throw contract. */
+  update(id: string, patch: SupportRequestPatch): Promise<SupportRequestRecord | null>;
+  /** The Admin Support Queue's own search/filter/paginate entry point —
+   * cross-organization, Platform-Administrator-only at the router layer
+   * (`requirePlatformAdministrator`), the same authority/shape split
+   * `LeadRepository.search` already established for EAP-2. */
+  search(options: SupportRequestSearchOptions): Promise<SupportRequestSearchResult>;
 }
 
 // COM-1: Commercial Platform. Subscriptions and Licenses are the two
@@ -570,12 +609,30 @@ export interface SubscriptionRecord {
    * date" discipline `POST /api/leads`'s server-side score recomputation
    * already established. */
   currentPeriodEnd: string | null;
+  /** The currency this subscription bills in — chosen once, at first real
+   * checkout, and fixed for the subscription's lifetime (every renewal
+   * charge, automated or self-service, stays in this currency; changing it
+   * mid-subscription is a cancel-and-resubscribe, not a patch).
+   * `commercial/planCatalog.ts`'s `Currency`, stored as a plain string for
+   * the same "repository types don't import business logic" reason `planId`
+   * already is. Defaults to `"INR"` for a free-trial subscription that has
+   * never gone through checkout — real for a converted/paid subscription. */
+  currency: string;
+  /** Razorpay's own Subscription id (`sub_...`) once a real recurring
+   * mandate exists — `null` for a free trial that has never converted.
+   * `router.ts`'s webhook handler resolves incoming `subscription.*` events
+   * back to this row through this id, since Razorpay's recurring webhooks
+   * carry a subscription id, never this repository's own `id`. */
+  providerSubscriptionId: string | null;
   createdAt: string;
   updatedAt: string;
   canceledAt: string | null;
 }
 
-export type NewSubscription = Omit<SubscriptionRecord, "id" | "updatedAt" | "canceledAt">;
+export type NewSubscription = Omit<
+  SubscriptionRecord,
+  "id" | "updatedAt" | "canceledAt" | "providerSubscriptionId"
+>;
 
 /** A partial lifecycle update (`PATCH /api/portal/commercial/subscription`,
  * `PATCH /api/commercial/subscriptions/:id`) — `router.ts` diffs this
@@ -589,6 +646,8 @@ export interface SubscriptionPatch {
   trialEndsAt?: string | null;
   currentPeriodEnd?: string | null;
   canceledAt?: string | null;
+  currency?: string;
+  providerSubscriptionId?: string | null;
 }
 
 export type SubscriptionSortField = "createdAt" | "currentPeriodEnd";
@@ -622,6 +681,12 @@ export interface SubscriptionRepository {
    * null if it never subscribed to anything). */
   findByOrganizationId(organizationId: string): Promise<SubscriptionRecord | null>;
   findById(id: string): Promise<SubscriptionRecord | null>;
+  /** Resolves a Razorpay recurring webhook event's own `subscription_id`
+   * back to the local row it belongs to — the one lookup
+   * `POST /api/webhooks/razorpay` needs that neither `findById` (a
+   * different id space) nor `findByOrganizationId` (the webhook payload
+   * carries no organization id at all) can answer. */
+  findByProviderSubscriptionId(providerSubscriptionId: string): Promise<SubscriptionRecord | null>;
   search(options: SubscriptionSearchOptions): Promise<SubscriptionSearchResult>;
   update(id: string, patch: SubscriptionPatch): Promise<SubscriptionRecord | null>;
 }
@@ -707,13 +772,26 @@ export interface BillingTransactionRecord {
    * speculative future members, the same "real values only" discipline
    * `Plan.id`/`SubscriptionStatus` already follow. */
   provider: "razorpay";
-  providerOrderId: string;
+  /** Set for a one-time Orders-mode transaction, `null` for a
+   * subscription-mode one — Razorpay's real Subscriptions Checkout success
+   * callback returns `razorpay_payment_id`/`razorpay_subscription_id`/
+   * `razorpay_signature`, never an order id (verified against Razorpay's
+   * documented contract, not assumed the same as Orders-mode checkout).
+   * Exactly one of `providerOrderId`/`providerSubscriptionId` is set for any
+   * real transaction — never both, never neither. */
+  providerOrderId: string | null;
+  /** Set for a subscription-mode transaction (the first authorization charge
+   * or a recurring `subscription.charged` webhook event) — `null` for a
+   * one-time Orders-mode transaction. See `providerOrderId`'s own comment. */
+  providerSubscriptionId: string | null;
   providerPaymentId: string | null;
   providerSignature: string | null;
-  /** The smallest currency unit (paise for INR) — Razorpay's own convention,
-   * and the same "never a float for money" discipline this avoids by
-   * construction. Always the server-resolved plan price, never a
-   * client-submitted amount. */
+  /** The smallest currency unit (paise for INR, cents for USD/EUR/GBP —
+   * Razorpay's own convention for every currency it supports, not an
+   * INR-specific field despite the name) — and the same "never a float for
+   * money" discipline this avoids by construction. Always the
+   * server-resolved plan price in `currency` below, never a client-submitted
+   * amount. */
   amountPaise: number;
   currency: string;
   status: BillingTransactionStatus;
@@ -727,6 +805,32 @@ export interface BillingTransactionPatch {
   providerPaymentId?: string;
   providerSignature?: string;
   status?: BillingTransactionStatus;
+}
+
+// Real recurring billing: Razorpay's own webhook delivery is documented
+// at-least-once, not exactly-once — a slow handler, a transient 5xx, or a
+// network blip all cause a real, legitimate redelivery of the same event.
+// One row per (provider, provider_event_id) recorded before the event is
+// acted on is what makes `POST /api/webhooks/razorpay` idempotent: a
+// replayed `subscription.charged` can never grant a second billing period.
+export interface WebhookEventRecord {
+  id: string;
+  provider: "razorpay";
+  providerEventId: string;
+  eventType: string;
+  receivedAt: string;
+}
+
+export type NewWebhookEvent = Omit<WebhookEventRecord, "id">;
+
+export interface WebhookEventRepository {
+  /** `true` if this is the first time this exact `(provider,
+   * providerEventId)` pair has been recorded — records it as a side effect
+   * either way, so the caller's very next line can safely act on the event
+   * only when this returns `true`. A single atomic INSERT ... ON CONFLICT,
+   * not a separate exists-check-then-insert, so two concurrent deliveries of
+   * the same event can never both observe "not yet seen". */
+  recordIfNew(event: NewWebhookEvent): Promise<boolean>;
 }
 
 export type BillingTransactionSortField = "createdAt";
@@ -751,10 +855,18 @@ export interface BillingTransactionSearchResult {
 export interface BillingTransactionRepository {
   save(transaction: NewBillingTransaction): Promise<BillingTransactionRecord>;
   findById(id: string): Promise<BillingTransactionRecord | null>;
-  /** The one lookup the verify step needs — Razorpay's own checkout
-   * callback returns `razorpay_order_id`, not this repository's internal
-   * id, so verification has to resolve from that value. */
+  /** The one lookup the Orders-mode verify step needs — Razorpay's own
+   * one-time checkout callback returns `razorpay_order_id`, not this
+   * repository's internal id, so verification has to resolve from that
+   * value. */
   findByProviderOrderId(providerOrderId: string): Promise<BillingTransactionRecord | null>;
+  /** The equivalent lookup for a Subscriptions-mode transaction — Razorpay's
+   * real recurring checkout/webhook payloads carry a subscription id, never
+   * an order id (see `BillingTransactionRecord.providerSubscriptionId`'s own
+   * comment). */
+  findByProviderSubscriptionId(
+    providerSubscriptionId: string,
+  ): Promise<BillingTransactionRecord | null>;
   /** Real access-gating relies on this: "does this organization have at
    * least one paid transaction" (`router.ts`'s scanner entitlement check),
    * not on subscription status alone — see that function's own doc

@@ -22,7 +22,16 @@ const OPTIONAL_SECRET_PAIRS = [
   ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"],
   ["AUTH_GITHUB_ID", "AUTH_GITHUB_SECRET"],
   ["RESEND_API_KEY", "EMAIL_FROM"],
+  ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET"],
 ];
+// Real recurring billing: RAZORPAY_WEBHOOK_SECRET has no partner value — it
+// stands alone (worker.ts reads it directly, no pairing rule to enforce the
+// way RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET's "both or neither" is). Not
+// treated as a hard REQUIRED_SECRETS entry: a deployment can run
+// order/subscription-mode Razorpay checkout without the webhook configured
+// yet (worker.ts's own optionality), it just won't get real-time renewal/
+// cancellation reconciliation until it is.
+const OPTIONAL_SECRETS = ["RAZORPAY_WEBHOOK_SECRET"];
 
 const args = process.argv.slice(2);
 const isLocal = args.includes("--local");
@@ -75,6 +84,12 @@ function reportMissing(configuredNames, sourceDescription) {
       process.exitCode = 1;
     } else if (hasId && hasSecret) {
       console.log(`Optional provider pair configured: ${idName} + ${secretName}`);
+    }
+  }
+
+  for (const name of OPTIONAL_SECRETS) {
+    if (configuredNames.has(name)) {
+      console.log(`Optional secret configured: ${name}`);
     }
   }
 }

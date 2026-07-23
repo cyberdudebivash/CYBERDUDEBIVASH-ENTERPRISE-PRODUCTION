@@ -15,21 +15,26 @@ import { buildMagicLinkEmail } from "./emailTemplates.js";
  * ecosystem outside this codebase (its dashboard shows real prior sends
  * unrelated to Titan) — this integration is new to *this repository's own
  * code*, not a claim that the account itself has never sent real email.
- * `sendMagicLinkEmail` genuinely calls the real Resend API and will fail
- * without a real `RESEND_API_KEY`/`EMAIL_FROM` pair. `auth/config.ts` only
- * wires this in when both are present; it never fabricates a "from"
- * address, since Resend rejects mail from a domain that hasn't been
- * verified in the Resend dashboard for *this* account, and which domain
- * (if any) is already verified there is real information only the account
- * owner has — silently defaulting to a guessed address would fail
- * confusingly (or silently land in spam) at send time instead of simply
- * not registering the provider.
+ * `sendMagicLinkEmail`/`sendResendEmail` genuinely call the real Resend API
+ * and will fail without a real `RESEND_API_KEY`/`EMAIL_FROM` pair.
+ * `auth/config.ts` only wires the email provider in when both are present;
+ * it never fabricates a "from" address, since Resend rejects mail from a
+ * domain that hasn't been verified in the Resend dashboard for *this*
+ * account, and which domain (if any) is already verified there is real
+ * information only the account owner has — silently defaulting to a
+ * guessed address would fail confusingly (or silently land in spam) at
+ * send time instead of simply not registering the provider.
  *
  * A magic-link send happens inline in the `POST /api/auth/signin/email`
  * request Auth.js is already handling, so retry/timeout budgets stay small
  * on purpose: one retry (two attempts total), a short fixed backoff, and a
  * 10s per-attempt abort — enough to ride out a transient blip without
- * risking the surrounding request itself timing out.
+ * risking the surrounding request itself timing out. Real recurring
+ * billing's own transactional emails (`commercial/billingEmailTemplates.ts`)
+ * reuse the same low-level `sendResendEmail` and the same budget, for the
+ * same reason: a receipt/cancellation email is sent inline inside the
+ * request that just verified a real payment or recorded a real
+ * cancellation, not from a queue.
  */
 
 export interface ResendCredentials {
@@ -48,12 +53,6 @@ export class ResendApiError extends Error {
     super(message);
     this.name = "ResendApiError";
   }
-}
-
-export interface MagicLinkEmailParams {
-  to: string;
-  url: string;
-  expires: Date;
 }
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
@@ -122,40 +121,46 @@ async function attemptSend(
   };
 }
 
-/** Never resolves silently on failure — throws, so Auth.js's own
- * `sendVerificationRequest` error handling takes over (redirect to
- * `/api/auth/error`) instead of the caller believing a link was delivered
- * that never was. Never logs `credentials.apiKey`, the generated `url`
- * (contains the raw sign-in token), or the rendered email body — only
- * operational metadata (recipient, Resend's own message id, status,
- * attempt count), the same "never leak a token/secret into a log line"
- * discipline `auth/config.ts`'s session callback already applies to
- * `sessionToken`. */
-export async function sendMagicLinkEmail(
-  params: MagicLinkEmailParams,
+export interface SendEmailPayload {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+/** The one place that actually calls the Resend API — `sendMagicLinkEmail`
+ * below and every real recurring-billing email
+ * (`commercial/billingEmailTemplates.ts`'s own send functions) are thin
+ * wrappers over this, sharing one real retry/timeout/error-mapping/
+ * no-secret-leak implementation rather than each reimplementing it.
+ * `kind` (e.g. `"magic-link email"`, `"payment receipt email"`) is
+ * interpolated only into log messages, never into anything sent to Resend
+ * or shown to a recipient. Never resolves silently on failure — throws, so
+ * every real caller's own error handling takes over (Auth.js's redirect to
+ * `/api/auth/error` for the magic link; a caught-and-logged, request-never-
+ * failed pattern for billing emails, see their own call sites) instead of
+ * the caller believing an email was delivered that never was. */
+export async function sendResendEmail(
+  kind: string,
+  payload: SendEmailPayload,
   credentials: ResendCredentials,
   logger?: Logger,
 ): Promise<void> {
-  const { subject, html, text } = buildMagicLinkEmail({
-    url: params.url,
-    expires: params.expires,
-    identifier: params.to,
-  });
-  const payload = {
+  const requestBody = {
     from: credentials.from,
-    to: [params.to],
-    subject,
-    html,
-    text,
+    to: [payload.to],
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
   };
 
   let result: AttemptResult | undefined;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    result = await attemptSend(payload, credentials);
+    result = await attemptSend(requestBody, credentials);
     if (result.ok) {
-      logger?.info("magic-link email sent", {
+      logger?.info(`${kind} sent`, {
         provider: "resend",
-        identifier: params.to,
+        identifier: payload.to,
         messageId: result.messageId,
         attempt,
       });
@@ -164,9 +169,9 @@ export async function sendMagicLinkEmail(
 
     if (!result.retryable || attempt === MAX_ATTEMPTS) break;
 
-    logger?.warn("magic-link email send failed, retrying", {
+    logger?.warn(`${kind} send failed, retrying`, {
       provider: "resend",
-      identifier: params.to,
+      identifier: payload.to,
       attempt,
       status: result.error instanceof ResendApiError ? result.error.status : undefined,
       message: result.error.message,
@@ -179,14 +184,43 @@ export async function sendMagicLinkEmail(
   // explicitly rather than asserted, so this stays type-safe if that
   // invariant is ever broken by a future edit.
   if (!result || result.ok) {
-    throw new Error("sendMagicLinkEmail: exhausted attempts without a recorded failure");
+    throw new Error(`sendResendEmail: exhausted attempts without a recorded failure (${kind})`);
   }
   const finalError = result.error;
-  logger?.error("magic-link email send failed", {
+  logger?.error(`${kind} send failed`, {
     provider: "resend",
-    identifier: params.to,
+    identifier: payload.to,
     status: finalError instanceof ResendApiError ? finalError.status : undefined,
     message: finalError.message,
   });
   throw finalError;
+}
+
+export interface MagicLinkEmailParams {
+  to: string;
+  url: string;
+  expires: Date;
+}
+
+/** Never logs `credentials.apiKey`, the generated `url` (contains the raw
+ * sign-in token), or the rendered email body — only operational metadata
+ * (recipient, Resend's own message id, status, attempt count), the same
+ * "never leak a token/secret into a log line" discipline `auth/config.ts`'s
+ * session callback already applies to `sessionToken`. */
+export async function sendMagicLinkEmail(
+  params: MagicLinkEmailParams,
+  credentials: ResendCredentials,
+  logger?: Logger,
+): Promise<void> {
+  const { subject, html, text } = buildMagicLinkEmail({
+    url: params.url,
+    expires: params.expires,
+    identifier: params.to,
+  });
+  await sendResendEmail(
+    "magic-link email",
+    { to: params.to, subject, html, text },
+    credentials,
+    logger,
+  );
 }

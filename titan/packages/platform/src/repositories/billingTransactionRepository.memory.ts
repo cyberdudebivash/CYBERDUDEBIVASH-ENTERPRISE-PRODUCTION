@@ -29,6 +29,12 @@ export function createInMemoryBillingTransactionRepository(): BillingTransaction
       return transactions.find((t) => t.providerOrderId === providerOrderId) ?? null;
     },
 
+    async findByProviderSubscriptionId(
+      providerSubscriptionId: string,
+    ): Promise<BillingTransactionRecord | null> {
+      return transactions.find((t) => t.providerSubscriptionId === providerSubscriptionId) ?? null;
+    },
+
     async search(
       options: BillingTransactionSearchOptions,
     ): Promise<BillingTransactionSearchResult> {

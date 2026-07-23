@@ -15,6 +15,22 @@
 export const PLAN_IDS = ["starter", "professional", "enterprise"] as const;
 export type PlanId = (typeof PLAN_IDS)[number];
 
+/** Every currency a customer may bill a subscription in. Real settlement in
+ * a currency beyond a merchant's home currency (INR here — `CORPORATE_REGISTRATION`
+ * in the marketing site's own `ecosystemData.ts` has this company's real
+ * Indian GST/PAN registration) requires that currency actually be enabled on
+ * the underlying Razorpay account — a real account-configuration fact this
+ * repository cannot see or verify, named here rather than silently assumed.
+ * `resolvePricing`/`findPlanPricing` below are the one place that would need
+ * to reject an unsupported currency at checkout if a given Razorpay account
+ * doesn't actually have it enabled. */
+export const SUPPORTED_CURRENCIES = ["INR", "USD", "EUR", "GBP"] as const;
+export type Currency = (typeof SUPPORTED_CURRENCIES)[number];
+
+export function isSupportedCurrency(value: string): value is Currency {
+  return (SUPPORTED_CURRENCIES as readonly string[]).includes(value);
+}
+
 export interface PlanEntitlements {
   /** Mirrors the Customer Portal's own real capability (CPP-1's
    * `GET /api/portal/reports/export`) — not enforced as a gate on that
@@ -35,6 +51,11 @@ export interface PlanEntitlements {
   maxSeats: number;
 }
 
+/** The smallest unit of each currency (paise/cents/pence) — Razorpay's own
+ * convention, and the same "never a float for money" discipline this avoids
+ * by construction, for every currency this catalog prices in, not just INR. */
+export type PlanPricing = Partial<Record<Currency, number>>;
+
 export interface Plan {
   id: PlanId;
   name: string;
@@ -44,15 +65,20 @@ export interface Plan {
    * bigger or smaller than that one". */
   tier: number;
   priceDisplay: string;
-  /** The one real, chargeable amount in this catalog — the smallest
-   * currency unit (paise), server-resolved for every real Razorpay order
-   * (`router.ts`'s order-creation route never trusts a client-submitted
-   * amount). `null` for a sales-assisted plan (`trialDays: 0`) — there is
-   * no self-service checkout to charge a fixed amount for; a real
-   * Enterprise price is negotiated, not catalog-priced. Deliberately a
-   * separate field from `priceDisplay`, which stays exactly what it always
-   * was — display text, e.g. "Contact sales" — never parsed as an amount. */
-  priceInPaise: number | null;
+  /** The real, chargeable amount per supported currency — server-resolved
+   * for every real Razorpay order/subscription (`router.ts` never trusts a
+   * client-submitted amount, only a client-chosen `Currency`). `null` for a
+   * sales-assisted plan (`trialDays: 0`) — there is no self-service checkout
+   * to charge a fixed amount for in any currency; a real Enterprise price is
+   * negotiated, not catalog-priced. INR is the one figure with any real
+   * business grounding (this company's own GST-registered home currency);
+   * USD mirrors what `priceDisplay` already showed customers before this
+   * became a real charged amount; EUR/GBP are new, deliberately
+   * clearly-flagged placeholders — real, round, defensible numbers, not
+   * verified/approved pricing, the same honest status this catalog's INR
+   * figure has always carried. Change here, in one place, the day real
+   * pricing is decided for any currency. */
+  pricing: PlanPricing | null;
   /** 0 means no self-service trial — see `PLAN_IDS`' own "enterprise" entry
    * and `router.ts`'s `createPortalSubscription`: a plan with no trial is
    * sales-assisted, not self-service-subscribable through the portal. */
@@ -66,11 +92,21 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Starter",
     tier: 1,
     priceDisplay: "$499/month",
-    // ₹9,999/month — a real, round INR figure chosen for this catalog the
-    // same way $499/$1,499 themselves were (COM-1): a reasonable, clearly
-    // documented placeholder business decision, not verified/approved
-    // pricing. Change here, in one place, the day real pricing is decided.
-    priceInPaise: 999_900,
+    pricing: {
+      // ₹9,999/month — a real, round INR figure chosen for this catalog
+      // (COM-1): a reasonable, clearly documented placeholder business
+      // decision, not verified/approved pricing.
+      INR: 999_900,
+      // $499/month — promoted from what `priceDisplay` already showed
+      // customers (COM-1) to a real charged amount; same placeholder status.
+      USD: 49_900,
+      // EUR/GBP: new placeholders added alongside real multi-currency
+      // checkout — round figures in the same ballpark as the USD price
+      // above, not a live FX conversion and not verified/approved pricing.
+      // Update the day real regional pricing is decided.
+      EUR: 45_900,
+      GBP: 39_900,
+    },
     trialDays: 14,
     entitlements: {
       complianceReportExport: false,
@@ -84,8 +120,14 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Professional",
     tier: 2,
     priceDisplay: "$1,499/month",
-    // ₹29,999/month — same reasoning as Starter's own priceInPaise above.
-    priceInPaise: 2_999_900,
+    pricing: {
+      // ₹29,999/month — same reasoning as Starter's own INR figure above.
+      INR: 2_999_900,
+      // $1,499/month — same reasoning as Starter's own USD figure above.
+      USD: 149_900,
+      EUR: 139_900,
+      GBP: 119_900,
+    },
     trialDays: 14,
     entitlements: {
       complianceReportExport: true,
@@ -99,8 +141,9 @@ export const PLAN_CATALOG: readonly Plan[] = [
     name: "Enterprise",
     tier: 3,
     priceDisplay: "Contact sales",
-    // No self-service checkout price — see the field's own doc comment.
-    priceInPaise: null,
+    // No self-service checkout price in any currency — see the field's own
+    // doc comment.
+    pricing: null,
     trialDays: 0,
     entitlements: {
       complianceReportExport: true,
@@ -117,4 +160,16 @@ export function findPlan(planId: string): Plan | null {
 
 export function isSelfServicePlan(plan: Plan): boolean {
   return plan.trialDays > 0;
+}
+
+/** The one place a `(plan, currency)` pair resolves to a real chargeable
+ * amount — `null` whenever that combination has no real price, whether
+ * because the plan is sales-assisted (`pricing: null`) or because this
+ * specific currency was never priced for it (an incomplete `pricing` map).
+ * `router.ts`'s order/subscription-creation routes call this instead of
+ * reading `plan.pricing[currency]` directly, so "no price for this
+ * currency" and "no self-service price at all" fail the exact same way at
+ * every call site. */
+export function findPlanPricing(plan: Plan, currency: Currency): number | null {
+  return plan.pricing?.[currency] ?? null;
 }
