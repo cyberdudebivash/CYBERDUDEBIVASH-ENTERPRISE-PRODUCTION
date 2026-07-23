@@ -176,6 +176,15 @@ test.describe("Enterprise Commercial Platform (COM-1)", () => {
     page,
     context,
   }) => {
+    // This test drives two sequential full page loads against the real
+    // Worker/D1 (subscriptions list, then a subscription detail page) plus
+    // a mutation — the default 30s suite timeout (playwright.config.ts) has
+    // been observed to be a tight enough margin under real-world CPU
+    // contention (not a fixed-point failure — repeated runs timed out at
+    // different assertions each time, then passed at 29.7s/30s) to flake
+    // rather than reflect a functional regression. Widened for this one
+    // test rather than loosening the shared default.
+    test.setTimeout(60_000);
     const stamp = Date.now();
     const orgA = seedOrganization({
       name: `E2E Commercial Admin Org A ${stamp}`,
