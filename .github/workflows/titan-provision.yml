@@ -1,7 +1,7 @@
 name: Titan Provision Environment
 
-# One-time, real-infrastructure provisioning for a wrangler.toml [env.*]
-# target — the two prerequisites titan-deploy.yml itself never creates:
+# Real-infrastructure provisioning for a wrangler.toml [env.*] target — the
+# three prerequisites titan-deploy.yml itself never creates:
 #
 # 1. The real D1 database migrate-database's `wrangler d1 migrations apply`
 #    expects to already exist (DEPLOYMENT_GUIDE.md's "First real deploy
@@ -10,21 +10,31 @@ name: Titan Provision Environment
 #    wrangler.toml's matching [[env.<target>.d1_databases]] block by hand,
 #    exactly as that checklist documents. This workflow never edits
 #    wrangler.toml itself.
-# 2. The real Cloudflare Worker secrets the deployed code reads at runtime
+# 2. The real Cloudflare Pages project `deploy-pages`'s `wrangler pages
+#    deploy` expects to already exist — confirmed by a real first attempt
+#    (2026-07-23): unlike `wrangler d1 create` or the Worker `secret put`
+#    flow below (both of which create their target on first use), `wrangler
+#    pages deploy` errors "The Pages project ... does not exist" rather
+#    than creating one. DEPLOYMENT_GUIDE.md's checklist didn't anticipate
+#    this either — recorded here so it isn't rediscovered.
+# 3. The real Cloudflare Worker secrets the deployed code reads at runtime
 #    (worker.ts's own env.AUTH_SECRET / env.RAZORPAY_KEY_ID / env.RAZORPAY_KEY_SECRET)
 #    — a completely different store from this repository's own Actions
 #    secrets, set via `wrangler secret put`, never in wrangler.toml
 #    (SECURITY_GUIDE.md's "Secrets management"). AUTH_SECRET has no
 #    existing value anywhere in this project (DECISION_LOG.md — never
-#    deployed), so it is generated fresh here; the generated value is
-#    piped directly into `wrangler secret put` and never echoed or logged.
-#    Razorpay's two keys are forwarded from this repository's own
-#    RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET Actions secrets, which GitHub
+#    deployed), so it is generated fresh here, but only if this environment
+#    doesn't already have one — safe to re-run without silently rotating a
+#    secret that live sessions may already depend on. The generated value
+#    is piped directly into `wrangler secret put` and never echoed or
+#    logged. Razorpay's two keys are forwarded from this repository's own
+#    RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET Actions secrets (always
+#    re-uploaded — idempotent, no rotation risk since the source of truth
+#    is the Actions secret, not a value generated here), which GitHub
 #    automatically redacts from all logs regardless.
 #
-# Manual-only, like titan-deploy.yml — never runs automatically. Intended
-# to run once per environment, before that environment's first
-# titan-deploy.yml dispatch.
+# Manual-only, like titan-deploy.yml — never runs automatically. Every step
+# is safe to re-run: each checks for its target's existence first.
 
 on:
   workflow_dispatch:
@@ -61,14 +71,38 @@ jobs:
         run: npm ci
         working-directory: titan
 
-      - name: Create the real D1 database for this environment
-        run: npx wrangler d1 create titan-platform-${{ inputs.target_environment }}-db
+      - name: Create the real D1 database for this environment (skips if it already exists)
+        run: |
+          DB_NAME="titan-platform-${{ inputs.target_environment }}-db"
+          if npx wrangler d1 info "$DB_NAME" >/dev/null 2>&1; then
+            echo "$DB_NAME already exists — printing its info instead of recreating it:"
+            npx wrangler d1 info "$DB_NAME"
+          else
+            npx wrangler d1 create "$DB_NAME"
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - name: Set AUTH_SECRET Worker secret (generated here — never logged, never stored in this repository)
-        run: openssl rand -base64 32 | npx wrangler secret put AUTH_SECRET --env ${{ inputs.target_environment }}
+      - name: Create the real Cloudflare Pages project for this environment (skips if it already exists)
+        run: |
+          PROJECT_NAME="titan-web-${{ inputs.target_environment }}"
+          if npx wrangler pages project list 2>/dev/null | grep -q "$PROJECT_NAME"; then
+            echo "Pages project $PROJECT_NAME already exists — skipping creation."
+          else
+            npx wrangler pages project create "$PROJECT_NAME" --production-branch=main
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set AUTH_SECRET Worker secret if not already set (generated here — never logged, never stored in this repository)
+        run: |
+          if npx wrangler secret list --env ${{ inputs.target_environment }} --format json 2>/dev/null | grep -q '"AUTH_SECRET"'; then
+            echo "AUTH_SECRET already set for ${{ inputs.target_environment }} — leaving it untouched (re-generating would invalidate any live sessions)."
+          else
+            openssl rand -base64 32 | npx wrangler secret put AUTH_SECRET --env ${{ inputs.target_environment }}
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

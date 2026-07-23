@@ -60,12 +60,19 @@ name = "titan-platform-production"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "titan-platform-production-db"
-database_id = "REPLACE_WITH_REAL_PRODUCTION_D1_DATABASE_ID"
+# Real — created 2026-07-23 via titan-provision.yml (run 29992992395).
+database_id = "f5fe47a7-cd4b-460e-873b-2ad6f9b9d105"
 migrations_dir = "migrations"
 
 [env.production.vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGIN = "REPLACE_WITH_REAL_PRODUCTION_FRONTEND_ORIGIN"
+# Predicted from the Cloudflare Pages project name titan-deploy.yml's
+# deploy-pages job creates (`--project-name=titan-web-production`) — Pages
+# project URLs are deterministic (`https://<project-name>.pages.dev`) for
+# the production-branch deployment. Verify against the real URL in
+# deploy-pages's own job log after the first successful Pages deploy; if it
+# differs, correct this value and redeploy so CORS matches exactly.
+ALLOWED_ORIGIN = "https://titan-web-production.pages.dev"
 
 # PRD-1: Workers Logs, off by default (matches every environment above having
 # never been deployed) — real observability only becomes meaningful once real
