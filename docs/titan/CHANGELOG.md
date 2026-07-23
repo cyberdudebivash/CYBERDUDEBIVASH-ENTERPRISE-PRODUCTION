@@ -2,6 +2,32 @@
 
 All notable changes to `titan/`, in [Keep a Changelog](https://keepachangelog.com/) style. This is a distilled, scannable index — `DECISION_LOG.md` has the full reasoning behind every entry below, `FEATURE_MATRIX.md` has the per-feature test evidence, and `PLATFORM_FOUNDATION.md` has each phase's own fresh verification numbers. Every package under `titan/` has carried version `0.1.0` since Stage 4; this project has never had a tagged release or a deployment, so there is no prior version to diff against — this file's own existence, and the version bump below, are themselves GA-1 deliverables.
 
+## [Unreleased] — 2026-07-23 (post-RC1, not yet re-tagged)
+
+Real Resend email delivery, real Razorpay payment (one-time Orders, then rebuilt on real Subscriptions), and a full customer-lifecycle production-readiness audit all happened after the `0.1.0-rc.1` tag above without a version bump — this section is the first `CHANGELOG.md` entry for any of it. Full detail: `DECISION_LOG.md`'s 2026-07-23 entries, newest first.
+
+### Added
+- Real recurring billing: Razorpay Subscriptions API (`commercial/razorpay.ts`'s `createRazorpayPlan`/`createRazorpaySubscription`/`cancelRazorpaySubscription`), replacing one-time Orders. Multi-currency (INR/USD/EUR/GBP) plan pricing (`commercial/planCatalog.ts`'s `SUPPORTED_CURRENCIES`/`PlanPricing`).
+- `POST /api/webhooks/razorpay` — real server-to-server webhook reconciliation (`subscription.charged`/`.cancelled`/`.completed`/`.halted`), idempotent via a new `webhook_events` table (`migrations/0014`).
+- A real hourly Cloudflare Cron Trigger (`worker.ts`'s `scheduled()`, `wrangler.toml`'s `[triggers]`) running `runSubscriptionExpirySweep` — subscriptions actually transition to `expired` now.
+- `requireComplianceReportExportEntitlement` — the first real enforcement gate on a plan entitlement (`GET /api/portal/reports/export`).
+- `POST /api/portal/organization` + `PortalOnboarding.tsx` — real self-service organization creation, closing the P0 incident's own root cause.
+- Real transactional billing emails (`commercial/billingEmailTemplates.ts`): payment receipt, cancellation, expiry — sent via the existing Resend integration, not a new provider.
+- Admin Support Queue: `GET /api/support-requests/search` + `PATCH /api/support-requests/:id`, a new `/admin/support-requests` workspace page. `SUPPORT_REQUEST_STATUSES` gained `"resolved"`.
+- Real Resend integration for Auth.js's Email provider (production magic-link delivery) and real Razorpay payment gateway + DPDP Compliance Scanner monetization — both shipped earlier in this unreleased window; see their own `DECISION_LOG.md` entries.
+
+### Fixed
+- The free self-service subscription-renewal payment bypass — a customer's own `PATCH /api/portal/commercial/subscription` can no longer set `status: "active"` at all; reactivation now requires a real Razorpay checkout or an explicit Platform Administrator override.
+- A real magic-link sign-in failure caused by email-scanner link prefetching (confirmation-page fix).
+
+### Verified (not changed)
+- Full workspace `typecheck`/`lint`/`format`/`build`/`test` — `@titan/platform` 836 tests, `@titan/web` 386 tests.
+- A full 13-spec, 45-test Playwright E2E suite, real Chromium + real `wrangler dev` + real local D1, zero mocks — re-run clean end to end.
+- Real cross-implementation HMAC verification (order-mode and subscription-mode Razorpay signatures, webhook signatures) against Node's own `node:crypto`.
+
+### Known limitation, unchanged from prior entries
+- No real Razorpay Subscription, Plan, or webhook has ever been exercised against Razorpay's actual live API — no real credentials have existed in any environment this project has run in. Still not deployed anywhere.
+
 ## [0.1.0-rc.1] — 2026-07-22 (GA-1: Release Candidate)
 
 The first labeled Release Candidate snapshot. No application code changed to produce this tag — GA-1 is a validation, documentation, and release-engineering pass over the already-verified EAP-1–8/CPP-1/COM-1/PRD-1/OPS-1/SEC-1 baseline, per its own brief ("not feature development, not architectural redesign"). See `RELEASE_CANDIDATE_GUIDE.md` for the audit and `GLOBAL_LAUNCH_GUIDE.md` for the GA checklist.
