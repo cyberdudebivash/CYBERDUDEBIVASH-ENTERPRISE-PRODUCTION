@@ -190,6 +190,13 @@ jobs:
     needs: [deploy-worker, deploy-pages]
     if: ${{ !inputs.skip_smoke_test }}
     runs-on: ubuntu-latest
+    # Real gap found 2026-07-23: this job never declared `environment:`,
+    # unlike every job above it — meaning it could only ever see repository-
+    # level vars/secrets, never an environment-scoped TITAN_API_BASE_URL
+    # (which genuinely needs a different value per environment, since
+    # staging and production get different Worker URLs). Matches
+    # deploy-pages's own environment scoping now.
+    environment: ${{ inputs.target_environment }}
     defaults:
       run:
         working-directory: titan/packages/platform
