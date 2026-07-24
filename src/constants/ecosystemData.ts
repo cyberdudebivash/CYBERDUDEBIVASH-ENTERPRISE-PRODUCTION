@@ -373,7 +373,11 @@ export const CORPORATE_REGISTRATION = {
   pan: "ARKPN8270G",
   address: "CYBERDUDEBIVASH PRIVATE LIMITED, 29, Korai -Sukinda-Ramchandrapur Rd, Ragadi, JAJPUR ROAD, Odisha 755019",
   phone: "+91 81798 81447",
-  email: "iambivash.BN@gmail.com",
+  // Resolved 2026-07-24: founder picked this as the canonical contact email,
+  // closing the multi-email drift RISK_REGISTER.md risk 12 tracked (was
+  // iambivash.BN@gmail.com here). See organization.config.ts's header
+  // comment for the full history of what used to compete for this role.
+  email: "contact@cyberdudebivash.in",
   state: "Odisha",
   country: "India",
   regNumber: "CDB-IN-2024-GST",

@@ -5,20 +5,17 @@ import type { SEOOrganization, SEOBrand } from "../types/organization";
 // rather than re-derived — this is the single place those values now
 // live; everything else should reference this file, not redeclare them.
 //
-// Real, unresolved drift found while porting this data, flagged rather
-// than silently picked: three different contact emails are currently
-// live in three different places —
-//   1. "iambivash.BN@gmail.com" — src/constants/ecosystemData.ts's
-//      CORPORATE_REGISTRATION.email (used for GSTIN/legal display)
-//   2. "bivash@cyberdudebivash.com" — src/components/footer/Footer.tsx's
-//      actual rendered mailto: link (the real public contact address)
-//   3. "contact@cyberdudebivash.in" — scripts/god_mode_seo_engine.py's
-//      injected schema (now RETIREd per SEO_MIGRATION_PLAN.md, but its
-//      email choice was live in ~19 files' JSON-LD until this program)
-// Modeled below as two distinct contactPoints (legal vs. public) rather
-// than merged into one value — each field is per its real, current
-// usage. Neither this file nor any other part of this program silently
-// chooses a "correct" one; that's a business decision, not a technical one.
+// RESOLVED 2026-07-24: three different contact emails used to compete for
+// this role — "iambivash.BN@gmail.com" (CORPORATE_REGISTRATION.email),
+// "bivash@cyberdudebivash.com" (Footer.tsx's rendered mailto:), and
+// "contact@cyberdudebivash.in" (the retired god_mode_seo_engine.py's
+// choice, and what this program's own operating brief already called
+// "Corporate Email"). The founder picked the third explicitly — it is now
+// canonical everywhere below and in CORPORATE_REGISTRATION.email. See
+// RISK_REGISTER.md risk 12 for the closure record. Footer.tsx's rendered
+// mailto: link was not part of this program's scope to change; if it still
+// shows bivash@cyberdudebivash.com, that's a separate follow-up, not a
+// contradiction of this decision.
 
 export const BRANDS: SEOBrand[] = [
   {
@@ -58,13 +55,13 @@ export const ORGANIZATION: SEOOrganization = {
   contactPoints: [
     {
       telephone: "+91 81798 81447",
-      email: "bivash@cyberdudebivash.com",
+      email: "contact@cyberdudebivash.in",
       contactType: "customer service",
       areaServed: "IN",
     },
     {
       telephone: "+91 81798 81447",
-      email: "iambivash.BN@gmail.com",
+      email: "contact@cyberdudebivash.in",
       contactType: "legal",
       areaServed: "IN",
     },
