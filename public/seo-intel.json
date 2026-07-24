@@ -5,7 +5,7 @@
   "name": "CYBERDUDEBIVASH Sentinel APEX — Live Threat Intelligence Feed",
   "description": "Auto-generated NewsArticle structured-data feed of the latest threat intelligence, sourced from Sentinel APEX.",
   "numberOfItems": 20,
-  "dateModified": "2026-07-24T14:08:09.308Z",
+  "dateModified": "2026-07-24T16:14:03.743Z",
   "itemListElement": [
     {
       "@type": "ListItem",
@@ -28,7 +28,7 @@
         "description": "The Good, the Bad and the Ugly in Cybersecurity Week 30",
         "datePublished": "2026-07-24T13:00:12Z",
         "dateModified": "2026-07-24T13:24:51Z",
-        "keywords": "LOW, [object Object], [object Object], [object Object], [object Object]",
+        "keywords": "LOW, Command and Scripting Interpreter, Valid Accounts, Phishing, Exploit Public-Facing Application",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -133,7 +133,7 @@
         "description": "CVE-2026-15704 - CWE-863: ABAC authorization bypass via trailing slash route normalization in Eclipse BaSyx Go Components",
         "datePublished": "2026-07-24T09:16:24Z",
         "dateModified": "2026-07-24T13:22:42Z",
-        "keywords": "LOW, [object Object], [object Object]",
+        "keywords": "LOW, Command and Scripting Interpreter, Exploit Public-Facing Application",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -168,7 +168,7 @@
         "description": "CVE-2026-56391 - Outofbounds Read in GNU coreutils",
         "datePublished": "2026-07-24T09:16:25Z",
         "dateModified": "2026-07-24T13:22:21Z",
-        "keywords": "LOW, [object Object]",
+        "keywords": "LOW, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -203,7 +203,7 @@
         "description": "CVE-2026-16634 - TOML::XS versions before 0.06 for Perl bundle an unsupported and vulnerable version of tomlc99",
         "datePublished": "2026-07-24T10:16:31Z",
         "dateModified": "2026-07-24T13:22:02Z",
-        "keywords": "LOW, [object Object]",
+        "keywords": "LOW, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -238,7 +238,7 @@
         "description": "CVE-2026-7483 - Local privilege escalation in ESET security applications for macOS",
         "datePublished": "2026-07-24T10:16:32Z",
         "dateModified": "2026-07-24T13:21:58Z",
-        "keywords": "LOW, [object Object], [object Object]",
+        "keywords": "LOW, Abuse Elevation Control Mechanism, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -273,7 +273,7 @@
         "description": "CVE-2026-15810 - Cross-Site Scripting (XSS) in Looker allows Admin Account Takeover",
         "datePublished": "2026-07-24T11:04:59Z",
         "dateModified": "2026-07-24T13:21:55Z",
-        "keywords": "LOW, [object Object], [object Object], [object Object], [object Object]",
+        "keywords": "LOW, Steal Web Session Cookie, Account Manipulation, Valid Accounts, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -308,7 +308,7 @@
         "description": "CVE-2026-10610 - Local privilege escalation in ESET security applications for macOS",
         "datePublished": "2026-07-24T11:14:51Z",
         "dateModified": "2026-07-24T13:21:50Z",
-        "keywords": "LOW, [object Object], [object Object]",
+        "keywords": "LOW, Abuse Elevation Control Mechanism, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -343,7 +343,7 @@
         "description": "CVE-2026-16730 - Dbus-broker: dbus-broker: session bus denial of service via emfile during peer setup",
         "datePublished": "2026-07-24T11:26:18Z",
         "dateModified": "2026-07-24T13:21:47Z",
-        "keywords": "LOW, [object Object], [object Object]",
+        "keywords": "LOW, Phishing, Command and Scripting Interpreter",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -378,7 +378,7 @@
         "description": "CVE-2026-15243 - Improper Validation of Certificate in CAS Client",
         "datePublished": "2026-07-24T11:29:26Z",
         "dateModified": "2026-07-24T13:21:43Z",
-        "keywords": "LOW, [object Object], [object Object]",
+        "keywords": "LOW, Command and Scripting Interpreter, Exploit Public-Facing Application",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -413,7 +413,7 @@
         "description": "UAC-0099 Is Now Hiding Malware Inside a Fake Notepad++ Plugin to Target Ukrainian Organizations",
         "datePublished": "2026-07-24T09:54:53Z",
         "dateModified": "2026-07-24T13:19:15Z",
-        "keywords": "CRITICAL, [object Object]",
+        "keywords": "CRITICAL, Phishing",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
@@ -448,7 +448,7 @@
         "description": "Thailands Ministry of Finance Targeted With Hermes AI Agent Running Unattended, Hades Implant Staged",
         "datePublished": "2026-07-24T12:10:28Z",
         "dateModified": "2026-07-24T13:19:11Z",
-        "keywords": "CRITICAL, [object Object], [object Object], [object Object]",
+        "keywords": "CRITICAL, Command and Scripting Interpreter, Valid Accounts, Exploit Public-Facing Application",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
