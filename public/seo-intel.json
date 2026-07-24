@@ -5,15 +5,15 @@
   "name": "CYBERDUDEBIVASH Sentinel APEX — Live Threat Intelligence Feed",
   "description": "Auto-generated NewsArticle structured-data feed of the latest threat intelligence, sourced from Sentinel APEX.",
   "numberOfItems": 20,
-  "dateModified": "2026-07-24T07:37:32.555Z",
+  "dateModified": "2026-07-24T14:08:09.308Z",
   "itemListElement": [
     {
       "@type": "ListItem",
       "position": 1,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium Remote Code Execution (CVE-2026-16870)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784875231_CVE-2026-16870_CVE-2026-16870",
+        "headline": "The Good, the Bad and the Ugly in Cybersecurity  Week 30",
+        "url": "https://intel.cyberdudebivash.com/#intel--bd6fadb6b461c29eb38a2901",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -25,21 +25,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-16870",
-        "datePublished": "2026-07-24T06:16:42Z",
-        "dateModified": "2026-07-24T06:40:31Z",
-        "keywords": "MEDIUM, Exfiltration Over C2 Channel, Valid Accounts, Data Encrypted for Impact, Exploit Public-Facing Application, Command and Scripting Interpreter",
+        "description": "The Good, the Bad and the Ugly in Cybersecurity Week 30",
+        "datePublished": "2026-07-24T13:00:12Z",
+        "dateModified": "2026-07-24T13:24:51Z",
+        "keywords": "LOW, [object Object], [object Object], [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 6
+            "value": 0.74
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16870",
-        "urgency": "Moderate"
+        "sameAs": "https://www.sentinelone.com/blog/the-good-the-bad-and-the-ugly-in-cybersecurity-week-30-8/",
+        "urgency": "Low"
       }
     },
     {
@@ -47,8 +47,8 @@
       "position": 2,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Unattributed APT Activity — Persistent Access Campaign",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784874894",
+        "headline": "CVE-2026-7484 Improper Access Control in Abis Technology's AVESS",
+        "url": "https://intel.cyberdudebivash.com/#intel--4e64c411f187f57532ec6dc9",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -60,43 +60,9 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "Malicious RubyGems Turn Developer Machines Into Monero Miners and Spread Through SSH",
-        "datePublished": "2026-07-24T06:01:02Z",
-        "dateModified": "2026-07-24T06:34:54Z",
-        "keywords": "MEDIUM, Valid Accounts, Application Layer Protocol, Exploitation for Client Execution",
-        "about": {
-          "@type": "Thing",
-          "name": "Risk score",
-          "additionalProperty": {
-            "@type": "PropertyValue",
-            "name": "risk_score",
-            "value": 5.5447
-          }
-        },
-        "urgency": "Moderate"
-      }
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "item": {
-        "@type": "NewsArticle",
-        "headline": "Low: Chromium: CVE-2026-16416 Integer overflow in Chromecast (CVE-2026-16416)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872603_CVE-2026-15420_CVE-2026-16416_CVE-2026-1",
-        "publisher": {
-          "@type": "Organization",
-          "@id": "https://www.cyberdudebivash.com/#organization",
-          "name": "CyberDudeBivash Private Limited",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
-          }
-        },
-        "articleSection": "Threat Intelligence",
-        "isAccessibleForFree": true,
-        "description": "Chromium: CVE-2026-16416 Integer overflow in Chromecast",
-        "datePublished": "2026-07-24T06:41:34Z",
-        "dateModified": "2026-07-24T05:56:43Z",
+        "description": "CVE-2026-7484 Improper Access Control in Abis Technology's AVESS",
+        "datePublished": "2026-07-24T12:26:36Z",
+        "dateModified": "2026-07-24T13:23:43Z",
         "keywords": "LOW",
         "about": {
           "@type": "Thing",
@@ -104,10 +70,45 @@
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 0.0247
+            "value": 1.7214
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16416",
+        "sameAs": "https://vulners.com/cvelist/CVELIST:CVE-2026-7484?utm_source=rss&utm_medium=rss&utm_campaign=rss",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "CVE-2026-16743 Accountsservice: accountsservice: arbitrary file read via seticonfile for systemd-homed users",
+        "url": "https://intel.cyberdudebivash.com/#intel--8a05c272d10bc59400298ba4",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-16743 Accountsservice: accountsservice: arbitrary file read via seticonfile for systemd-homed users",
+        "datePublished": "2026-07-24T12:56:34Z",
+        "dateModified": "2026-07-24T13:23:34Z",
+        "keywords": "LOW",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 1.7509
+          }
+        },
+        "sameAs": "https://vulners.com/cve/CVE-2026-16743?utm_source=rss&utm_medium=rss&utm_campaign=rss",
         "urgency": "Low"
       }
     },
@@ -116,8 +117,8 @@
       "position": 4,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: Chromium: CVE-2026-16423 Use after free in UI (CVE-2026-66140)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872579_CVE-2026-12736_CVE-2026-13464_CVE-2026-1",
+        "headline": "CVE-2026-15704 - CWE-863: ABAC authorization bypass via trailing slash route normalization in Eclipse BaSyx Go",
+        "url": "https://intel.cyberdudebivash.com/#intel--58abd52410d54caf2e2f96f6",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -129,20 +130,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "Chromium: CVE-2026-16423 Use after free in UI",
-        "datePublished": "2026-07-24T06:41:43Z",
-        "dateModified": "2026-07-24T05:56:19Z",
-        "keywords": "LOW",
+        "description": "CVE-2026-15704 - CWE-863: ABAC authorization bypass via trailing slash route normalization in Eclipse BaSyx Go Components",
+        "datePublished": "2026-07-24T09:16:24Z",
+        "dateModified": "2026-07-24T13:22:42Z",
+        "keywords": "LOW, [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 0.0622
+            "value": 1.7314
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66140",
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-15704",
         "urgency": "Low"
       }
     },
@@ -151,8 +152,8 @@
       "position": 5,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: Chromium: CVE-2026-16424 Use after free in GPU (CVE-2026-16424)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872575_CVE-2026-13464_CVE-2026-16424_CVE-2026-1",
+        "headline": "CVE-2026-56391 - Outofbounds Read in GNU coreutils",
+        "url": "https://intel.cyberdudebivash.com/#intel--20ad75e51437fcb0b205f783",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -164,20 +165,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "Chromium: CVE-2026-16424 Use after free in GPU",
-        "datePublished": "2026-07-24T06:41:44Z",
-        "dateModified": "2026-07-24T05:56:15Z",
-        "keywords": "LOW",
+        "description": "CVE-2026-56391 - Outofbounds Read in GNU coreutils",
+        "datePublished": "2026-07-24T09:16:25Z",
+        "dateModified": "2026-07-24T13:22:21Z",
+        "keywords": "LOW, [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 0.0639
+            "value": 1.04
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16424",
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-56391",
         "urgency": "Low"
       }
     },
@@ -186,8 +187,8 @@
       "position": 6,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: MapSVG Lite <= 8.14.0 - Authenticated (Contributor+) Stored Cross-Site Scripting (CVE-2025-9205)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872544_CVE-2025-9205_CVE-2026-12736_CVE-2026-13",
+        "headline": "CVE-2026-16634 - TOML::XS versions before 0.06 for Perl bundle an unsupported and vulnerable version of tomlc9",
+        "url": "https://intel.cyberdudebivash.com/#intel--7f2639ce0053b97dc17a065d",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -199,20 +200,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2025-9205 - MapSVG Lite <= 8.14.0 - Authenticated (Contributor+) Stored Cross-Site Scripting",
-        "datePublished": "2026-07-24T04:16:50Z",
-        "dateModified": "2026-07-24T05:55:44Z",
-        "keywords": "LOW, Steal Web Session Cookie, Exploitation of Remote Services, Command and Scripting Interpreter",
+        "description": "CVE-2026-16634 - TOML::XS versions before 0.06 for Perl bundle an unsupported and vulnerable version of tomlc99",
+        "datePublished": "2026-07-24T10:16:31Z",
+        "dateModified": "2026-07-24T13:22:02Z",
+        "keywords": "LOW, [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 2.0746
+            "value": 0.38
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-9205",
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-16634",
         "urgency": "Low"
       }
     },
@@ -221,8 +222,8 @@
       "position": 7,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: Kirki <= 6.0.14 - Insecure Direct Object Reference to Unauthenticated Sensitive (CVE-2026-13464)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872528_CVE-2026-13464_CVE-2026-15420_CVE-2026-6",
+        "headline": "CVE-2026-7483 - Local privilege escalation in ESET security applications for macOS",
+        "url": "https://intel.cyberdudebivash.com/#intel--df1a0353facff453d872d1d2",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -234,20 +235,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-13464 - Kirki <= 6.0.14 - Insecure Direct Object Reference to Unauthenticated Sensitive Information Disclosure via 'context' Parameter",
-        "datePublished": "2026-07-24T04:16:51Z",
-        "dateModified": "2026-07-24T05:55:28Z",
-        "keywords": "LOW, File and Directory Discovery, Exploit Public-Facing Application, Exploitation of Remote Services, Command and Scripting Interpreter",
+        "description": "CVE-2026-7483 - Local privilege escalation in ESET security applications for macOS",
+        "datePublished": "2026-07-24T10:16:32Z",
+        "dateModified": "2026-07-24T13:21:58Z",
+        "keywords": "LOW, [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 2.0548
+            "value": 0.7597
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-13464",
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-7483",
         "urgency": "Low"
       }
     },
@@ -256,8 +257,8 @@
       "position": 8,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: OpenStack Zaqar Authentication Bypass (CVE-2026-66139)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872504_CVE-2026-66139_CVE-2026-66139_CVE-2026-6",
+        "headline": "CVE-2026-15810 - Cross-Site Scripting (XSS) in Looker allows Admin Account Takeover",
+        "url": "https://intel.cyberdudebivash.com/#intel--c4c6f6010223350727539ef3",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -269,20 +270,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-66139 - OpenStack Zaqar Authentication Bypass",
-        "datePublished": "2026-07-24T05:16:49Z",
-        "dateModified": "2026-07-24T05:55:04Z",
-        "keywords": "LOW, Valid Accounts, Exploit Public-Facing Application, Command and Scripting Interpreter",
+        "description": "CVE-2026-15810 - Cross-Site Scripting (XSS) in Looker allows Admin Account Takeover",
+        "datePublished": "2026-07-24T11:04:59Z",
+        "dateModified": "2026-07-24T13:21:55Z",
+        "keywords": "LOW, [object Object], [object Object], [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 2.0552
+            "value": 0.46
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66139",
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-15810",
         "urgency": "Low"
       }
     },
@@ -291,8 +292,8 @@
       "position": 9,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: Exim Pipe Transport Privilege Escalation (CVE-2026-66141)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784872495_CVE-2026-66141_CVE-2026-66141",
+        "headline": "CVE-2026-10610 - Local privilege escalation in ESET security applications for macOS",
+        "url": "https://intel.cyberdudebivash.com/#intel--88015247633d7ec0e979a8c1",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -304,21 +305,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-66141 - Exim Pipe Transport Privilege Escalation",
-        "datePublished": "2026-07-24T05:16:49Z",
-        "dateModified": "2026-07-24T05:54:55Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter, Abuse Elevation Control Mechanism, Exploit Public-Facing Application",
+        "description": "CVE-2026-10610 - Local privilege escalation in ESET security applications for macOS",
+        "datePublished": "2026-07-24T11:14:51Z",
+        "dateModified": "2026-07-24T13:21:50Z",
+        "keywords": "LOW, [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.1698
+            "value": 0.7688
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66141",
-        "urgency": "Moderate"
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-10610",
+        "urgency": "Low"
       }
     },
     {
@@ -326,8 +327,8 @@
       "position": 10,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: ZDI-26-447: Heimdall Data Database Proxy generateFileContent CRLF Injection Remo (CVE-2026-12357)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784857063_CVE-2026-12357_CVE-2026-16804_CVE-2026-2",
+        "headline": "CVE-2026-16730 - Dbus-broker: dbus-broker: session bus denial of service via emfile during peer setup",
+        "url": "https://intel.cyberdudebivash.com/#intel--1034230b6a8f237ecec85812",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -339,21 +340,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "ZDI-26-447: Heimdall Data Database Proxy generateFileContent CRLF Injection Remote Code Execution Vulnerability",
-        "datePublished": "2026-07-23T00:00:00Z",
-        "dateModified": "2026-07-24T01:37:43Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "description": "CVE-2026-16730 - Dbus-broker: dbus-broker: session bus denial of service via emfile during peer setup",
+        "datePublished": "2026-07-24T11:26:18Z",
+        "dateModified": "2026-07-24T13:21:47Z",
+        "keywords": "LOW, [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 4.0642
+            "value": 0.6342
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12357",
-        "urgency": "Moderate"
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-16730",
+        "urgency": "Low"
       }
     },
     {
@@ -361,8 +362,8 @@
       "position": 11,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: ZDI-26-448: Bitdefender Total Security Shredder Link Following Local Privilege E (CVE-2026-6851)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784857060_CVE-2026-16804_CVE-2026-28698_CVE-2026-4",
+        "headline": "CVE-2026-15243 - Improper Validation of Certificate in CAS Client",
+        "url": "https://intel.cyberdudebivash.com/#intel--fc8ff894ed84550c2d5b7c53",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -374,21 +375,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "ZDI-26-448: Bitdefender Total Security Shredder Link Following Local Privilege Escalation Vulnerability",
-        "datePublished": "2026-07-23T00:00:00Z",
-        "dateModified": "2026-07-24T01:37:40Z",
-        "keywords": "MEDIUM, Abuse Elevation Control Mechanism",
+        "description": "CVE-2026-15243 - Improper Validation of Certificate in CAS Client",
+        "datePublished": "2026-07-24T11:29:26Z",
+        "dateModified": "2026-07-24T13:21:43Z",
+        "keywords": "LOW, [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.0809
+            "value": 0.6067
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6851",
-        "urgency": "Moderate"
+        "sameAs": "https://cvefeed.io/vuln/detail/CVE-2026-15243",
+        "urgency": "Low"
       }
     },
     {
@@ -396,8 +397,8 @@
       "position": 12,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: ZDI-26-449: AzeoTech DAQFactory CTL File Parsing Type Confusion Remote Code Exec (CVE-2026-12390)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784857057_CVE-2026-12390_CVE-2026-16804_CVE-2026-2",
+        "headline": "UAC-0099 Is Now Hiding Malware Inside a Fake Notepad++ Plugin to Target Ukrainian Organizations",
+        "url": "https://intel.cyberdudebivash.com/#intel--8f8a29f36a443105c36a87af",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -409,21 +410,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "ZDI-26-449: AzeoTech DAQFactory CTL File Parsing Type Confusion Remote Code Execution Vulnerability",
-        "datePublished": "2026-07-23T00:00:00Z",
-        "dateModified": "2026-07-24T01:37:37Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter",
+        "description": "UAC-0099 Is Now Hiding Malware Inside a Fake Notepad++ Plugin to Target Ukrainian Organizations",
+        "datePublished": "2026-07-24T09:54:53Z",
+        "dateModified": "2026-07-24T13:19:15Z",
+        "keywords": "CRITICAL, [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.5489
+            "value": 9.1171
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12390",
-        "urgency": "Moderate"
+        "sameAs": "https://securityaffairs.com/195923/cyber-warfare-2/uac-0099-is-now-hiding-malware-inside-a-fake-notepad-plugin-to-target-ukrainian-organizations.html",
+        "urgency": "High"
       }
     },
     {
@@ -431,8 +432,8 @@
       "position": 13,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: ZDI-26-450: AzeoTech DAQFactory CTL File Parsing Use-After-Free Remote Code Exec (CVE-2026-12921)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784857054_CVE-2026-12921_CVE-2026-16804_CVE-2026-2",
+        "headline": "Thailands Ministry of Finance Targeted With Hermes AI Agent Running Unattended, Hades Implant Staged",
+        "url": "https://intel.cyberdudebivash.com/#intel--b33b5feb3b9c10281f6e3408",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -444,21 +445,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "ZDI-26-450: AzeoTech DAQFactory CTL File Parsing Use-After-Free Remote Code Execution Vulnerability",
-        "datePublished": "2026-07-23T00:00:00Z",
-        "dateModified": "2026-07-24T01:37:34Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter",
+        "description": "Thailands Ministry of Finance Targeted With Hermes AI Agent Running Unattended, Hades Implant Staged",
+        "datePublished": "2026-07-24T12:10:28Z",
+        "dateModified": "2026-07-24T13:19:11Z",
+        "keywords": "CRITICAL, [object Object], [object Object], [object Object]",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.5377
+            "value": 9.1405
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12921",
-        "urgency": "Moderate"
+        "sameAs": "https://securityaffairs.com/195941/hacking/thailands-ministry-of-finance-targeted-with-hermes-ai-agent-running-unattended-hades-implant-staged.html",
+        "urgency": "High"
       }
     },
     {
@@ -466,8 +467,8 @@
       "position": 14,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: cal.com Repository Takeover via pull_request_target Workflow (CVE-2026-16804)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856980_CVE-2026-16804_CVE-2026-28698_CVE-2026-4",
+        "headline": "US Agencies Warn of Laundry Bear Campaign Targeting Unpatched Zimbra Servers",
+        "url": "https://intel.cyberdudebivash.com/#intel--23f2c9f492a193d10aa6131b",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -479,20 +480,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2024-58354 - cal.com Repository Takeover via pull_request_target Workflow",
-        "datePublished": "2026-07-23T22:16:51Z",
-        "dateModified": "2026-07-24T01:36:20Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "description": "US agencies warn Russian group Laundry Bear is exploiting a patched Zimbra flaw to steal email accounts from organizations running unpatched servers. The Cybersecurity and Infrastructure Security Agency (CISA), National Security Agency (NSA), Federal Bureau of Investigation (FBI)... [Full analysis available on Pro]",
+        "datePublished": "2026-07-24T08:31:42Z",
+        "dateModified": "2026-07-24T08:31:42Z",
+        "keywords": "MEDIUM",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.5694
+            "value": 5.0487
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16804",
+        "sameAs": "https://securityaffairs.com/195901/apt/us-agencies-warn-of-laundry-bear-campaign-targeting-unpatched-zimbra-servers.html",
         "urgency": "Moderate"
       }
     },
@@ -501,8 +502,8 @@
       "position": 15,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Critical: Cal.com before 5.9.9 Remote Code Execution via RSC (CVE-2025-55182)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856974_CVE-2025-55182_CVE-2025-71389_CVE-2026-1",
+        "headline": "Clop ransomware targets Windchill, FlexPLM in data theft attacks",
+        "url": "https://intel.cyberdudebivash.com/#intel--c7ab7f559c6eb4e9204340c2",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -514,20 +515,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2025-71389 - Cal.com before 5.9.9 Remote Code Execution via RSC",
-        "datePublished": "2026-07-23T22:16:51Z",
-        "dateModified": "2026-07-24T01:36:14Z",
-        "keywords": "CRITICAL, Command and Scripting Interpreter, Exploit Public-Facing Application, Exploitation of Remote Services",
+        "description": "The Clop ransomware gang (also tracked as Cl0p) is targeting Internet-exposed PTC Windchill and FlexPLM instances in a new data theft extortion campaign. [...]",
+        "datePublished": "2026-07-24T03:36:39Z",
+        "dateModified": "2026-07-24T03:36:39Z",
+        "keywords": "HIGH",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 9.0589
+            "value": 7.2287
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-55182",
+        "sameAs": "https://www.bleepingcomputer.com/news/security/clop-ransomware-targets-windchill-flexplm-in-data-theft-attacks/",
         "urgency": "High"
       }
     },
@@ -536,8 +537,8 @@
       "position": 16,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: OWASP DefectDojo API/Web serializers.py UserSerializer privileges management (CVE-2026-63313)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856967_CVE-2026-16804_CVE-2026-16806_CVE-2026-1",
+        "headline": "U.S. CISA adds Microsoft SharePoint and Check Point SmartConsole flaws to its Known Exploited Vulnerabilities ",
+        "url": "https://intel.cyberdudebivash.com/#intel--f47d04dbe326e53affab2ee6",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -549,21 +550,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-16764 - OWASP DefectDojo API/Web serializers.py UserSerializer privileges management",
-        "datePublished": "2026-07-23T22:16:52Z",
-        "dateModified": "2026-07-24T01:36:07Z",
-        "keywords": "MEDIUM, Application Layer Protocol, Command and Scripting Interpreter",
+        "description": "U.S. Cybersecurity and Infrastructure Security Agency (CISA) adds SharePoint and Check Point flaws to its Known Exploited Vulnerabilities catalog. The U.S. Cybersecurity and Infrastructure Security Agency (CISA)&#160;added DD-WRT, Langflow, and WordPress flaws to its Known Exploi... [Full analysis available on Pro]",
+        "datePublished": "2026-07-23T20:10:46Z",
+        "dateModified": "2026-07-23T20:10:46Z",
+        "keywords": "HIGH",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 6.4
+            "value": 7.2188
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63313",
-        "urgency": "Moderate"
+        "sameAs": "https://securityaffairs.com/195889/security/u-s-cisa-adds-microsoft-sharepoint-and-check-point-smartconsole-flaws-to-its-known-exploited-vulnerabilities-catalog.html",
+        "urgency": "High"
       }
     },
     {
@@ -571,8 +572,8 @@
       "position": 17,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: 9router before 0.4.60 Remote Code Execution via default password (CVE-2026-63732)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856943_CVE-2026-28698_CVE-2026-44955_CVE-2026-5",
+        "headline": "Ruby json: JSON generator heap buffer overflow when streaming to an IO",
+        "url": "https://intel.cyberdudebivash.com/#intel--7ef1aaa019a0d586fca4054a",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -584,21 +585,21 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-63732 - 9router before 0.4.60 Remote Code Execution via default password",
-        "datePublished": "2026-07-23T22:16:53Z",
-        "dateModified": "2026-07-24T01:35:43Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter, Valid Accounts, Exploit Public-Facing Application",
+        "description": "### Summary\n\n`JSON.dump(obj, io)` and `JSON::State#generate(obj, io)` can write past the\ninternal JSON generator buffer when a streamed object contains an\nattacker-controlled string near 16 KB. The issue is a heap out-of-bounds write\nin the IO-streaming path and is demonstrated a... [Full analysis available on Pro]",
+        "datePublished": "2026-07-23T19:48:08Z",
+        "dateModified": "2026-07-23T19:48:08Z",
+        "keywords": "LOW",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 5.5749
+            "value": 2.5
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63732",
-        "urgency": "Moderate"
+        "sameAs": "https://github.com/advisories/GHSA-x2f5-4prf-w687",
+        "urgency": "Low"
       }
     },
     {
@@ -606,8 +607,8 @@
       "position": 18,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: Skipper Incomplete Fix for CVE-2026-50197 Policy Bypass (CVE-2026-50197)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856940_CVE-2026-28698_CVE-2026-44955_CVE-2026-5",
+        "headline": "c3p0 can, in combination with other libraries, compose to a \"sink\" for deserialization gadgets",
+        "url": "https://intel.cyberdudebivash.com/#intel--0078e61839944305626649e0",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -619,20 +620,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-65604 - Skipper Incomplete Fix for CVE-2026-50197 Policy Bypass",
-        "datePublished": "2026-07-23T22:16:53Z",
-        "dateModified": "2026-07-24T01:35:40Z",
-        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "description": "### Impact\n\nThe JDBC spec defines the interface `DataSource`, with a method called `getConnection()`, and `ConnectionPoolDataSource`, with a method called `getPooledConnection()`. These methods are potentially dangerous. One way or another they trigger calls into JDBC drivers, wh... [Full analysis available on Pro]",
+        "datePublished": "2026-07-23T19:46:53Z",
+        "dateModified": "2026-07-23T19:46:53Z",
+        "keywords": "MEDIUM",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 6.9
+            "value": 5.0468
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-50197",
+        "sameAs": "https://github.com/advisories/GHSA-w6w4-rjh9-9r58",
         "urgency": "Moderate"
       }
     },
@@ -641,8 +642,8 @@
       "position": 19,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Medium: Ne-Lexa php-zip ZIP ZipFile.php extractTo path traversal (CVE-2026-28698)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856933_CVE-2026-16767_CVE-2026-28698_CVE-2026-4",
+        "headline": "React Router: Open redirect via backslash in <Link> and useNavigate (CVE-2025-68470 bypass)",
+        "url": "https://intel.cyberdudebivash.com/#intel--eb4cc6aaa55062038847c077",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -654,20 +655,20 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-16767 - Ne-Lexa php-zip ZIP ZipFile.php extractTo path traversal",
-        "datePublished": "2026-07-23T23:16:48Z",
-        "dateModified": "2026-07-24T01:35:33Z",
-        "keywords": "MEDIUM, File and Directory Discovery, Command and Scripting Interpreter",
+        "description": "This is a follow up to [CVE-2025-68470](https://github.com/remix-run/react-router/security/advisories/GHSA-9jcx-v3wj-wh4m).  React Router was alerted to certain scenarios in which the fix there was incomplete so there still existed some scenarios where attacker supplied paths pas... [Full analysis available on Pro]",
+        "datePublished": "2026-07-23T19:38:28Z",
+        "dateModified": "2026-07-23T19:38:28Z",
+        "keywords": "MEDIUM",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 4.0542
+            "value": 5.0094
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-28698",
+        "sameAs": "https://github.com/advisories/GHSA-wrjc-x8rr-h8h6",
         "urgency": "Moderate"
       }
     },
@@ -676,8 +677,8 @@
       "position": 20,
       "item": {
         "@type": "NewsArticle",
-        "headline": "Low: Unintended Proxy or Intermediary in Panduit IntraVUE by Pronetiqs (CVE-2026-42933)",
-        "url": "https://intel.cyberdudebivash.com/#intel--1784856923_CVE-2026-42933_CVE-2026-42933_CVE-2026-4",
+        "headline": "React Router: Open redirect leading to XSS",
+        "url": "https://intel.cyberdudebivash.com/#intel--2471b54e338cd5ff66c17c7c",
         "publisher": {
           "@type": "Organization",
           "@id": "https://www.cyberdudebivash.com/#organization",
@@ -689,26 +690,26 @@
         },
         "articleSection": "Threat Intelligence",
         "isAccessibleForFree": true,
-        "description": "CVE-2026-42933 - Unintended Proxy or Intermediary in Panduit IntraVUE by Pronetiqs",
-        "datePublished": "2026-07-23T23:16:48Z",
-        "dateModified": "2026-07-24T01:35:23Z",
-        "keywords": "LOW, Command and Scripting Interpreter",
+        "description": "Applications with open redirects could permit attacker crafted links to result in redirects to unexpected external location or XSS vectors.",
+        "datePublished": "2026-07-23T19:36:31Z",
+        "dateModified": "2026-07-23T19:36:31Z",
+        "keywords": "MEDIUM",
         "about": {
           "@type": "Thing",
           "name": "Risk score",
           "additionalProperty": {
             "@type": "PropertyValue",
             "name": "risk_score",
-            "value": 2.0347
+            "value": 5.017
           }
         },
-        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-42933",
-        "urgency": "Low"
+        "sameAs": "https://github.com/advisories/GHSA-jjmj-jmhj-qwj2",
+        "urgency": "Moderate"
       }
     }
   ],
   "_generatedBy": "scripts/seo/generate-seo-feed.mjs",
   "_sourceFeed": "https://intel.cyberdudebivash.com/api/v1/intel/latest.json",
-  "_sourceGeneratedAt": "2026-07-24T07:04:04Z",
-  "_sourceItemCount": 95
+  "_sourceGeneratedAt": "2026-07-24T13:52:23Z",
+  "_sourceItemCount": 44
 }
