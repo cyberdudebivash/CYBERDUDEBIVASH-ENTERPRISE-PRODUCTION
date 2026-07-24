@@ -1,0 +1,714 @@
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "@id": "https://www.cyberdudebivash.com/seo-intel.json#feed",
+  "name": "CYBERDUDEBIVASH Sentinel APEX — Live Threat Intelligence Feed",
+  "description": "Auto-generated NewsArticle structured-data feed of the latest threat intelligence, sourced from Sentinel APEX.",
+  "numberOfItems": 20,
+  "dateModified": "2026-07-24T07:37:32.555Z",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium Remote Code Execution (CVE-2026-16870)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784875231_CVE-2026-16870_CVE-2026-16870",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-16870",
+        "datePublished": "2026-07-24T06:16:42Z",
+        "dateModified": "2026-07-24T06:40:31Z",
+        "keywords": "MEDIUM, Exfiltration Over C2 Channel, Valid Accounts, Data Encrypted for Impact, Exploit Public-Facing Application, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 6
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16870",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Unattributed APT Activity — Persistent Access Campaign",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784874894",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "Malicious RubyGems Turn Developer Machines Into Monero Miners and Spread Through SSH",
+        "datePublished": "2026-07-24T06:01:02Z",
+        "dateModified": "2026-07-24T06:34:54Z",
+        "keywords": "MEDIUM, Valid Accounts, Application Layer Protocol, Exploitation for Client Execution",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.5447
+          }
+        },
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: Chromium: CVE-2026-16416 Integer overflow in Chromecast (CVE-2026-16416)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872603_CVE-2026-15420_CVE-2026-16416_CVE-2026-1",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "Chromium: CVE-2026-16416 Integer overflow in Chromecast",
+        "datePublished": "2026-07-24T06:41:34Z",
+        "dateModified": "2026-07-24T05:56:43Z",
+        "keywords": "LOW",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 0.0247
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16416",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: Chromium: CVE-2026-16423 Use after free in UI (CVE-2026-66140)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872579_CVE-2026-12736_CVE-2026-13464_CVE-2026-1",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "Chromium: CVE-2026-16423 Use after free in UI",
+        "datePublished": "2026-07-24T06:41:43Z",
+        "dateModified": "2026-07-24T05:56:19Z",
+        "keywords": "LOW",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 0.0622
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66140",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 5,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: Chromium: CVE-2026-16424 Use after free in GPU (CVE-2026-16424)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872575_CVE-2026-13464_CVE-2026-16424_CVE-2026-1",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "Chromium: CVE-2026-16424 Use after free in GPU",
+        "datePublished": "2026-07-24T06:41:44Z",
+        "dateModified": "2026-07-24T05:56:15Z",
+        "keywords": "LOW",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 0.0639
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16424",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 6,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: MapSVG Lite <= 8.14.0 - Authenticated (Contributor+) Stored Cross-Site Scripting (CVE-2025-9205)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872544_CVE-2025-9205_CVE-2026-12736_CVE-2026-13",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2025-9205 - MapSVG Lite <= 8.14.0 - Authenticated (Contributor+) Stored Cross-Site Scripting",
+        "datePublished": "2026-07-24T04:16:50Z",
+        "dateModified": "2026-07-24T05:55:44Z",
+        "keywords": "LOW, Steal Web Session Cookie, Exploitation of Remote Services, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 2.0746
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-9205",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 7,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: Kirki <= 6.0.14 - Insecure Direct Object Reference to Unauthenticated Sensitive (CVE-2026-13464)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872528_CVE-2026-13464_CVE-2026-15420_CVE-2026-6",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-13464 - Kirki <= 6.0.14 - Insecure Direct Object Reference to Unauthenticated Sensitive Information Disclosure via 'context' Parameter",
+        "datePublished": "2026-07-24T04:16:51Z",
+        "dateModified": "2026-07-24T05:55:28Z",
+        "keywords": "LOW, File and Directory Discovery, Exploit Public-Facing Application, Exploitation of Remote Services, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 2.0548
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-13464",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 8,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: OpenStack Zaqar Authentication Bypass (CVE-2026-66139)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872504_CVE-2026-66139_CVE-2026-66139_CVE-2026-6",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-66139 - OpenStack Zaqar Authentication Bypass",
+        "datePublished": "2026-07-24T05:16:49Z",
+        "dateModified": "2026-07-24T05:55:04Z",
+        "keywords": "LOW, Valid Accounts, Exploit Public-Facing Application, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 2.0552
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66139",
+        "urgency": "Low"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 9,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: Exim Pipe Transport Privilege Escalation (CVE-2026-66141)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784872495_CVE-2026-66141_CVE-2026-66141",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-66141 - Exim Pipe Transport Privilege Escalation",
+        "datePublished": "2026-07-24T05:16:49Z",
+        "dateModified": "2026-07-24T05:54:55Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter, Abuse Elevation Control Mechanism, Exploit Public-Facing Application",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.1698
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-66141",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 10,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: ZDI-26-447: Heimdall Data Database Proxy generateFileContent CRLF Injection Remo (CVE-2026-12357)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784857063_CVE-2026-12357_CVE-2026-16804_CVE-2026-2",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "ZDI-26-447: Heimdall Data Database Proxy generateFileContent CRLF Injection Remote Code Execution Vulnerability",
+        "datePublished": "2026-07-23T00:00:00Z",
+        "dateModified": "2026-07-24T01:37:43Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 4.0642
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12357",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 11,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: ZDI-26-448: Bitdefender Total Security Shredder Link Following Local Privilege E (CVE-2026-6851)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784857060_CVE-2026-16804_CVE-2026-28698_CVE-2026-4",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "ZDI-26-448: Bitdefender Total Security Shredder Link Following Local Privilege Escalation Vulnerability",
+        "datePublished": "2026-07-23T00:00:00Z",
+        "dateModified": "2026-07-24T01:37:40Z",
+        "keywords": "MEDIUM, Abuse Elevation Control Mechanism",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.0809
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-6851",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 12,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: ZDI-26-449: AzeoTech DAQFactory CTL File Parsing Type Confusion Remote Code Exec (CVE-2026-12390)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784857057_CVE-2026-12390_CVE-2026-16804_CVE-2026-2",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "ZDI-26-449: AzeoTech DAQFactory CTL File Parsing Type Confusion Remote Code Execution Vulnerability",
+        "datePublished": "2026-07-23T00:00:00Z",
+        "dateModified": "2026-07-24T01:37:37Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.5489
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12390",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 13,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: ZDI-26-450: AzeoTech DAQFactory CTL File Parsing Use-After-Free Remote Code Exec (CVE-2026-12921)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784857054_CVE-2026-12921_CVE-2026-16804_CVE-2026-2",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "ZDI-26-450: AzeoTech DAQFactory CTL File Parsing Use-After-Free Remote Code Execution Vulnerability",
+        "datePublished": "2026-07-23T00:00:00Z",
+        "dateModified": "2026-07-24T01:37:34Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.5377
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-12921",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 14,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: cal.com Repository Takeover via pull_request_target Workflow (CVE-2026-16804)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856980_CVE-2026-16804_CVE-2026-28698_CVE-2026-4",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2024-58354 - cal.com Repository Takeover via pull_request_target Workflow",
+        "datePublished": "2026-07-23T22:16:51Z",
+        "dateModified": "2026-07-24T01:36:20Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.5694
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-16804",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 15,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Critical: Cal.com before 5.9.9 Remote Code Execution via RSC (CVE-2025-55182)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856974_CVE-2025-55182_CVE-2025-71389_CVE-2026-1",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2025-71389 - Cal.com before 5.9.9 Remote Code Execution via RSC",
+        "datePublished": "2026-07-23T22:16:51Z",
+        "dateModified": "2026-07-24T01:36:14Z",
+        "keywords": "CRITICAL, Command and Scripting Interpreter, Exploit Public-Facing Application, Exploitation of Remote Services",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 9.0589
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-55182",
+        "urgency": "High"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 16,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: OWASP DefectDojo API/Web serializers.py UserSerializer privileges management (CVE-2026-63313)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856967_CVE-2026-16804_CVE-2026-16806_CVE-2026-1",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-16764 - OWASP DefectDojo API/Web serializers.py UserSerializer privileges management",
+        "datePublished": "2026-07-23T22:16:52Z",
+        "dateModified": "2026-07-24T01:36:07Z",
+        "keywords": "MEDIUM, Application Layer Protocol, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 6.4
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63313",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 17,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: 9router before 0.4.60 Remote Code Execution via default password (CVE-2026-63732)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856943_CVE-2026-28698_CVE-2026-44955_CVE-2026-5",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-63732 - 9router before 0.4.60 Remote Code Execution via default password",
+        "datePublished": "2026-07-23T22:16:53Z",
+        "dateModified": "2026-07-24T01:35:43Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter, Valid Accounts, Exploit Public-Facing Application",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 5.5749
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63732",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 18,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: Skipper Incomplete Fix for CVE-2026-50197 Policy Bypass (CVE-2026-50197)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856940_CVE-2026-28698_CVE-2026-44955_CVE-2026-5",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-65604 - Skipper Incomplete Fix for CVE-2026-50197 Policy Bypass",
+        "datePublished": "2026-07-23T22:16:53Z",
+        "dateModified": "2026-07-24T01:35:40Z",
+        "keywords": "MEDIUM, Command and Scripting Interpreter, Exploit Public-Facing Application",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 6.9
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-50197",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 19,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Medium: Ne-Lexa php-zip ZIP ZipFile.php extractTo path traversal (CVE-2026-28698)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856933_CVE-2026-16767_CVE-2026-28698_CVE-2026-4",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-16767 - Ne-Lexa php-zip ZIP ZipFile.php extractTo path traversal",
+        "datePublished": "2026-07-23T23:16:48Z",
+        "dateModified": "2026-07-24T01:35:33Z",
+        "keywords": "MEDIUM, File and Directory Discovery, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 4.0542
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-28698",
+        "urgency": "Moderate"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 20,
+      "item": {
+        "@type": "NewsArticle",
+        "headline": "Low: Unintended Proxy or Intermediary in Panduit IntraVUE by Pronetiqs (CVE-2026-42933)",
+        "url": "https://intel.cyberdudebivash.com/#intel--1784856923_CVE-2026-42933_CVE-2026-42933_CVE-2026-4",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://www.cyberdudebivash.com/#organization",
+          "name": "CyberDudeBivash Private Limited",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.cyberdudebivash.com/assets/images/logo.jpg"
+          }
+        },
+        "articleSection": "Threat Intelligence",
+        "isAccessibleForFree": true,
+        "description": "CVE-2026-42933 - Unintended Proxy or Intermediary in Panduit IntraVUE by Pronetiqs",
+        "datePublished": "2026-07-23T23:16:48Z",
+        "dateModified": "2026-07-24T01:35:23Z",
+        "keywords": "LOW, Command and Scripting Interpreter",
+        "about": {
+          "@type": "Thing",
+          "name": "Risk score",
+          "additionalProperty": {
+            "@type": "PropertyValue",
+            "name": "risk_score",
+            "value": 2.0347
+          }
+        },
+        "sameAs": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-42933",
+        "urgency": "Low"
+      }
+    }
+  ],
+  "_generatedBy": "scripts/seo/generate-seo-feed.mjs",
+  "_sourceFeed": "https://intel.cyberdudebivash.com/api/v1/intel/latest.json",
+  "_sourceGeneratedAt": "2026-07-24T07:04:04Z",
+  "_sourceItemCount": 95
+}

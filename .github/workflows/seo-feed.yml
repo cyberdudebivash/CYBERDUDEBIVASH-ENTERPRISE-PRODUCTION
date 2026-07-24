@@ -1,0 +1,55 @@
+name: Refresh SEO Intel Feed
+
+# Regenerates public/seo-intel.json from the live Sentinel APEX threat feed
+# (scripts/seo/generate-seo-feed.mjs) and commits it if changed. A commit to
+# main here is picked up automatically by the existing "Build & Deploy to
+# GitHub Pages" workflow (it triggers on any push to main), which bundles
+# public/ into dist/ via Vite the same way it already does for
+# public/sitemap.xml and public/robots.txt — no separate deploy step needed
+# here.
+#
+# Schedule matches the source platform's own CVE-feed refresh cadence
+# (workers/wrangler.toml slot 2 in the AI Security Hub repo: 4x/day) rather
+# than inventing an unrelated cadence.
+
+on:
+  schedule:
+    - cron: "15 0,6,12,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "seo-feed"
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate SEO intel feed
+        run: node scripts/seo/generate-seo-feed.mjs
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          git config --local user.email "ci@cyberdudebivash.com"
+          git config --local user.name "CDB Build Bot"
+          git add public/seo-intel.json
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: refresh SEO intel feed (automated)"
+            git push
+          else
+            echo "No change in public/seo-intel.json — skipping commit"
+          fi

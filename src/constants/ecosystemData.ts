@@ -376,7 +376,16 @@ export const CORPORATE_REGISTRATION = {
   email: "iambivash.BN@gmail.com",
   state: "Odisha",
   country: "India",
-  regNumber: "CDB-IN-2024-GST"
+  regNumber: "CDB-IN-2024-GST",
+  // Added 2026-07-24 at founder's direction. Verifiable on the respective
+  // government/registrar portals the same way GSTIN/PAN already are (see
+  // this file's header comment) — not independently re-verified by this
+  // program beyond that the founder supplied them as this company's own
+  // registration facts.
+  msmeUdyam: "UDYAM-OD-19-0133456",
+  msmeNicCode: "63122",
+  startupIndiaId: "BHASKAR ID IN-0426-9439SC",
+  eMudhraProfile: "Active"
 };
 
 // Single source of truth for compliance-framework wording. CYBERDUDEBIVASH is not
