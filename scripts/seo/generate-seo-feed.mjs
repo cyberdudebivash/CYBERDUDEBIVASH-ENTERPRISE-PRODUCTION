@@ -93,7 +93,16 @@ function itemToNewsArticle(item) {
   if (item.description) node.description = String(item.description).slice(0, 500);
   if (datePublished) node.datePublished = datePublished;
   if (dateModified) node.dateModified = dateModified;
-  if (item.severity) node.keywords = [item.severity, ...(Array.isArray(item.mitre_tactics) ? item.mitre_tactics : [])].join(', ');
+  if (item.severity) {
+    // Live feed items carry mitre_tactics as MITRE ATT&CK technique objects
+    // ({ id, name, tactic, justification }), not plain strings — join the
+    // human-readable technique name (falling back to tactic/id if a future
+    // feed shape ever omits it) instead of stringifying the object.
+    const tacticTerms = Array.isArray(item.mitre_tactics)
+      ? item.mitre_tactics.map((t) => (typeof t === 'string' ? t : t?.name ?? t?.tactic ?? t?.id)).filter(Boolean)
+      : [];
+    node.keywords = [item.severity, ...tacticTerms].join(', ');
+  }
   if (typeof item.risk_score === 'number') {
     node.about = { '@type': 'Thing', name: 'Risk score', additionalProperty: { '@type': 'PropertyValue', name: 'risk_score', value: item.risk_score } };
   }
